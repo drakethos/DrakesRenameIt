@@ -1,14 +1,14 @@
 <Project>
     <PropertyGroup>
         <ValheimGamePath>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimGamePath>
-        <BepInExPath>$(R2ModPath)\$(ProfileName)\BepInEx</BepInExPath>
+        <BepInExPath>C:\Users\house\AppData\Roaming\r2modmanPlus-local\Valheim\profiles\drakeTest\BepInEx</BepInExPath>
         <CorlibPath>$(ValheimGamePath)\valheim_Data\Managed</CorlibPath>
-        <PublicizedAssembliesPath>$(ValheimGamePath)\valheim_Data\Managed\publicized_assemblies</PublicizedAssembliesPath>
-        <R2ModPath>C:\Users\Derrick\AppData\Roaming\r2modmanPlus-local\Valheim\profiles</R2ModPath>
+        <PublicizedAssembliesPath>$(ValheimGamePath)\valheim_Data\Managed</PublicizedAssembliesPath>
+        <R2ModPath>C:\Users\house\AppData\Roaming\r2modmanPlus-local\Valheim\profiles</R2ModPath>
         <!-- Define the profile name -->
-        <ProfileName>drake</ProfileName>
+        <ProfileName>drakeTest</ProfileName>
         <!-- Define the folder for the Thunderstore package -->
-        <ThunderstoreBasePath>C:\modding\Thunderstore</ThunderstoreBasePath>
+        <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
         <ThunderstoreFolder>$(ThunderstoreBasePath)\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
         <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
         <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>

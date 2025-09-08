@@ -18,8 +18,8 @@
         <ThunderstoreFolder>C:\Modding\Thunderstore\$(AssemblyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
         <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
         <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
-        <Description>Rename any item in your inventory. You can even recolor them too!</Description>
-        <Website_Url>https://github.com/drakethos/DrakesRenameIt</Website_Url>
+        <Description>Rename any item in your inventory. You can even recolor them too! This is an early beta there may be bugs!</Description>
+        <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
         <Dependencies>DrakeMods-ServerSync-1.0.0</Dependencies>
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
@@ -557,7 +557,6 @@
         <Content Include="libs\ServerSync.dll">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="ploam" />
       <Content Include="environment.props" />
       <Content Include="ILRepack.targets" />
    

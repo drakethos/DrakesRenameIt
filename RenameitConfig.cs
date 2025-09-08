@@ -23,7 +23,7 @@ public static class RenameitConfig
     public static bool LockToOwner => _lockToOwner.Value;
     public static bool NameClaimsOwner => _nameClaimsOwner.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
-    public static bool SeperateStacks => _seperateStacks.Value;
+    /*public static bool SeperateStacks => _seperateStacks.Value;*/
 
     public static void Bind(ConfigFile config)
     {
@@ -54,13 +54,13 @@ public static class RenameitConfig
             sync: true
         );
         
-        _seperateStacks = config.BindSynced(
+        /*_seperateStacks = config.BindSynced(
             SectionGeneral,
             "SeperateStacks",
             true,
             "If true, prevents stacks with different names from fusing.",
             sync: true
-        );
+        );*/
     }
 
     // Helper extension for easier ServerSync binding

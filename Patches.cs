@@ -111,7 +111,7 @@ public static class InventoryGridTooltipPatch
         tooltip.Set(topic, currentText + "\n" + renameTip, __instance.m_tooltipAnchor);
     }
 
-    [HarmonyPatch(typeof(Inventory))]
+    /*[HarmonyPatch(typeof(Inventory))]
     public static class Patch_Inventory_StackLookup
     {
         // Override FindFreeStackSpace
@@ -164,5 +164,5 @@ public static class InventoryGridTooltipPatch
 
             return true;
         }
-    }
+    }*/
 }

@@ -8,10 +8,6 @@
         <!-- Define the profile name -->
         <ProfileName>drakeTest</ProfileName>
         <!-- Define the folder for the Thunderstore package -->
-        <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
-        <ThunderstoreFolder>$(ThunderstoreBasePath)\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
-        <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
-        <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
         <AfterTargets>ILRepacker</AfterTargets> <!-- If you are using KeyManager, change this to KeyManager as suggested in step 5.2 in the instructions -->
     </PropertyGroup>
 </Project>

@@ -13,9 +13,14 @@
         <RootNamespace>DrakeRenameit</RootNamespace>
         <AssemblyName>DrakeRenameit</AssemblyName>
         <CompanyName>DrakeMod</CompanyName>
-        <Version>0.0.1</Version>
-        <Description>Manage your door and chests within your wards for more control</Description>
-        <Website_Url>no site.com</Website_Url>
+        <Version>0.1.0</Version>
+        <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
+        <ThunderstoreFolder>C:\Modding\Thunderstore\$(AssemblyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
+        <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
+        <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
+        <Description>Rename any item in your inventory. You can even recolor them too!</Description>
+        <Website_Url>https://github.com/drakethos/DrakesRenameIt</Website_Url>
+        <Dependencies>DrakeMods-ServerSync-1.0.0</Dependencies>
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>latest</LangVersion>
@@ -487,6 +492,17 @@
         <Copy
                 SourceFiles="@(AssetsToCopy)"
                 DestinationFolder="$(FullDestinationPath)\Assets\"/>
+
+        <Copy
+                SourceFiles="$(TargetDir)Readme.md"
+                DestinationFiles="$(FullDestinationPath)\README.md"/>
+
+        <Copy
+                SourceFiles="$(TargetDir)icon.png"
+                DestinationFiles="$(FullDestinationPath)\icon.png"/>  
+        <Copy
+                SourceFiles="$(TargetDir)CHANGELOG.md"
+                DestinationFiles="$(FullDestinationPath)\CHANGELOG.md"/>
     </Target>
 
     <Target Name="PackageMod" AfterTargets="Build">
@@ -502,7 +518,19 @@
         <!-- Copy the DLL to the Thunderstore folder -->
         <Copy
                 SourceFiles="$(TargetDir)$(TargetFileName)"
-                DestinationFolder="$(ThunderstoreFolder)\"/>
+                DestinationFolder="$(ThunderstoreFolder)"/>
+
+        <Copy
+                SourceFiles="$(TargetDir)Readme.md"
+                DestinationFiles="$(ThunderstoreFolder)\README.md"/>
+
+        <Copy
+                SourceFiles="$(TargetDir)icon.png"
+                DestinationFiles="$(ThunderstoreFolder)\icon.png"/>
+        <Copy
+                SourceFiles="$(TargetDir)CHANGELOG.md"
+                DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md"/>
+        
 
         <!-- Zip the Thunderstore folder -->
         <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force"/>
@@ -520,6 +548,12 @@
 }' />
     </ItemGroup>
     <ItemGroup>
+        <Content Include="CHANGELOG.md">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="icon.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
         <Content Include="libs\ServerSync.dll">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -530,5 +564,9 @@
        <AssetFiles Include="Assets\*.*" />
    
        <Content Include="Properties\clothes" />
+   
+       <Content Include="README.md">
+         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+       </Content>
     </ItemGroup>
 </Project>

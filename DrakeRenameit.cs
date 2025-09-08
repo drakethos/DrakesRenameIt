@@ -14,12 +14,13 @@ namespace DrakeRenameit
 {
     [BepInPlugin(GUID, ModName, Version)]
     [BepInDependency(Jotunn.Main.ModGuid)]
+
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public class DrakeRenameit : BaseUnityPlugin
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.0.1";
+        public const string Version = "0.1.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeRename = "Drake_Rename";
         public static ItemDrop.ItemData currentItem;
@@ -97,7 +98,7 @@ namespace DrakeRenameit
                 fontSize: 18,
                 width: 300,
                 height: 30f).GetComponent<InputField>();
-
+            renameInput.characterLimit = RenameitConfig.NameCharLimit;
             renameInput.text = getPropperName(currentItem);
 
             // OK Button

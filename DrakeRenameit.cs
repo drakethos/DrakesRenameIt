@@ -22,9 +22,7 @@ namespace DrakeRenameit
         public const string Version = "0.0.1";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeRename = "Drake_Rename";
-        public ConfigEntry<string> PublicPiecesConfig; // RenameitConfig entry for public pieces list
-        public static readonly char[] ConfigSeparator = { ',' }; // Separator for config entries
-
+ 
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
         private Texture2D TestTex;

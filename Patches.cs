@@ -33,66 +33,59 @@ public static class Patches
                 }
             }
         }
-    }
 
-    [HarmonyPatch(nameof(ItemDrop.GetHoverName))]
-    [HarmonyPostfix]
-    static void FixHoverName(ItemDrop.ItemData __instance, ref string __result)
-    {
-        string newName = DrakeRenameit.getPropperName(__instance);
-        __result = newName;
-    }
-}
-
-[HarmonyPatch(typeof(InventoryGui))]
-public static class Patch_InventoryGui_Awake
-{
-    [HarmonyPatch(nameof(InventoryGui.Awake))]
-    [HarmonyPostfix]
-    static void Postfix(InventoryGui __instance)
-    {
-        void AssignRenameHandler(InventoryGrid grid)
+        [HarmonyPatch(nameof(ItemDrop.GetHoverName))]
+        [HarmonyPostfix]
+        static void FixHoverName(ItemDrop.ItemData __instance, ref string __result)
         {
-            if (grid == null) return;
-            var original = grid.m_onRightClick;
-            grid.m_onRightClick = (g, item, pos) =>
+            string newName = DrakeRenameit.getPropperName(__instance);
+            __result = newName;
+        }
+    }
+
+    [HarmonyPatch(typeof(InventoryGui))]
+    public static class Patch_InventoryGui_Awake
+    {
+        [HarmonyPatch(nameof(InventoryGui.Awake))]
+        [HarmonyPostfix]
+        static void Postfix(InventoryGui __instance)
+        {
+            // grab the original delegate
+            var original = __instance.m_playerGrid.m_onRightClick;
+
+            // wrap it with our own
+            __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
             {
                 if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                 {
                     DrakeRenameit.OpenRename(item);
-                    return; // skip vanilla handler
+                    return; // stop here, skip vanilla handler
                 }
 
-                // optionally call vanilla handler if you want normal right-click functionality
-                original?.Invoke(g, item, pos);
+                // otherwise, let vanilla delegate run
+                original?.Invoke(grid, item, pos);
             };
         }
-
-        // Assign the handler to both player and chest grids
-        AssignRenameHandler(__instance.m_playerGrid);
-        AssignRenameHandler(__instance.m_containerGrid);
     }
-}
 
 // Wrap both player and chest/container grids
-[HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
-[HarmonyPostfix]
-public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
-    ref ItemDrop.ItemData ___m_craftUpgradeItem)
-{
-    if (___m_craftRecipe?.m_item?.m_itemData == null)
-        return;
-    Debug.Log($"[DrakeRename] Attempting rename:");
-    var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
-
-    // If we had a custom rename on the base item, preserve it
-    var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
-    if (customName != null)
+    [HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
+    [HarmonyPostfix]
+    public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
+        ref ItemDrop.ItemData ___m_craftUpgradeItem)
     {
-        DrakeRenameit.renameItem(upgradedItem, customName);
-    }
-}
+        if (___m_craftRecipe?.m_item?.m_itemData == null)
+            return;
+        Debug.Log($"[DrakeRename] Attempting rename:");
+        var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
 
+        // If we had a custom rename on the base item, preserve it
+        var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
+        if (customName != null)
+        {
+            DrakeRenameit.renameItem(upgradedItem, customName);
+        }
+    }
 }
 
 [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]
@@ -170,3 +163,4 @@ public static class InventoryGridTooltipPatch
             return true;
         }
     }
+}

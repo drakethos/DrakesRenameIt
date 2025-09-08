@@ -44,48 +44,192 @@
         <Reference Include="0Harmony">
             <HintPath>$(BepInExPath)\core\0Harmony.dll</HintPath>
         </Reference>
+        <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\0Harmony.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_googleanalytics, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_googleanalytics.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_guiutils, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_guiutils.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_lux, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_lux.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_postprocessing, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_postprocessing.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_simplemeshcombine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_simplemeshcombine.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_sunshafts, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_sunshafts.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_utils, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_utils.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\assembly_valheim.dll</HintPath>
+        </Reference>
         <Reference Include="BepInEx">
             <HintPath>$(BepInExPath)\core\BepInEx.dll</HintPath>
         </Reference>
         <Reference Include="assembly_guiframework">
             <HintPath>$(PublicizedAssembliesPath)\gui_framework.dll</HintPath>
-        </Reference>       
-        <Reference Include="assembly_guiutils">
-            <HintPath>$(PublicizedAssembliesPath)\assembly_guiutils.dll</HintPath>
         </Reference>
-        <Reference Include="assembly_utils">
-            <HintPath>$(PublicizedAssembliesPath)\assembly_utils_publicized.dll</HintPath>
+        <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\bepinex.dll</HintPath>
         </Reference>
-        <Reference Include="assembly_valheim">
-            <HintPath>$(PublicizedAssembliesPath)\assembly_valheim_publicized.dll</HintPath>
+        <Reference Include="com.rlabrecque.steamworks.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\com.rlabrecque.steamworks.net.dll</HintPath>
+        </Reference>
+        <Reference Include="gui_framework, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\gui_framework.dll</HintPath>
         </Reference>
         <Reference Include="Jotunn, Version=2.23.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>packages\JotunnLib.2.23.0\lib\net462\Jotunn.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.CSharp" />
+        <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Mono.Security.dll</HintPath>
+        </Reference>
+        <Reference Include="netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\netstandard.dll</HintPath>
+        </Reference>
+        <Reference Include="PlayFab, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\PlayFab.dll</HintPath>
+        </Reference>
+        <Reference Include="PlayFabParty, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\PlayFabParty.dll</HintPath>
+        </Reference>
         <Reference Include="ServerSync">
           <HintPath>libs\ServerSync.dll</HintPath>
+        </Reference>
+        <Reference Include="SoftReferenceableAssets, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\SoftReferenceableAssets.dll</HintPath>
+        </Reference>
+        <Reference Include="Splatform, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Splatform.dll</HintPath>
+        </Reference>
+        <Reference Include="Splatform.Steam, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Splatform.Steam.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.AI.Navigation, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.AI.Navigation.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.InputSystem, Version=1.11.2.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.InputSystem.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.InputSystem.ForUI, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.InputSystem.ForUI.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.MemoryProfiler, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.MemoryProfiler.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.ScriptableBuildPipeline, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.ScriptableBuildPipeline.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.TextMeshPro.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Timeline, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\Unity.Timeline.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(CorlibPath)\UnityEngine.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AccessibilityModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AccessibilityModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AndroidJNIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AndroidJNIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AnimationModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ARModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ARModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.AssetBundleModule">
             <HintPath>$(CorlibPath)\UnityEngine.AssetBundleModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AssetBundleModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.AudioModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ClothModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ClothModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ClusterInputModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ClusterInputModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ClusterRendererModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ClusterRendererModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ContentLoadModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ContentLoadModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>$(CorlibPath)\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CrashReportingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.CrashReportingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.DirectorModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.DirectorModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.DSPGraphModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.DSPGraphModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.GameCenterModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.GameCenterModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.GIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.GIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.GridModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.GridModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.HotReloadModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.HotReloadModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.ImageConversionModule">
             <HintPath>$(CorlibPath)\UnityEngine.ImageConversionModule.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ImageConversionModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.IMGUIModule">
             <HintPath>$(CorlibPath)\UnityEngine.IMGUIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.InputLegacyModule">
             <HintPath>$(CorlibPath)\UnityEngine.InputLegacyModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.AnimationModule">
             <HintPath>$(CorlibPath)\UnityEngine.AnimationModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.InputLegacyModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.InputModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.JSONSerializeModule">
             <HintPath>$(CorlibPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
@@ -99,8 +243,211 @@
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="System.Xml" />
         <Reference Include="System.Xml.Linq" />
+        <Reference Include="UnityEngine.JSONSerializeModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.JSONSerializeModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.LocalizationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.LocalizationModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.NVIDIAModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.NVIDIAModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ParticleSystemModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.PerformanceReportingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.PerformanceReportingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.Physics2DModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.PhysicsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ProfilerModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ProfilerModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.PropertiesModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.PropertiesModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.ScreenCaptureModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.ScreenCaptureModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SharedInternalsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SharedInternalsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SpatialTracking, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SpatialTracking.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SpriteMaskModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SpriteMaskModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SpriteShapeModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SpriteShapeModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.StreamingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.StreamingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SubstanceModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SubstanceModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.SubsystemsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.SubsystemsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TerrainModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TerrainModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TerrainPhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextCoreFontEngineModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextCoreTextEngineModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TextRenderingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TilemapModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TilemapModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TLSModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.TLSModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
             <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.20\lib\net46\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Remove="0Harmony" />
+        <Reference Remove="BepInEx" />
+        <Reference Remove="Unity.TextMeshPro" />
+        <Reference Remove="UnityEngine.AccessibilityModule" />
+        <Reference Remove="UnityEngine.AIModule" />
+        <Reference Remove="UnityEngine.AndroidJNIModule" />
+        <Reference Remove="UnityEngine.AnimationModule" />
+        <Reference Remove="UnityEngine.AssetBundleModule" />
+        <Reference Remove="UnityEngine.AudioModule" />
+        <Reference Remove="UnityEngine.ClothModule" />
+        <Reference Remove="UnityEngine.ClusterInputModule" />
+        <Reference Remove="UnityEngine.ClusterRendererModule" />
+        <Reference Remove="UnityEngine.CoreModule" />
+        <Reference Remove="UnityEngine.CrashReportingModule" />
+        <Reference Remove="UnityEngine.DirectorModule" />
+        <Reference Remove="UnityEngine" />
+        <Reference Remove="UnityEngine.DSPGraphModule" />
+        <Reference Remove="UnityEngine.GameCenterModule" />
+        <Reference Remove="UnityEngine.GridModule" />
+        <Reference Remove="UnityEngine.HotReloadModule" />
+        <Reference Remove="UnityEngine.ImageConversionModule" />
+        <Reference Remove="UnityEngine.IMGUIModule" />
+        <Reference Remove="UnityEngine.InputLegacyModule" />
+        <Reference Remove="UnityEngine.InputModule" />
+        <Reference Remove="UnityEngine.JSONSerializeModule" />
+        <Reference Remove="UnityEngine.LocalizationModule" />
+        <Reference Remove="UnityEngine.ParticleSystemModule" />
+        <Reference Remove="UnityEngine.PerformanceReportingModule" />
+        <Reference Remove="UnityEngine.Physics2DModule" />
+        <Reference Remove="UnityEngine.PhysicsModule" />
+        <Reference Remove="UnityEngine.ProfilerModule" />
+        <Reference Remove="UnityEngine.ScreenCaptureModule" />
+        <Reference Remove="UnityEngine.SharedInternalsModule" />
+        <Reference Remove="UnityEngine.SpriteMaskModule" />
+        <Reference Remove="UnityEngine.SpriteShapeModule" />
+        <Reference Remove="UnityEngine.StreamingModule" />
+        <Reference Remove="UnityEngine.SubstanceModule" />
+        <Reference Remove="UnityEngine.SubsystemsModule" />
+        <Reference Remove="UnityEngine.TerrainModule" />
+        <Reference Remove="UnityEngine.TerrainPhysicsModule" />
+        <Reference Remove="UnityEngine.TextRenderingModule" />
+        <Reference Remove="UnityEngine.TilemapModule" />
+        <Reference Remove="UnityEngine.TLSModule" />
+        <Reference Remove="UnityEngine.UIElementsModule" />
+        <Reference Remove="UnityEngine.UIModule" />
+        <Reference Remove="UnityEngine.UmbraModule" />
+        <Reference Remove="UnityEngine.UnityAnalyticsModule" />
+        <Reference Remove="UnityEngine.UnityConnectModule" />
+        <Reference Remove="UnityEngine.UnityTestProtocolModule" />
+        <Reference Remove="UnityEngine.UnityWebRequestAssetBundleModule" />
+        <Reference Remove="UnityEngine.UnityWebRequestAudioModule" />
+        <Reference Remove="UnityEngine.UnityWebRequestModule" />
+        <Reference Remove="UnityEngine.UnityWebRequestTextureModule" />
+        <Reference Remove="UnityEngine.UnityWebRequestWWWModule" />
+        <Reference Remove="UnityEngine.VehiclesModule" />
+        <Reference Remove="UnityEngine.VFXModule" />
+        <Reference Remove="UnityEngine.VideoModule" />
+        <Reference Remove="UnityEngine.VRModule" />
+        <Reference Remove="UnityEngine.WindModule" />
+        <Reference Remove="UnityEngine.XRModule" />
+        <Reference Remove="Mono.Security" />
+        <Reference Remove="Unity.InputSystem" />
+        <Reference Update="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UIElementsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UmbraModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UmbraModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityAnalyticsCommonModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityAnalyticsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityConnectModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityConnectModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityCurlModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityCurlModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityTestProtocolModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityTestProtocolModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestAudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityWebRequestModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestTextureModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestWWWModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.VehiclesModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.VehiclesModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.VFXModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.VFXModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.VideoModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.VideoModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.VirtualTexturingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.VirtualTexturingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.VRModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.VRModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.WindModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.WindModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.XR.LegacyInputHelpers, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.XRModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>packages\Pfhoenix.Valheim.ModProjectReferences.1.0.23\lib\net46\UnityEngine.XRModule.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>

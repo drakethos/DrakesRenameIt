@@ -40,7 +40,7 @@ public static class RenameitConfig
         _nameCharLimit = config.BindSynced(
             SectionGeneral,
             "NameCharacterLimit",
-            25,
+            50,
             "Defines the limit for max characters in rename, be sure to account for <color=> tag codes etc.",
             sync: true
         );

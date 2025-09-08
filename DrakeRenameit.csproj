@@ -13,14 +13,14 @@
         <RootNamespace>DrakeRenameit</RootNamespace>
         <AssemblyName>DrakeRenameit</AssemblyName>
         <CompanyName>DrakeMod</CompanyName>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
         <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
         <ThunderstoreFolder>C:\Modding\Thunderstore\$(AssemblyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
         <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
         <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
         <Description>Rename any item in your inventory. You can even recolor them too! This is an early beta there may be bugs!</Description>
         <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
-        <Dependencies>DrakeMods-ServerSync-1.0.0</Dependencies>
+        <Dependencies>"denikson-BepInExPack_Valheim-5.4.2333", "ValheimModding-Jotunn-2.26.1","DrakeMods-ServerSync-1.0.0"</Dependencies>
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>latest</LangVersion>

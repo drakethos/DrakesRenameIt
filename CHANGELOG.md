@@ -1,4 +1,4 @@
-﻿- Version 0.1 - Current
+- Version 0.1.0 - Current
   - Initial upload and baseline version.
     - Current Feature List:
       - Change any in game item name to anything.
@@ -7,3 +7,7 @@
       - Configurable claim unowned items by renaming
       - Support localized strings
       - Reset option for item to original name.
+- Version 0.1.1
+  - Fix dependency strings
+  - Increased default char limit from 25 to 50 to follow my own advice
+  - Improved read me documentation.

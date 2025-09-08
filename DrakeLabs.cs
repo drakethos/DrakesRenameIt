@@ -17,7 +17,7 @@ namespace DrakeLabs
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakeLabs";
-        public const string Version = "0.0.1";
+        public const string Version = "0.1.1";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public ConfigEntry<string> PublicPiecesConfig; // Config entry for public pieces list
         public static readonly char[] ConfigSeparator = { ',' }; // Separator for config entries

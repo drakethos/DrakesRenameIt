@@ -2,7 +2,7 @@
   - Initial upload and baseline version.
     - Current Feature List:
       - Change any in game item name to anything.
-      - Configurable chracter limit
+      - Configurable character limit
       - Configurable lock own to non item owners
       - Configurable claim unowned items by renaming
       - Support localized strings
@@ -10,4 +10,7 @@
 - Version 0.1.1
   - Fix dependency strings
   - Increased default char limit from 25 to 50 to follow my own advice
-  - Improved read me documentation.
+  - Improved readme documentation.
+  - Went back to school to learn how to spell better.
+- Version 0.1.2
+  - embedded server sync because the mod link breaks things for other mods

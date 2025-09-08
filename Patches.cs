@@ -101,7 +101,7 @@ public static class Patches
             if (item == null || tooltip == null || Player.m_localPlayer == null)
                 return;
 
-            string renameTip = "<color=red><s>Shift + Right Click to rename</s><b>Must be owner to rename</b></color>";
+            string renameTip = "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>";
             if (DrakeRenameit.canChangeName(item, false, false))
             {
                 renameTip = "<color=yellow><b>Shift + Right Click to rename</b></color>";

@@ -20,7 +20,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.1.0";
+        public const string Version = "0.1.2";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeRename = "Drake_Rename";
         public static ItemDrop.ItemData currentItem;
@@ -246,12 +246,10 @@ namespace DrakeRenameit
                                 "You cannot change this — it’s owned!"
                             );
                         }
-
                         return false;
                     }
                 }
             }
-
             return true;
         }
     }

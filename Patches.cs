@@ -13,6 +13,7 @@ public static class Patches
         static void FixHoverText(ItemDrop __instance, ref string __result)
         {
             var item = __instance.m_itemData;
+            if (item != null) return;
 
             if (item?.m_customData != null)
             {
@@ -67,13 +68,13 @@ public static class Patches
             };
         }
     }
-
-// Wrap both player and chest/container grids
+    
     [HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
     [HarmonyPostfix]
     public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
         ref ItemDrop.ItemData ___m_craftUpgradeItem)
     {
+        
         if (___m_craftRecipe?.m_item?.m_itemData == null)
             return;
         Debug.Log($"[DrakeRename] Attempting rename:");
@@ -83,7 +84,8 @@ public static class Patches
         var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
         if (customName != null)
         {
-            DrakeRenameit.renameItem(upgradedItem, customName);
+            DrakeRenameit.currentItem = upgradedItem;
+            DrakeRenameit.renameItem(customName);
         }
     }
 }

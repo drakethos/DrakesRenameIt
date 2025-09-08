@@ -22,7 +22,7 @@ namespace DrakeRenameit
         public const string Version = "0.0.1";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeRename = "Drake_Rename";
- 
+        public static ItemDrop.ItemData currentItem;
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
         private Texture2D TestTex;
@@ -43,7 +43,7 @@ namespace DrakeRenameit
 
         private static InputField renameInput;
 
-        public static void CreateRenameInput(ItemDrop.ItemData item)
+        public static void CreateRenameInput()
         {
             if (GUIManager.Instance == null)
             {
@@ -98,7 +98,7 @@ namespace DrakeRenameit
                 width: 300,
                 height: 30f).GetComponent<InputField>();
 
-            renameInput.text = getPropperName(item);
+            renameInput.text = getPropperName(currentItem);
 
             // OK Button
             var okButton = GUIManager.Instance.CreateButton(
@@ -112,7 +112,11 @@ namespace DrakeRenameit
             okButton.gameObject.SetActive(true);
             okButton.GetComponent<Button>().onClick.AddListener(() =>
             {
-                ApplyRename(renameInput.text.Trim(), item);
+                if (currentItem != null)
+                {
+                    ApplyRename(renameInput.text.Trim());
+                }
+
                 inputPanel.SetActive(false); // hide panel on OK
                 GUIManager.BlockInput(false);
             });
@@ -126,7 +130,13 @@ namespace DrakeRenameit
                 width: 80,
                 height: 30f);
             resetButton.gameObject.SetActive(true);
-            resetButton.GetComponent<Button>().onClick.AddListener(() => { renameInput.text = item.m_shared.m_name; });
+            resetButton.GetComponent<Button>().onClick.AddListener(() =>
+            {
+                if (currentItem != null)
+                {
+                    renameInput.text = currentItem.m_shared.m_name;
+                }
+            });
         }
 
         public static string getPropperName(ItemDrop.ItemData item)
@@ -148,12 +158,13 @@ namespace DrakeRenameit
 
         public static void OpenRename(ItemDrop.ItemData item)
         {
+            currentItem = item;
             if (InventoryGui.instance == null) return;
 
             // Ensure panel exists
             if (inputPanel == null)
             {
-                CreateRenameInput(item);
+                CreateRenameInput();
             }
 
             // Pre-fill with current name (renamed OR vanilla)
@@ -166,34 +177,37 @@ namespace DrakeRenameit
             GUIManager.BlockInput(true);
         }
 
-        public static void renameItem(ItemDrop.ItemData item, String name)
+        public static void renameItem(String name)
         {
-            if (item.m_customData == null)
-                item.m_customData = new Dictionary<string, string>();
+            if (currentItem == null) return;
+            
+            if (currentItem.m_customData == null)
+                currentItem.m_customData = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(name))
-                item.m_customData.Remove(DrakeRename);
+                currentItem.m_customData.Remove(DrakeRename);
             else
-                item.m_customData[DrakeRename] = name;
+                currentItem.m_customData[DrakeRename] = name;
 
             if (RenameitConfig.NameClaimsOwner)
             {
-                if (String.IsNullOrEmpty(item.m_crafterName))
+                if (String.IsNullOrEmpty(currentItem.m_crafterName))
                 {
                     Player localPlayer = Player.m_localPlayer;
                     if (localPlayer != null)
                     {
-                        item.m_crafterName = localPlayer.GetPlayerName();
+                        currentItem.m_crafterName = localPlayer.GetPlayerName();
                     }
                 }
             }
         }
 
-        public static void ApplyRename(string newName, ItemDrop.ItemData item)
+        public static void ApplyRename(string newName)
         {
-            if (item == null) return;
+            if (currentItem == null) return;
 
-            renameItem(item, newName);
+            renameItem(newName);
+            currentItem = null;
 
             // Close panel + unblock
             inputPanel.SetActive(false);

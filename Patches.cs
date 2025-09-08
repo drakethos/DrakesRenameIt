@@ -125,6 +125,17 @@ public static class Patches
             string topic = DrakeRenameit.getPropperName(item);
             // Append to the tooltip text
             string currentText = item.GetTooltip();
+            string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
+            
+            string localizedOriginalDesc = Localization.instance.Localize(item.m_shared.m_description);
+            string localizedCustomDesc = Localization.instance.Localize(customDesc);
+
+            // Replace only the first instance of originalName with customName
+            if (currentText.Contains(localizedOriginalDesc))
+            {
+                currentText = currentText.Replace(localizedOriginalDesc, localizedCustomDesc);
+            }
+            
             tooltip.Set(topic, currentText + "\n" + renameTip + "\n" + rewriteDescTip, __instance.m_tooltipAnchor);
         }
 

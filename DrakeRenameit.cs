@@ -19,7 +19,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.1.2";
+        public const string Version = "0.2.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeRename = "Drake_Rename";
         public const string DrakeRenameDesc = "Drake_Rename_Desc";

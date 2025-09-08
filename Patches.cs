@@ -49,68 +49,83 @@ public static class Patches
     {
         [HarmonyPatch(nameof(InventoryGui.Awake))]
         [HarmonyPostfix]
-        static void Postfix(InventoryGui __instance)
+        static void RenameGrab(InventoryGui __instance)
         {
             // grab the original delegate
             var original = __instance.m_playerGrid.m_onRightClick;
-                
-                // wrap it with our own
-                __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
+
+            // wrap it with our own
+            __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
+            {
+                if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                 {
-                    if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                    if (DrakeRenameit.canChangeName(item, true, RenameitConfig.NameClaimsOwner))
                     {
-                        if (DrakeRenameit.canChangeName(item,true,RenameitConfig.NameClaimsOwner))
-                        {
-                            DrakeRenameit.OpenRename(item);
-                        }
-                        return; // stop here, skip vanilla handler
+                        DrakeRenameit.OpenRename(item);
                     }
 
-                    // otherwise, let vanilla delegate run
-                    original?.Invoke(grid, item, pos);
-                };
-            }
-        }
+                    return; // stop here, skip vanilla handler
+                }
 
-        /*[HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
-        [HarmonyPostfix]
-        public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
-            ref ItemDrop.ItemData ___m_craftUpgradeItem)
+                if (item != null && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)))
+                {
+                    if (DrakeRenameit.canChangeName(item, true, RenameitConfig.NameClaimsOwner))
+                    {
+                        DrakeRenameit.OpenRewriteDesc(item);
+                    }
+
+                    return; // stop here, skip vanilla handler
+                }
+
+                // otherwise, let vanilla delegate run
+                original?.Invoke(grid, item, pos);
+            };
+        }
+    }
+
+    /*[HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
+    [HarmonyPostfix]
+    public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
+        ref ItemDrop.ItemData ___m_craftUpgradeItem)
+    {
+        if (___m_craftRecipe?.m_item?.m_itemData == null)
+            return;
+        Debug.Log($"[DrakeRename] Attempting rename:");
+        var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
+
+        // If we had a custom rename on the base item, preserve it
+        var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
+        if (customName != null)
         {
-            if (___m_craftRecipe?.m_item?.m_itemData == null)
-                return;
-            Debug.Log($"[DrakeRename] Attempting rename:");
-            var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
-
-            // If we had a custom rename on the base item, preserve it
-            var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
-            if (customName != null)
-            {
-                DrakeRenameit.currentItem = upgradedItem;
-                DrakeRenameit.renameItem(customName);
-            }
+            DrakeRenameit.currentItem = upgradedItem;
+            DrakeRenameit.renameItem(customName);
         }
-    }*/
+    }
+}*/
 
     [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]
     public static class InventoryGridTooltipPatch
     {
         [HarmonyPostfix]
-        static void Postfix(InventoryGrid __instance, ItemDrop.ItemData item, UITooltip tooltip)
+        static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData item, UITooltip tooltip)
         {
             if (item == null || tooltip == null || Player.m_localPlayer == null)
                 return;
 
-            string renameTip = "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>";
+            string renameTip =
+                "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>";
+            string rewriteDescTip =
+                "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite description</b></color>";
             if (DrakeRenameit.canChangeName(item, false, false))
             {
                 renameTip = "<color=yellow><b>Shift + Right Click to rename</b></color>";
+                rewriteDescTip = "<color=yellow><b>Ctrl + Right Click to rewrite description</b></color>";
             }
 
             string topic = DrakeRenameit.getPropperName(item);
             // Append to the tooltip text
             string currentText = item.GetTooltip();
-            tooltip.Set(topic, currentText + "\n" + renameTip, __instance.m_tooltipAnchor);
+            tooltip.Set(topic, currentText + "\n" + renameTip + "\n" + rewriteDescTip, __instance.m_tooltipAnchor);
         }
 
 

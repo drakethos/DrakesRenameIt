@@ -19,10 +19,12 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _nameClaimsOwner;
     private static ConfigEntry<bool> _seperateStacks;
     private static ConfigEntry<int> _nameCharLimit;
+    private static ConfigEntry<int> _descCharLimit;
 
     public static bool LockToOwner => _lockToOwner.Value;
     public static bool NameClaimsOwner => _nameClaimsOwner.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
+    public static int DescCharLimit => _descCharLimit.Value;
     /*public static bool SeperateStacks => _seperateStacks.Value;*/
 
     public static void Bind(ConfigFile config)
@@ -42,6 +44,14 @@ public static class RenameitConfig
             "NameCharacterLimit",
             50,
             "Defines the limit for max characters in rename, be sure to account for <color=> tag codes etc.",
+            sync: true
+        );
+        
+        _descCharLimit = config.BindSynced(
+            SectionGeneral,
+            "DescriptionCharacterLimit",
+            1000,
+            "Defines the limit for max characters description, be sure to account for <color=> tag codes etc.",
             sync: true
         );
 

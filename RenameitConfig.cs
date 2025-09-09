@@ -27,7 +27,7 @@ public static class RenameitConfig
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
     private static ConfigEntry<string> _vipList;
-    private static ConfigEntry<bool> _serverSync;
+    // private static ConfigEntry<bool> _serverSync;
     private static ConfigEntry<string> _shiftColor;
     private static ConfigEntry<string> _ctrlColor;
 
@@ -53,7 +53,7 @@ public static class RenameitConfig
             "LockToOwner",
             true,
             "If true, only the crafter can rename the item.",
-           _serverSync.Value
+           true
         );
         
         // Example: First rename attempt claims ownership
@@ -62,14 +62,14 @@ public static class RenameitConfig
             "NameClaimsOwner",
             true,
             "If true, renaming an unowned item assigns ownership to the renamer. Used in conjunction with LockToOwner, when you rename an unclaimed item, you will have laid claim to it.",
-           _serverSync.Value
+           true
         );
         _RenameEnable = config.BindSynced(
             SectionGeneral,
             "RenameEnabled",
             true,
             "If enabled, allows players to edit item names. Could be cycled to pre change some items in a world then block others from adding new ones.",
-           _serverSync.Value
+           true
         );
         
         _rewriteDescriptionsEnable = config.BindSynced(
@@ -77,7 +77,7 @@ public static class RenameitConfig
             "RewriteDescriptionsEnabled",
             true,
             "If enabled, allows players to also edit descriptions of items. Could be turned off preplace items with descriptions.",
-           _serverSync.Value
+           true
         );   
       
 
@@ -88,7 +88,7 @@ public static class RenameitConfig
             "NameCharacterLimit",
             50,
             "Defines the limit for max characters in rename, be sure to account for <color=> tag codes etc.",
-           _serverSync.Value
+           true
         );
         
         _descCharLimit = config.BindSynced(
@@ -96,23 +96,15 @@ public static class RenameitConfig
             "DescriptionCharacterLimit",
             1000,
             "Defines the limit for max characters description, be sure to account for <color=> tag codes etc.",
-           _serverSync.Value
+           true
         );
-        
-        _serverSync = config.BindSynced(
-            SectionAdmin,
-            "ServerSync",
-            true,
-            "When enabled all settings will be synced to server",
-            sync: true
-        ); 
-        
+
         _allowAdminOverride = config.BindSynced(
             SectionAdmin,
             "AllowAdminOverride",
             true,
             "If enabled anyone designated as admin or added to VIP list with api hook, will be able to edit names and descriptions regardless of ownership or enabled.",
-           _serverSync.Value
+           true
         );        
         
         _vipList = config.BindSynced(
@@ -120,7 +112,7 @@ public static class RenameitConfig
             "VipList",
             "",
             "When AdminOverride is set: this list can specify those who can ignore restrictions in additional to actual admins, and any mod that uses the API hook.",
-           _serverSync.Value
+           true
         );
         
         _shiftColor = config.BindSynced(
@@ -132,7 +124,7 @@ public static class RenameitConfig
         );
         _ctrlColor = config.BindSynced(
             SectionUI,
-            "ShiftColor",
+            "CtrlColor",
             "yellow",
             "Color to display press shift + right click to ... Acceptable values anything that will be recognized by unit color engine such as a few colors yellow green red or hex: #fff or #ffffff based",
            false

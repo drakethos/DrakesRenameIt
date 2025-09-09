@@ -25,5 +25,4 @@
   - Added admin overrides
   - added admin API hook for determining overrides
   - added more customization to configs
-  - added server sync config flag.
   - added UI color customization

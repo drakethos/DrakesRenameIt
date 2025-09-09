@@ -30,8 +30,6 @@ localization with an additional name, simply leave the $string intact and add ar
 - Supports localization strings
 - Lets you rename any existing item and renames that instance.
 - Fully supports multiplayer play, just ensure each client has the mod.
-- Server Sync on all config settings.
-  - Can be turned off
 - recolor the UI tips with configs
 - New - Admin override to not apply to the rules
 - You can enable and disable parts of the mod now.

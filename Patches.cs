@@ -146,7 +146,7 @@ public static class Patches
             }
             else if (API.RenameitPermission.IsAdminOrVIP())
             {
-                sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue>Disabled: Admin Override</color>");
+                sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
             }
 
             // Config: rewrite desc enabled?
@@ -158,10 +158,10 @@ public static class Patches
                     sb.AppendLine("\n");
                 }
                 if (DrakeRenameit.canChangeName(item, false))
-                    sb.AppendLine("<color=yellow><b>Ctrl + Right Click to rewrite description</b></color>");
+                    sb.AppendLine($"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
                 if (API.RenameitPermission.IsAdminOrVIP())
                 {
-                    sb.Append("<color=blue>not owner- Admin Override</color>");
+                    sb.Append("<color=blue> not owner- Admin Override</color>");
                 }
                 else
                     sb.AppendLine(
@@ -169,7 +169,7 @@ public static class Patches
             }
             else if (API.RenameitPermission.IsAdminOrVIP())
             {
-                sb.AppendLine("<color=yellow><b>Ctrl + Right Click to rewrite description</b></color><color=blue>Disabled: Admin Override</color>");
+                sb.AppendLine($"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
             }
 
             // Final set

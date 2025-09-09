@@ -21,3 +21,9 @@
   - house keeping
   - Reorganized config
   - added toggle for both descript and rename
+- Version 0.3.0
+  - Added admin overrides
+  - added admin API hook for determining overrides
+  - added more customization to configs
+  - added server sync config flag.
+  - added UI color customization

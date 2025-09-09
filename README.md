@@ -1,6 +1,6 @@
-# DrakesRenameIt V0.2.0
+# DrakesRenameIt V0.3.0
 
-A much needed mod for Valheim that lets you rename any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
+A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
 Simply Press shift + right click on any item you want to rename.
 Press ctrl + right click on any item you want to change the description of! (new!)
@@ -31,6 +31,10 @@ localization with an additional name, simply leave the $string intact and add ar
 - Lets you rename any existing item and renames that instance.
 - Fully supports multiplayer play, just ensure each client has the mod.
 - Server Sync on all config settings.
+  - Can be turned off
+- recolor the UI tips with configs
+- New - Admin override to not apply to the rules
+- You can enable and disable parts of the mod now.
 - Doesn't ACTUALLY rename items, so any mod that needs to deal with the items shared: name won't experience any issues! (hopefully...)
 #### What this Mod doesn't do:
   - <s>your taxes
@@ -46,14 +50,16 @@ You can configure the following:
 - Character limit of description. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
     to looks funky if the description is too long.
 - Rename Enabled - you may want to use the description only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
-- Rewrite Desription Enabled - you may want to use the name only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
+- Rewrite Description Enabled - you may want to use the name only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
 - Lock To Owner - If you want to keep someone from renaming your things, it will prevent anyone who is not the same player name
   as the one who originally crafted said item.
 - Name Claims Owner - This goes hand and hand with Lock to owner, if you are not locking the owner, this doesn't
   really have a ton of value, especially in most cases "crafted by": does not change for many items.
   when on this will allow you to claim non crafted items, such as rocks and other pickables when you change the name. It will then
   work with lock to owner to prevent changing the name. Remember, when you write your name on something it definitely makes it yours ;)
-
+- AdminOverride - this lets admins still make changes if anything is disabled, or even if they dont own it. This could be good if you wanted to lock down all named items and leave it to admin to give out cool unique items etc.
+- ShiftColor - Changes the color for the label on the tool tip shift + click 
+- CtrlColor - Changes the color for the label on the tool tip ctrl + click
 ### Quirks and Known Issues:
 Quirks:
 - Item stacks behave a very particular way. When you rename an existing stack, it will rename the whole stack. Any item added to said stack
@@ -68,8 +74,6 @@ Quirks:
 #### Wishlist for future
 - I hope to address the known issues
 - I may try to add stack splitting feature
-- I want to add yet another option- to lock rename to admins only
-- I want to allow admins to rename owned items anyway.
 - if there is a high demand for this:
 - Renamable pieces (that have hover names)
 ##### Distant crazy features

@@ -37,6 +37,7 @@ localization with an additional name, simply leave the $string intact and add ar
   - change every single item that exists
   - makes new instances of an item
   - actually change the name of the item under the hood
+  - give you up
   - let you down!</s>
 ### Configurations:
 You can configure the following:

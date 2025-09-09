@@ -21,7 +21,7 @@
         <ThunderstoreFolder>C:\Modding\Thunderstore\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
         <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
         <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
-        <Description>Rename any item in your inventory. You can even recolor them too! This is an early beta there may be bugs!</Description>
+        <Description>Rename and change description any item in your inventory. You can even recolor them too! This is an early beta there may be bugs!</Description>
         <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
         <Dependencies>"denikson-BepInExPack_Valheim-5.4.2333", "ValheimModding-Jotunn-2.26.1"</Dependencies>
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>

@@ -236,6 +236,7 @@ namespace DrakeRenameit
                                 local.Message(
                                     MessageHud.MessageType.Center, // or TopLeft, depending where you want it
                                     "You cannot change this — it’s owned!"
+                                    
                                 );
                             }
                             return false;
@@ -251,6 +252,7 @@ namespace DrakeRenameit
                         MessageHud.MessageType.Center, // or TopLeft, depending where you want it
                         "You cannot change this — Renames have been disabled");
                 }
+                return false;
             }
 
             return true;
@@ -293,8 +295,8 @@ namespace DrakeRenameit
                         MessageHud.MessageType.Center, // or TopLeft, depending where you want it
                         "You cannot change this — Desc Rewrites have been disabled");
                 }
+                return false;
             }
-
             return true;
         }
     }

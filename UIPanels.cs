@@ -155,7 +155,7 @@ public class UIPanels
                 anchorMax: new Vector2(0.5f, 0.5f),
                 position: new Vector2(0f, 0),
                 width: 275,
-                height: 350,
+                height: 375,
                 draggable: false
             );
         }
@@ -190,9 +190,9 @@ public class UIPanels
                 position: new Vector2(0f, 0f), // slightly above center
                 contentType: InputField.ContentType.Standard,
                 placeholderText: "Enter new desc",
-                fontSize: 18,
+                fontSize: 16,
                 width: 225,
-                height: 250f).GetComponent<InputField>();
+                height: 240f).GetComponent<InputField>();
             renameDescInput.contentType = InputField.ContentType.Standard;
             renameDescInput.lineType = InputField.LineType.MultiLineNewline;
             renameDescInput.text = DrakeRenameit.getPropperDesc(DrakeRenameit.currentItem);

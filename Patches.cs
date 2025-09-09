@@ -147,7 +147,6 @@ public static class Patches
             // Config: rewrite desc enabled?
             if (RenameitConfig.RewriteDescriptionsEnabled)
             {
-                sb.AppendLine("\n");
                 if (DrakeRenameit.canChangeName(item, false))
                     sb.AppendLine("<color=yellow><b>Ctrl + Right Click to rewrite description</b></color>");
                 else

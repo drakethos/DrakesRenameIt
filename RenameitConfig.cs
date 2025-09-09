@@ -16,15 +16,18 @@ public static class RenameitConfig
     };
 
     private static ConfigEntry<bool> _lockToOwner;
+    private static ConfigEntry<bool> _editDescriptionsEnable;
     private static ConfigEntry<bool> _nameClaimsOwner;
     private static ConfigEntry<bool> _seperateStacks;
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
 
     public static bool LockToOwner => _lockToOwner.Value;
-    public static bool NameClaimsOwner => _nameClaimsOwner.Value;
-    public static int NameCharLimit => _nameCharLimit.Value;
     public static int DescCharLimit => _descCharLimit.Value;
+    public static bool NameClaimsOwner => _nameClaimsOwner.Value;
+    public static bool EditDescriptionsEnabled => _editDescriptionsEnable.Value;
+    public static int NameCharLimit => _nameCharLimit.Value;
+
     /*public static bool SeperateStacks => _seperateStacks.Value;*/
 
     public static void Bind(ConfigFile config)
@@ -37,6 +40,24 @@ public static class RenameitConfig
             "If true, only the crafter can rename the item.",
             sync: true
         );
+        
+        // Example: First rename attempt claims ownership
+        _nameClaimsOwner = config.BindSynced(
+            SectionGeneral,
+            "NameClaimsOwner",
+            true,
+            "If true, renaming an unowned item assigns ownership to the renamer. Used in conjunction with LockToOwner, when you rename an unclaimed item, you will have laid claim to it.",
+            sync: true
+        );
+
+        _editDescriptionsEnable = config.BindSynced(
+            SectionGeneral,
+            "EditDescriptionsEnabled",
+            true,
+            "If enabled, allows players to also edit descriptions of items. Could be turned off preplace items with descriptions.",
+            sync: true
+        );
+
         
         // Example: Lock renames to item owner
         _nameCharLimit = config.BindSynced(
@@ -55,14 +76,6 @@ public static class RenameitConfig
             sync: true
         );
 
-        // Example: First rename attempt claims ownership
-        _nameClaimsOwner = config.BindSynced(
-            SectionGeneral,
-            "NameClaimsOwner",
-            true,
-            "If true, renaming an unowned item assigns ownership to the renamer. Used in conjunction with LockToOwner, when you rename an unclaimed item, you will have laid claim to it.",
-            sync: true
-        );
         
         /*_seperateStacks = config.BindSynced(
             SectionGeneral,

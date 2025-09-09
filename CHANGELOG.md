@@ -19,3 +19,4 @@
   - Under the hood cleanup
   - Changed the way owner claim verifies
   - house keeping
+  - Reorganized config

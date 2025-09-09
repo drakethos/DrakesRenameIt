@@ -1,4 +1,5 @@
-# DrakesRenameIt V0.2.0 Beta
+# DrakesRenameIt V0.2.0
+
 A much needed mod for Valheim that lets you rename any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
 Simply Press shift + right click on any item you want to rename.
@@ -18,6 +19,9 @@ localization with an additional name, simply leave the $string intact and add ar
 
 <p>Start your own rock collection:</p>
 <img width="274" height="137"  alt="image" src="https://github.com/user-attachments/assets/e0fb0e16-db7b-4988-aae3-8343061c395a" />
+
+<p>New now we have descriptions!</p>
+<img width="264" height="260" alt="image" src="https://github.com/user-attachments/assets/a33411d4-4e0d-49c2-977a-f19fe03eb83a" />
 
 ### Features with rename:
 - Fully supports the same sign codes like <color=blue> <b>bold</b> etc for full information check official Valheim documentation

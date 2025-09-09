@@ -15,9 +15,9 @@ public static class Patches
             var item = __instance.m_itemData;
             if (item == null) return;
 
-            if (item?.m_customData != null)
+            if (DrakeRenameit.hasNewName(item))
             {
-                string customName = DrakeRenameit.getPropperName(item, null);
+                string customName = DrakeRenameit.getPropperName(item);
                 if (customName != null)
                 {
                     // Replace the default name in the hover text with our rename
@@ -39,8 +39,11 @@ public static class Patches
         [HarmonyPostfix]
         static void FixHoverName(ItemDrop.ItemData __instance, ref string __result)
         {
-            string newName = DrakeRenameit.getPropperName(__instance);
-            __result = newName;
+            if (DrakeRenameit.hasNewName(__instance))
+            {
+                string newName = DrakeRenameit.getPropperName(__instance);
+                __result = newName;
+            }
         }
     }
 
@@ -130,21 +133,14 @@ public static class Patches
             if (DrakeRenameit.hasNewDesc(item))
             {
                 string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
-
-                Debug.Log($"Attempting to set new description: {customDesc}");
                 string originalDesc = item.m_shared.m_description;
-                string localizedOriginalDesc = Localization.instance.Localize(originalDesc);
-                string localizedCustomDesc = Localization.instance.Localize(customDesc);
-                Debug.Log($"New Localized description: {localizedCustomDesc}");
-                Debug.Log($"Orginal Localized description: {localizedOriginalDesc}");
-                
-                 if (currentText.Contains(originalDesc))
-                {             Debug.Log($"Made it but its not localized in we will replace: {originalDesc} with : {customDesc}");
+             
+                if (currentText.Contains(originalDesc))
+                {
                     currentText = currentText.Replace(originalDesc, customDesc);
-                    Debug.Log($"New text should be: {customDesc}, but it is....: {currentText}");
                 }
             }
-
+            
             tooltip.Set(topic, currentText + "\n" + renameTip + "\n" + rewriteDescTip, __instance.m_tooltipAnchor);
         }
 

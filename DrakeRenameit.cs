@@ -198,7 +198,7 @@ namespace DrakeRenameit
             currentItem = null;
 
             // Close panel + unblock
-            UIPanels.inputNamePanel.SetActive(false);
+            UIPanels.inputDescPanel.SetActive(false);
             GUIManager.BlockInput(false);
         }
         

@@ -104,6 +104,7 @@
         <Reference Include="System.Xml.Linq" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="extensions\ButtonExtensions.cs" />
         <Compile Include="RenameitConfig.cs" />
         <Compile Include="DrakeRenameit.cs" />
         <Compile Include="Patches.cs" />

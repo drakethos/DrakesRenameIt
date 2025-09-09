@@ -1,6 +1,8 @@
-﻿using Jotunn.Managers;
+﻿using System;
+using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
+using DrakeRenameit.Ext.UI;
 
 namespace DrakeRenameit;
 
@@ -11,6 +13,8 @@ public class UIPanels
     public static GameObject inputDescPanel;
     public static InputField renameNameInput;
     public static InputField renameDescInput;
+    private static Button buttonOK1;
+    private static Button buttonOK2;
 
     public static void CreateRenameInput()
     {
@@ -32,16 +36,20 @@ public class UIPanels
             return;
         }
 
-        // Create main panel
-        inputNamePanel = GUIManager.Instance.CreateWoodpanel(
-            parent: GUIManager.CustomGUIFront.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 0),
-            width: 350,
-            height: 150, // bigger for button
-            draggable: false
-        );
+        if (!inputNamePanel)
+        {
+            // Create main panel
+            inputNamePanel = GUIManager.Instance.CreateWoodpanel(
+                parent: GUIManager.CustomGUIFront.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 0),
+                width: 350,
+                height: 150, // bigger for button
+                draggable: false
+            );
+        }
+
         inputNamePanel.SetActive(true);
         inputNamePanel.transform.SetAsLastSibling();
 
@@ -61,17 +69,21 @@ public class UIPanels
             height: 100,
             addContentSizeFitter: false);
 
-        // Input field
-        renameNameInput = GUIManager.Instance.CreateInputField(
-            parent: inputNamePanel.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 0f), // slightly above center
-            contentType: InputField.ContentType.Standard,
-            placeholderText: "Enter new name...",
-            fontSize: 18,
-            width: 300,
-            height: 30f).GetComponent<InputField>();
+        if (!renameNameInput)
+        {
+            // Input field
+            renameNameInput = GUIManager.Instance.CreateInputField(
+                parent: inputNamePanel.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 0f), // slightly above center
+                contentType: InputField.ContentType.Standard,
+                placeholderText: "Enter new name...",
+                fontSize: 18,
+                width: 300,
+                height: 30f).GetComponent<InputField>();
+        }
+
         renameNameInput.characterLimit = RenameitConfig.NameCharLimit;
         renameNameInput.text = DrakeRenameit.getPropperName(DrakeRenameit.currentItem);
 
@@ -90,7 +102,6 @@ public class UIPanels
             if (DrakeRenameit.currentItem != null)
             {
                 DrakeRenameit.ApplyRename(renameNameInput.text.Trim());
-                
             }
 
             inputNamePanel.SetActive(false); // hide panel on OK
@@ -128,7 +139,7 @@ public class UIPanels
             Debug.LogError("GUIManager CustomGUI is null");
             return;
         }
-        
+
         if (DrakeRenameit.currentItem == null)
         {
             Debug.LogError("Current Item null");
@@ -136,17 +147,22 @@ public class UIPanels
         }
 
         // Create main panel
-        inputDescPanel = GUIManager.Instance.CreateWoodpanel(
-            parent: GUIManager.CustomGUIFront.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 0),
-            width: 325,
-            height: 425, 
-            draggable: false
-        );
+        if (!inputDescPanel)
+        {
+            inputDescPanel = GUIManager.Instance.CreateWoodpanel(
+                parent: GUIManager.CustomGUIFront.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 0),
+                width: 275,
+                height: 350,
+                draggable: false
+            );
+        }
+
         inputDescPanel.SetActive(true);
         inputDescPanel.transform.SetAsLastSibling();
+
 
         // Title text
         GUIManager.Instance.CreateText(
@@ -165,41 +181,55 @@ public class UIPanels
             addContentSizeFitter: false);
 
         // Input field
-        renameDescInput = GUIManager.Instance.CreateInputField(
-            parent: inputDescPanel.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 0f), // slightly above center
-            contentType: InputField.ContentType.Standard,
-            placeholderText: "Enter new desc",
-            fontSize: 18,
-            width: 200,
-            height: 250f).GetComponent<InputField>();
-        renameDescInput.contentType = InputField.ContentType.Standard;
-        renameDescInput.lineType = InputField.LineType.MultiLineNewline;
+        if (!renameDescInput)
+        {
+            renameDescInput = GUIManager.Instance.CreateInputField(
+                parent: inputDescPanel.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 0f), // slightly above center
+                contentType: InputField.ContentType.Standard,
+                placeholderText: "Enter new desc",
+                fontSize: 18,
+                width: 225,
+                height: 250f).GetComponent<InputField>();
+            renameDescInput.contentType = InputField.ContentType.Standard;
+            renameDescInput.lineType = InputField.LineType.MultiLineNewline;
+            renameDescInput.text = DrakeRenameit.getPropperDesc(DrakeRenameit.currentItem);
+        }
+
         renameDescInput.characterLimit = RenameitConfig.DescCharLimit;
-        renameDescInput.text = DrakeRenameit.getPropperDesc(DrakeRenameit.currentItem);
+
 
         // OK Button
-        var okButton2 = GUIManager.Instance.CreateButton(
-            text: "OK",
-            parent: inputDescPanel.transform,
-            anchorMin: new Vector2(0.5f, 0f),
-            anchorMax: new Vector2(0.5f, 0f),
-            position: new Vector2(-42f, 35f), // 20px above bottom
-            width: 80f,
-            height: 30f);
-        okButton2.gameObject.SetActive(true);
-        okButton2.GetComponent<Button>().onClick.AddListener(() =>
+        if (buttonOK2 == null)
         {
-            if (DrakeRenameit.currentItem != null)
+            buttonOK2 = GUIManager.Instance.CreateButton(
+                text: "OK",
+                parent: inputDescPanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(-42f, 35f), // 20px above bottom
+                width: 80f,
+                height: 30f).GetComponent<Button>();
+            buttonOK2.gameObject.SetActive(true);
+            buttonOK2.AddUniqueListener(() =>
             {
-                DrakeRenameit.ApplyRewriteDesc(renameDescInput.text.Trim());
-            }
+                if (DrakeRenameit.currentItem != null)
+                {
+                    if (String.IsNullOrEmpty(renameDescInput.text))
+                    {
+                        getPlayerAndSendError("Description must not be empty!");
+                        return;
+                    }
 
-            inputDescPanel.SetActive(false); // hide panel on OK
-            GUIManager.BlockInput(false);
-        });
+                    DrakeRenameit.ApplyRewriteDesc(renameDescInput.text.Trim());
+                }
+
+                inputDescPanel.SetActive(false); // hide panel on OK
+                GUIManager.BlockInput(false);
+            });
+        }
 
         var resetButton2 = GUIManager.Instance.CreateButton(
             text: "Reset",
@@ -217,5 +247,17 @@ public class UIPanels
                 renameDescInput.text = DrakeRenameit.resetDesc(DrakeRenameit.currentItem);
             }
         });
+
+        void getPlayerAndSendError(string msg)
+        {
+            Player local = Player.m_localPlayer;
+            if (local != null)
+            {
+                local.Message(
+                    MessageHud.MessageType.Center, // or TopLeft, depending where you want it
+                    msg
+                );
+            }
+        }
     }
 }

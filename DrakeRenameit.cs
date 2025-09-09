@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using Jotunn;
@@ -31,7 +32,18 @@ namespace DrakeRenameit
         private void Awake()
         {
             RenameitConfig.Bind(Config);
+            addVIP();
+            
             harmony.PatchAll();
+        }
+
+        private void addVIP()
+        {
+            List<string> vipList = RenameitConfig.VipList.Split(',')
+                .Select(s => s.Trim().ToLowerInvariant())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+           API.RenameitPermission.AddVIP(vipList);
         }
 
 
@@ -217,7 +229,7 @@ namespace DrakeRenameit
         public static bool canChangeName(ItemDrop.ItemData item, bool showError = false)
         {
             Player local = Player.m_localPlayer;
-            if (RenameitConfig.RenameEnabled)
+            if (RenameitConfig.RenameEnabled || API.RenameitPermission.IsAdminOrVIP(local))
             {
                 if (RenameitConfig.LockToOwner)
                 {
@@ -229,7 +241,7 @@ namespace DrakeRenameit
                             return true;
                         }
 
-                        if (item.m_crafterID != local.GetPlayerID())
+                        if (item.m_crafterID != local.GetPlayerID() && !API.RenameitPermission.IsAdminOrVIP(local))
                         {
                             if (showError)
                             {
@@ -261,7 +273,7 @@ namespace DrakeRenameit
         public static bool canChangeDesc(ItemDrop.ItemData item, bool showError = false)
         {
             Player local = Player.m_localPlayer;
-            if (RenameitConfig.RewriteDescriptionsEnabled)
+            if (RenameitConfig.RewriteDescriptionsEnabled || API.RenameitPermission.IsAdminOrVIP(local))
             {
                 if (RenameitConfig.LockToOwner)
                 {
@@ -273,7 +285,7 @@ namespace DrakeRenameit
                             return true;
                         }
 
-                        if (item.m_crafterID != local.GetPlayerID())
+                        if (item.m_crafterID != local.GetPlayerID() && !API.RenameitPermission.IsAdminOrVIP(local))
                         {
                             if (showError)
                             {

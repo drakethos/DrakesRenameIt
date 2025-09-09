@@ -216,41 +216,85 @@ namespace DrakeRenameit
 
         public static bool canChangeName(ItemDrop.ItemData item, bool showError = false)
         {
-            if (RenameitConfig.LockToOwner)
+            Player local = Player.m_localPlayer;
+            if (RenameitConfig.RenameEnabled)
             {
-                Player local = Player.m_localPlayer;
-                if (local != null)
+                if (RenameitConfig.LockToOwner)
                 {
-                    //first check if it even has an owner.
-                    if (String.IsNullOrEmpty(item.m_crafterName))
+                    if (local != null)
                     {
-                        /*
-                        if (giveOwnershipOnEmpty)
+                        //first check if it even has an owner.
+                        if (String.IsNullOrEmpty(item.m_crafterName))
                         {
-                            Debug.Log($"Crafter: '{item.m_crafterName}' vs Local: '{local.GetPlayerName()}'");
-
-                            item.m_crafterName = local.GetPlayerName();
-                            Debug.Log($" New Crafter: '{item.m_crafterName}' vs Local: '{local.GetPlayerName()}'");
-                        }
-                        */
-
-                        return true;
-                    }
-
-                    if (item.m_crafterID != local.GetPlayerID())
-                    {
-                        if (showError)
-                        {
-                            local.Message(
-                                MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                                "You cannot change this — it’s owned!"
-                            );
+                            return true;
                         }
 
-                        return false;
+                        if (item.m_crafterID != local.GetPlayerID())
+                        {
+                            if (showError)
+                            {
+                                local.Message(
+                                    MessageHud.MessageType.Center, // or TopLeft, depending where you want it
+                                    "You cannot change this — it’s owned!"
+                                );
+                            }
+                            return false;
+                        }
                     }
                 }
             }
+            else
+            {
+                if (local != null)
+                {
+                    local.Message(
+                        MessageHud.MessageType.Center, // or TopLeft, depending where you want it
+                        "You cannot change this — Renames have been disabled");
+                }
+            }
+
+            return true;
+        }
+        
+        public static bool canChangeDesc(ItemDrop.ItemData item, bool showError = false)
+        {
+            Player local = Player.m_localPlayer;
+            if (RenameitConfig.RewriteDescriptionsEnabled)
+            {
+                if (RenameitConfig.LockToOwner)
+                {
+                    if (local != null)
+                    {
+                        //first check if it even has an owner.
+                        if (String.IsNullOrEmpty(item.m_crafterName))
+                        {
+                            return true;
+                        }
+
+                        if (item.m_crafterID != local.GetPlayerID())
+                        {
+                            if (showError)
+                            {
+                                local.Message(
+                                    MessageHud.MessageType.Center, // or TopLeft, depending where you want it
+                                    "You cannot change this — it’s owned!"
+                                );
+                            }
+                            return false;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (local != null)
+                {
+                    local.Message(
+                        MessageHud.MessageType.Center, // or TopLeft, depending where you want it
+                        "You cannot change this — Desc Rewrites have been disabled");
+                }
+            }
+
             return true;
         }
     }

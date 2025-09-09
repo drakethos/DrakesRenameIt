@@ -16,7 +16,8 @@ public static class RenameitConfig
     };
 
     private static ConfigEntry<bool> _lockToOwner;
-    private static ConfigEntry<bool> _editDescriptionsEnable;
+    private static ConfigEntry<bool> _rewriteDescriptionsEnable;
+    private static ConfigEntry<bool> _RenameEnable;
     private static ConfigEntry<bool> _nameClaimsOwner;
     private static ConfigEntry<bool> _seperateStacks;
     private static ConfigEntry<int> _nameCharLimit;
@@ -25,7 +26,8 @@ public static class RenameitConfig
     public static bool LockToOwner => _lockToOwner.Value;
     public static int DescCharLimit => _descCharLimit.Value;
     public static bool NameClaimsOwner => _nameClaimsOwner.Value;
-    public static bool EditDescriptionsEnabled => _editDescriptionsEnable.Value;
+    public static bool RewriteDescriptionsEnabled => _rewriteDescriptionsEnable.Value;
+    public static bool RenameEnabled => _RenameEnable.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
 
     /*public static bool SeperateStacks => _seperateStacks.Value;*/
@@ -49,10 +51,18 @@ public static class RenameitConfig
             "If true, renaming an unowned item assigns ownership to the renamer. Used in conjunction with LockToOwner, when you rename an unclaimed item, you will have laid claim to it.",
             sync: true
         );
-
-        _editDescriptionsEnable = config.BindSynced(
+        _RenameEnable = config.BindSynced(
             SectionGeneral,
-            "EditDescriptionsEnabled",
+            "RenameEnabled",
+            true,
+            "If enabled, allows players to edit item names. Could be cycled to pre change some items in a world then block others from adding new ones.",
+            sync: true
+        );
+
+        
+        _rewriteDescriptionsEnable = config.BindSynced(
+            SectionGeneral,
+            "RewriteDescriptionsEnabled",
             true,
             "If enabled, allows players to also edit descriptions of items. Could be turned off preplace items with descriptions.",
             sync: true

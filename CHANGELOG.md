@@ -20,3 +20,4 @@
   - Changed the way owner claim verifies
   - house keeping
   - Reorganized config
+  - added toggle for both descript and rename

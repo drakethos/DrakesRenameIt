@@ -44,6 +44,8 @@ You can configure the following:
   to looks funky if the name is too long.
 - Character limit of description. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
     to looks funky if the description is too long.
+- Rename Enabled - you may want to use the description only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
+- Rewrite Desription Enabled - you may want to use the name only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
 - Lock To Owner - If you want to keep someone from renaming your things, it will prevent anyone who is not the same player name
   as the one who originally crafted said item.
 - Name Claims Owner - This goes hand and hand with Lock to owner, if you are not locking the owner, this doesn't
@@ -65,8 +67,10 @@ Quirks:
 #### Wishlist for future
 - I hope to address the known issues
 - I may try to add stack splitting feature
+- I want to add yet another option- to lock rename to admins only
+- I want to allow admins to rename owned items anyway.
 - if there is a high demand for this:
-  - Renamable pieces (that have hover names)
+- Renamable pieces (that have hover names)
 ##### Distant crazy features
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that, However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for valheim.
 

@@ -14,3 +14,8 @@
   - Went back to school to learn how to spell better.
 - Version 0.1.2
   - embedded server sync because the mod link breaks things for other mods
+- Version 0.2.0
+  - Added ability to update item descriptions
+  - Under the hood cleanup
+  - Changed the way owner claim verifies
+  - house keeping

@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using BepInEx;
-using BepInEx.Configuration;
 using HarmonyLib;
-using Jotunn.Configs;
-using UnityEngine;
-using Jotunn.Entities;
+using Jotunn;
 using Jotunn.Managers;
 using Jotunn.Utils;
-using UnityEngine.UI;
+using UnityEngine;
 
 namespace DrakeRenameit
 {
-    [BepInPlugin(DrakeRenameit.GUID, DrakeRenameit.ModName, DrakeRenameit.Version)]
-    [BepInDependency(Jotunn.Main.ModGuid)]
+    [BepInPlugin(GUID, ModName, Version)]
+    [BepInDependency(Main.ModGuid)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public class DrakeRenameit : BaseUnityPlugin
     {
@@ -21,8 +18,8 @@ namespace DrakeRenameit
         public const string ModName = "DrakesRenameit";
         public const string Version = "0.2.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
-        public const string DrakeRename = "Drake_Rename";
-        public const string DrakeRenameDesc = "Drake_Rename_Desc";
+        public const string DrakeNewName = "Drake_Rename";
+        public const string DrakeNewDesc = "Drake_Rename_Desc";
         public static ItemDrop.ItemData currentItem;
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
@@ -43,13 +40,39 @@ namespace DrakeRenameit
             return getPropperName(item, item.m_shared.m_name);
         }
 
+        public static bool hasNewDesc(ItemDrop.ItemData item)
+        {
+            if (item.m_customData == null)
+                return false;
+            return item.m_customData.TryGetValue(DrakeNewDesc, out var existing);
+        }
+        
+        public static bool hasNewName(ItemDrop.ItemData item)
+        {
+            if (item.m_customData == null)
+                return false;
+            return item.m_customData.TryGetValue(DrakeNewName, out var existing);
+        }
+
+        public static string resetName(ItemDrop.ItemData item)
+        {
+            item.m_customData.Remove(DrakeNewName);
+            return item.m_shared.m_name;
+        }
+        
+        public static string resetDesc(ItemDrop.ItemData item)
+        {
+            item.m_customData.Remove(DrakeNewDesc);
+            return item.m_shared.m_name;
+        }
+
         public static string getPropperName(ItemDrop.ItemData item, String defaultName)
         {
             string name;
             if (item.m_customData == null)
                 item.m_customData = new Dictionary<string, string>();
 
-            name = item.m_customData.TryGetValue(DrakeRename, out var existing)
+            name = item.m_customData.TryGetValue(DrakeNewName, out var existing)
                 ? existing
                 : defaultName;
             return name;
@@ -67,7 +90,7 @@ namespace DrakeRenameit
             if (item.m_customData == null)
                 item.m_customData = new Dictionary<string, string>();
 
-            name = item.m_customData.TryGetValue(DrakeRenameDesc, out var existing)
+            name = item.m_customData.TryGetValue(DrakeNewDesc, out var existing)
                 ? existing
                 : defaultDesc;
             return name;
@@ -75,9 +98,10 @@ namespace DrakeRenameit
 
         public static void OpenRename(ItemDrop.ItemData item)
         {
-            currentItem = item;
+    
             if (InventoryGui.instance == null) return;
-
+            if (item == null) return;
+            currentItem = item;
             // Ensure panel exists
             if (UIPanels.inputNamePanel == null)
             {
@@ -96,9 +120,9 @@ namespace DrakeRenameit
         
         public static void OpenRewriteDesc(ItemDrop.ItemData item)
         {
-            currentItem = item;
             if (InventoryGui.instance == null) return;
-
+            if (item == null) return;
+            currentItem = item;
             // Ensure panel exists
             if (UIPanels.inputDescPanel == null)
             {
@@ -123,9 +147,9 @@ namespace DrakeRenameit
                 currentItem.m_customData = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(name))
-                currentItem.m_customData.Remove(DrakeRename);
+                currentItem.m_customData.Remove(DrakeNewName);
             else
-                currentItem.m_customData[DrakeRename] = name;
+                currentItem.m_customData[DrakeNewName] = name;
 
             if (RenameitConfig.NameClaimsOwner)
             {
@@ -134,7 +158,7 @@ namespace DrakeRenameit
                     Player localPlayer = Player.m_localPlayer;
                     if (localPlayer != null)
                     {
-                        currentItem.m_crafterName = localPlayer.GetPlayerName();
+                        currentItem.m_crafterID= localPlayer.GetPlayerID();
                     }
                 }
             }
@@ -148,9 +172,9 @@ namespace DrakeRenameit
                 currentItem.m_customData = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(name))
-                currentItem.m_customData.Remove(DrakeRenameDesc);
+                currentItem.m_customData.Remove(DrakeNewDesc);
             else
-                currentItem.m_customData[DrakeRenameDesc] = name;
+                currentItem.m_customData[DrakeNewDesc] = name;
 
             if (RenameitConfig.NameClaimsOwner)
             {
@@ -159,7 +183,7 @@ namespace DrakeRenameit
                     Player localPlayer = Player.m_localPlayer;
                     if (localPlayer != null)
                     {
-                        currentItem.m_crafterName = localPlayer.GetPlayerName();
+                        currentItem.m_crafterID= localPlayer.GetPlayerID();
                     }
                 }
             }
@@ -190,8 +214,7 @@ namespace DrakeRenameit
             GUIManager.BlockInput(false);
         }
 
-        public static bool canChangeName(ItemDrop.ItemData item, bool showError = false,
-            bool giveOwnershipOnEmpty = true)
+        public static bool canChangeName(ItemDrop.ItemData item, bool showError = false)
         {
             if (RenameitConfig.LockToOwner)
             {
@@ -201,6 +224,7 @@ namespace DrakeRenameit
                     //first check if it even has an owner.
                     if (String.IsNullOrEmpty(item.m_crafterName))
                     {
+                        /*
                         if (giveOwnershipOnEmpty)
                         {
                             Debug.Log($"Crafter: '{item.m_crafterName}' vs Local: '{local.GetPlayerName()}'");
@@ -208,11 +232,12 @@ namespace DrakeRenameit
                             item.m_crafterName = local.GetPlayerName();
                             Debug.Log($" New Crafter: '{item.m_crafterName}' vs Local: '{local.GetPlayerName()}'");
                         }
+                        */
 
                         return true;
                     }
 
-                    if (item.m_crafterName != local.GetPlayerName())
+                    if (item.m_crafterID != local.GetPlayerID())
                     {
                         if (showError)
                         {

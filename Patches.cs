@@ -59,7 +59,7 @@ public static class Patches
             {
                 if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                 {
-                    if (DrakeRenameit.canChangeName(item, true, RenameitConfig.NameClaimsOwner))
+                    if (DrakeRenameit.canChangeName(item, true))
                     {
                         DrakeRenameit.OpenRename(item);
                     }
@@ -69,7 +69,7 @@ public static class Patches
 
                 if (item != null && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)))
                 {
-                    if (DrakeRenameit.canChangeName(item, true, RenameitConfig.NameClaimsOwner))
+                    if (DrakeRenameit.canChangeName(item, true))
                     {
                         DrakeRenameit.OpenRewriteDesc(item);
                     }
@@ -90,7 +90,7 @@ public static class Patches
     {
         if (___m_craftRecipe?.m_item?.m_itemData == null)
             return;
-        Debug.Log($"[DrakeRename] Attempting rename:");
+        Debug.Log($"[DrakeNewName] Attempting rename:");
         var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
 
         // If we had a custom rename on the base item, preserve it
@@ -115,8 +115,8 @@ public static class Patches
             string renameTip =
                 "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>";
             string rewriteDescTip =
-                "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite description</b></color>";
-            if (DrakeRenameit.canChangeName(item, false, false))
+                "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite</b></color>";
+            if (DrakeRenameit.canChangeName(item, false))
             {
                 renameTip = "<color=yellow><b>Shift + Right Click to rename</b></color>";
                 rewriteDescTip = "<color=yellow><b>Ctrl + Right Click to rewrite description</b></color>";
@@ -125,17 +125,26 @@ public static class Patches
             string topic = DrakeRenameit.getPropperName(item);
             // Append to the tooltip text
             string currentText = item.GetTooltip();
-            string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
-            
-            string localizedOriginalDesc = Localization.instance.Localize(item.m_shared.m_description);
-            string localizedCustomDesc = Localization.instance.Localize(customDesc);
 
-            // Replace only the first instance of originalName with customName
-            if (currentText.Contains(localizedOriginalDesc))
+            // only even do anything if the key is there.
+            if (DrakeRenameit.hasNewDesc(item))
             {
-                currentText = currentText.Replace(localizedOriginalDesc, localizedCustomDesc);
+                string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
+
+                Debug.Log($"Attempting to set new description: {customDesc}");
+                string originalDesc = item.m_shared.m_description;
+                string localizedOriginalDesc = Localization.instance.Localize(originalDesc);
+                string localizedCustomDesc = Localization.instance.Localize(customDesc);
+                Debug.Log($"New Localized description: {localizedCustomDesc}");
+                Debug.Log($"Orginal Localized description: {localizedOriginalDesc}");
+                
+                 if (currentText.Contains(originalDesc))
+                {             Debug.Log($"Made it but its not localized in we will replace: {originalDesc} with : {customDesc}");
+                    currentText = currentText.Replace(originalDesc, customDesc);
+                    Debug.Log($"New text should be: {customDesc}, but it is....: {currentText}");
+                }
             }
-            
+
             tooltip.Set(topic, currentText + "\n" + renameTip + "\n" + rewriteDescTip, __instance.m_tooltipAnchor);
         }
 

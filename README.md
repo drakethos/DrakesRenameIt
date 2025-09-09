@@ -1,8 +1,9 @@
-# DrakesRenameIt V0.1.2 Beta
+# DrakesRenameIt V0.2.0 Beta
 A much needed mod for Valheim that lets you rename any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
 Simply Press shift + right click on any item you want to rename.
-A dialog prompting you to change your items name will appear.
+Press ctrl + right click on any item you want to change the description of! (new!)
+A dialog prompting you to change your items name/description will appear
 Okay will confirm the dialog with your change, reset button will bring it back to the items original localized string.
 It always appears with the current name including $ localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
@@ -12,7 +13,7 @@ localization with an additional name, simply leave the $string intact and add ar
 <p>Lock others from changing your names:</p>
 <img width="286" height="276" alt="image" src="https://github.com/user-attachments/assets/ec1a8644-b4fa-4534-9bac-30a112d8006d" />
 
-Easy to use Shift + Right click in inventory: You can recolor and even keep localized strings.
+<p>Easy to use Shift + Right click in inventory: You can recolor and even keep localized strings.</p>
 <img width="415" height="233" alt="image" src="https://github.com/user-attachments/assets/cf645932-288c-4406-8b3f-de5635bc0bbb" />
 
 <p>Start your own rock collection:</p>
@@ -24,12 +25,21 @@ Easy to use Shift + Right click in inventory: You can recolor and even keep loca
   - You can even resize using <size=...> Do not recommend over 200, things start to get funky.
 - Supports localization strings
 - Lets you rename any existing item and renames that instance.
-- Fully supports multiplayer play, just ensure each client + server has the mod.
+- Fully supports multiplayer play, just ensure each client has the mod.
 - Server Sync on all config settings.
+- Doesn't ACTUALLY rename items, so any mod that needs to deal with the items shared: name won't experience any issues! (hopefully...)
+#### What this Mod doesn't do:
+  - <s>your taxes
+  - change every single item that exists
+  - makes new instances of an item
+  - actually change the name of the item under the hood
+  - let you down!</s>
 ### Configurations:
 You can configure the following:
 - Character limit of the rename. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
   to looks funky if the name is too long.
+- Character limit of description. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
+    to looks funky if the description is too long.
 - Lock To Owner - If you want to keep someone from renaming your things, it will prevent anyone who is not the same player name
   as the one who originally crafted said item.
 - Name Claims Owner - This goes hand and hand with Lock to owner, if you are not locking the owner, this doesn't
@@ -53,8 +63,6 @@ Quirks:
 - I may try to add stack splitting feature
 - if there is a high demand for this:
   - Renamable pieces (that have hover names)
-  - Adding custom descriptions
-    - I need to decide the best way to do this, I'm hesitant to add yet another CTRL or alt + right click, but we'll see
 ##### Distant crazy features
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that, However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for valheim.
 

@@ -117,7 +117,7 @@ public static class Patches
 
             string topic = DrakeRenameit.getPropperName(item);
             string currentText = item.GetTooltip();
-         
+
             // Handle custom description replacement
             if (DrakeRenameit.hasNewDesc(item))
             {
@@ -132,21 +132,26 @@ public static class Patches
 
             // Build tooltip extensions
             var sb = new System.Text.StringBuilder();
-           
+
             // Config: rename enabled?
             if (RenameitConfig.RenameEnabled)
             {
                 // keeps from mushin with the previous tooltip
                 sb.AppendLine("\n");
                 if (DrakeRenameit.canChangeName(item, false))
+                {
                     sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
+                }
                 else
+                {
                     sb.AppendLine(
                         "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>");
+                }
             }
             else if (API.RenameitPermission.IsAdminOrVIP())
             {
-                sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
+                sb.AppendLine(
+                    $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
             }
 
             // Config: rewrite desc enabled?
@@ -157,19 +162,22 @@ public static class Patches
                 {
                     sb.AppendLine("\n");
                 }
+
                 if (DrakeRenameit.canChangeName(item, false))
-                    sb.AppendLine($"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
-                if (API.RenameitPermission.IsAdminOrVIP())
                 {
-                    sb.Append("<color=blue> not owner- Admin Override</color>");
+                    sb.AppendLine(
+                        $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
                 }
                 else
+                {
                     sb.AppendLine(
                         "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite</b></color>");
+                }
             }
             else if (API.RenameitPermission.IsAdminOrVIP())
             {
-                sb.AppendLine($"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
+                sb.AppendLine(
+                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
             }
 
             // Final set

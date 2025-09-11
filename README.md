@@ -1,4 +1,4 @@
-# DrakesRenameIt V0.3.0
+# DrakesRenameIt V0.3.1
 
 A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:

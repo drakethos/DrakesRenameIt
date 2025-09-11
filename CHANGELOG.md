@@ -26,3 +26,5 @@
   - added admin API hook for determining overrides
   - added more customization to configs
   - added UI color customization
+- Version 0.3.1
+  - Quick bug fix

@@ -17,11 +17,11 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.3.1";
+        public const string Version = "0.5.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
-        public static ItemDrop.ItemData? CurrentItem { get; private set; }
+        public static ItemDrop.ItemData? CurrentItem { get; set; }
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
         private Texture2D TestTex;
@@ -77,6 +77,11 @@ namespace DrakeRenameit
             return item.m_shared.m_name;
         }
 
+        public static string getPropperName(ItemDrop.ItemData? item)
+        {
+            return getPropperName(item, item.m_shared.m_name);
+        }
+        
         public static string getPropperName(ItemDrop.ItemData? item, String defaultName)
         {
             string name;

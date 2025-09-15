@@ -28,3 +28,8 @@
   - added UI color customization
 - Version 0.3.1
   - Quick bug fix
+- Version 0.4.0
+  - Under the hood improvements
+  - Upgrades now carry over the item names and descriptions!
+- Version 0.5.0
+  - Fixed item stand to display custom name

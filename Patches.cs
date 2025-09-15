@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Linq;
+using HarmonyLib;
 using UnityEngine;
 
 namespace DrakeRenameit;
@@ -84,163 +85,155 @@ public static class Patches
                 original?.Invoke(grid, item, pos);
             };
         }
-    }
 
-    /*[HarmonyPatch(nameof(InventoryGui.SetupUpgradeItem))]
-    [HarmonyPostfix]
-    public static void FixCrafting(Player __instance, ref Recipe ___m_craftRecipe,
-        ref ItemDrop.ItemData ___m_craftUpgradeItem)
-    {
-        if (___m_craftRecipe?.m_item?.m_itemData == null)
-            return;
-        Debug.Log($"[DrakeNewName] Attempting rename:");
-        var upgradedItem = ___m_craftRecipe.m_item.m_itemData;
 
-        // If we had a custom rename on the base item, preserve it
-        var customName = DrakeRenameit.getPropperName(___m_craftUpgradeItem, null);
-        if (customName != null)
-        {
-            DrakeRenameit.currentItem = upgradedItem;
-            DrakeRenameit.renameItem(customName);
-        }
-    }
-}*/
-
-    [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]
-    public static class InventoryGridTooltipPatch
-    {
+        [HarmonyPatch(nameof(InventoryGui.DoCrafting))]
         [HarmonyPostfix]
-        static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData? item, UITooltip tooltip)
+        static void FixCrafting(InventoryGui __instance, Player player)
         {
-            string topic = DrakeRenameit.GetPropperName(item);
-            string currentText = item.GetTooltip();
+            var craftRecipe = (Recipe)AccessTools.Field(typeof(InventoryGui), "m_craftRecipe").GetValue(__instance);
+            var oldItem = (ItemDrop.ItemData)AccessTools.Field(typeof(InventoryGui), "m_craftUpgradeItem")
+                .GetValue(__instance);
 
-            // Handle custom description replacement
-            currentText = UpdateDescription(item, currentText);
+            if (craftRecipe == null)
+                return;
+            if (oldItem == null)
+                return;
 
-            // Build tooltip extensions
-            var sb = new System.Text.StringBuilder();
-
-            // Config: rename enabled?
-            if (RenameitConfig.RenameEnabled)
+            var inv = player.GetInventory();
+            var newItem = inv.GetItemAt(oldItem.m_gridPos.x, oldItem.m_gridPos.y);
+            if (newItem == null)
             {
-                // keeps from mushin with the previous tooltip
-                sb.AppendLine("\n");
-                if (DrakeRenameit.CanChangeName(item, false))
+                // fallback: grab last-added item of that name
+                newItem = inv.GetAllItems().LastOrDefault(i =>
+                    i.m_shared.m_name == oldItem.m_shared.m_name && i.m_quality > oldItem.m_quality);
+            }
+
+            if (newItem != null)
+            {
+                // carry over rename/desc customData
+                foreach (var kv in oldItem.m_customData)
                 {
-                    sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
-                }
-                else
-                {
-                    sb.AppendLine(
-                        "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>");
+                    // overwrite or add
+                    newItem.m_customData[kv.Key] = kv.Value;
                 }
             }
-            else if (API.RenameitPermission.IsAdminOrVIP())
+        }
+    }
+}
+
+[HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.CreateItemTooltip))]
+public static class InventoryGridTooltipPatch
+{
+    [HarmonyPostfix]
+    static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData? item, UITooltip tooltip)
+    {
+        string topic = DrakeRenameit.GetPropperName(item);
+        string currentText = item.GetTooltip();
+
+        // Handle custom description replacement
+        currentText = UpdateDescription(item, currentText);
+
+        // Build tooltip extensions
+        var sb = new System.Text.StringBuilder();
+
+        // Config: rename enabled?
+        if (RenameitConfig.RenameEnabled)
+        {
+            // keeps from mushin with the previous tooltip
+            sb.AppendLine("\n");
+            if (DrakeRenameit.CanChangeName(item, false))
+            {
+                sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
+            }
+            else
             {
                 sb.AppendLine(
-                    $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
+                    "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>");
             }
-
-            // Config: rewrite desc enabled?
-            if (RenameitConfig.RewriteDescriptionsEnabled)
-            {
-                // we need an extra line to not mush with the other if its disabled
-                if (!RenameitConfig.RenameEnabled)
-                {
-                    sb.AppendLine("\n");
-                }
-
-                if (DrakeRenameit.CanChangeName(item, false))
-                {
-                    sb.AppendLine(
-                        $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
-                }
-                else
-                {
-                    sb.AppendLine(
-                        "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite</b></color>");
-                }
-            }
-            else if (API.RenameitPermission.IsAdminOrVIP())
-            {
-                sb.AppendLine(
-                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
-            }
-
-            // Final set
-            tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
+        }
+        else if (API.RenameitPermission.IsAdminOrVIP())
+        {
+            sb.AppendLine(
+                $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
         }
 
-        private static string UpdateDescription(ItemDrop.ItemData? item, string currentText)
+        // Config: rewrite desc enabled?
+        if (RenameitConfig.RewriteDescriptionsEnabled)
         {
-            if (DrakeRenameit.hasNewDesc(item))
+            // we need an extra line to not mush with the other if its disabled
+            if (!RenameitConfig.RenameEnabled)
             {
-                string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
-                string originalDesc = item.m_shared.m_description;
-
-                if (!string.IsNullOrEmpty(originalDesc) && currentText.Contains(originalDesc))
-                {
-                    currentText = currentText.Replace(originalDesc, customDesc);
-                }
+                sb.AppendLine("\n");
             }
 
-            return currentText;
+            if (DrakeRenameit.CanChangeName(item, false))
+            {
+                sb.AppendLine(
+                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
+            }
+            else
+            {
+                sb.AppendLine(
+                    "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite</b></color>");
+            }
+        }
+        else if (API.RenameitPermission.IsAdminOrVIP())
+        {
+            sb.AppendLine(
+                $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
+        }
+
+        // Final set
+        tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
+    }
+
+    private static string UpdateDescription(ItemDrop.ItemData? item, string currentText)
+    {
+        if (DrakeRenameit.hasNewDesc(item))
+        {
+            string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
+            string originalDesc = item.m_shared.m_description;
+
+            if (!string.IsNullOrEmpty(originalDesc) && currentText.Contains(originalDesc))
+            {
+                currentText = currentText.Replace(originalDesc, customDesc);
+            }
+        }
+
+        return currentText;
+    }
+}
+
+[HarmonyPatch(typeof(ItemStand))]
+public static class ItemStandPatch
+{
+    [HarmonyPatch(nameof(ItemStand.UseItem))]
+    [HarmonyPostfix]
+    static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item)
+    {
+        string customName = DrakeRenameit.getPropperName(item);
+        if (customName != item.m_shared.m_name)
+        {
+            var zdo = ((ZNetView)AccessTools.Field(typeof(ItemStand), "m_nview").GetValue(__instance)).GetZDO();
+            zdo.Set("DrakeRenameIt_CustomName", customName);
         }
     }
 
-    /*[HarmonyPatch(typeof(Inventory))]
-    public static class Patch_Inventory_StackLookup
+    [HarmonyPatch(nameof(ItemStand.SetVisualItem))]
+    [HarmonyPostfix]
+    static void FixStandText(ItemStand __instance, string itemName, int variant, int quality)
     {
-        // Override FindFreeStackSpace
-        [HarmonyPatch(nameof(Inventory.FindFreeStackSpace))]
-        [HarmonyPrefix]
-        static bool FindFreeStackSpacePrefix(Inventory __instance, string name, float worldLevel, ref int __result)
+        
+        var zdo = ((ZNetView)AccessTools.Field(typeof(ItemStand), "m_nview").GetValue(__instance)).GetZDO();
+        
+        if (zdo == null) return;
+
+        string customName = zdo.GetString("DrakeRenameIt_CustomName", "");
+        if (!string.IsNullOrEmpty(customName))
         {
-            int freeStackSpace = 0;
-
-            foreach (var itemData in __instance.m_inventory)
-            {
-                // Use your custom lookup instead of m_shared.m_name
-                string itemName = DrakeRenameit.getPropperName(itemData);
-
-                if (itemName == name && itemData.m_stack < itemData.m_shared.m_maxStackSize &&
-                    itemData.m_worldLevel == worldLevel)
-                {
-                    freeStackSpace += itemData.m_shared.m_maxStackSize - itemData.m_stack;
-                }
-            }
-
-            __result = freeStackSpace;
-            return false; // skip original
+            var currentItemField = AccessTools.Field(typeof(ItemStand), "m_currentItemName");
+            currentItemField.SetValue(__instance, customName);
         }
-
-        // Override FindFreeStackItem
-        [HarmonyPatch(nameof(Inventory.FindFreeStackItem))]
-        [HarmonyPrefix]
-        static bool FindFreeStackItemPrefix(Inventory __instance, string name, int quality, float worldLevel,
-            ref ItemDrop.ItemData __result)
-        {
-            if (RenameitConfig.SeperateStacks)
-            {
-                foreach (var itemData in __instance.m_inventory)
-                {
-                    // Use your custom lookup instead of m_shared.m_name
-                    string itemName = DrakeRenameit.getPropperName(itemData);
-
-                    if (itemName == name && itemData.m_quality == quality &&
-                        itemData.m_stack < itemData.m_shared.m_maxStackSize && itemData.m_worldLevel == worldLevel)
-                    {
-                        __result = itemData;
-                        return false; // skip original
-                    }
-                }
-
-                __result = null;
-                return false; // skip original
-            }
-
-            return true;
-        }
-    }*/
+    }
 }

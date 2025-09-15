@@ -1,4 +1,4 @@
-# DrakesRenameIt V0.3.1
+# DrakesRenameIt V0.5.0
 
 A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
@@ -6,7 +6,7 @@ Simply Press shift + right click on any item you want to rename.
 Press ctrl + right click on any item you want to change the description of! (new!)
 A dialog prompting you to change your items name/description will appear
 Okay will confirm the dialog with your change, reset button will bring it back to the items original localized string.
-It always appears with the current name including $ localization. If you would like to maintain
+It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
 <p>Rename anything:</p>
 <img width="262" height="137" alt="image" src="https://github.com/user-attachments/assets/0d1634b0-5fff-4518-9bea-3d72f6c19b7d" />
@@ -66,12 +66,16 @@ Quirks:
 - This means if you have a special pet rock by itself, if you pick up another rock, it will create a stack and lose your name.
   - Future feature may add the option to prevent stacks from combining with different names automatically.
     Known Issues:
-  - Item stands still show the name of the original item. When you grab it however it returns to the custom name.
-  - Upgrading an item will replace the custom name with the original name
-    - For now you will have to rename it again, I am looking into a solution for this.
+  - ~~Item stands still show the name of the original item~~
+    - Fixed!
+  - ~~Upgrading an item will replace the custom name with the original name~~
+    - Fixed!
 #### Wishlist for future
-- I hope to address the known issues
 - I may try to add stack splitting feature
+- Costs (configurable)
+  - To prevent others from renaming things a million times adding some sort of cost so item renaming is more special
+- Exclusion list / category
+  - Make it so some items can't be renamed configurable and admin ignored
 - if there is a high demand for this:
 - Renamable pieces (that have hover names)
 ##### Distant crazy features

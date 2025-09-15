@@ -11,7 +11,7 @@ public static class RenameitConfig
     private const string SectionAdmin = "Admin";
 
     // The sync object ties everything to server authority
-    public static ConfigSync configSync = new ConfigSync(DrakeRenameit.ModName)
+    private static ConfigSync configSync = new ConfigSync(DrakeRenameit.ModName)
     {
         DisplayName = DrakeRenameit.ModName,
         CurrentVersion = DrakeRenameit.Version,
@@ -22,12 +22,10 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _rewriteDescriptionsEnable;
     private static ConfigEntry<bool> _RenameEnable;
     private static ConfigEntry<bool> _nameClaimsOwner;
-    private static ConfigEntry<bool> _seperateStacks;
     private static ConfigEntry<bool> _allowAdminOverride;
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
     private static ConfigEntry<string> _vipList;
-    // private static ConfigEntry<bool> _serverSync;
     private static ConfigEntry<string> _shiftColor;
     private static ConfigEntry<string> _ctrlColor;
 
@@ -129,15 +127,6 @@ public static class RenameitConfig
             "Color to display press shift + right click to ... Acceptable values anything that will be recognized by unit color engine such as a few colors yellow green red or hex: #fff or #ffffff based",
            false
         );
-
-        
-        /*_seperateStacks = config.BindSynced(
-            SectionGeneral,
-            "SeperateStacks",
-            true,
-            "If true, prevents stacks with different names from fusing.",
-            sync: true
-        );*/
     }
 
     // Helper extension for easier ServerSync binding

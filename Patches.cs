@@ -6,7 +6,7 @@ namespace DrakeRenameit;
 public static class Patches
 {
     [HarmonyPatch(typeof(ItemDrop))]
-    public class HoverTextPatch
+    public static class HoverTextPatch
     {
         [HarmonyPatch(nameof(ItemDrop.GetHoverText))]
         [HarmonyPostfix]
@@ -17,7 +17,7 @@ public static class Patches
 
             if (DrakeRenameit.hasNewName(item))
             {
-                string customName = DrakeRenameit.getPropperName(item);
+                string customName = DrakeRenameit.GetPropperName(item);
                 if (customName != null)
                 {
                     // Replace the default name in the hover text with our rename
@@ -37,18 +37,18 @@ public static class Patches
 
         [HarmonyPatch(nameof(ItemDrop.GetHoverName))]
         [HarmonyPostfix]
-        static void FixHoverName(ItemDrop.ItemData __instance, ref string __result)
+        static void FixHoverName(ItemDrop.ItemData? __instance, ref string __result)
         {
             if (DrakeRenameit.hasNewName(__instance))
             {
-                string newName = DrakeRenameit.getPropperName(__instance);
+                string newName = DrakeRenameit.GetPropperName(__instance);
                 __result = newName;
             }
         }
     }
 
     [HarmonyPatch(typeof(InventoryGui))]
-    public static class Patch_InventoryGui_Awake
+    public static class PatchInventoryGuiAwake
     {
         [HarmonyPatch(nameof(InventoryGui.Awake))]
         [HarmonyPostfix]
@@ -62,7 +62,7 @@ public static class Patches
             {
                 if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                 {
-                    if (DrakeRenameit.canChangeName(item, true))
+                    if (DrakeRenameit.CanChangeName(item, true))
                     {
                         DrakeRenameit.OpenRename(item);
                     }
@@ -70,9 +70,9 @@ public static class Patches
                     return; // stop here, skip vanilla handler
                 }
 
-                if (item != null && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.LeftControl)))
+                if (item != null && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
                 {
-                    if (DrakeRenameit.canChangeDesc(item, true))
+                    if (DrakeRenameit.CanChangeDesc(item, true))
                     {
                         DrakeRenameit.OpenRewriteDesc(item);
                     }
@@ -110,25 +110,13 @@ public static class Patches
     public static class InventoryGridTooltipPatch
     {
         [HarmonyPostfix]
-        static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData item, UITooltip tooltip)
+        static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData? item, UITooltip tooltip)
         {
-            if (item == null || tooltip == null || Player.m_localPlayer == null)
-                return;
-
-            string topic = DrakeRenameit.getPropperName(item);
+            string topic = DrakeRenameit.GetPropperName(item);
             string currentText = item.GetTooltip();
 
             // Handle custom description replacement
-            if (DrakeRenameit.hasNewDesc(item))
-            {
-                string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
-                string originalDesc = item.m_shared.m_description;
-
-                if (!string.IsNullOrEmpty(originalDesc) && currentText.Contains(originalDesc))
-                {
-                    currentText = currentText.Replace(originalDesc, customDesc);
-                }
-            }
+            currentText = UpdateDescription(item, currentText);
 
             // Build tooltip extensions
             var sb = new System.Text.StringBuilder();
@@ -138,7 +126,7 @@ public static class Patches
             {
                 // keeps from mushin with the previous tooltip
                 sb.AppendLine("\n");
-                if (DrakeRenameit.canChangeName(item, false))
+                if (DrakeRenameit.CanChangeName(item, false))
                 {
                     sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
                 }
@@ -163,7 +151,7 @@ public static class Patches
                     sb.AppendLine("\n");
                 }
 
-                if (DrakeRenameit.canChangeName(item, false))
+                if (DrakeRenameit.CanChangeName(item, false))
                 {
                     sb.AppendLine(
                         $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
@@ -183,8 +171,23 @@ public static class Patches
             // Final set
             tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
         }
-    }
 
+        private static string UpdateDescription(ItemDrop.ItemData? item, string currentText)
+        {
+            if (DrakeRenameit.hasNewDesc(item))
+            {
+                string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
+                string originalDesc = item.m_shared.m_description;
+
+                if (!string.IsNullOrEmpty(originalDesc) && currentText.Contains(originalDesc))
+                {
+                    currentText = currentText.Replace(originalDesc, customDesc);
+                }
+            }
+
+            return currentText;
+        }
+    }
 
     /*[HarmonyPatch(typeof(Inventory))]
     public static class Patch_Inventory_StackLookup

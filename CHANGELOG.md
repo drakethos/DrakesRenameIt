@@ -33,3 +33,8 @@
   - Upgrades now carry over the item names and descriptions!
 - Version 0.5.0
   - Fixed item stand to display custom name
+- Version 0.6.0
+  - Added support for API event tracking for name and description changes
+  - Added new config to disable changing names/descriptions on resources, like wood, stones, etc.
+- Version 0.6.1
+  - Bug fix for admin override not working correctly on named resources

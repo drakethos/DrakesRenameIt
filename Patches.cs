@@ -148,8 +148,18 @@ public static class InventoryGridTooltipPatch
             }
             else
             {
+                string reason;
+                string admin_override ="";
+                if (!RenameitConfig.AllowRenameResources)
+                    reason = "Cannot rename resources, Disabled.";
+                else
+                    reason = "Must be owner to rewrite";
+                if (API.RenameitPermission.IsAdminOrVIP())
+                {
+                    admin_override = "<color=blue> Disabled: Admin Override</color>";
+                }
                 sb.AppendLine(
-                    "<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to rename</b></color>");
+                    $"<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to {reason}</b></color>{admin_override}");
             }
         }
         else if (API.RenameitPermission.IsAdminOrVIP())
@@ -174,8 +184,18 @@ public static class InventoryGridTooltipPatch
             }
             else
             {
-                sb.AppendLine(
-                    "<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>Must be owner to rewrite</b></color>");
+                string admin_override ="";
+                if (API.RenameitPermission.IsAdminOrVIP())
+                {
+                    admin_override = "<color=blue> Disabled: Admin Override</color>";
+                }
+                string reason;
+                if (!RenameitConfig.AllowRenameResources)
+                    reason = "Cannot rename resources, Disabled.";
+                else
+                    reason = "Must be owner to rewrite";
+
+                 sb.AppendLine($"<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>{reason}</b></color>{admin_override}");
             }
         }
         else if (API.RenameitPermission.IsAdminOrVIP())

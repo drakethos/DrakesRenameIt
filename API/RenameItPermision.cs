@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Jotunn;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace DrakeRenameit.API;
 
@@ -31,7 +33,7 @@ public static class RenameitPermission
         string name = player.GetPlayerName();
 
         // Admin list check
-        if (ZNet.instance?.IsAdmin(pid) ?? false)
+        if (IsAdminSafe(player))
             return true;
 
         // Custom VIP check
@@ -63,4 +65,26 @@ public static class RenameitPermission
     }
 
     public static IEnumerable<string> GetVIPs() => vipList;
+
+    public static bool IsAdminSafe(Player player)
+    {
+        if (player == null) return false;
+        if (ZNet.instance == null) return false;
+        bool isClient = Player.m_localPlayer != null;
+
+        if (!ZNet.instance.IsServer() && !isClient) return false;
+
+        string hostName = player.GetPlayerName();
+        if (string.IsNullOrEmpty(hostName)) return false;
+
+        try
+        {
+            return ZNet.instance.IsAdmin(hostName);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

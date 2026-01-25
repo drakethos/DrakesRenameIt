@@ -7,6 +7,7 @@ public static class RenameitConfig
 {
     private const string SectionGeneral = "General";
     private const string SectionUI = "UI-NotSynced";
+    private const string SectionExclusions ="Exclusions";
     private const string SectionLimits = "Limits";
     private const string SectionAdmin = "Admin";
 
@@ -23,26 +24,28 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _RenameEnable;
     private static ConfigEntry<bool> _nameClaimsOwner;
     private static ConfigEntry<bool> _allowAdminOverride;
+    private static ConfigEntry<bool> _allowRenameResources;
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
     private static ConfigEntry<string> _vipList;
     private static ConfigEntry<string> _shiftColor;
     private static ConfigEntry<string> _ctrlColor;
+    private static ConfigEntry<string> _excludedNames;
 
+    
     public static bool LockToOwner => _lockToOwner.Value;
     public static int DescCharLimit => _descCharLimit.Value;
     public static bool NameClaimsOwner => _nameClaimsOwner.Value;
     public static bool RewriteDescriptionsEnabled => _rewriteDescriptionsEnable.Value;
     public static bool RenameEnabled => _RenameEnable.Value;
+    public static bool AllowRenameResources => _allowRenameResources.Value;
     public static bool AllowAdminOverride => _allowAdminOverride.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
     public static string VipList => _vipList.Value;
     public static string ShiftColor => _shiftColor.Value;
     public static string CtrlColor => _ctrlColor.Value;
+    public static string ExcludedNames => _excludedNames.Value;
     
-
-    /*public static bool SeperateStacks => _seperateStacks.Value;*/
-
     public static void Bind(ConfigFile config)
     {
         // Example: Lock renames to item owner
@@ -62,6 +65,15 @@ public static class RenameitConfig
             "If true, renaming an unowned item assigns ownership to the renamer. Used in conjunction with LockToOwner, when you rename an unclaimed item, you will have laid claim to it.",
            true
         );
+
+        _allowRenameResources = config.BindSynced(
+            SectionGeneral,
+            "AllowRenameResources",
+            true,
+            "If true you can rename resources that have not been crafted such as rocks, metals, woods etc. Note if disabled NameClaimsOwner is irrelevant.",
+           true
+        );
+
         _RenameEnable = config.BindSynced(
             SectionGeneral,
             "RenameEnabled",
@@ -126,6 +138,14 @@ public static class RenameitConfig
             "yellow",
             "Color to display press shift + right click to ... Acceptable values anything that will be recognized by unit color engine such as a few colors yellow green red or hex: #fff or #ffffff based",
            false
+        );
+        
+        _excludedNames = config.BindSynced(
+            SectionExclusions,
+            "ExcludedNames",
+            "",
+            "Coma seperated list of names of items to exclude from being able to rename. Admin  mode will override these settings",
+            true
         );
     }
 

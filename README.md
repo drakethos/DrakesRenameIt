@@ -1,4 +1,4 @@
-# DrakesRenameIt V0.5.0
+# DrakesRenameIt V0.6.1
 
 A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
@@ -33,6 +33,7 @@ localization with an additional name, simply leave the $string intact and add ar
 - recolor the UI tips with configs
 - New - Admin override to not apply to the rules
 - You can enable and disable parts of the mod now.
+- New - API hooks for other mods to track name and description changes
 - Doesn't ACTUALLY rename items, so any mod that needs to deal with the items shared: name won't experience any issues! (hopefully...)
 #### What this Mod doesn't do:
   - <s>your taxes
@@ -81,6 +82,21 @@ Quirks:
 ##### Distant crazy features
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that, However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for valheim.
 
+#### API Docs:
+The mod exposes two events for other mods to hook into when an item name or description is changed.
+API.RenameEvents
+example for logging
+```csharp
+RenameEvents.OnItemNameChanged += (player, item, oldName, newName) =>
+{
+   //todo: add your code here
+};
+RenameEvents.OnItemDescriptionChanged += (player, item, oldName, newName) =>
+{
+   //todo: add your code here
+};
+```
+
 Contact me:
 - Want to drop a line tell me how I'm doing.
   -Report a bug (THATS NOT IN THE KNOWN ISSUES ALREADY),
@@ -88,3 +104,4 @@ Contact me:
 - I cannot guarantee the request will be met but if there's a high enough demand and the ask isnt too difficult I may take it into consideration.
   Email: Drakethos@gmail.com
   Discord: Drakethos!
+

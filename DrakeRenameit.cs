@@ -18,7 +18,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.6.1";
+        public const string Version = "0.6.2";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
@@ -61,19 +61,24 @@ namespace DrakeRenameit
 
         public static bool hasNewName(ItemDrop.ItemData? item)
         {
-            if (item.m_customData == null)
+            if (item == null || item.m_customData == null)
                 return false;
             return item.m_customData.TryGetValue(DrakeNewName, out _);
         }
 
         public static string resetName(ItemDrop.ItemData? item)
         {
+            if (item == null)
+                return "";
             item.m_customData.Remove(DrakeNewName);
             return item.m_shared.m_name;
         }
 
         public static string resetDesc(ItemDrop.ItemData? item)
         {
+            if (item == null)
+                return "";
+
             item.m_customData.Remove(DrakeNewDesc);
             return item.m_shared.m_name;
         }

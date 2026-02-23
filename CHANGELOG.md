@@ -38,3 +38,5 @@
   - Added new config to disable changing names/descriptions on resources, like wood, stones, etc.
 - Version 0.6.1
   - Bug fix for admin override not working correctly on named resources
+- Version 0.6.2
+  - null check hardening code to prevent crashes with other mods.

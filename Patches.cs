@@ -15,15 +15,22 @@ public static class Patches
         {
             var item = __instance.m_itemData;
             if (item == null) return;
+            if (__instance?.m_itemData?.m_shared == null || string.IsNullOrEmpty(__result))
+                return;
 
             if (DrakeRenameit.hasNewName(item))
             {
                 string customName = DrakeRenameit.GetPropperName(item);
-                if (customName != null)
+                if (customName != null && item.m_shared.m_name != null)
                 {
                     // Replace the default name in the hover text with our rename
                     // Find the original name to swap
-
+                    if (Localization.instance == null)
+                    {
+                        // Fallback if Localization is not available
+                        __result = __result.Replace(item.m_shared.m_name, customName);
+                        return;
+                    }
                     string localizedOriginalName = Localization.instance.Localize(item.m_shared.m_name);
                     string localizedCustomName = Localization.instance.Localize(customName);
 
@@ -36,14 +43,19 @@ public static class Patches
             }
         }
 
-        [HarmonyPatch(nameof(ItemDrop.GetHoverName))]
+        [HarmonyPatch(typeof(ItemDrop), nameof(ItemDrop.GetHoverName))]
         [HarmonyPostfix]
-        static void FixHoverName(ItemDrop.ItemData? __instance, ref string __result)
+        static void FixHoverName(ItemDrop __instance, ref string __result)
         {
-            if (DrakeRenameit.hasNewName(__instance))
+            var item = __instance?.m_itemData;
+            if (item == null)
+                return;
+
+            if (DrakeRenameit.hasNewName(item))
             {
-                string newName = DrakeRenameit.GetPropperName(__instance);
-                __result = newName;
+                var newName = DrakeRenameit.GetPropperName(item);
+                if (!string.IsNullOrEmpty(newName))
+                    __result = newName;
             }
         }
     }
@@ -91,7 +103,8 @@ public static class Patches
         [HarmonyPostfix]
         static void FixCrafting(InventoryGui __instance, Player player)
         {
-            var craftRecipe = (Recipe)AccessTools.Field(typeof(InventoryGui), "m_craftRecipe").GetValue(__instance);
+            var craftRecipe = AccessTools.Field(typeof(InventoryGui), "m_craftRecipe")
+    ?.GetValue(__instance) as Recipe;
             var oldItem = (ItemDrop.ItemData)AccessTools.Field(typeof(InventoryGui), "m_craftUpgradeItem")
                 .GetValue(__instance);
 
@@ -128,7 +141,10 @@ public static class InventoryGridTooltipPatch
     [HarmonyPostfix]
     static void UpdateToolTip(InventoryGrid __instance, ItemDrop.ItemData? item, UITooltip tooltip)
     {
-        string topic = DrakeRenameit.GetPropperName(item);
+        if (item?.m_shared == null || tooltip == null)
+            return;
+
+        var topic = DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name;
         string currentText = item.GetTooltip();
 
         // Handle custom description replacement
@@ -210,6 +226,8 @@ public static class InventoryGridTooltipPatch
 
     private static string UpdateDescription(ItemDrop.ItemData? item, string currentText)
     {
+        if (item?.m_shared == null)
+            return currentText;
         if (DrakeRenameit.hasNewDesc(item))
         {
             string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
@@ -230,8 +248,12 @@ public static class ItemStandPatch
 {
     [HarmonyPatch(nameof(ItemStand.UseItem))]
     [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
     static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item)
     {
+        if (item?.m_shared == null)
+            return;
+
         string customName = DrakeRenameit.getPropperName(item);
         if (customName != item.m_shared.m_name)
         {
@@ -242,6 +264,7 @@ public static class ItemStandPatch
 
     [HarmonyPatch(nameof(ItemStand.SetVisualItem))]
     [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
     static void FixStandText(ItemStand __instance, string itemName, int variant, int quality)
     {
         

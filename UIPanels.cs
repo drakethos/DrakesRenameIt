@@ -17,7 +17,235 @@ public static class UIPanels
     private static Button _buttonOkDesc;
     private static Button _buttonResetName;
     private static Button _buttonResetDesc;
-    
+
+    public static GameObject? ActionMenuPanel { get; private set; }
+    private static Button? _buttonMenuRename;
+    private static Button? _buttonMenuDesc;
+    private static Button? _buttonMenuCraftedBy;
+    private static Button? _buttonMenuCancel;
+
+    public static GameObject? InputCraftedByPanel { get; private set; }
+    public static InputField? RenameCraftedByInput { get; private set; }
+    private static Button? _buttonOkCraftedBy;
+    private static Button? _buttonResetCraftedBy;
+
+    public static void OpenActionMenu(ItemDrop.ItemData item)
+    {
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        EnsureActionMenu();
+        if (ActionMenuPanel == null || _buttonMenuRename == null)
+            return;
+
+        DrakeRenameit.CurrentItem = item;
+        _buttonMenuRename.interactable = DrakeRenameit.CanChangeName(item, false);
+        _buttonMenuDesc.interactable = DrakeRenameit.CanChangeDesc(item, false);
+        _buttonMenuCraftedBy.interactable = DrakeRenameit.CanChangeCraftedByLabel(item, false);
+
+        ActionMenuPanel.SetActive(true);
+        ActionMenuPanel.transform.SetAsLastSibling();
+        GUIManager.BlockInput(true);
+    }
+
+    private static void EnsureActionMenu()
+    {
+        if (ActionMenuPanel != null)
+            return;
+
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        ActionMenuPanel = GUIManager.Instance.CreateWoodpanel(
+            parent: GUIManager.CustomGUIFront.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 0f),
+            width: 320,
+            height: 260,
+            draggable: false);
+
+        GUIManager.Instance.CreateText(
+            text: "DrakesRenameIt",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(0f, -48f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 22,
+            color: GUIManager.Instance.ValheimOrange,
+            outline: true,
+            outlineColor: Color.black,
+            width: 280,
+            height: 40,
+            addContentSizeFitter: false);
+
+        _buttonMenuRename = GUIManager.Instance.CreateButton(
+            text: "Rename",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 52f),
+            width: 200f,
+            height: 32f).GetComponent<Button>();
+        _buttonMenuRename.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            CloseActionMenuOnly();
+            if (item != null)
+                DrakeRenameit.OpenRename(item);
+        });
+
+        _buttonMenuDesc = GUIManager.Instance.CreateButton(
+            text: "Description",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 12f),
+            width: 200f,
+            height: 32f).GetComponent<Button>();
+        _buttonMenuDesc.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            CloseActionMenuOnly();
+            if (item != null)
+                DrakeRenameit.OpenRewriteDesc(item);
+        });
+
+        _buttonMenuCraftedBy = GUIManager.Instance.CreateButton(
+            text: "Crafted by",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, -28f),
+            width: 200f,
+            height: 32f).GetComponent<Button>();
+        _buttonMenuCraftedBy.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            CloseActionMenuOnly();
+            if (item != null)
+                DrakeRenameit.OpenCraftedByEditor(item);
+        });
+
+        _buttonMenuCancel = GUIManager.Instance.CreateButton(
+            text: "Cancel",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, -80f),
+            width: 120f,
+            height: 28f).GetComponent<Button>();
+        _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);
+    }
+
+    private static void CloseActionMenuOnly()
+    {
+        if (ActionMenuPanel != null)
+            ActionMenuPanel.SetActive(false);
+        GUIManager.BlockInput(false);
+    }
+
+    public static void CreateCraftedByInput()
+    {
+        if (GUIManager.Instance == null)
+        {
+            Debug.LogError("GUIManager instance is null");
+            return;
+        }
+
+        if (!GUIManager.CustomGUIFront)
+        {
+            Debug.LogError("GUIManager CustomGUI is null");
+            return;
+        }
+
+        if (DrakeRenameit.CurrentItem == null)
+        {
+            Debug.LogError("Current Item null");
+            return;
+        }
+
+        if (InputCraftedByPanel == null)
+        {
+            InputCraftedByPanel = GUIManager.Instance.CreateWoodpanel(
+                parent: GUIManager.CustomGUIFront.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 0f),
+                width: 350,
+                height: 170,
+                draggable: false);
+
+            GUIManager.Instance.CreateText(
+                text: "Crafted by (display)",
+                parent: InputCraftedByPanel.transform,
+                anchorMin: new Vector2(0.5f, 1f),
+                anchorMax: new Vector2(0.5f, 1f),
+                position: new Vector2(15f, -65f),
+                font: GUIManager.Instance.AveriaSerifBold,
+                fontSize: 22,
+                color: GUIManager.Instance.ValheimOrange,
+                outline: true,
+                outlineColor: Color.black,
+                width: 300,
+                height: 60,
+                addContentSizeFitter: false);
+        }
+
+        InputCraftedByPanel.SetActive(true);
+        InputCraftedByPanel.transform.SetAsLastSibling();
+
+        if (RenameCraftedByInput == null)
+        {
+            RenameCraftedByInput = GUIManager.Instance.CreateInputField(
+                parent: InputCraftedByPanel.transform,
+                anchorMin: new Vector2(0.5f, 0.5f),
+                anchorMax: new Vector2(0.5f, 0.5f),
+                position: new Vector2(0f, 8f),
+                contentType: InputField.ContentType.Standard,
+                placeholderText: "Display name on tooltip…",
+                fontSize: 18,
+                width: 300,
+                height: 30f).GetComponent<InputField>();
+        }
+
+        RenameCraftedByInput!.characterLimit = RenameitConfig.NameCharLimit;
+        RenameCraftedByInput.text = DrakeRenameit.getCraftedByDisplay(DrakeRenameit.CurrentItem);
+
+        if (_buttonOkCraftedBy == null)
+        {
+            _buttonOkCraftedBy = GUIManager.Instance.CreateButton(
+                text: "OK",
+                parent: InputCraftedByPanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(-42f, 35f),
+                width: 80f,
+                height: 30f).GetComponent<Button>();
+            _buttonOkCraftedBy.AddUniqueListener(() =>
+            {
+                DrakeRenameit.ApplyCraftedByLabel(RenameCraftedByInput.text.Trim());
+            });
+        }
+
+        if (_buttonResetCraftedBy == null)
+        {
+            _buttonResetCraftedBy = GUIManager.Instance.CreateButton(
+                text: "Reset",
+                parent: InputCraftedByPanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(42f, 35f),
+                width: 80f,
+                height: 30f).GetComponent<Button>();
+            _buttonResetCraftedBy.AddUniqueListener(() =>
+            {
+                if (DrakeRenameit.CurrentItem != null)
+                    RenameCraftedByInput.text = DrakeRenameit.CurrentItem.m_crafterName ?? "";
+            });
+        }
+    }
 
     public static void CreateRenameInput()
     {

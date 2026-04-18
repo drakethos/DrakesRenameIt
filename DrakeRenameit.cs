@@ -7,6 +7,8 @@ using Jotunn;
 using Jotunn.Managers;
 using Jotunn.Utils;
 using UnityEngine;
+using RenameEvents = global::DrakeRenameit.API.RenameEvents;
+using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 using static DrakeRenameit.RenameitConfig;
 
 namespace DrakeRenameit
@@ -18,10 +20,11 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.7.0";
+        public const string Version = "1.0.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
+        public const string DrakeCraftedByDisplay = "Drake_CraftedByDisplay";
         public static ItemDrop.ItemData? CurrentItem { get; set; }
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
@@ -36,6 +39,8 @@ namespace DrakeRenameit
             AddVip();
             RenamePermissionManager.Init(Logger);
 
+            InventoryStackPatches.Apply(harmony, Logger);
+            ItemTooltipPatches.Apply(harmony, Logger);
             harmony.PatchAll();
         }
 
@@ -45,7 +50,7 @@ namespace DrakeRenameit
                 .Select(s => s.Trim().ToLowerInvariant())
                 .Where(s => !string.IsNullOrEmpty(s))
                 .ToList();
-            API.RenameitPermission.AddVIP(vipList);
+            RenameitPermission.AddVIP(vipList);
         }
 
 
@@ -173,7 +178,7 @@ namespace DrakeRenameit
             else
             {
                 CurrentItem.m_customData[DrakeNewName] = name;
-                API.RenameEvents.RaiseNameChanged(
+                RenameEvents.RaiseNameChanged(
                     Player.m_localPlayer,
                     CurrentItem,
                     CurrentItem.m_shared.m_name,
@@ -204,7 +209,7 @@ namespace DrakeRenameit
             else
             {
                 CurrentItem.m_customData[DrakeNewDesc] = name;
-                API.RenameEvents.RaiseDescriptionChanged(
+                RenameEvents.RaiseDescriptionChanged(
                Player.m_localPlayer,
                CurrentItem,
                CurrentItem.m_shared.m_name,
@@ -259,6 +264,78 @@ namespace DrakeRenameit
         {
             return RenamePermissionManager
                 .Evaluate(RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer, showError).Allowed;
+        }
+
+        public static bool CanChangeCraftedByLabel(ItemDrop.ItemData? item, bool showError = false)
+        {
+            if (item == null)
+                return false;
+            if (item.m_crafterID == 0L && string.IsNullOrEmpty(item.m_crafterName))
+                return false;
+            return RenamePermissionManager
+                .Evaluate(RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer, showError).Allowed;
+        }
+
+        /// <summary>True if at least one inventory action (rename, description, crafted-by label) is allowed for this item.</summary>
+        public static bool AnyInventoryActionAvailable(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return false;
+            return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+        }
+
+        public static bool IsMenuOpenModifierHeld()
+        {
+            return MenuModifierIsShift
+                ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
+                : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        }
+
+        public static string getCraftedByDisplay(ItemDrop.ItemData? item)
+        {
+            if (item?.m_customData == null)
+                return item?.m_crafterName ?? "";
+            if (item.m_customData.TryGetValue(DrakeCraftedByDisplay, out var s) && !string.IsNullOrEmpty(s))
+                return s;
+            return item.m_crafterName ?? "";
+        }
+
+        public static void OpenCraftedByEditor(ItemDrop.ItemData? item)
+        {
+            if (InventoryGui.instance == null) return;
+            if (item == null) return;
+            CurrentItem = item;
+            if (UIPanels.InputCraftedByPanel == null)
+                UIPanels.CreateCraftedByInput();
+            UIPanels.RenameCraftedByInput!.text = getCraftedByDisplay(item);
+            UIPanels.InputCraftedByPanel!.SetActive(true);
+            GUIManager.BlockInput(true);
+        }
+
+        public static void ApplyCraftedByLabel(string display)
+        {
+            if (CurrentItem == null) return;
+
+            if (CurrentItem.m_customData == null)
+                CurrentItem.m_customData = new Dictionary<string, string>();
+
+            string oldDisplay = getCraftedByDisplay(CurrentItem);
+            if (string.IsNullOrEmpty(display))
+                CurrentItem.m_customData.Remove(DrakeCraftedByDisplay);
+            else
+                CurrentItem.m_customData[DrakeCraftedByDisplay] = display;
+
+            string newDisplay = string.IsNullOrEmpty(display) ? (CurrentItem.m_crafterName ?? "") : display;
+            RenameEvents.RaiseCraftedByDisplayChanged(
+                Player.m_localPlayer,
+                CurrentItem,
+                CurrentItem.m_shared.m_name,
+                oldDisplay,
+                newDisplay);
+
+            CurrentItem = null;
+            UIPanels.InputCraftedByPanel!.SetActive(false);
+            GUIManager.BlockInput(false);
         }
 
         /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/> or <see cref="RenameitConfig.ExcludedCategory"/>.</summary>

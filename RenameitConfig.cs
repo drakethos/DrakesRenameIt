@@ -1,7 +1,8 @@
-﻿namespace DrakeRenameit;
-
+﻿using System;
 using BepInEx.Configuration;
 using ServerSync;
+
+namespace DrakeRenameit;
 
 public static class RenameitConfig
 {
@@ -35,6 +36,9 @@ public static class RenameitConfig
     private static ConfigEntry<string> _renameAllowlist;
     private static ConfigEntry<bool> _vipOnlyOverride;
     private static ConfigEntry<bool> _showReason;
+    private static ConfigEntry<bool> _separateStacks;
+    private static ConfigEntry<bool> _craftedByLabelEnabled;
+    private static ConfigEntry<string> _menuOpenModifier;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -42,6 +46,7 @@ public static class RenameitConfig
     public static bool NameClaimsOwner => _nameClaimsOwner.Value;
     public static bool RewriteDescriptionsEnabled => _rewriteDescriptionsEnable.Value;
     public static bool RenameEnabled => _RenameEnable.Value;
+    public static bool CraftedByLabelEnabled => _craftedByLabelEnabled.Value;
     public static bool AllowRenameResources => _allowRenameResources.Value;
     public static bool AllowAdminOverride => _allowAdminOverride.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
@@ -54,6 +59,14 @@ public static class RenameitConfig
     public static string RenameAllowlist => _renameAllowlist.Value;
     public static bool VipOnlyOverride => _vipOnlyOverride.Value;
     public static bool ShowReason => _showReason.Value;
+    public static bool SeparateStacks => _separateStacks.Value;
+
+    /// <summary>Shift or Ctrl — which modifier + right-click opens the Drake action menu.</summary>
+    public static string MenuOpenModifier => _menuOpenModifier.Value;
+
+    public static bool MenuModifierIsShift =>
+        string.Equals(_menuOpenModifier.Value, "Shift", StringComparison.OrdinalIgnoreCase);
+
     
     public static void Bind(ConfigFile config)
     {
@@ -98,6 +111,14 @@ public static class RenameitConfig
             "If enabled, allows players to also edit descriptions of items. Could be turned off preplace items with descriptions.",
            true
         );
+        
+        _craftedByLabelEnabled = config.BindSynced(
+            SectionGeneral,
+            "CraftedByLabelEnabled",
+            true,
+            "If true, players may set a display-only override for the Crafted by line (real crafter id/name unchanged). Server-synced.",
+            true
+        );
 
         _showReason = config.BindSynced(
             SectionGeneral,
@@ -106,6 +127,15 @@ public static class RenameitConfig
             "If true, denied rename/description actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
             true
         );
+
+        _separateStacks = config.BindSynced(
+            SectionGeneral,
+            "SeparateStacks",
+            false,
+            "If true, stacks only combine when Drake custom name, description, and crafted-by display match (same identity). Renamed or customized stacks no longer absorb mismatched pickups automatically.",
+            true
+        );
+
 
         
         // Example: Lock renames to item owner
@@ -160,9 +190,18 @@ public static class RenameitConfig
             SectionUI,
             "CtrlColor",
             "yellow",
-            "Color to display press shift + right click to ... Acceptable values anything that will be recognized by unit color engine such as a few colors yellow green red or hex: #fff or #ffffff based",
+            "Color for inventory hint when MenuOpenModifier is Ctrl (see MenuOpenModifier).",
            false
         );
+
+        _menuOpenModifier = config.Bind(
+            SectionUI,
+            "MenuOpenModifier",
+            "Shift",
+            new ConfigDescription(
+                "Which key + right-click opens the Drake menu (Rename / Description / Crafted by): Shift or Ctrl. The other modifier + right-click uses vanilla behavior.",
+                new AcceptableValueList<string>(new[] { "Shift", "Ctrl" })));
+        configSync.AddConfigEntry(_menuOpenModifier).SynchronizedConfig = false;
         
         _excludedNames = config.BindSynced(
             SectionExclusions,

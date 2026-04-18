@@ -1,10 +1,12 @@
-# DrakesRenameIt V0.7.0
+# DrakesRenameIt V1.0.0
 
-A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
-### How to use:
-Simply Press shift + right click on any item you want to rename.
-Press ctrl + right click on any item you want to change the description of! (new!)
-A dialog prompting you to change your items name/description will appear
+A Valheim mod that lets you rename items, rewrite descriptions, and optionally override the **Crafted by** line (display only). Good for roleplay or labeling gear.
+
+### How to use
+
+Hold **Shift** or **Ctrl** (configurable: **MenuOpenModifier** in `UI-NotSynced`) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Choose an action; only allowed options are clickable. The other modifier + right-click keeps vanilla inventory behavior.
+
+Okay confirms; **Reset** restores the vanilla string for that field.
 Okay will confirm the dialog with your change, reset button will bring it back to the items original localized string.
 It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
@@ -48,8 +50,10 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 
 #### General (server-synced)
 
-- **RenameEnabled** — When on, players can use Shift + right-click to rename items. Turn off to block new renames while keeping descriptions or other features (for example after pre-placing renamed gear).
-- **RewriteDescriptionsEnabled** — When on, players can use Ctrl + right-click to edit that item instance’s description. Can be used without rename, or turned off if you only want custom names.
+- **RenameEnabled** — When on, non-elevated players may rename items (via the action menu). Turn off to block new renames while keeping other features.
+- **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
+- **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the “Crafted by” line in tooltips. Real crafter id/name used by the game (ownership, locks) is unchanged.
+- **SeparateStacks** — When on, stacks only merge automatically when Drake identity matches (custom name, description, and crafted-by display key). Manual moves and splits behave as in vanilla.
 - **LockToOwner** — When on, only the crafter / owner can rename or change description. Stacks with **no** crafter yet (raw picked-up resources: no crafter id and no crafter name) are **not** treated as “someone else’s” until they are crafted or claimed. After **NameClaimsOwner** assigns you as crafter, others are blocked as usual.
 - **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter (and “crafted by” style ownership) so **LockToOwner** can protect that stack. Works with uncrafted resources when **AllowRenameResources** (and allowlist if needed) permits the edit.
 - **AllowRenameResources** — When on, unowned resource-style stacks (no crafter yet) can be renamed or given a description. When off, those stacks are blocked **unless** they are on **RenameAllowlist** (then claim rules can still apply). This is separate from **ExcludedCategory** `Material`, which can still block by item type for crafted gear.
@@ -74,27 +78,24 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 
 #### UI (not synced — client only)
 
-- **ShiftColor** — Color for the “Shift + right click to rename” hint in the inventory tooltip (Unity color name or `#rrggbb`).
-- **CtrlColor** — Same for “Ctrl + right click” description hint.
+- **MenuOpenModifier** — `Shift` or `Ctrl`: which key + right-click opens the Drake menu. The other modifier + right-click uses vanilla behavior.
+- **ShiftColor** — Tooltip hint color when **MenuOpenModifier** is Shift (Unity color name or `#rrggbb`).
+- **CtrlColor** — Tooltip hint color when **MenuOpenModifier** is Ctrl.
 
 #### Permission order (how rules stack)
 
-Roughly: **Admin/VIP override** → **global rename / description toggles** → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
+Roughly: **Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
 
 ### Quirks and Known Issues:
 Quirks:
-- Item stacks behave a very particular way. When you rename an existing stack, it will rename the whole stack. Any item added to said stack
-  will then become absorbed. This is the best way to prevent say picking up a rock, and having your special rock blown away when it mixes into the stack
-  this is due to the nature of how the stack holds items.
-- This means if you have a special pet rock by itself, if you pick up another rock, it will create a stack and lose your name.
-  - Future feature may add the option to prevent stacks from combining with different names automatically.
+- Stacks normally merge and share one instance; enable **SeparateStacks** (server-synced) if you want automatic merges to require matching Drake name/description/crafted-by display so differently customized stacks are not absorbed into each other.
     Known Issues:
   - ~~Item stands still show the name of the original item~~
     - Fixed!
   - ~~Upgrading an item will replace the custom name with the original name~~
     - Fixed!
 #### Wishlist for future
-- I may try to add stack splitting feature
+- Optional stack splitting UX (beyond **SeparateStacks**)
 - Costs (configurable)
   - To prevent others from renaming things a million times adding some sort of cost so item renaming is more special
 - if there is a high demand for this:
@@ -103,18 +104,14 @@ Quirks:
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that, However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for valheim.
 
 #### API Docs:
-The mod exposes two events for other mods to hook into when an item name or description is changed.
-API.RenameEvents
-example for logging
+Events live in namespace `DrakeRenameit.API` (`RenameEvents`).
+
 ```csharp
-RenameEvents.OnItemNameChanged += (player, item, oldName, newName) =>
-{
-   //todo: add your code here
-};
-RenameEvents.OnItemDescriptionChanged += (player, item, oldName, newName) =>
-{
-   //todo: add your code here
-};
+using DrakeRenameit.API;
+
+RenameEvents.OnItemNameChanged += (player, item, oldName, newName) => { /* ... */ };
+RenameEvents.OnItemDescriptionChanged += (player, item, oldDesc, newDesc) => { /* ... */ };
+RenameEvents.OnCraftedByDisplayChanged += (player, item, itemPrefabName, oldDisplay, newDisplay) => { /* ... */ };
 ```
 
 Contact me:

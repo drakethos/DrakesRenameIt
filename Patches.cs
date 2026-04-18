@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using HarmonyLib;
 using UnityEngine;
+using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 
 namespace DrakeRenameit;
 
@@ -81,27 +82,15 @@ public static class Patches
             // wrap it with our own
             __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
             {
-                if (item != null && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                if (item != null && DrakeRenameit.IsMenuOpenModifierHeld())
                 {
-                    if (DrakeRenameit.CanChangeName(item, true))
+                    if (DrakeRenameit.AnyInventoryActionAvailable(item))
                     {
-                        DrakeRenameit.OpenRename(item);
+                        UIPanels.OpenActionMenu(item);
+                        return;
                     }
-
-                    return; // stop here, skip vanilla handler
                 }
 
-                if (item != null && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
-                {
-                    if (DrakeRenameit.CanChangeDesc(item, true))
-                    {
-                        DrakeRenameit.OpenRewriteDesc(item);
-                    }
-
-                    return; // stop here, skip vanilla handler
-                }
-
-                // otherwise, let vanilla delegate run
                 original?.Invoke(grid, item, pos);
             };
         }
@@ -154,76 +143,50 @@ public static class InventoryGridTooltipPatch
 
         var topic = DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name;
         string currentText = item.GetTooltip();
+        currentText = ItemTooltipPatches.ApplyCraftedByDisplayToTooltipText(currentText, item);
 
         // Handle custom description replacement
         currentText = UpdateDescription(item, currentText);
 
-        // Build tooltip extensions
         var sb = new System.Text.StringBuilder();
+        sb.AppendLine("\n");
 
-        // Config: rename enabled?
-        if (RenameitConfig.RenameEnabled)
+        string menuColor = RenameitConfig.MenuModifierIsShift ? RenameitConfig.ShiftColor : RenameitConfig.CtrlColor;
+        string menuMod = RenameitConfig.MenuModifierIsShift ? "Shift" : "Ctrl";
+        bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
+        bool elevated = Player.m_localPlayer != null &&
+                          RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+
+        if (anyAction)
         {
-            sb.AppendLine("\n");
-            if (DrakeRenameit.CanChangeName(item, false))
-            {
-                sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
-            }
-            else if (Player.m_localPlayer != null &&
-                     API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
-            {
-                sb.AppendLine(
-                    $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Elevated override</color>");
-            }
-            else
-            {
-                var hint = RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RenameItemName, item);
-                sb.AppendLine(
-                    $"<color=red><s>Shift + Right Click to rename</s><br><b>{hint}</b></color>");
-            }
+            sb.AppendLine($"<color={menuColor}><b>{menuMod} + Right Click for options</b></color>");
         }
-        else if (Player.m_localPlayer != null &&
-                 API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+        else if (elevated)
         {
             sb.AppendLine(
-                $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Elevated override (rename disabled globally)</color>");
+                $"<color={menuColor}><b>{menuMod} + Right Click for options</b></color><color=blue> Elevated override</color>");
         }
-
-        // Config: rewrite desc enabled?
-        if (RenameitConfig.RewriteDescriptionsEnabled)
+        else
         {
-            if (!RenameitConfig.RenameEnabled)
-                sb.AppendLine("\n");
-
-            if (DrakeRenameit.CanChangeDesc(item, false))
-            {
-                sb.AppendLine(
-                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
-            }
-            else if (Player.m_localPlayer != null &&
-                     API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
-            {
-                sb.AppendLine(
-                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><color=blue> Elevated override</color>");
-            }
-            else
-            {
-                var hint = RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RewriteDescription, item);
-                sb.AppendLine(
-                    $"<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>{hint}</b></color>");
-            }
-        }
-        else if (Player.m_localPlayer != null &&
-                 API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
-        {
-            if (!RenameitConfig.RenameEnabled)
-                sb.AppendLine("\n");
+            string detail = BuildNoDrakeMenuHint(item);
             sb.AppendLine(
-                $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Elevated override (descriptions disabled globally)</color></b>");
+                $"<color=red><s>{menuMod} + Right Click for options</s></color><br><b>{detail}</b>");
         }
 
         // Final set
         tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
+    }
+
+    private static string BuildNoDrakeMenuHint(ItemDrop.ItemData item)
+    {
+        var parts = new System.Collections.Generic.List<string>();
+        if (!DrakeRenameit.CanChangeName(item, false))
+            parts.Add(RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RenameItemName, item));
+        if (!DrakeRenameit.CanChangeDesc(item, false))
+            parts.Add(RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RewriteDescription, item));
+        if (!DrakeRenameit.CanChangeCraftedByLabel(item, false))
+            parts.Add(RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.EditCraftedByLabel, item));
+        return string.Join("<br>", parts.Distinct());
     }
 
     private static string UpdateDescription(ItemDrop.ItemData? item, string currentText)
@@ -232,7 +195,8 @@ public static class InventoryGridTooltipPatch
             return currentText;
         if (DrakeRenameit.hasNewDesc(item))
         {
-            string customDesc = DrakeRenameit.getPropperDesc(item, item.m_shared.m_description);
+            string customDesc = TooltipRichText.EnsureColorTagsClosedForTooltip(
+                DrakeRenameit.getPropperDesc(item, item.m_shared.m_description));
             string originalDesc = item.m_shared.m_description;
 
             if (!string.IsNullOrEmpty(originalDesc) && currentText.Contains(originalDesc))

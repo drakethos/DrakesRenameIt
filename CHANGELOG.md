@@ -45,3 +45,5 @@
   - Compatability fix for ZenItemStands
 - Version 0.6.4
   - Fixed bug with admin detection
+- Version 0.7.0
+  - added new exclusion features.

@@ -43,26 +43,44 @@ localization with an additional name, simply leave the $string intact and add ar
   - give you up
   - let you down!</s>
 ### Configurations:
-Excluded category tokens (`ExcludedCategory`) accept `Skills.SkillType` names, `ItemDrop.ItemData.ItemType` names, and a few aliases (armor, weapons, melee, etc.). After the first game launch with this mod, open **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** for the full generated list (updated when the mod version changes).
 
-You can configure the following:
-- Character limit of the rename. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
-  to looks funky if the name is too long.
-- Character limit of description. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
-    to looks funky if the description is too long.
-- Rename Enabled - you may want to use the description only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
-- Rewrite Description Enabled - you may want to use the name only, maybe you want neither and just like this mod, I wont judge. This could be used to premake items on a world then prevent others from changing them.
-- Lock To Owner - If you want to keep someone from renaming your things, it will prevent anyone who is not the same player name
-  as the one who originally crafted said item.
-- Name Claims Owner - This goes hand and hand with Lock to owner, if you are not locking the owner, this doesn't
-  really have a ton of value, especially in most cases "crafted by": does not change for many items.
-  when on this will allow you to claim non crafted items, such as rocks and other pickables when you change the name. It will then
-  work with lock to owner to prevent changing the name. Remember, when you write your name on something it definitely makes it yours ;)
-- AdminOverride - this lets admins still make changes if anything is disabled, or even if they dont own it. This could be good if you wanted to lock down all named items and leave it to admin to give out cool unique items etc.
-- ShowReason (General, server-synced) - when enabled, denied renames show specific reasons in messages and tooltips; when disabled, generic text only.
-- ExcludedNames / RenameAllowlist - use the [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html): **Item** column (spawn/prefab name, e.g. `ShieldBronzeBuckler`, `AxeStone`) or **Token** column (`$item_...`, same as `m_shared.m_name`), or **English Name** for the localized label. All three forms match.
-- ShiftColor - Changes the color for the label on the tool tip shift + click 
-- CtrlColor - Changes the color for the label on the tool tip ctrl + click
+Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **Almost everything is server-synced** so the host controls rules for the world; the exceptions are **ShiftColor** and **CtrlColor** (per-client UI only).
+
+#### General (server-synced)
+
+- **RenameEnabled** — When on, players can use Shift + right-click to rename items. Turn off to block new renames while keeping descriptions or other features (for example after pre-placing renamed gear).
+- **RewriteDescriptionsEnabled** — When on, players can use Ctrl + right-click to edit that item instance’s description. Can be used without rename, or turned off if you only want custom names.
+- **LockToOwner** — When on, only the crafter / owner can rename or change description. Stacks with **no** crafter yet (raw picked-up resources: no crafter id and no crafter name) are **not** treated as “someone else’s” until they are crafted or claimed. After **NameClaimsOwner** assigns you as crafter, others are blocked as usual.
+- **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter (and “crafted by” style ownership) so **LockToOwner** can protect that stack. Works with uncrafted resources when **AllowRenameResources** (and allowlist if needed) permits the edit.
+- **AllowRenameResources** — When on, unowned resource-style stacks (no crafter yet) can be renamed or given a description. When off, those stacks are blocked **unless** they are on **RenameAllowlist** (then claim rules can still apply). This is separate from **ExcludedCategory** `Material`, which can still block by item type for crafted gear.
+- **ShowReason** — When on, denied rename/description attempts show **why** (ownership, exclusion, resources, etc.) in the center message and inventory tooltip. When off, messages stay generic. **Server-synced** so clients cannot enable detailed reasons against the host’s preference. Denials are still logged to the BepInEx log for admins.
+
+#### Limits (server-synced)
+
+- **NameCharacterLimit** — Max length for custom names. Counts rich text tags (`<color>`, `<size>`, etc.), so leave headroom.
+- **DescriptionCharacterLimit** — Same idea for custom descriptions.
+
+#### Admin (server-synced)
+
+- **AllowAdminOverride** — When on, “elevated” players (see below) bypass **LockToOwner**, exclusions, and resource rules, and can still rename or edit descriptions even when **RenameEnabled** / **RewriteDescriptionsEnabled** are off for everyone else (“regardless of ownership or enabled,” per config).
+- **VipList** — Comma-separated **player names** or **player IDs** (same strings as the API `AddVIP`). Used when **AllowAdminOverride** is on. Valheim server admins also count as elevated unless **VipOnlyOverride** is on.
+- **VipOnlyOverride** — When **true** (and **AllowAdminOverride** is on), **only** VIP list / API VIPs count as elevated; Valheim’s server admin flag is **ignored** for bypassing rules. Useful to test VIP-only behavior. When **false**, either Valheim admin **or** VIP counts as elevated.
+
+#### Exclusions (server-synced)
+
+- **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`, matches internal item name), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. A full reference file is generated at **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** on first run or when the mod version changes.
+- **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, and the unowned-resource check, but still require **RenameEnabled** / **RewriteDescriptionsEnabled** to be on and still obey **LockToOwner** if another player owns the stack. **AllowAdminOverride** elevation bypasses the global toggles and most restrictions as usual.
+
+#### UI (not synced — client only)
+
+- **ShiftColor** — Color for the “Shift + right click to rename” hint in the inventory tooltip (Unity color name or `#rrggbb`).
+- **CtrlColor** — Same for “Ctrl + right click” description hint.
+
+#### Permission order (how rules stack)
+
+Roughly: **Admin/VIP override** → **global rename / description toggles** → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
+
 ### Quirks and Known Issues:
 Quirks:
 - Item stacks behave a very particular way. When you rename an existing stack, it will rename the whole stack. Any item added to said stack
@@ -79,8 +97,6 @@ Quirks:
 - I may try to add stack splitting feature
 - Costs (configurable)
   - To prevent others from renaming things a million times adding some sort of cost so item renaming is more special
-- Exclusion list / category
-  - Make it so some items can't be renamed configurable and admin ignored
 - if there is a high demand for this:
 - Renamable pieces (that have hover names)
 ##### Distant crazy features

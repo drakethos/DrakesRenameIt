@@ -40,3 +40,5 @@
   - Bug fix for admin override not working correctly on named resources
 - Version 0.6.2
   - null check hardening code to prevent crashes with other mods.
+- Version 0.6.3
+  - Compatibility fix with infinity hammer.

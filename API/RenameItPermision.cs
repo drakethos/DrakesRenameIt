@@ -12,29 +12,41 @@ public static class RenameitPermission
     {
         Player local = Player.m_localPlayer;
         if (local != null)
-            return IsAdminOrVIP(local);
+            return IsElevatedForOverrides(local);
         return false;
     }
 
-    // Core admin check
+    /// <summary>True when the player may bypass ownership, exclusions, and resource rules (subject to <see cref="RenameitConfig.AllowAdminOverride"/>).</summary>
     public static bool IsAdminOrVIP(Player player)
     {
-        //we always do false if admin is not allowed to override then theres no reason to even check.
-        if (!RenameitConfig.AllowAdminOverride)
-        {
+        return IsElevatedForOverrides(player);
+    }
+
+    /// <summary>
+    /// VIP list / API first; if <see cref="RenameitConfig.VipOnlyOverride"/> is true, Valheim server admin is not treated as elevated.
+    /// Otherwise Valheim admin (<see cref="IsValheimAdmin"/>) also counts.
+    /// </summary>
+    public static bool IsElevatedForOverrides(Player? player)
+    {
+        if (!RenameitConfig.AllowAdminOverride || player == null)
             return false;
-        }
-        if (player == null) return false;
 
         string pid = player.GetPlayerID().ToString();
         string name = player.GetPlayerName();
 
-        // Admin list check (Valheim adminlist / Jotunn-synced), OR VIP list / API below
-        if (IsAdminSafe(player))
+        if (vipList.Contains(name) || vipList.Contains(pid))
             return true;
 
-        // Custom VIP check
-        return vipList.Contains(name) || vipList.Contains(pid);
+        if (RenameitConfig.VipOnlyOverride)
+            return false;
+
+        return IsValheimAdmin(player);
+    }
+
+    /// <summary>Valheim server admin (adminlist / Jotunn-synced), independent of VIP-only mode.</summary>
+    public static bool IsValheimAdmin(Player? player)
+    {
+        return IsAdminSafe(player);
     }
 
     // Public API for other mods
@@ -67,7 +79,7 @@ public static class RenameitPermission
     /// True when the player is a Valheim server admin (adminlist entries are socket/Steam IDs, not character names).
     /// Local player: uses Jotunn's <see cref="SynchronizationManager.PlayerIsAdmin"/> (synced from server on clients).
     /// </summary>
-    public static bool IsAdminSafe(Player player)
+    public static bool IsAdminSafe(Player? player)
     {
         if (player == null || ZNet.instance == null)
             return false;

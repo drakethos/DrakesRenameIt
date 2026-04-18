@@ -164,68 +164,62 @@ public static class InventoryGridTooltipPatch
         // Config: rename enabled?
         if (RenameitConfig.RenameEnabled)
         {
-            // keeps from mushin with the previous tooltip
             sb.AppendLine("\n");
             if (DrakeRenameit.CanChangeName(item, false))
             {
                 sb.AppendLine($"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color>");
             }
+            else if (Player.m_localPlayer != null &&
+                     API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+            {
+                sb.AppendLine(
+                    $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Elevated override</color>");
+            }
             else
             {
-                string reason;
-                string admin_override ="";
-                if (!RenameitConfig.AllowRenameResources)
-                    reason = "Cannot rename resources, Disabled.";
-                else
-                    reason = "Must be owner to rewrite";
-                if (API.RenameitPermission.IsAdminOrVIP())
-                {
-                    admin_override = "<color=blue> Disabled: Admin Override</color>";
-                }
+                var hint = RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RenameItemName, item);
                 sb.AppendLine(
-                    $"<color=red><s>Shift + Right Click to rename</s><br><b>Must be owner to {reason}</b></color>{admin_override}");
+                    $"<color=red><s>Shift + Right Click to rename</s><br><b>{hint}</b></color>");
             }
         }
-        else if (API.RenameitPermission.IsAdminOrVIP())
+        else if (Player.m_localPlayer != null &&
+                 API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
         {
             sb.AppendLine(
-                $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Disabled: Admin Override</color>");
+                $"<color={RenameitConfig.ShiftColor}><b>Shift + Right Click to rename</b></color><color=blue> Elevated override (rename disabled globally)</color>");
         }
 
         // Config: rewrite desc enabled?
         if (RenameitConfig.RewriteDescriptionsEnabled)
         {
-            // we need an extra line to not mush with the other if its disabled
             if (!RenameitConfig.RenameEnabled)
-            {
                 sb.AppendLine("\n");
-            }
 
-            if (DrakeRenameit.CanChangeName(item, false))
+            if (DrakeRenameit.CanChangeDesc(item, false))
             {
                 sb.AppendLine(
                     $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color>");
             }
+            else if (Player.m_localPlayer != null &&
+                     API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+            {
+                sb.AppendLine(
+                    $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><color=blue> Elevated override</color>");
+            }
             else
             {
-                string admin_override ="";
-                if (API.RenameitPermission.IsAdminOrVIP())
-                {
-                    admin_override = "<color=blue> Disabled: Admin Override</color>";
-                }
-                string reason;
-                if (!RenameitConfig.AllowRenameResources)
-                    reason = "Cannot rename resources, Disabled.";
-                else
-                    reason = "Must be owner to rewrite";
-
-                 sb.AppendLine($"<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>{reason}</b></color>{admin_override}");
+                var hint = RenamePermissionManager.GetTooltipDisabledHint(RenamePermissionOperation.RewriteDescription, item);
+                sb.AppendLine(
+                    $"<color=red><s>Ctrl + Right Click to rewrite description</s><br><b>{hint}</b></color>");
             }
         }
-        else if (API.RenameitPermission.IsAdminOrVIP())
+        else if (Player.m_localPlayer != null &&
+                 API.RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
         {
+            if (!RenameitConfig.RenameEnabled)
+                sb.AppendLine("\n");
             sb.AppendLine(
-                $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Disabled: Admin Override</color></b>");
+                $"<color={RenameitConfig.CtrlColor}><b>Ctrl + Right Click to rewrite description</b></color><br><b><color=blue> Elevated override (descriptions disabled globally)</color></b>");
         }
 
         // Final set

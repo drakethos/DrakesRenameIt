@@ -31,6 +31,10 @@ public static class RenameitConfig
     private static ConfigEntry<string> _shiftColor;
     private static ConfigEntry<string> _ctrlColor;
     private static ConfigEntry<string> _excludedNames;
+    private static ConfigEntry<string> _excludedCategory;
+    private static ConfigEntry<string> _renameAllowlist;
+    private static ConfigEntry<bool> _vipOnlyOverride;
+    private static ConfigEntry<bool> _showReason;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -45,6 +49,11 @@ public static class RenameitConfig
     public static string ShiftColor => _shiftColor.Value;
     public static string CtrlColor => _ctrlColor.Value;
     public static string ExcludedNames => _excludedNames.Value;
+    public static string ExcludedCategory => _excludedCategory.Value;
+    /// <summary>Comma-separated internal item ids (<c>m_shared.m_name</c>) that may always be renamed.</summary>
+    public static string RenameAllowlist => _renameAllowlist.Value;
+    public static bool VipOnlyOverride => _vipOnlyOverride.Value;
+    public static bool ShowReason => _showReason.Value;
     
     public static void Bind(ConfigFile config)
     {
@@ -53,7 +62,7 @@ public static class RenameitConfig
             SectionGeneral,
             "LockToOwner",
             true,
-            "If true, only the crafter can rename the item.",
+            "If true, only the crafter/owner can rename or edit description. Items with no crafter (raw resources, m_crafterID 0 and no crafter name) are not locked until someone claims them (NameClaimsOwner) or they are crafted.",
            true
         );
         
@@ -70,7 +79,7 @@ public static class RenameitConfig
             SectionGeneral,
             "AllowRenameResources",
             true,
-            "If true you can rename resources that have not been crafted such as rocks, metals, woods etc. Note if disabled NameClaimsOwner is irrelevant.",
+            "If true, items with no crafter (picked-up / uncrafted stacks) can be renamed. This is NOT the same as ExcludedCategory Material: Material blocks by item type even for crafted items. If disabled, NameClaimsOwner cannot apply to those stacks.",
            true
         );
 
@@ -88,8 +97,15 @@ public static class RenameitConfig
             true,
             "If enabled, allows players to also edit descriptions of items. Could be turned off preplace items with descriptions.",
            true
-        );   
-      
+        );
+
+        _showReason = config.BindSynced(
+            SectionGeneral,
+            "ShowReason",
+            false,
+            "If true, denied rename/description actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
+            true
+        );
 
         
         // Example: Lock renames to item owner
@@ -121,8 +137,16 @@ public static class RenameitConfig
             SectionAdmin,
             "VipList",
             "",
-            "When AdminOverride is set: this list can specify those who can ignore restrictions in additional to actual admins, and any mod that uses the API hook.",
+            "Comma-separated player names or player IDs (same as API AddVIP). When AdminOverride is on, VIPs can bypass restrictions. If VipOnlyOverride is on, ONLY VIP/API users count as elevated (Valheim server admin is ignored for overrides).",
            true
+        );
+
+        _vipOnlyOverride = config.BindSynced(
+            SectionAdmin,
+            "VipOnlyOverride",
+            false,
+            "If true (and AdminOverride is on), only VIP list / AddVIP API users are treated as elevated for bypassing rules—Valheim server admin is NOT. Useful for testing VIP behavior locally. If false, Valheim admin OR VIP is elevated.",
+            true
         );
         
         _shiftColor = config.BindSynced(
@@ -144,7 +168,23 @@ public static class RenameitConfig
             SectionExclusions,
             "ExcludedNames",
             "",
-            "Coma seperated list of names of items to exclude from being able to rename. Admin  mode will override these settings",
+            "Comma-separated entries: Jotunn item list Token column (m_shared.m_name, e.g. $item_axe_stone) OR Item column (spawn/prefab name, e.g. AxeStone, ShieldBronzeBuckler), OR localized display name (English Name column). List: https://valheim-modding.github.io/Jotunn/data/objects/item-list.html — Admins/VIP (when AdminOverride is on) ignore this. See also ExcludedCategory and RenameAllowlist.",
+            true
+        );
+
+        _excludedCategory = config.BindSynced(
+            SectionExclusions,
+            "ExcludedCategory",
+            "",
+            "Comma-separated category tokens (non-elevated players). Examples: Swords,Armor,Material,Bows. Full lists of Skills.SkillType and ItemDrop.ItemData.ItemType names plus aliases are written to BepInEx/config/<this mod GUID>/ExcludedCategoryReference.txt on first run (or when the mod version changes). Does not bypass RenameEnabled when that is off. Elevated users ignore when AdminOverride is on.",
+            true
+        );
+
+        _renameAllowlist = config.BindSynced(
+            SectionExclusions,
+            "RenameAllowlist",
+            "",
+            "Comma-separated entries: Jotunn Token ($item_...) or Item (spawn name) or English display name — same rules as ExcludedNames. When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, and the uncrafted (AllowRenameResources) rule. Does NOT bypass global RenameEnabled/RewriteDescriptionsEnabled when those are off (only elevated users can). Does not bypass LockToOwner ownership.",
             true
         );
     }

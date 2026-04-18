@@ -1,4 +1,4 @@
-# DrakesRenameIt V0.6.3
+# DrakesRenameIt V0.7.0
 
 A much needed mod for Valheim that lets you rename and rewrite descriptions of any items. Great for roleplay or just plain fun! Want to let your friends know, that axe is totally yours? Prank a friend by changing his favorite axe.
 ### How to use:
@@ -43,6 +43,8 @@ localization with an additional name, simply leave the $string intact and add ar
   - give you up
   - let you down!</s>
 ### Configurations:
+Excluded category tokens (`ExcludedCategory`) accept `Skills.SkillType` names, `ItemDrop.ItemData.ItemType` names, and a few aliases (armor, weapons, melee, etc.). After the first game launch with this mod, open **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** for the full generated list (updated when the mod version changes).
+
 You can configure the following:
 - Character limit of the rename. Be sure to allow for \<color> and other tags as they count as part of the limit. I definitely recommend some sort of limit as the item will start
   to looks funky if the name is too long.
@@ -57,6 +59,8 @@ You can configure the following:
   when on this will allow you to claim non crafted items, such as rocks and other pickables when you change the name. It will then
   work with lock to owner to prevent changing the name. Remember, when you write your name on something it definitely makes it yours ;)
 - AdminOverride - this lets admins still make changes if anything is disabled, or even if they dont own it. This could be good if you wanted to lock down all named items and leave it to admin to give out cool unique items etc.
+- ShowReason (General, server-synced) - when enabled, denied renames show specific reasons in messages and tooltips; when disabled, generic text only.
+- ExcludedNames / RenameAllowlist - use the [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html): **Item** column (spawn/prefab name, e.g. `ShieldBronzeBuckler`, `AxeStone`) or **Token** column (`$item_...`, same as `m_shared.m_name`), or **English Name** for the localized label. All three forms match.
 - ShiftColor - Changes the color for the label on the tool tip shift + click 
 - CtrlColor - Changes the color for the label on the tool tip ctrl + click
 ### Quirks and Known Issues:

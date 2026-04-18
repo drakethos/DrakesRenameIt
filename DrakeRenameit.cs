@@ -18,7 +18,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.6.3";
+        public const string Version = "0.7.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
@@ -32,7 +32,9 @@ namespace DrakeRenameit
         private void Awake()
         {
             Bind(Config);
+            ExcludedCategoryReferenceWriter.EnsureGenerated();
             AddVip();
+            RenamePermissionManager.Init(Logger);
 
             harmony.PatchAll();
         }
@@ -178,12 +180,14 @@ namespace DrakeRenameit
                     name);
             }
 
-            if (NameClaimsOwner && AllowRenameResources && String.IsNullOrEmpty(CurrentItem.m_crafterName))
+            if (NameClaimsOwner && (AllowRenameResources || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
+                String.IsNullOrEmpty(CurrentItem.m_crafterName))
             {
                 Player localPlayer = Player.m_localPlayer;
                 if (localPlayer != null)
                 {
                     CurrentItem.m_crafterID = localPlayer.GetPlayerID();
+                    CurrentItem.m_crafterName = localPlayer.GetPlayerName();
                 }
             }
         }
@@ -208,12 +212,14 @@ namespace DrakeRenameit
             }
             
 
-            if (NameClaimsOwner && AllowRenameResources && String.IsNullOrEmpty(CurrentItem.m_crafterName))
+            if (NameClaimsOwner && (AllowRenameResources || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
+                String.IsNullOrEmpty(CurrentItem.m_crafterName))
             {
                 Player localPlayer = Player.m_localPlayer;
                 if (localPlayer != null)
                 {
                     CurrentItem.m_crafterID = localPlayer.GetPlayerID();
+                    CurrentItem.m_crafterName = localPlayer.GetPlayerName();
                 }
             }
         }
@@ -245,120 +251,26 @@ namespace DrakeRenameit
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)
         {
-            Player local = Player.m_localPlayer;
-            if ((RenameEnabled || API.RenameitPermission.IsAdminOrVIP(local)) &&
-                LockToOwner)
-            {
-                if (IsExcluded(item) && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    return false;
-                }
-
-                //first check if it even has an owner, if it doesnt that means its likely not crafted, also check if thats allowed.
-                if (String.IsNullOrEmpty(item!.m_crafterName) && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    if (AllowRenameResources)
-                    return true;
-                    else
-                    {
-                        if (showError)
-                        {
-                            local.Message(
-                            MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                            "You cannot change this — resource changes are disabled!"
-                        );
-                        }
-                        return false;
-                    }
-                }
-           
-                
-
-                if (item.m_crafterID != local.GetPlayerID() && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    if (showError)
-                    {
-                        local.Message(
-                            MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                            "You cannot change this — it’s owned!"
-                        );
-                    }
-
-                    return false;
-                }
-            }
-            else
-            {
-                local.Message(
-                    MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                    "You cannot change this — Renames have been disabled");
-                return false;
-            }
-
-            return true;
+            return RenamePermissionManager
+                .Evaluate(RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer, showError).Allowed;
         }
 
         public static bool CanChangeDesc(ItemDrop.ItemData item, bool showError = false)
         {
-            Player local = Player.m_localPlayer;
-            if ((RewriteDescriptionsEnabled || API.RenameitPermission.IsAdminOrVIP(local)) &&
-                LockToOwner)
-            {
-                if (IsExcluded(item) && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    return false;
-                }
-                //first check if it even has an owner, if it does not its probably not crafted make sure resources are allowed.
-                if (String.IsNullOrEmpty(item.m_crafterName) && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    if (AllowRenameResources)
-                        return true;
-                    else
-                    {
-                        if (showError)
-                        {
-                            local.Message(
-                                MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                                "You cannot change this — resource changes are disabled!"
-                            );
-                        }
-                        return false;
-                    }
-                }
-
-                if (item.m_crafterID != local.GetPlayerID() && !API.RenameitPermission.IsAdminOrVIP(local))
-                {
-                    if (showError)
-                    {
-                        local.Message(
-                            MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                            "You cannot change this — it’s owned!"
-                        );
-                    }
-
-                    return false;
-                }
-            }
-            else
-            {
-                local.Message(
-                    MessageHud.MessageType.Center, // or TopLeft, depending where you want it
-                    "You cannot change this — Desc Rewrites have been disabled");
-                return false;
-            }
-
-            return true;
+            return RenamePermissionManager
+                .Evaluate(RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer, showError).Allowed;
         }
 
+        /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/> or <see cref="RenameitConfig.ExcludedCategory"/>.</summary>
         public static bool IsExcluded(ItemDrop.ItemData? item)
         {
-            if (item == null)
-                return false;
-            if (String.IsNullOrEmpty(ExcludedNames))
-                return false;
-            return ExcludedNames
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                .Any(name => item.m_shared.m_name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
+            return RenameExclusionRules.IsExcludedFromConfig(item);
+        }
+
+        /// <summary>True if the item appears on <see cref="RenameitConfig.RenameAllowlist"/>.</summary>
+        public static bool IsRenameAllowlisted(ItemDrop.ItemData? item)
+        {
+            return RenameExclusionRules.MatchesRenameAllowlist(item);
         }
     }
 }

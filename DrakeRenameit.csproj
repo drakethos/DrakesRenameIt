@@ -14,7 +14,7 @@
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
     <CompanyName>DrakeMods</CompanyName>
-    <Version>0.6.3</Version>
+    <Version>0.7.0</Version>
     <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
     <ThunderstoreFolder>C:\Modding\Thunderstore\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
     <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
@@ -102,6 +102,10 @@
     <Compile Include="API\RenameItPermision.cs" />
     <Compile Include="extensions\ButtonExtensions.cs" />
     <Compile Include="RenameitConfig.cs" />
+    <Compile Include="ExcludedCategoryAliases.cs" />
+    <Compile Include="ExcludedCategoryReferenceWriter.cs" />
+    <Compile Include="RenameExclusionRules.cs" />
+    <Compile Include="RenamePermissionManager.cs" />
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

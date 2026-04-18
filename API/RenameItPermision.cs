@@ -1,7 +1,6 @@
-﻿using Jotunn;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Jotunn.Managers;
 
 namespace DrakeRenameit.API;
 
@@ -13,9 +12,7 @@ public static class RenameitPermission
     {
         Player local = Player.m_localPlayer;
         if (local != null)
-        {
             return IsAdminOrVIP(local);
-        }
         return false;
     }
 
@@ -32,7 +29,7 @@ public static class RenameitPermission
         string pid = player.GetPlayerID().ToString();
         string name = player.GetPlayerName();
 
-        // Admin list check
+        // Admin list check (Valheim adminlist / Jotunn-synced), OR VIP list / API below
         if (IsAdminSafe(player))
             return true;
 
@@ -66,25 +63,52 @@ public static class RenameitPermission
 
     public static IEnumerable<string> GetVIPs() => vipList;
 
+    /// <summary>
+    /// True when the player is a Valheim server admin (adminlist entries are socket/Steam IDs, not character names).
+    /// Local player: uses Jotunn's <see cref="SynchronizationManager.PlayerIsAdmin"/> (synced from server on clients).
+    /// </summary>
     public static bool IsAdminSafe(Player player)
     {
-        if (player == null) return false;
-        if (ZNet.instance == null) return false;
-        bool isClient = Player.m_localPlayer != null;
+        if (player == null || ZNet.instance == null)
+            return false;
 
-        if (!ZNet.instance.IsServer() && !isClient) return false;
+        if (player == Player.m_localPlayer)
+            return SynchronizationManager.Instance != null && SynchronizationManager.Instance.PlayerIsAdmin;
 
-        string hostName = player.GetPlayerName();
-        if (string.IsNullOrEmpty(hostName)) return false;
+        return IsValheimAdminForRemotePlayer(player);
+    }
 
+    /// <summary>
+    /// Dedicated / server: resolve peer by character and test adminlist using <see cref="ISocket.GetHostName"/> (same as vanilla adminlist IDs).
+    /// </summary>
+    private static bool IsValheimAdminForRemotePlayer(Player player)
+    {
         try
         {
-            return ZNet.instance.IsAdmin(hostName);
+            if (ZNet.instance.m_adminList == null)
+                return false;
+
+            ZDOID zid = player.GetZDOID();
+
+            foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+            {
+                if (!peer.IsReady())
+                    continue;
+                if (peer.m_characterID != zid)
+                    continue;
+
+                string? hostId = peer.m_socket != null ? peer.m_socket.GetHostName() : null;
+                if (string.IsNullOrEmpty(hostId))
+                    return false;
+
+                return ZNet.instance.ListContainsId(ZNet.instance.m_adminList, hostId);
+            }
         }
         catch
         {
             return false;
         }
-    }
 
+        return false;
+    }
 }

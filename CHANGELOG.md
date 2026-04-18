@@ -43,3 +43,5 @@
 - Version 0.6.3
   - Compatibility fix with infinity hammer.
   - Compatability fix for ZenItemStands
+- Version 0.6.4
+  - Fixed bug with admin detection

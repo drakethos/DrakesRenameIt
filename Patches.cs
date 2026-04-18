@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 
@@ -267,16 +268,22 @@ public static class ItemStandPatch
     [HarmonyPriority(Priority.Last)]
     static void FixStandText(ItemStand __instance, string itemName, int variant, int quality)
     {
-        
-        var zdo = ((ZNetView)AccessTools.Field(typeof(ItemStand), "m_nview").GetValue(__instance)).GetZDO();
-        
+        var mNviewField = AccessTools.Field(typeof(ItemStand), "m_nview");
+        object? nviewObj = __instance != null ? mNviewField?.GetValue(__instance) : null;
+        var nview = nviewObj as ZNetView;
+
+        if (nview == null)
+            return;
+
+        var zdo = nview.GetZDO();
+
         if (zdo == null) return;
 
         string customName = zdo.GetString("DrakeRenameIt_CustomName", "");
         if (!string.IsNullOrEmpty(customName))
         {
             var currentItemField = AccessTools.Field(typeof(ItemStand), "m_currentItemName");
-            currentItemField.SetValue(__instance, customName);
+            currentItemField?.SetValue(__instance, customName);
         }
     }
 }

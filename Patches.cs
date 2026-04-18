@@ -1,9 +1,38 @@
 ﻿using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 
 namespace DrakeRenameit;
+
+/// <summary>Shared hover text rename logic (ItemDrop + ItemStand / container stands).</summary>
+internal static class HoverRenameHelper
+{
+    internal static void ApplyRenameToHoverResult(ref string __result, ItemDrop.ItemData item)
+    {
+        if (item?.m_shared == null || string.IsNullOrEmpty(__result))
+            return;
+
+        if (!DrakeRenameit.hasNewName(item))
+            return;
+
+        string customName = DrakeRenameit.GetPropperName(item);
+        if (customName == null || item.m_shared.m_name == null)
+            return;
+
+        // Replace the default name in the hover text with our rename
+        if (Localization.instance == null)
+        {
+            __result = __result.Replace(item.m_shared.m_name, customName);
+            return;
+        }
+
+        string localizedOriginalName = Localization.instance.Localize(item.m_shared.m_name);
+        string localizedCustomName = Localization.instance.Localize(customName);
+
+        if (__result.Contains(localizedOriginalName))
+            __result = __result.Replace(localizedOriginalName, localizedCustomName);
+    }
+}
 
 public static class Patches
 {
@@ -19,29 +48,7 @@ public static class Patches
             if (__instance?.m_itemData?.m_shared == null || string.IsNullOrEmpty(__result))
                 return;
 
-            if (DrakeRenameit.hasNewName(item))
-            {
-                string customName = DrakeRenameit.GetPropperName(item);
-                if (customName != null && item.m_shared.m_name != null)
-                {
-                    // Replace the default name in the hover text with our rename
-                    // Find the original name to swap
-                    if (Localization.instance == null)
-                    {
-                        // Fallback if Localization is not available
-                        __result = __result.Replace(item.m_shared.m_name, customName);
-                        return;
-                    }
-                    string localizedOriginalName = Localization.instance.Localize(item.m_shared.m_name);
-                    string localizedCustomName = Localization.instance.Localize(customName);
-
-                    // Replace only the first instance of originalName with customName
-                    if (__result.Contains(localizedOriginalName))
-                    {
-                        __result = __result.Replace(localizedOriginalName, localizedCustomName);
-                    }
-                }
-            }
+            HoverRenameHelper.ApplyRenameToHoverResult(ref __result, item);
         }
 
         [HarmonyPatch(typeof(ItemDrop), nameof(ItemDrop.GetHoverName))]
@@ -247,6 +254,39 @@ public static class InventoryGridTooltipPatch
 [HarmonyPatch(typeof(ItemStand))]
 public static class ItemStandPatch
 {
+    /// <summary>ZenDragon-style and other container stands: first item in attached <see cref="Container"/>.</summary>
+    private static ItemDrop.ItemData? TryGetFirstContainerItem(ItemStand stand)
+    {
+        var c = stand.GetComponent<Container>();
+        if (c == null)
+            return null;
+        var inv = c.GetInventory();
+        if (inv == null)
+            return null;
+        var items = inv.GetAllItems();
+        if (items == null || items.Count == 0)
+            return null;
+        return items[0];
+    }
+
+    [HarmonyPatch(nameof(ItemStand.GetHoverText))]
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    static void FixItemStandHoverText(ItemStand __instance, ref string __result)
+    {
+        if (__instance == null || string.IsNullOrEmpty(__result))
+            return;
+
+        var item = TryGetFirstContainerItem(__instance);
+        if (item?.m_shared == null)
+            return;
+
+        if (!DrakeRenameit.hasNewName(item))
+            return;
+
+        HoverRenameHelper.ApplyRenameToHoverResult(ref __result, item!);
+    }
+
     [HarmonyPatch(nameof(ItemStand.UseItem))]
     [HarmonyPostfix]
     [HarmonyPriority(Priority.Last)]

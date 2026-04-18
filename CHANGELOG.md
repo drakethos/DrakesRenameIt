@@ -42,3 +42,4 @@
   - null check hardening code to prevent crashes with other mods.
 - Version 0.6.3
   - Compatibility fix with infinity hammer.
+  - Compatability fix for ZenItemStands

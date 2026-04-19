@@ -11,6 +11,7 @@ public static class RenameitConfig
     private const string SectionExclusions ="Exclusions";
     private const string SectionLimits = "Limits";
     private const string SectionAdmin = "Admin";
+    private const string SectionUnlock = "UnlockCost";
 
     // The sync object ties everything to server authority
     private static ConfigSync configSync = new ConfigSync(DrakeRenameit.ModName)
@@ -40,6 +41,8 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _separateStacksHardLock;
     private static ConfigEntry<bool> _craftedByLabelEnabled;
     private static ConfigEntry<string> _menuOpenModifier;
+    private static ConfigEntry<bool> _unlockCostEnabled;
+    private static ConfigEntry<string> _unlockCost;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -70,6 +73,12 @@ public static class RenameitConfig
 
     /// <summary>Shift or Ctrl — which modifier + right-click opens the Drake action menu.</summary>
     public static string MenuOpenModifier => _menuOpenModifier.Value;
+
+    /// <summary>When true (and <see cref="UnlockCost"/> parses to at least one item), a stack must be unlocked once before rename/description/crafted-by edits. Admins/VIPs still bypass when <see cref="AllowAdminOverride"/> applies.</summary>
+    public static bool UnlockCostEnabled => _unlockCostEnabled.Value;
+
+    /// <summary>Comma- or semicolon-separated list: <c>ItemPrefabName:amount</c> (e.g. <c>Coins:4</c>, <c>Coal:10</c>) or <c>$item_token:amount</c>. Resolved via the game ObjectDB when running.</summary>
+    public static string UnlockCost => _unlockCost.Value;
 
     public static bool MenuModifierIsShift =>
         string.Equals(_menuOpenModifier.Value, "Shift", StringComparison.OrdinalIgnoreCase);
@@ -151,6 +160,21 @@ public static class RenameitConfig
             true
         );
 
+        _unlockCostEnabled = config.BindSynced(
+            SectionUnlock,
+            "UnlockCostEnabled",
+            false,
+            "If true, each item stack must be unlocked once (pay UnlockCost from your inventory) before rename, description, or crafted-by edits apply. After unlock, edits are free for that stack. Invalid/empty UnlockCost is ignored (no gate). Elevated players (AdminOverride) skip the cost.",
+            true
+        );
+
+        _unlockCost = config.BindSynced(
+            SectionUnlock,
+            "UnlockCost",
+            "Coins:4",
+            "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu.",
+            true
+        );
 
         
         // Example: Lock renames to item owner

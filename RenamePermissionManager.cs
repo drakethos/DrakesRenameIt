@@ -15,7 +15,8 @@ public enum RenameDenialReason
     UncraftedResourceBlocked = 1 << 3,
     ExcludedByName = 1 << 4,
     ExcludedByCategory = 1 << 5,
-    GlobalCraftedByDisabled = 1 << 6
+    GlobalCraftedByDisabled = 1 << 6,
+    UnlockCostRequired = 1 << 7
 }
 
 public enum RenamePermissionOperation
@@ -40,15 +41,25 @@ public readonly struct RenamePermissionResult
 /// <summary>Single place for rename / description / crafted-by display permission checks, logging, and player-facing messages.</summary>
 /// <remarks>
 /// Evaluation order: Admin/VIP override → global feature toggles → LockToOwner (only if item has a crafter) →
-/// RenameAllowlist → (excluded name, excluded category, uncrafted/resource rule).
+/// RenameAllowlist → (excluded name, excluded category, uncrafted/resource rule) → optional one-time unlock cost (stack flag).
 /// </remarks>
 public static class RenamePermissionManager
 {
     private static ManualLogSource? _log;
+    private static int _ignoreUnlockRequirementDepth;
 
     internal static void Init(ManualLogSource logSource)
     {
         _log = logSource;
+    }
+
+    /// <summary>While &gt; 0, unlock-cost gate is skipped (used to test whether any edit would be allowed if the stack were unlocked).</summary>
+    internal static void BeginIgnoreUnlockRequirement() => _ignoreUnlockRequirementDepth++;
+
+    internal static void EndIgnoreUnlockRequirement()
+    {
+        if (_ignoreUnlockRequirementDepth > 0)
+            _ignoreUnlockRequirementDepth--;
     }
 
     /// <summary>
@@ -182,6 +193,16 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(false, r);
         }
 
+        if (_ignoreUnlockRequirementDepth == 0 &&
+            RenameUnlockCost.UnlockCostApplies() &&
+            !DrakeRenameit.IsRenameUnlocked(item))
+        {
+            var r = RenameDenialReason.UnlockCostRequired;
+            if (logDenied)
+                LogDenied(op, item, r, "Stack not unlocked for editing (UnlockCost).");
+            return new RenamePermissionResult(false, r);
+        }
+
         LogAllowed(op, item, "Item rules passed.");
         return new RenamePermissionResult(true, RenameDenialReason.None);
     }
@@ -225,6 +246,15 @@ public static class RenamePermissionManager
                 return "Description editing is disabled.";
             if ((reasons & RenameDenialReason.GlobalCraftedByDisabled) != 0)
                 return "Crafted-by label editing is disabled.";
+            if ((reasons & RenameDenialReason.UnlockCostRequired) != 0)
+            {
+                if (Player.m_localPlayer != null &&
+                    RenameUnlockCost.UnlockCostApplies() &&
+                    !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
+                    return "Not enough items to unlock.";
+                return "Unlock this stack first (action menu).";
+            }
+
             return GenericDeniedLine(op);
         }
 
@@ -234,6 +264,14 @@ public static class RenamePermissionManager
             return "Description editing is disabled for this world (config).";
         if ((reasons & RenameDenialReason.GlobalCraftedByDisabled) != 0)
             return "Crafted-by label editing is disabled for this world (config).";
+        if ((reasons & RenameDenialReason.UnlockCostRequired) != 0)
+        {
+            if (Player.m_localPlayer != null &&
+                RenameUnlockCost.UnlockCostApplies() &&
+                !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
+                return "Not enough items in inventory to unlock this stack for editing.";
+            return "Pay the unlock cost in the action menu (Unlock) before editing this stack.";
+        }
 
         var parts = new StringBuilder();
         if ((reasons & RenameDenialReason.ExcludedByName) != 0)
@@ -272,6 +310,15 @@ public static class RenamePermissionManager
 
         if (!RenameitConfig.ShowReason)
         {
+            if ((res.Reasons & RenameDenialReason.UnlockCostRequired) != 0)
+            {
+                if (Player.m_localPlayer != null &&
+                    RenameUnlockCost.UnlockCostApplies() &&
+                    !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
+                    return "Not enough resources to unlock.";
+                return "Unlock this stack first (action menu).";
+            }
+
             return op switch
             {
                 RenamePermissionOperation.RenameItemName => "Cannot rename this item.",

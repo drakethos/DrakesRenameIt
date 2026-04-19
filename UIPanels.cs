@@ -3,6 +3,7 @@ using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
 using DrakeRenameit.Ext.UI;
+using Text = UnityEngine.UI.Text;
 
 namespace DrakeRenameit;
 
@@ -23,6 +24,7 @@ public static class UIPanels
     private static Button? _buttonMenuDesc;
     private static Button? _buttonMenuCraftedBy;
     private static Button? _buttonMenuResetAll;
+    private static Button? _buttonMenuUnlock;
     private static Button? _buttonMenuCancel;
 
     public static GameObject? InputCraftedByPanel { get; private set; }
@@ -36,15 +38,35 @@ public static class UIPanels
             return;
 
         EnsureActionMenu();
-        if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuResetAll == null)
+        if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuResetAll == null || _buttonMenuUnlock == null)
             return;
 
         DrakeRenameit.CurrentItem = item;
-        _buttonMenuRename.interactable = DrakeRenameit.CanChangeName(item, false);
-        _buttonMenuDesc.interactable = DrakeRenameit.CanChangeDesc(item, false);
-        _buttonMenuCraftedBy.interactable = DrakeRenameit.CanChangeCraftedByLabel(item, false);
-        if (_buttonMenuResetAll != null)
+
+        bool showUnlock = DrakeRenameit.ShowUnlockButton(item);
+        _buttonMenuUnlock.gameObject.SetActive(showUnlock);
+        if (showUnlock)
+        {
+            var unlockLabel = _buttonMenuUnlock.GetComponentInChildren<Text>();
+            if (unlockLabel != null)
+            {
+                string cost = RenameUnlockCost.GetCostDisplayShort();
+                unlockLabel.text = string.IsNullOrEmpty(cost) ? "Unlock" : $"Unlock ({cost})";
+            }
+
+            _buttonMenuRename.interactable = false;
+            _buttonMenuDesc.interactable = false;
+            _buttonMenuCraftedBy.interactable = false;
+            _buttonMenuResetAll.interactable = false;
+            _buttonMenuUnlock.interactable = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
+        }
+        else
+        {
+            _buttonMenuRename.interactable = DrakeRenameit.CanChangeName(item, false);
+            _buttonMenuDesc.interactable = DrakeRenameit.CanChangeDesc(item, false);
+            _buttonMenuCraftedBy.interactable = DrakeRenameit.CanChangeCraftedByLabel(item, false);
             _buttonMenuResetAll.interactable = DrakeRenameit.CanResetAnyCustomization(item);
+        }
 
         ActionMenuPanel.SetActive(true);
         ActionMenuPanel.transform.SetAsLastSibling();
@@ -65,7 +87,7 @@ public static class UIPanels
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 0f),
             width: 320,
-            height: 260,
+            height: 280,
             draggable: false);
 
         GUIManager.Instance.CreateText(
@@ -83,12 +105,31 @@ public static class UIPanels
             height: 40,
             addContentSizeFitter: false);
 
+        _buttonMenuUnlock = GUIManager.Instance.CreateButton(
+            text: "Unlock",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 72f),
+            width: 220f,
+            height: 30f).GetComponent<Button>();
+        _buttonMenuUnlock.gameObject.SetActive(false);
+        _buttonMenuUnlock.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            if (item == null)
+                return;
+            if (!DrakeRenameit.TryPayRenameUnlock(item))
+                return;
+            OpenActionMenu(item);
+        });
+
         _buttonMenuRename = GUIManager.Instance.CreateButton(
             text: "Rename",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 52f),
+            position: new Vector2(0f, 40f),
             width: 200f,
             height: 32f).GetComponent<Button>();
         _buttonMenuRename.AddUniqueListener(() =>
@@ -104,7 +145,7 @@ public static class UIPanels
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 12f),
+            position: new Vector2(0f, 0f),
             width: 200f,
             height: 32f).GetComponent<Button>();
         _buttonMenuDesc.AddUniqueListener(() =>
@@ -120,7 +161,7 @@ public static class UIPanels
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -28f),
+            position: new Vector2(0f, -40f),
             width: 200f,
             height: 32f).GetComponent<Button>();
         _buttonMenuCraftedBy.AddUniqueListener(() =>
@@ -136,7 +177,7 @@ public static class UIPanels
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -60f),
+            position: new Vector2(0f, -72f),
             width: 100f,
             height: 22f).GetComponent<Button>();
         _buttonMenuResetAll.AddUniqueListener(() =>
@@ -152,7 +193,7 @@ public static class UIPanels
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -94f),
+            position: new Vector2(0f, -106f),
             width: 120f,
             height: 28f).GetComponent<Button>();
         _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);

@@ -106,6 +106,7 @@
     <Compile Include="ExcludedCategoryReferenceWriter.cs" />
     <Compile Include="RenameExclusionRules.cs" />
     <Compile Include="RenamePermissionManager.cs" />
+    <Compile Include="RenameUnlockCost.cs" />
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="InventoryStackPatches.cs" />
     <Compile Include="ItemTooltipPatches.cs" />

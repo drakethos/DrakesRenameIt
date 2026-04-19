@@ -25,6 +25,8 @@ namespace DrakeRenameit
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
         public const string DrakeCraftedByDisplay = "Drake_CraftedByDisplay";
+        /// <summary>When set on a stack, <see cref="RenameitConfig.UnlockCost"/> has been paid and rename/description/crafted-by edits are allowed (if other rules pass).</summary>
+        public const string DrakeRenameUnlocked = "Drake_RenameUnlocked";
         public static ItemDrop.ItemData? CurrentItem { get; set; }
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
@@ -38,6 +40,7 @@ namespace DrakeRenameit
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             AddVip();
             RenamePermissionManager.Init(Logger);
+            RenameUnlockCost.Init(Logger);
 
             InventoryStackPatches.Apply(harmony, Logger);
             ItemTooltipPatches.Apply(harmony, Logger);
@@ -71,6 +74,52 @@ namespace DrakeRenameit
             if (item == null || item.m_customData == null)
                 return false;
             return item.m_customData.TryGetValue(DrakeNewName, out _);
+        }
+
+        public static bool IsRenameUnlocked(ItemDrop.ItemData? item)
+        {
+            if (item?.m_customData == null)
+                return false;
+            if (!item.m_customData.TryGetValue(DrakeRenameUnlocked, out var v))
+                return false;
+            return v == "1" || string.Equals(v, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal static void SetRenameUnlocked(ItemDrop.ItemData item)
+        {
+            if (item.m_customData == null)
+                item.m_customData = new Dictionary<string, string>();
+            item.m_customData[DrakeRenameUnlocked] = "1";
+        }
+
+        /// <summary>Shows the Unlock button when unlock cost applies, the stack is not unlocked yet, and the player is not elevated.</summary>
+        public static bool ShowUnlockButton(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return false;
+            if (!RenameUnlockCost.UnlockCostApplies())
+                return false;
+            if (IsRenameUnlocked(item))
+                return false;
+            return !RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+        }
+
+        /// <summary>Pays <see cref="RenameitConfig.UnlockCost"/> from inventory and marks the stack unlocked.</summary>
+        public static bool TryPayRenameUnlock(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return false;
+            if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
+                return false;
+            if (!RenameUnlockCost.TryConsumeUnlockCost(Player.m_localPlayer, out var err))
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, err);
+                return false;
+            }
+
+            SetRenameUnlocked(item);
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Stack unlocked for editing.");
+            return true;
         }
 
         /// <summary>True when <see cref="DrakeCraftedByDisplay"/> overrides the visible crafted-by line.</summary>
@@ -327,7 +376,25 @@ namespace DrakeRenameit
         {
             if (item == null || Player.m_localPlayer == null)
                 return false;
-            return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+
+            if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+
+            if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+
+            if (!RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
+                return false;
+
+            RenamePermissionManager.BeginIgnoreUnlockRequirement();
+            try
+            {
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+            }
+            finally
+            {
+                RenamePermissionManager.EndIgnoreUnlockRequirement();
+            }
         }
 
         public static bool IsMenuOpenModifierHeld()

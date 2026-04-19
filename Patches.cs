@@ -16,7 +16,7 @@ internal static class HoverRenameHelper
         if (!DrakeRenameit.hasNewName(item))
             return;
 
-        string customName = DrakeRenameit.GetPropperName(item);
+        string customName = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
         if (customName == null || item.m_shared.m_name == null)
             return;
 
@@ -32,6 +32,54 @@ internal static class HoverRenameHelper
 
         if (__result.Contains(localizedOriginalName))
             __result = __result.Replace(localizedOriginalName, localizedCustomName);
+    }
+}
+
+/// <summary>Top-left pickup / removed messages use <see cref="ItemDrop.ItemData.m_shared"/>.<see cref="ItemDrop.SharedData.m_name"/>; swap in our custom name when set.</summary>
+internal static class PickupHudMessageHelper
+{
+    internal static bool TryGetLocalizedCustomNameForHud(ItemDrop.ItemData? item, out string localizedName)
+    {
+        localizedName = "";
+        if (item?.m_shared == null || !DrakeRenameit.hasNewName(item))
+            return false;
+
+        string customName = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
+        if (string.IsNullOrEmpty(customName))
+            return false;
+
+        localizedName = Localization.instance != null
+            ? Localization.instance.Localize(customName)
+            : customName;
+        return true;
+    }
+}
+
+[HarmonyPatch(typeof(Character), nameof(Character.ShowPickupMessage))]
+internal static class CharacterShowPickupMessagePatch
+{
+    [HarmonyPrefix]
+    static bool Prefix(Character __instance, ItemDrop.ItemData item, int amount)
+    {
+        if (!PickupHudMessageHelper.TryGetLocalizedCustomNameForHud(item, out var nameFragment))
+            return true;
+
+        __instance.Message(MessageHud.MessageType.TopLeft, "$msg_added " + nameFragment, amount, item.GetIcon());
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(Character), nameof(Character.ShowRemovedMessage))]
+internal static class CharacterShowRemovedMessagePatch
+{
+    [HarmonyPrefix]
+    static bool Prefix(Character __instance, ItemDrop.ItemData item, int amount)
+    {
+        if (!PickupHudMessageHelper.TryGetLocalizedCustomNameForHud(item, out var nameFragment))
+            return true;
+
+        __instance.Message(MessageHud.MessageType.TopLeft, "$msg_removed " + nameFragment, amount, item.GetIcon());
+        return false;
     }
 }
 
@@ -141,7 +189,7 @@ public static class InventoryGridTooltipPatch
         if (item?.m_shared == null || tooltip == null)
             return;
 
-        var topic = DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name;
+        var topic = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name);
         string currentText = item.GetTooltip();
         currentText = ItemTooltipPatches.ApplyCraftedByDisplayToTooltipText(currentText, item);
 

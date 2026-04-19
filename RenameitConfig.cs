@@ -37,6 +37,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _vipOnlyOverride;
     private static ConfigEntry<bool> _showReason;
     private static ConfigEntry<bool> _separateStacks;
+    private static ConfigEntry<bool> _separateStacksHardLock;
     private static ConfigEntry<bool> _craftedByLabelEnabled;
     private static ConfigEntry<string> _menuOpenModifier;
 
@@ -60,6 +61,12 @@ public static class RenameitConfig
     public static bool VipOnlyOverride => _vipOnlyOverride.Value;
     public static bool ShowReason => _showReason.Value;
     public static bool SeparateStacks => _separateStacks.Value;
+
+    /// <summary>
+    /// When <see cref="SeparateStacks"/> is on: if true, mismatched Drake identities never merge (pickup or drag).
+    /// If false, auto pickup still keeps stacks separate, but you can drag-merge mismatched stacks in one step (no dialog).
+    /// </summary>
+    public static bool SeparateStacksHardLock => _separateStacksHardLock.Value;
 
     /// <summary>Shift or Ctrl — which modifier + right-click opens the Drake action menu.</summary>
     public static string MenuOpenModifier => _menuOpenModifier.Value;
@@ -133,6 +140,14 @@ public static class RenameitConfig
             "SeparateStacks",
             false,
             "If true, stacks only combine when Drake custom name, description, and crafted-by display match (same identity). Renamed or customized stacks no longer absorb mismatched pickups automatically.",
+            true
+        );
+
+        _separateStacksHardLock = config.BindSynced(
+            SectionGeneral,
+            "SeparateStacksHardLock",
+            true,
+            "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (no dialog; target stack keeps its custom name, description, and crafted-by display).",
             true
         );
 

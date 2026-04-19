@@ -22,6 +22,7 @@ public static class UIPanels
     private static Button? _buttonMenuRename;
     private static Button? _buttonMenuDesc;
     private static Button? _buttonMenuCraftedBy;
+    private static Button? _buttonMenuResetAll;
     private static Button? _buttonMenuCancel;
 
     public static GameObject? InputCraftedByPanel { get; private set; }
@@ -35,13 +36,15 @@ public static class UIPanels
             return;
 
         EnsureActionMenu();
-        if (ActionMenuPanel == null || _buttonMenuRename == null)
+        if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuResetAll == null)
             return;
 
         DrakeRenameit.CurrentItem = item;
         _buttonMenuRename.interactable = DrakeRenameit.CanChangeName(item, false);
         _buttonMenuDesc.interactable = DrakeRenameit.CanChangeDesc(item, false);
         _buttonMenuCraftedBy.interactable = DrakeRenameit.CanChangeCraftedByLabel(item, false);
+        if (_buttonMenuResetAll != null)
+            _buttonMenuResetAll.interactable = DrakeRenameit.CanResetAnyCustomization(item);
 
         ActionMenuPanel.SetActive(true);
         ActionMenuPanel.transform.SetAsLastSibling();
@@ -128,12 +131,28 @@ public static class UIPanels
                 DrakeRenameit.OpenCraftedByEditor(item);
         });
 
+        _buttonMenuResetAll = GUIManager.Instance.CreateButton(
+            text: "Reset all",
+            parent: ActionMenuPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, -60f),
+            width: 100f,
+            height: 22f).GetComponent<Button>();
+        _buttonMenuResetAll.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            if (item != null)
+                DrakeRenameit.ResetAllCustomizations(item);
+            CloseActionMenuOnly();
+        });
+
         _buttonMenuCancel = GUIManager.Instance.CreateButton(
             text: "Cancel",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -80f),
+            position: new Vector2(0f, -94f),
             width: 120f,
             height: 28f).GetComponent<Button>();
         _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);

@@ -29,7 +29,12 @@ description: >-
 
 ## Custom data keys
 
-- Names: `DrakeRenameit.DrakeNewName`; descriptions: `DrakeNewDesc` (see `DrakeRenameit.cs` constants).
+- Names: `DrakeRenameit.DrakeNewName`; descriptions: `DrakeNewDesc`; crafted-by display: `DrakeCraftedByDisplay` (see `DrakeRenameit.cs` constants).
+
+## Separate stacks (`RenameitConfig.SeparateStacks`, `SeparateStacksHardLock`)
+
+- **`InventoryStackPatches`**: `Inventory.AddItem(ItemData)` tracks incoming item for `FindFreeStackItem`; `AddItemAtCell` blocks mismatched Drake fingerprints when splits are enforced.
+- **`SeparateStacksHardLock`**: when `SeparateStacks` is on, `true` blocks manual drag-merges; `false` allows vanilla **`AddItemAtCell`** in one call (no dialog) so mismatched stacks can be combined by drag.
 
 ## Patches
 

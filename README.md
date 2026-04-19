@@ -53,7 +53,8 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 - **RenameEnabled** — When on, non-elevated players may rename items (via the action menu). Turn off to block new renames while keeping other features.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
 - **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the “Crafted by” line in tooltips. Real crafter id/name used by the game (ownership, locks) is unchanged.
-- **SeparateStacks** — When on, stacks only merge automatically when Drake identity matches (custom name, description, and crafted-by display key). Manual moves and splits behave as in vanilla.
+- **SeparateStacks** — When on, stacks only merge automatically when Drake identity matches (custom name, description, and crafted-by display key). Auto pickup and other automatic merges will not combine mismatched stacks.
+- **SeparateStacksHardLock** — Only applies when **SeparateStacks** is on. When **true** (default), mismatched stacks never merge—including manual drags onto another stack. When **false**, you can drag one stack onto another and they combine immediately (no prompt); the target stack keeps its custom name, description, and crafted-by display.
 - **LockToOwner** — When on, only the crafter / owner can rename or change description. Stacks with **no** crafter yet (raw picked-up resources: no crafter id and no crafter name) are **not** treated as “someone else’s” until they are crafted or claimed. After **NameClaimsOwner** assigns you as crafter, others are blocked as usual.
 - **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter (and “crafted by” style ownership) so **LockToOwner** can protect that stack. Works with uncrafted resources when **AllowRenameResources** (and allowlist if needed) permits the edit.
 - **AllowRenameResources** — When on, unowned resource-style stacks (no crafter yet) can be renamed or given a description. When off, those stacks are blocked **unless** they are on **RenameAllowlist** (then claim rules can still apply). This is separate from **ExcludedCategory** `Material`, which can still block by item type for crafted gear.
@@ -88,14 +89,14 @@ Roughly: **Admin/VIP override** → **global toggles** (rename, description, cra
 
 ### Quirks and Known Issues:
 Quirks:
-- Stacks normally merge and share one instance; enable **SeparateStacks** (server-synced) if you want automatic merges to require matching Drake name/description/crafted-by display so differently customized stacks are not absorbed into each other.
+- With **SeparateStacks** (server-synced), automatic merges require matching Drake identity so differently customized stacks are not absorbed on pickup. Use **SeparateStacksHardLock** to choose whether mismatched stacks stay split forever (**true**) or can be joined by hand after confirming (**false**).
     Known Issues:
   - ~~Item stands still show the name of the original item~~
     - Fixed!
   - ~~Upgrading an item will replace the custom name with the original name~~
     - Fixed!
 #### Wishlist for future
-- Optional stack splitting UX (beyond **SeparateStacks**)
+- Further stack / inventory UX polish
 - Costs (configurable)
   - To prevent others from renaming things a million times adding some sort of cost so item renaming is more special
 - if there is a high demand for this:

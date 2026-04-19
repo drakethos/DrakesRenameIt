@@ -73,6 +73,52 @@ namespace DrakeRenameit
             return item.m_customData.TryGetValue(DrakeNewName, out _);
         }
 
+        /// <summary>True when <see cref="DrakeCraftedByDisplay"/> overrides the visible crafted-by line.</summary>
+        public static bool HasCraftedByDisplayOverride(ItemDrop.ItemData? item)
+        {
+            if (item?.m_customData == null)
+                return false;
+            return item.m_customData.TryGetValue(DrakeCraftedByDisplay, out var s) && !string.IsNullOrEmpty(s);
+        }
+
+        /// <summary>True if the player may clear at least one Drake customization that is currently set on the item.</summary>
+        public static bool CanResetAnyCustomization(ItemDrop.ItemData? item)
+        {
+            if (item == null)
+                return false;
+            if (CanChangeName(item, false) && hasNewName(item))
+                return true;
+            if (CanChangeDesc(item, false) && hasNewDesc(item))
+                return true;
+            if (CanChangeCraftedByLabel(item, false) && HasCraftedByDisplayOverride(item))
+                return true;
+            return false;
+        }
+
+        /// <summary>Clears custom name, description, and crafted-by display according to permissions (same as each sub-dialog reset).</summary>
+        public static void ResetAllCustomizations(ItemDrop.ItemData? item)
+        {
+            if (item == null)
+                return;
+            if (CanChangeName(item, false) && hasNewName(item))
+                resetName(item);
+            if (CanChangeDesc(item, false) && hasNewDesc(item))
+                resetDesc(item);
+            if (!CanChangeCraftedByLabel(item, false) || !HasCraftedByDisplayOverride(item))
+                return;
+            if (item.m_customData == null)
+                return;
+            string oldDisplay = getCraftedByDisplay(item);
+            item.m_customData.Remove(DrakeCraftedByDisplay);
+            string newDisplay = item.m_crafterName ?? "";
+            RenameEvents.RaiseCraftedByDisplayChanged(
+                Player.m_localPlayer,
+                item,
+                item.m_shared.m_name,
+                oldDisplay,
+                newDisplay);
+        }
+
         public static string resetName(ItemDrop.ItemData? item)
         {
             if (item == null)

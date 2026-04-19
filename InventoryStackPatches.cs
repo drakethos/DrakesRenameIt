@@ -6,7 +6,11 @@ using HarmonyLib;
 namespace DrakeRenameit;
 
 /// <summary>When <see cref="RenameitConfig.SeparateStacks"/> is on, only stacks with matching Drake fingerprints merge.</summary>
-/// <remarks>Applied manually from <see cref="Apply"/> so missing game methods do not break <see cref="Harmony.PatchAll"/>.</remarks>
+/// <remarks>
+/// <see cref="Inventory.FindFreeStackItem"/> is implemented as a simple loop; we replace it when we know the incoming
+/// item (<see cref="IncomingStackItem"/> from <c>AddItem(ItemData)</c>) so merge decisions always include Drake identity.
+/// A postfix on <c>ref __result</c> is unreliable across Harmony versions; a prefix that skips the original does not.
+/// </remarks>
 internal static class InventoryStackPatches
 {
     internal static ItemDrop.ItemData? IncomingStackItem;
@@ -28,37 +32,48 @@ internal static class InventoryStackPatches
         else
             log.LogWarning("[DrakesRenameIt] SeparateStacks: AddItem(ItemData) not found — incoming stack tracking disabled.");
 
-        var findStack = AccessTools.DeclaredMethod(inv, "FindFreeStackItem", new[] { typeof(string), typeof(int) })
-                        ?? AccessTools.Method(inv, "FindFreeStackItem", new[] { typeof(string), typeof(int) });
-        if (findStack == null)
+        // FindFreeStackItem has had 2- and 3-arg variants (worldLevel added in newer Valheim).
+        // Harmony matches prefix params by name, so one prefix covers both — we just need to bind.
+        MethodInfo? findStack = null;
+        foreach (var m in inv.GetMethods(flags))
         {
-            foreach (var m in inv.GetMethods(flags))
-            {
-                if (m.Name != "FindFreeStackItem" || m.GetParameters().Length != 2)
-                    continue;
-                findStack = m;
-                log.LogInfo("[DrakesRenameIt] SeparateStacks: using scanned FindFreeStackItem: " + m);
-                break;
-            }
+            if (m.Name != "FindFreeStackItem")
+                continue;
+            var ps = m.GetParameters();
+            if (ps.Length < 2)
+                continue;
+            if (ps[0].ParameterType != typeof(string) || ps[1].ParameterType != typeof(int))
+                continue;
+            findStack = m;
+            break;
         }
 
         if (findStack != null)
         {
             harmony.Patch(
                 findStack,
-                postfix: new HarmonyMethod(typeof(InventoryStackPatches), nameof(FindFreeStackItem_Postfix)));
+                prefix: new HarmonyMethod(typeof(InventoryStackPatches), nameof(FindFreeStackItem_Prefix)));
         }
         else
             log.LogWarning("[DrakesRenameIt] SeparateStacks: FindFreeStackItem not found — merge-from-pickup may ignore identity.");
 
-        var addAtCell = AccessTools.DeclaredMethod(
-                           inv,
-                           "AddItem",
-                           new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) })
-                        ?? AccessTools.Method(
-                            inv,
-                            "AddItem",
-                            new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(int), typeof(int) });
+        // AddItem cell-overload has also varied in arity; find by signature: (ItemData, int, int, int[, ...]).
+        MethodInfo? addAtCell = null;
+        foreach (var m in inv.GetMethods(flags))
+        {
+            if (m.Name != "AddItem")
+                continue;
+            var ps = m.GetParameters();
+            if (ps.Length < 4)
+                continue;
+            if (ps[0].ParameterType != typeof(ItemDrop.ItemData))
+                continue;
+            if (ps[1].ParameterType != typeof(int) || ps[2].ParameterType != typeof(int) || ps[3].ParameterType != typeof(int))
+                continue;
+            addAtCell = m;
+            break;
+        }
+
         if (addAtCell != null)
         {
             harmony.Patch(
@@ -66,7 +81,7 @@ internal static class InventoryStackPatches
                 prefix: new HarmonyMethod(typeof(InventoryStackPatches), nameof(AddItemAtCell_Prefix)));
         }
         else
-            log.LogWarning("[DrakesRenameIt] SeparateStacks: AddItem(ItemData,int,int,int) not found — cell merge guard disabled.");
+            log.LogWarning("[DrakesRenameIt] SeparateStacks: AddItem(ItemData,int,int,int...) not found — cell merge guard disabled.");
     }
 
     static void AddItem_IncomingPrefix(ItemDrop.ItemData item)
@@ -79,12 +94,49 @@ internal static class InventoryStackPatches
         IncomingStackItem = null;
     }
 
-    static void FindFreeStackItem_Postfix(ref ItemDrop.ItemData? __result)
+    /// <summary>
+    /// Replicates vanilla <c>FindFreeStackItem</c> and requires matching Drake fingerprint when
+    /// <see cref="RenameitConfig.SeparateStacks"/> is on and the incoming stack is known.
+    /// </summary>
+    static bool FindFreeStackItem_Prefix(
+        Inventory __instance,
+        string name,
+        int quality,
+        ref ItemDrop.ItemData __result)
     {
-        if (!RenameitConfig.SeparateStacks || __result == null || IncomingStackItem == null)
-            return;
-        if (!StackIdentity.SameDrakeStackIdentity(IncomingStackItem, __result))
-            __result = null;
+        if (!RenameitConfig.SeparateStacks || IncomingStackItem == null)
+            return true;
+
+        __result = null;
+        foreach (ItemDrop.ItemData? itemData in __instance.GetAllItems())
+        {
+            if (TryPickStackSlot(IncomingStackItem, name, quality, itemData, ref __result))
+                continue;
+            break;
+        }
+
+        return false;
+    }
+
+    /// <returns><c>true</c> = keep scanning; <c>false</c> = matched a stack (also sets <paramref name="__result"/>).</returns>
+    private static bool TryPickStackSlot(
+        ItemDrop.ItemData incoming,
+        string name,
+        int quality,
+        ItemDrop.ItemData? itemData,
+        ref ItemDrop.ItemData __result)
+    {
+        if (itemData?.m_shared == null)
+            return true;
+        if (itemData.m_shared.m_name != name || itemData.m_quality != quality)
+            return true;
+        if (itemData.m_stack >= itemData.m_shared.m_maxStackSize)
+            return true;
+        if (!StackIdentity.SameDrakeStackIdentity(incoming, itemData))
+            return true;
+
+        __result = itemData;
+        return false;
     }
 
     static bool AddItemAtCell_Prefix(
@@ -109,6 +161,9 @@ internal static class InventoryStackPatches
 
         if (!StackIdentity.SameDrakeStackIdentity(item, itemAt))
         {
+            if (!RenameitConfig.SeparateStacksHardLock)
+                return true;
+
             __result = false;
             return false;
         }

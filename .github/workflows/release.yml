@@ -34,55 +34,63 @@ jobs:
           # using nuget CLI (shipped with mono-complete)
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # ── Stage the game / BepInEx DLLs that the csproj HintPaths expect ──────
+      # ── Stage game DLLs from Pfhoenix package ──────────────────────────────
       #
-      #  The csproj uses three path variables:
-      #    BepInExPath              → BepInEx core DLLs (0Harmony, BepInEx)
-      #    CorlibPath               → UnityEngine modules + Unity.TextMeshPro
-      #    PublicizedAssembliesPath → assembly_valheim_publicized, etc.
+      #  We build a fake "Valheim install" tree from the Pfhoenix NuGet package
+      #  so that ALL reference paths resolve correctly from a single root:
       #
-      #  Pfhoenix.Valheim.ModProjectReferences ships the real (non-publicized)
-      #  game DLLs. Because the csproj only needs them to resolve types at
-      #  compile time (not to access private members — those go through
-      #  AccessTools reflection), we alias them under the _publicized names.
+      #    ci_valheim/
+      #      valheim_Data/Managed/          ← CorlibPath  (Unity modules, etc.)
+      #        publicized_assemblies/       ← PublicizedAssembliesPath
+      #      BepInEx/core/                  ← BepInExPath
+      #
+      #  Setting VALHEIM_INSTALL=ci_valheim also satisfies JotunnLib's
+      #  JotunnLibRefsCorlib.props, which hard-codes:
+      #    $(VALHEIM_INSTALL)\valheim_Data\Managed\publicized_assemblies\*_publicized
+      #    $(VALHEIM_INSTALL)\valheim_Data\Managed\UnityEngine.*
+      #  (On Linux, backslash path separators work in msbuild HintPaths too.)
       # ────────────────────────────────────────────────────────────────────────
       - name: Stage game DLLs from Pfhoenix package
         run: |
-          # Find the extracted Pfhoenix package; nuget restore puts it under
-          # packages/Pfhoenix.Valheim.ModProjectReferences.*/
           PFHOENIX_LIB=$(ls -d packages/Pfhoenix.Valheim.ModProjectReferences.*/lib/net46 2>/dev/null | head -1)
           if [ -z "$PFHOENIX_LIB" ]; then
-            echo "ERROR: Pfhoenix package not found after restore" >&2
-            ls packages/ >&2
-            exit 1
+            echo "ERROR: Pfhoenix package not found" >&2; ls packages/ >&2; exit 1
           fi
           echo "Pfhoenix lib: $PFHOENIX_LIB"
 
-          # Directories that BepInExPath and CorlibPath will point to
-          mkdir -p ci_deps/bepinex/core ci_deps/corlib ci_deps/publicized
+          MANAGED="ci_valheim/valheim_Data/Managed"
+          PUBLICIZED="$MANAGED/publicized_assemblies"
+          BEPINEX="ci_valheim/BepInEx/core"
+          mkdir -p "$MANAGED" "$PUBLICIZED" "$BEPINEX"
 
-          # BepInEx core: 0Harmony + BepInEx (Pfhoenix ships them as lowercase)
-          cp "$PFHOENIX_LIB/0Harmony.dll"  ci_deps/bepinex/core/
-          cp "$PFHOENIX_LIB/bepinex.dll"   ci_deps/bepinex/core/BepInEx.dll
+          # Copy every DLL from Pfhoenix into Managed (satisfies CorlibPath and
+          # the JotunnLib corlib props that reference $(VALHEIM_INSTALL)\...\Managed\*)
+          cp "$PFHOENIX_LIB/"*.dll "$MANAGED/"
 
-          # UnityEngine modules (CorlibPath)
-          for dll in \
-              UnityEngine.CoreModule.dll \
-              UnityEngine.ImageConversionModule.dll \
-              UnityEngine.IMGUIModule.dll \
-              UnityEngine.InputLegacyModule.dll \
-              UnityEngine.AnimationModule.dll \
-              UnityEngine.JSONSerializeModule.dll \
-              UnityEngine.UI.dll \
-              Unity.TextMeshPro.dll \
-              netstandard.dll; do
-            cp "$PFHOENIX_LIB/$dll" ci_deps/corlib/
+          # Publicized aliases (csproj HintPaths expect *_publicized.dll names)
+          cp "$PFHOENIX_LIB/assembly_valheim.dll" "$PUBLICIZED/assembly_valheim_publicized.dll"
+          cp "$PFHOENIX_LIB/assembly_utils.dll"   "$PUBLICIZED/assembly_utils_publicized.dll"
+          cp "$PFHOENIX_LIB/gui_framework.dll"    "$PUBLICIZED/gui_framework_publicized.dll"
+
+          # Also copy any other assembly_* / SoftReferenceableAssets that
+          # JotunnLibRefsCorlib.props may reference as *_publicized
+          for src in "$PFHOENIX_LIB/assembly_googleanalytics.dll" \
+                     "$PFHOENIX_LIB/assembly_guiutils.dll" \
+                     "$PFHOENIX_LIB/assembly_lux.dll" \
+                     "$PFHOENIX_LIB/assembly_postprocessing.dll" \
+                     "$PFHOENIX_LIB/assembly_simplemeshcombine.dll" \
+                     "$PFHOENIX_LIB/assembly_sunshafts.dll" \
+                     "$PFHOENIX_LIB/SoftReferenceableAssets.dll"; do
+            base=$(basename "$src" .dll)
+            cp "$src" "$PUBLICIZED/${base}_publicized.dll" 2>/dev/null || true
           done
 
-          # Publicized assemblies (csproj expects *_publicized.dll names)
-          cp "$PFHOENIX_LIB/assembly_valheim.dll"  ci_deps/publicized/assembly_valheim_publicized.dll
-          cp "$PFHOENIX_LIB/assembly_utils.dll"    ci_deps/publicized/assembly_utils_publicized.dll
-          cp "$PFHOENIX_LIB/gui_framework.dll"     ci_deps/publicized/gui_framework_publicized.dll
+          # BepInEx core (csproj uses $(BepInExPath)\core\BepInEx.dll etc.)
+          cp "$PFHOENIX_LIB/0Harmony.dll" "$BEPINEX/"
+          cp "$PFHOENIX_LIB/bepinex.dll"  "$BEPINEX/BepInEx.dll"
+
+          echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
+          echo "BEPINEX_PATH=$(pwd)/ci_valheim/BepInEx" >> "$GITHUB_ENV"
 
       # ── Build (Release) ─────────────────────────────────────────────────────
       - name: Setup .NET SDK
@@ -92,21 +100,20 @@ jobs:
 
       - name: Build
         run: |
-          # Use dotnet msbuild (Roslyn from .NET 8 — supports C# 10 file-scoped
-          # namespaces). Mono's bundled compiler tops out at C# 9.
-          # FrameworkPathOverride points dotnet at mono's net4.8 BCL so the
-          # correct mscorlib / System.* are used for the net481 TFM.
-          # ReferencePath appends ci_deps/corlib so the Unity/netstandard DLLs
-          # staged there are found without needing exact HintPaths.
+          # dotnet msbuild (Roslyn from .NET 8) supports C# 10 file-scoped
+          # namespaces; mono's bundled msbuild tops out at C# 9.
+          # FrameworkPathOverride → mono's net4.8 BCL (mscorlib, System.*)
+          # VALHEIM_INSTALL env var is set by the staging step above and is
+          # picked up by JotunnLib's Paths.props for its corlib references.
           MONO_LIBS="/usr/lib/mono/4.8-api"
+          CI_ROOT="$(pwd)/ci_valheim"
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
             /p:FrameworkPathOverride="$MONO_LIBS" \
-            /p:ReferencePath="$(pwd)/ci_deps/corlib;$(pwd)/ci_deps/bepinex/core;$(pwd)/ci_deps/publicized" \
-            /p:BepInExPath="$(pwd)/ci_deps/bepinex" \
-            /p:CorlibPath="$(pwd)/ci_deps/corlib" \
-            /p:PublicizedAssembliesPath="$(pwd)/ci_deps/publicized" \
+            /p:BepInExPath="$CI_ROOT/BepInEx" \
+            /p:CorlibPath="$CI_ROOT/valheim_Data/Managed" \
+            /p:PublicizedAssembliesPath="$CI_ROOT/valheim_Data/Managed/publicized_assemblies" \
             /p:Version="${{ steps.ver.outputs.version }}" \
             /t:"Build;ILRepacker" \
             /v:minimal

@@ -11,7 +11,7 @@ permissions:
 jobs:
   build-and-release:
     # ubuntu-22.04: mono-complete + nuget are pre-installed.
-    # dotnet SDK added via setup-dotnet for Roslyn (C#10) + netstandard 2.1 ref.
+    # dotnet SDK added via setup-dotnet for Roslyn (C#10).
     runs-on: ubuntu-22.04
 
     steps:
@@ -27,7 +27,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
 
-      # ── Install .NET SDK (Roslyn C#10 + netstandard 2.1 ref pack) ──────────
+      # ── Install .NET SDK (Roslyn C#10) ──────────────────────────────────────
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -38,7 +38,22 @@ jobs:
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # ── Stage game / BepInEx DLLs from Pfhoenix + dotnet netstandard 2.1 ───
+      # ── Download official .NET 4.8 reference assemblies ─────────────────────
+      #  Microsoft.NETFramework.ReferenceAssemblies.net48 ships the real .NET 4.8
+      #  BCL including mscorlib AND the netstandard.dll Facade (under Facades/).
+      #  We use its build/.NETFramework/v4.8/ directory as FrameworkPathOverride,
+      #  which gives the compiler both mscorlib and the proper netstandard facade
+      #  with no conflicts — exactly what Visual Studio uses on Windows.
+      # ────────────────────────────────────────────────────────────────────────
+      - name: Download .NET 4.8 reference assemblies
+        run: |
+          wget -q "https://www.nuget.org/api/v2/package/Microsoft.NETFramework.ReferenceAssemblies.net48/1.0.3" \
+               -O /tmp/netfw48.nupkg
+          mkdir -p /tmp/netfw48
+          unzip -q /tmp/netfw48.nupkg -d /tmp/netfw48
+          echo "NET48_FWPATH=/tmp/netfw48/build/.NETFramework/v4.8" >> "$GITHUB_ENV"
+
+      # ── Stage game / BepInEx DLLs from Pfhoenix ─────────────────────────────
       #
       #  We build a fake "Valheim install" tree so ALL reference paths resolve:
       #
@@ -48,13 +63,8 @@ jobs:
       #      BepInEx/core/                  ← BepInExPath
       #
       #  VALHEIM_INSTALL=ci_valheim is also picked up by JotunnLib's Paths.props.
-      #
-      #  netstandard 2.1: BepInEx/Jotunn require it but Pfhoenix ships the 2.0
-      #  stub.  We generate a ci-netstandard.props file that adds the 2.1 dll as
-      #  an explicit <Reference> so the compiler sees it.  It is injected via
-      #  Directory.Build.props which msbuild always imports automatically.
       # ────────────────────────────────────────────────────────────────────────
-      - name: Stage game DLLs and write Directory.Build.props
+      - name: Stage game DLLs from Pfhoenix package
         run: |
           PFHOENIX_LIB=$(ls -d packages/Pfhoenix.Valheim.ModProjectReferences.*/lib/net46 2>/dev/null | head -1)
           if [ -z "$PFHOENIX_LIB" ]; then
@@ -86,33 +96,12 @@ jobs:
           cp "$PFHOENIX_LIB/0Harmony.dll" "$BEPINEX/"
           cp "$PFHOENIX_LIB/bepinex.dll"  "$BEPINEX/BepInEx.dll"
 
-          # Find netstandard 2.1 ref assembly from the dotnet SDK packs
-          NS21=$(find "$DOTNET_ROOT/packs/NETStandard.Library.Ref" \
-                      -name "netstandard.dll" -path "*/netstandard2.1/*" \
-                      2>/dev/null | head -1)
-          echo "netstandard 2.1 at: $NS21"
-
-          # Write Directory.Build.props so msbuild injects the 2.1 ref into
-          # every project in this directory automatically — no csproj edit needed.
-          cat > Directory.Build.props <<EOF
-          <Project>
-            <ItemGroup>
-              <Reference Include="netstandard">
-                <HintPath>${NS21}</HintPath>
-                <Private>false</Private>
-              </Reference>
-            </ItemGroup>
-          </Project>
-          EOF
-          echo "Directory.Build.props written:"
-          cat Directory.Build.props
-
           echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
 
       # ── Build (Release) ─────────────────────────────────────────────────────
       #  dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
-      #  FrameworkPathOverride → mono's net4.8 BCL (mscorlib, System.*).
-      #  Directory.Build.props (written above) injects netstandard 2.1.
+      #  FrameworkPathOverride → official .NET 4.8 BCL (includes netstandard
+      #  facade in Facades/ sub-dir, which the compiler picks up automatically).
       #  Targets Build + ILRepacker only; skips CopyOutput and PackageMod.
       - name: Build
         run: |
@@ -121,7 +110,7 @@ jobs:
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
-            /p:FrameworkPathOverride="/usr/lib/mono/4.8-api" \
+            /p:FrameworkPathOverride="$NET48_FWPATH" \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
@@ -130,10 +119,6 @@ jobs:
             /v:minimal
 
       # ── Assemble Thunderstore zip (mirrors PackageMod target) ────────────────
-      #
-      #  Zip contents:  DrakesRenameit.dll + README.md + icon.png +
-      #                 CHANGELOG.md + manifest.json
-      # ────────────────────────────────────────────────────────────────────────
       - name: Assemble Thunderstore package
         id: pkg
         run: |

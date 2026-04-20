@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BepInEx.Configuration;
 using ServerSync;
 
@@ -137,7 +137,7 @@ public static class RenameitConfig
         _showReason = config.BindSynced(
             SectionGeneral,
             "ShowReason",
-            false,
+            true,
             "If true, denied rename/description actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
             true
         );
@@ -145,7 +145,7 @@ public static class RenameitConfig
         _separateStacks = config.BindSynced(
             SectionGeneral,
             "SeparateStacks",
-            false,
+            true,
             "If true, stacks only combine when Drake custom name, description, and crafted-by display match (same identity). Renamed or customized stacks no longer absorb mismatched pickups automatically.",
             true
         );
@@ -153,7 +153,7 @@ public static class RenameitConfig
         _separateStacksHardLock = config.BindSynced(
             SectionGeneral,
             "SeparateStacksHardLock",
-            true,
+            false,
             "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (no dialog; target stack keeps its custom name, description, and crafted-by display).",
             true
         );
@@ -169,7 +169,7 @@ public static class RenameitConfig
         _unlockCost = config.BindSynced(
             SectionUnlock,
             "UnlockCost",
-            "Coins:4",
+            "Coins:5",
             "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu.",
             true
         );

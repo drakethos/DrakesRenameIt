@@ -30,8 +30,7 @@ public static class RenameitConfig
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
     private static ConfigEntry<string> _vipList;
-    private static ConfigEntry<string> _shiftColor;
-    private static ConfigEntry<string> _ctrlColor;
+    private static ConfigEntry<string> _menuHintColor;
     private static ConfigEntry<string> _excludedNames;
     private static ConfigEntry<string> _excludedCategory;
     private static ConfigEntry<string> _renameAllowlist;
@@ -55,8 +54,7 @@ public static class RenameitConfig
     public static bool AllowAdminOverride => _allowAdminOverride.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
     public static string VipList => _vipList.Value;
-    public static string ShiftColor => _shiftColor.Value;
-    public static string CtrlColor => _ctrlColor.Value;
+    public static string MenuHintColor => _menuHintColor.Value;
     public static string ExcludedNames => _excludedNames.Value;
     public static string ExcludedCategory => _excludedCategory.Value;
     /// <summary>Comma-separated internal item ids (<c>m_shared.m_name</c>) that may always be renamed.</summary>
@@ -218,18 +216,11 @@ public static class RenameitConfig
             true
         );
         
-        _shiftColor = config.BindSynced(
+        _menuHintColor = config.BindSynced(
             SectionUI,
-            "ShiftColor",
+            "MenuHintColor",
             "yellow",
-            "Color to display press shift + right click to ... Acceptable values anything that will be recognized by unit color engine such as a few colors yellow green red or hex: #fff or #ffffff based",
-           false
-        );
-        _ctrlColor = config.BindSynced(
-            SectionUI,
-            "CtrlColor",
-            "yellow",
-            "Color for inventory hint when MenuOpenModifier is Ctrl (see MenuOpenModifier).",
+            "Color for the 'Modifier + Right Click for options' inventory tooltip hint. Accepts Unity color names (yellow, green, red, white) or hex values (#fff or #ffffff).",
            false
         );
 

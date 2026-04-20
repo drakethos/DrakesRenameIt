@@ -1,26 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using BepInEx.Logging;
 using UnityEngine;
 
 namespace DrakeRenameit;
 
-/// <summary>Parses <see cref="RenameitConfig.UnlockCost"/> and removes items from the player inventory for one-time rename unlock.</summary>
+/// <summary>Parses <see cref="RenameitConfig.UnlockCost"/>, checks affordability, and consumes cost for one-time stack unlock.</summary>
 internal static class RenameUnlockCost
 {
     private static ManualLogSource? _log;
 
     internal static void Init(ManualLogSource log) => _log = log;
 
-    /// <summary>Unlock cost is on, the string parses, and at least one positive cost line resolves in <see cref="ObjectDB"/>.</summary>
     internal static bool HasValidCostConfigured()
     {
         return TryBuildResolvedCost(out _, out _);
     }
 
-    /// <summary>True when <see cref="RenameitConfig.UnlockCostEnabled"/> is on and <see cref="HasValidCostConfigured"/>.</summary>
     internal static bool UnlockCostApplies()
     {
         return RenameitConfig.UnlockCostEnabled && HasValidCostConfigured();
@@ -35,7 +32,7 @@ internal static class RenameUnlockCost
         var inv = player.GetInventory();
         if (inv == null)
             return false;
-        foreach (var (sharedName, amount) in lines)
+        foreach (var (sharedName, amount, _) in lines)
         {
             if (inv.CountItems(sharedName) < amount)
                 return false;
@@ -44,10 +41,15 @@ internal static class RenameUnlockCost
         return true;
     }
 
-    /// <summary>Removes cost from inventory. Fails with a player-facing message if something is missing.</summary>
-    internal static bool TryConsumeUnlockCost(Player player, out string errorMessage)
+    internal static bool TryConsumeUnlockCost(Player? player, out string errorMessage)
     {
         errorMessage = "";
+        if (player == null)
+        {
+            errorMessage = "No local player.";
+            return false;
+        }
+
         if (!TryBuildResolvedCost(out var lines, out var parseError))
         {
             errorMessage = parseError ?? "Unlock cost is not configured.";
@@ -67,7 +69,7 @@ internal static class RenameUnlockCost
             return false;
         }
 
-        foreach (var (sharedName, amount) in lines)
+        foreach (var (sharedName, amount, _) in lines)
         {
             if (inv.CountItems(sharedName) < amount)
             {
@@ -76,34 +78,54 @@ internal static class RenameUnlockCost
             }
         }
 
-        foreach (var (sharedName, amount) in lines)
+        foreach (var (sharedName, amount, _) in lines)
             inv.RemoveItem(sharedName, amount, -1, true);
 
         return true;
     }
 
-    /// <summary>Short text for the Unlock button, e.g. "4 Coins, 2 Coal".</summary>
     internal static string GetCostDisplayShort()
     {
         if (!TryBuildResolvedCost(out var lines, out _) || lines.Count == 0)
             return "";
         var parts = new List<string>();
-        foreach (var (sharedName, amount) in lines)
+        foreach (var (sharedName, amount, _) in lines)
         {
             string label = sharedName;
             if (Localization.instance != null)
                 label = Localization.instance.Localize(sharedName);
-            parts.Add($"{amount} {label}");
+            parts.Add($"{amount}x {label}");
         }
 
         return string.Join(", ", parts);
     }
 
+    /// <summary>Lines for the unlock confirmation panel: localized name, amount, and config prefab key (for <see cref="GetItemTokenPublic"/>).</summary>
+    internal static List<(string LocalizedName, int Amount, string PrefabName)> GetCostDisplayEntries()
+    {
+        var list = new List<(string LocalizedName, int Amount, string PrefabName)>();
+        if (!TryBuildResolvedCost(out var lines, out _) || lines.Count == 0)
+            return list;
+
+        foreach (var (sharedName, amount, configKey) in lines)
+        {
+            string loc = sharedName;
+            if (Localization.instance != null)
+                loc = Localization.instance.Localize(sharedName);
+            list.Add((loc, amount, configKey));
+        }
+
+        return list;
+    }
+
+    /// <summary>Resolves a config prefab name or <c>$item_</c> token to <c>m_shared.m_name</c> for inventory ops.</summary>
+    internal static string GetItemTokenPublic(string prefabName) => ResolveItemSharedName(prefabName);
+
     private static bool TryBuildResolvedCost(
-        out List<(string SharedName, int Amount)> lines,
+        out List<(string SharedName, int Amount, string ConfigKey)> lines,
         out string? error)
     {
-        lines = new List<(string SharedName, int Amount)>();
+        lines = new List<(string SharedName, int Amount, string ConfigKey)>();
         error = null;
         var raw = RenameitConfig.UnlockCost?.Trim() ?? "";
         if (string.IsNullOrEmpty(raw))
@@ -141,7 +163,7 @@ internal static class RenameUnlockCost
                 continue;
             }
 
-            lines.Add((resolved, amount));
+            lines.Add((resolved, amount, namePart));
         }
 
         if (lines.Count == 0)
@@ -153,7 +175,6 @@ internal static class RenameUnlockCost
         return true;
     }
 
-    /// <summary>Prefab spawn name (e.g. Coins) or localization token (e.g. $item_coins).</summary>
     private static string ResolveItemSharedName(string tokenOrPrefab)
     {
         if (string.IsNullOrWhiteSpace(tokenOrPrefab))
@@ -171,7 +192,6 @@ internal static class RenameUnlockCost
                 return sn;
         }
 
-        // Assume already a shared m_name token
         if (tokenOrPrefab.StartsWith("$", StringComparison.Ordinal))
             return tokenOrPrefab;
 

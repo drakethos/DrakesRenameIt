@@ -137,6 +137,12 @@ public static class Patches
                         UIPanels.OpenActionMenu(item);
                         return;
                     }
+
+                    // Modifier is held but nothing is available — show the reason instead of silently doing nothing
+                    string reason = DrakeRenameit.GetMenuBlockedReason(item);
+                    if (!string.IsNullOrEmpty(reason))
+                        Player.m_localPlayer?.Message(MessageHud.MessageType.Center, reason);
+                    return;
                 }
 
                 original?.Invoke(grid, item, pos);
@@ -199,7 +205,7 @@ public static class InventoryGridTooltipPatch
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("\n");
 
-        string menuColor = RenameitConfig.MenuModifierIsShift ? RenameitConfig.ShiftColor : RenameitConfig.CtrlColor;
+        string menuColor = RenameitConfig.MenuHintColor;
         string menuMod = RenameitConfig.MenuModifierIsShift ? "Shift" : "Ctrl";
         bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
         bool elevated = Player.m_localPlayer != null &&
@@ -217,8 +223,9 @@ public static class InventoryGridTooltipPatch
         else
         {
             string detail = BuildNoDrakeMenuHint(item);
-            sb.AppendLine(
-                $"<color=red><s>{menuMod} + Right Click for options</s></color><br><b>{detail}</b>");
+            sb.AppendLine($"<color=red><s>{menuMod} + Right Click for options</s></color>");
+            if (!string.IsNullOrEmpty(detail))
+                sb.AppendLine($"<color=red>{detail}</color>");
         }
 
         // Final set

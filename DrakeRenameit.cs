@@ -20,7 +20,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "1.0.0";
+        public const string Version = "0.9.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
@@ -224,20 +224,16 @@ namespace DrakeRenameit
             if (InventoryGui.instance == null) return;
             if (item == null) return;
             CurrentItem = item;
-            // Ensure panel exists
             if (UIPanels.InputNamePanel == null)
             {
                 UIPanels.CreateRenameInput();
             }
 
-            // Pre-fill with current name (renamed OR vanilla)
             string startName = GetPropperName(item);
-
             UIPanels.RenameNameInput!.text = startName;
 
-            // Bring it up
             UIPanels.InputNamePanel.SetActive(true);
-            GUIManager.BlockInput(true);
+            UIPanels.EnsureInputBlocked();
         }
 
         public static void OpenRewriteDesc(ItemDrop.ItemData? item)
@@ -245,20 +241,16 @@ namespace DrakeRenameit
             if (InventoryGui.instance == null) return;
             if (item == null) return;
             CurrentItem = item;
-            // Ensure panel exists
             if (UIPanels.InputDescPanel == null)
             {
                 UIPanels.CreateRenameDescInput();
             }
 
-            // Pre-fill with current name (renamed OR vanilla)
             string startDesc = getPropperDesc(item);
-
             UIPanels.RenameDescInput!.text = startDesc;
 
-            // Bring it up
             UIPanels.InputDescPanel!.SetActive(true);
-            GUIManager.BlockInput(true);
+            UIPanels.EnsureInputBlocked();
         }
 
         public static void RenameItem(String name)
@@ -332,9 +324,8 @@ namespace DrakeRenameit
             RewriteItemDesc(newDesc);
             CurrentItem = null;
 
-            // Close panel + unblock
             UIPanels.InputDescPanel!.SetActive(false);
-            GUIManager.BlockInput(false);
+            UIPanels.EnsureInputUnblocked();
         }
 
         public static void ApplyRename(string newName)
@@ -344,9 +335,8 @@ namespace DrakeRenameit
             RenameItem(newName);
             CurrentItem = null;
 
-            // Close panel + unblock
             UIPanels.InputNamePanel!.SetActive(false);
-            GUIManager.BlockInput(false);
+            UIPanels.EnsureInputUnblocked();
         }
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)
@@ -371,21 +361,27 @@ namespace DrakeRenameit
                 .Evaluate(RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer, showError).Allowed;
         }
 
-        /// <summary>True if at least one inventory action (rename, description, crafted-by label) is allowed for this item.</summary>
+        /// <summary>
+        /// True if the action menu should open for this item.
+        /// When an unlock cost applies and the stack is not yet unlocked, the menu still opens
+        /// (to show the Unlock button and its cost) regardless of whether the player can afford it.
+        /// </summary>
         public static bool AnyInventoryActionAvailable(ItemDrop.ItemData? item)
         {
             if (item == null || Player.m_localPlayer == null)
                 return false;
 
+            // If no unlock gate, or already unlocked, check normal permissions
             if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
                 return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
 
+            // Elevated users skip the gate entirely
             if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
                 return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
 
-            if (!RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
-                return false;
-
+            // For a locked stack: show the menu so the player can see the Unlock button and cost,
+            // regardless of whether they can currently afford it. The actual affordability check
+            // happens when they click Unlock (or in the confirmation panel).
             RenamePermissionManager.BeginIgnoreUnlockRequirement();
             try
             {
@@ -402,6 +398,41 @@ namespace DrakeRenameit
             return MenuModifierIsShift
                 ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
                 : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        }
+
+        /// <summary>Returns a player-facing reason string for why the action menu cannot open for this item.
+        /// Used to show a <see cref="MessageHud"/> message when the modifier is held but the menu is blocked.</summary>
+        public static string GetMenuBlockedReason(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return "";
+
+            var parts = new System.Collections.Generic.List<string>();
+
+            var nameResult = RenamePermissionManager.TryGetDenial(
+                RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer);
+            if (!nameResult.Allowed)
+                parts.Add(RenamePermissionManager.FormatDenialForPlayer(
+                    RenamePermissionOperation.RenameItemName, nameResult.Reasons));
+
+            var descResult = RenamePermissionManager.TryGetDenial(
+                RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer);
+            if (!descResult.Allowed && (parts.Count == 0 ||
+                descResult.Reasons != nameResult.Reasons))
+                parts.Add(RenamePermissionManager.FormatDenialForPlayer(
+                    RenamePermissionOperation.RewriteDescription, descResult.Reasons));
+
+            if (parts.Count == 0)
+                return "This item cannot be edited.";
+
+            // Deduplicate and join
+            var seen = new System.Collections.Generic.HashSet<string>();
+            var deduped = new System.Collections.Generic.List<string>();
+            foreach (var p in parts)
+                if (seen.Add(p))
+                    deduped.Add(p);
+
+            return string.Join(" | ", deduped);
         }
 
         public static string getCraftedByDisplay(ItemDrop.ItemData? item)
@@ -422,7 +453,7 @@ namespace DrakeRenameit
                 UIPanels.CreateCraftedByInput();
             UIPanels.RenameCraftedByInput!.text = getCraftedByDisplay(item);
             UIPanels.InputCraftedByPanel!.SetActive(true);
-            GUIManager.BlockInput(true);
+            UIPanels.EnsureInputBlocked();
         }
 
         public static void ApplyCraftedByLabel(string display)
@@ -448,7 +479,7 @@ namespace DrakeRenameit
 
             CurrentItem = null;
             UIPanels.InputCraftedByPanel!.SetActive(false);
-            GUIManager.BlockInput(false);
+            UIPanels.EnsureInputUnblocked();
         }
 
         /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/> or <see cref="RenameitConfig.ExcludedCategory"/>.</summary>

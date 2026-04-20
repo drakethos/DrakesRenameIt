@@ -47,3 +47,12 @@
   - Fixed bug with admin detection
 - Version 0.7.0
   - added new exclusion features.
+- Version 0.9.0
+  - Pre-release candidate for 1.0 — thorough testing requested before Thunderstore publish.
+  - Added configurable unlock cost: pay items from your inventory once per stack before rename/description/crafted-by edits are allowed (admins/VIPs bypass).
+  - Added "Crafted by" label override: display-only change to the "Crafted by" line in tooltips (real crafter ownership is unchanged).
+  - Added ShowReason config: when on, denied rename/description attempts show the exact reason in the tooltip/center message.
+  - Added RenameAllowlist config: specific items can bypass ExcludedNames, ExcludedCategory, and the unowned-resource block.
+  - Added SeparateStacks and SeparateStacksHardLock: auto-pickup and merges require matching Drake identity; hard lock prevents manual drag-merges too.
+  - Major under-the-hood refactors, null-check hardening, and tooltip/UI improvements.
+  - VIP permission system improvements.

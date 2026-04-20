@@ -111,17 +111,27 @@ jobs:
       #  and PackageMod (PowerShell Compress-Archive).
       - name: Build
         run: |
+      - name: Build
+        run: |
           CI_ROOT="$(pwd)/ci_valheim"
           MANAGED="$CI_ROOT/valheim_Data/Managed"
+
+          # Build a local copy of the net4.8 framework reference assemblies that
+          # also contains netstandard 2.1 (BepInEx/Jotunn require it; mono's
+          # 4.8-api folder only has netstandard 2.0).
+          # FrameworkPathOverride points the compiler here for ALL BCL types.
+          FWPATH="$(pwd)/ci_framework"
+          cp -r /usr/lib/mono/4.8-api/ "$FWPATH"
+          NS21=$(find "$DOTNET_ROOT/packs/NETStandard.Library.Ref" \
+                      -name "netstandard.dll" -path "*/netstandard2.1/*" \
+                      2>/dev/null | head -1)
+          cp "$NS21" "$FWPATH/netstandard.dll"
+
           # dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
-          # FrameworkPathOverride → mono's net4.8 BCL (mscorlib, System.*).
-          # AdditionalLibPaths adds our Managed/ dir so the compiler finds
-          # netstandard.dll (2.1) and the Unity/BepInEx DLLs we staged there.
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
-            /p:FrameworkPathOverride="/usr/lib/mono/4.8-api" \
-            "/p:AdditionalLibPaths=$MANAGED" \
+            /p:FrameworkPathOverride="$FWPATH" \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \

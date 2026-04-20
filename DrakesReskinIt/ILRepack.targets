@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Register the ILRepack task -->
+
+    <Target Name="ILRepacker" AfterTargets="Build">
+        <ItemGroup>
+            <InputAssemblies Include="$(TargetPath)" />
+            <InputAssemblies Include="$(OutputPath)\libs\ServerSync.dll" />
+        </ItemGroup>
+
+        <ILRepack
+                Parallel="true"
+                DebugInfo="true"
+                Internalize="true"
+                InputAssemblies="@(InputAssemblies)"
+                OutputFile="$(TargetDir)$(AssemblyName).merged.dll"
+                TargetKind="SameAsPrimaryAssembly"
+                LibraryPath="$(OutputPath)" />
+
+        <!-- Replace the original assembly with merged one -->
+        <Copy SourceFiles="$(TargetDir)$(AssemblyName).merged.dll"
+              DestinationFiles="$(TargetPath)"
+              OverwriteReadOnlyFiles="true" />
+        <Delete Files="$(TargetDir)$(AssemblyName).merged.dll" />
+    </Target>
+</Project>

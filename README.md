@@ -1,12 +1,13 @@
-# DrakesRenameIt V0.9.0
+# DrakesRenameIt V0.9.0 Release Canidate
 
-A Valheim mod that lets you rename items, rewrite descriptions, and optionally override the **Crafted by** line (display only). Good for roleplay or labeling gear.
+A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 
 ### How to use
 
 Hold **Shift** or **Ctrl** (configurable: **MenuOpenModifier** in `UI-NotSynced`) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Choose an action; only allowed options are clickable. The other modifier + right-click keeps vanilla inventory behavior.
 
 Okay confirms; **Reset** restores the vanilla string for that field.
+
 Okay will confirm the dialog with your change, reset button will bring it back to the items original localized string.
 It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
@@ -22,7 +23,7 @@ localization with an additional name, simply leave the $string intact and add ar
 <p>Start your own rock collection:</p>
 <img width="274" height="137"  alt="image" src="https://github.com/user-attachments/assets/e0fb0e16-db7b-4988-aae3-8343061c395a" />
 
-<p>New now we have descriptions!</p>
+<p>Edit descriptions!</p>
 <img width="264" height="260" alt="image" src="https://github.com/user-attachments/assets/a33411d4-4e0d-49c2-977a-f19fe03eb83a" />
 
 ### Features with rename:
@@ -33,10 +34,17 @@ localization with an additional name, simply leave the $string intact and add ar
 - Lets you rename any existing item and renames that instance.
 - Fully supports multiplayer play, just ensure each client has the mod.
 - recolor the UI tips with configs
-- New - Admin override to not apply to the rules
+- Admin override to not apply to the rules
 - You can enable and disable parts of the mod now.
-- New - API hooks for other mods to track name and description changes
+- API hooks for other mods to track name and description changes
 - Doesn't ACTUALLY rename items, so any mod that needs to deal with the items shared: name won't experience any issues! (hopefully...)
+- *New* Change crafted by name.
+- *New* Seperate stacks by customization with configurable options.
+- *New* Admin override configurable for auto detection or VIP list only
+- *New* Configurable options for showing reasons for denials and more detailed config options for exclusions and allowlists.
+- *New* one unified menu for all rename, description, and crafted by edits with a slick new design.
+- *New* configurable costs for editing items to make it more special and prevent abuse.
+- *New* Vast array of configurations for whats allowed to be edited, by name and category.
 #### What this Mod doesn't do:
   - <s>your taxes
   - change every single item that exists
@@ -53,8 +61,8 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 - **RenameEnabled** — When on, non-elevated players may rename items (via the action menu). Turn off to block new renames while keeping other features.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
 - **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the “Crafted by” line in tooltips. Real crafter id/name used by the game (ownership, locks) is unchanged.
-- **SeparateStacks** — When on, stacks only merge automatically when Drake identity matches (custom name, description, and crafted-by display key). Auto pickup and other automatic merges will not combine mismatched stacks.
-- **SeparateStacksHardLock** — Only applies when **SeparateStacks** is on. When **true** (default), mismatched stacks never merge—including manual drags onto another stack. When **false**, you can drag one stack onto another and they combine immediately (no prompt); the target stack keeps its custom name, description, and crafted-by display.
+- **SeparateStacks** — When on, stacks only merge automatically when tag matches (custom name, description, and crafted-by display key). Auto pickup and other automatic merges will not combine mismatched stacks.
+- **SeparateStacksHardLock** — Only applies when **SeparateStacks** is on. When **true** (default), mismatched stacks never merge—including manual drags onto another stack. When **false**, you can drag one stack onto another and they combine immediatel; the target stack keeps its custom name, description, and crafted-by display.
 - **LockToOwner** — When on, only the crafter / owner can rename or change description. Stacks with **no** crafter yet (raw picked-up resources: no crafter id and no crafter name) are **not** treated as “someone else’s” until they are crafted or claimed. After **NameClaimsOwner** assigns you as crafter, others are blocked as usual.
 - **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter (and “crafted by” style ownership) so **LockToOwner** can protect that stack. Works with uncrafted resources when **AllowRenameResources** (and allowlist if needed) permits the edit.
 - **AllowRenameResources** — When on, unowned resource-style stacks (no crafter yet) can be renamed or given a description. When off, those stacks are blocked **unless** they are on **RenameAllowlist** (then claim rules can still apply). This is separate from **ExcludedCategory** `Material`, which can still block by item type for crafted gear.
@@ -80,30 +88,21 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 #### UI (not synced — client only)
 
 - **MenuOpenModifier** — `Shift` or `Ctrl`: which key + right-click opens the Drake menu. The other modifier + right-click uses vanilla behavior.
-- **ShiftColor** — Tooltip hint color when **MenuOpenModifier** is Shift (Unity color name or `#rrggbb`).
-- **CtrlColor** — Tooltip hint color when **MenuOpenModifier** is Ctrl.
+- **ModifierColor** — Tooltip hint color for **MenuOpenModifier** (Unity color name or `#rrggbb`).
 
 #### Permission order (how rules stack)
 
-Roughly: **Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
+**Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then allow of the following: **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
 
-### Quirks and Known Issues:
-Quirks:
-- With **SeparateStacks** (server-synced), automatic merges require matching Drake identity so differently customized stacks are not absorbed on pickup. Use **SeparateStacksHardLock** to choose whether mismatched stacks stay split forever (**true**) or can be joined by hand after confirming (**false**).
-    Known Issues:
-  - ~~Item stands still show the name of the original item~~
-    - Fixed!
-  - ~~Upgrading an item will replace the custom name with the original name~~
-    - Fixed!
+### Known Issues:
+Known Issues:
+    - None currently but please report if you find any!
 #### Wishlist for future
-- Further stack / inventory UX polish
-- Costs (configurable)
-  - To prevent others from renaming things a million times adding some sort of cost so item renaming is more special
 - if there is a high demand for this:
-- Renamable pieces (that have hover names)
+    - Renamable pieces (that have hover names)
 ##### Distant crazy features
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that, However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for valheim.
-
+-   Probably a seperate mod though!
 #### API Docs:
 Events live in namespace `DrakeRenameit.API` (`RenameEvents`).
 

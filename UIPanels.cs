@@ -198,13 +198,13 @@ public static class UIPanels
         });
 
         _buttonMenuResetAll = GUIManager.Instance.CreateButton(
-            text: "Reset all",
+            text: "Cancel All",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -72f),
-            width: 100f,
-            height: 22f).GetComponent<Button>();
+            position: new Vector2(-66f, -80f),
+            width: 120f,
+            height: 28f).GetComponent<Button>();
         _buttonMenuResetAll.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -218,7 +218,7 @@ public static class UIPanels
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, -106f),
+            position: new Vector2(66f, -80f),
             width: 120f,
             height: 28f).GetComponent<Button>();
         _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);

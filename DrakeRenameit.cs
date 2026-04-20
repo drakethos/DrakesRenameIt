@@ -400,6 +400,41 @@ namespace DrakeRenameit
                 : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         }
 
+        /// <summary>Returns a player-facing reason string for why the action menu cannot open for this item.
+        /// Used to show a <see cref="MessageHud"/> message when the modifier is held but the menu is blocked.</summary>
+        public static string GetMenuBlockedReason(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return "";
+
+            var parts = new System.Collections.Generic.List<string>();
+
+            var nameResult = RenamePermissionManager.TryGetDenial(
+                RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer);
+            if (!nameResult.Allowed)
+                parts.Add(RenamePermissionManager.FormatDenialForPlayer(
+                    RenamePermissionOperation.RenameItemName, nameResult.Reasons));
+
+            var descResult = RenamePermissionManager.TryGetDenial(
+                RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer);
+            if (!descResult.Allowed && (parts.Count == 0 ||
+                descResult.Reasons != nameResult.Reasons))
+                parts.Add(RenamePermissionManager.FormatDenialForPlayer(
+                    RenamePermissionOperation.RewriteDescription, descResult.Reasons));
+
+            if (parts.Count == 0)
+                return "This item cannot be edited.";
+
+            // Deduplicate and join
+            var seen = new System.Collections.Generic.HashSet<string>();
+            var deduped = new System.Collections.Generic.List<string>();
+            foreach (var p in parts)
+                if (seen.Add(p))
+                    deduped.Add(p);
+
+            return string.Join(" | ", deduped);
+        }
+
         public static string getCraftedByDisplay(ItemDrop.ItemData? item)
         {
             if (item?.m_customData == null)

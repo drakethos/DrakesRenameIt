@@ -40,6 +40,7 @@ description: >-
 
 - When **`UnlockCostEnabled`** + valid **`UnlockCost`** apply, **`IsRenameUnlocked`** normally requires the paid flag on the stack.
 - **Grandfather rule**: if the gate applies but the stack has **any** Drake customization (**`HasAnyDrakeRenameCustomization`**: custom name, desc, crafted-by display, or crafted-by line label) and **no** unlock flag yet, **`IsRenameUnlocked`** writes **`Drake_RenameUnlocked`** once and returns true (items edited before unlock existed or after config churn). Unlock is **per stack** (item custom data on that stack), not per player.
+- **Tooltip suffix** (`GetMenuTooltipLockSuffix`): **🔒** (`TooltipUnlockCostLockedEmoji`) until paid; **🖊️** (`TooltipDrakeEditableEmoji`, U+1F58A) when paid-unlocked or elevated (open-lock emoji looked too similar to closed-lock in-game).
 
 ## Config sections (high level)
 

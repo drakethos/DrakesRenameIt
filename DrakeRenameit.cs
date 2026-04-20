@@ -32,6 +32,12 @@ namespace DrakeRenameit
         public const string DrakeCraftedByLineLabel = "Drake_CraftedByLineLabel";
         /// <summary>When set on a stack, <see cref="RenameitConfig.UnlockCost"/> has been paid and rename/description/crafted-by edits are allowed (if other rules pass).</summary>
         public const string DrakeRenameUnlocked = "Drake_RenameUnlocked";
+
+        /// <summary>Inventory tooltip suffix when unlock cost applies but this item is not paid yet.</summary>
+        public const string TooltipUnlockCostLockedEmoji = "\uD83D\uDD12";
+
+        /// <summary>Inventory tooltip suffix when the stack is paid-unlocked or the local player is elevated — pen/nib reads clearly; Valheim fonts often render open-lock like closed-lock.</summary>
+        public const string TooltipDrakeEditableEmoji = "\U0001F58A\uFE0F";
         public static ItemDrop.ItemData? CurrentItem { get; set; }
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
 
@@ -147,7 +153,29 @@ namespace DrakeRenameit
             item.m_customData[DrakeRenameUnlocked] = "1";
         }
 
-        /// <summary>Shows the Unlock button when unlock cost applies, the stack is not unlocked yet, and the player is not elevated.</summary>
+        /// <summary>
+        /// True if at least one rename / description / crafted-by edit would be allowed when the unlock-cost gate is ignored
+        /// (same test used to decide whether a locked stack may open the action menu).
+        /// </summary>
+        public static bool WouldHaveAnyDrakeEditIfUnlockIgnored(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return false;
+            RenamePermissionManager.BeginIgnoreUnlockRequirement();
+            try
+            {
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+            }
+            finally
+            {
+                RenamePermissionManager.EndIgnoreUnlockRequirement();
+            }
+        }
+
+        /// <summary>
+        /// Shows the Unlock affordance when unlock cost applies, the stack is not unlocked yet, the player is not elevated,
+        /// and paying would actually enable at least one edit (otherwise players pay and still see all actions denied).
+        /// </summary>
         public static bool ShowUnlockButton(ItemDrop.ItemData? item)
         {
             if (item == null || Player.m_localPlayer == null)
@@ -156,7 +184,9 @@ namespace DrakeRenameit
                 return false;
             if (IsRenameUnlocked(item))
                 return false;
-            return !RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+            if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+                return false;
+            return WouldHaveAnyDrakeEditIfUnlockIgnored(item);
         }
 
         /// <summary>Pays <see cref="RenameitConfig.UnlockCost"/> from inventory and marks the stack unlocked.</summary>
@@ -167,12 +197,20 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(item))
             {
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center,
-                    "That stack is no longer in your inventory. Put it back, then unlock again.");
+                    "That item is no longer in your inventory. Put it back, then unlock again.");
                 return false;
             }
 
             if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
                 return false;
+            if (!WouldHaveAnyDrakeEditIfUnlockIgnored(item))
+            {
+                string why = GetMenuBlockedReason(item);
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center,
+                    string.IsNullOrEmpty(why) ? "This item cannot be edited." : why);
+                return false;
+            }
+
             if (!RenameUnlockCost.TryConsumeUnlockCost(Player.m_localPlayer, out var err))
             {
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center, err);
@@ -180,7 +218,7 @@ namespace DrakeRenameit
             }
 
             SetRenameUnlocked(item);
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Stack unlocked for editing.");
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Item unlocked for editing.");
             return true;
         }
 
@@ -470,18 +508,9 @@ namespace DrakeRenameit
             if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
                 return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
 
-            // For a locked stack: show the menu so the player can see the Unlock button and cost,
-            // regardless of whether they can currently afford it. The actual affordability check
-            // happens when they click Unlock (or in the confirmation panel).
-            RenamePermissionManager.BeginIgnoreUnlockRequirement();
-            try
-            {
-                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
-            }
-            finally
-            {
-                RenamePermissionManager.EndIgnoreUnlockRequirement();
-            }
+            // For a locked stack: show the menu only if at least one edit would be allowed after paying unlock
+            // (same rule as ShowUnlockButton — never trap players into paying for zero usable actions).
+            return WouldHaveAnyDrakeEditIfUnlockIgnored(item);
         }
 
         public static bool IsMenuOpenModifierHeld()
@@ -491,7 +520,7 @@ namespace DrakeRenameit
                 : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         }
 
-        /// <summary>Lock/unlock emoji for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies (🔒 locked, 🔓 editable or elevated).</summary>
+        /// <summary>Suffix for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies: 🔒 until paid, then 🖊️ (open-lock glyphs are easy to confuse with locked in Valheim fonts).</summary>
         public static string GetMenuTooltipLockSuffix(ItemDrop.ItemData? item)
         {
             if (item == null || Player.m_localPlayer == null)
@@ -499,8 +528,8 @@ namespace DrakeRenameit
             if (!RenameUnlockCost.UnlockCostApplies())
                 return "";
             if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
-                return " \uD83D\uDD13";
-            return IsRenameUnlocked(item) ? " \uD83D\uDD13" : " \uD83D\uDD12";
+                return " " + TooltipDrakeEditableEmoji;
+            return IsRenameUnlocked(item) ? " " + TooltipDrakeEditableEmoji : " " + TooltipUnlockCostLockedEmoji;
         }
 
         /// <summary>Returns a player-facing reason string for why the action menu cannot open for this item.
@@ -524,6 +553,14 @@ namespace DrakeRenameit
                 descResult.Reasons != nameResult.Reasons))
                 parts.Add(RenamePermissionManager.FormatDenialForPlayer(
                     RenamePermissionOperation.RewriteDescription, descResult.Reasons));
+
+            var craftedResult = RenamePermissionManager.TryGetDenial(
+                RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer);
+            if (!craftedResult.Allowed &&
+                (parts.Count == 0 ||
+                 (craftedResult.Reasons != nameResult.Reasons && craftedResult.Reasons != descResult.Reasons)))
+                parts.Add(RenamePermissionManager.FormatDenialForPlayer(
+                    RenamePermissionOperation.EditCraftedByLabel, craftedResult.Reasons));
 
             if (parts.Count == 0)
                 return "This item cannot be edited.";

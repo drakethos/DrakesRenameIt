@@ -110,7 +110,9 @@ public static class UIPanels
             if (unlockLabel != null)
             {
                 string cost = RenameUnlockCost.GetCostDisplayShort();
-                unlockLabel.text = string.IsNullOrEmpty(cost) ? "\uD83D\uDD12 Unlock" : $"\uD83D\uDD12 Unlock ({cost})";
+                unlockLabel.text = string.IsNullOrEmpty(cost)
+                    ? $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock"
+                    : $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock ({cost})";
             }
 
             _buttonMenuRename.interactable = false;
@@ -166,7 +168,7 @@ public static class UIPanels
             addContentSizeFitter: false);
 
         _buttonMenuUnlock = GUIManager.Instance.CreateButton(
-            text: "\uD83D\uDD12 Unlock",
+            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
@@ -441,7 +443,7 @@ public static class UIPanels
             draggable: false);
 
         GUIManager.Instance.CreateText(
-            text: "\uD83D\uDD12 Unlock Item",
+            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock Item",
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -505,7 +507,7 @@ public static class UIPanels
         _unlockAffordWarning.gameObject.SetActive(false);
 
         _buttonConfirmUnlock = GUIManager.Instance.CreateButton(
-            text: "\uD83D\uDD13 Unlock",
+            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Pay",
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
@@ -541,7 +543,7 @@ public static class UIPanels
         });
 
         _buttonConfirmCancel = GUIManager.Instance.CreateButton(
-            text: "\uD83D\uDD12 Cancel",
+            text: "Cancel",
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),

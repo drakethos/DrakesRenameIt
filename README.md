@@ -121,8 +121,10 @@ Contact me:
   or a request for new features.
 - I cannot guarantee the request will be met but if there's a high enough demand and the ask isnt too difficult I may take it into consideration.
   Email: Drakethos@gmail.com
-  Discord: Drakethos!
-buy me a coffee:
+  Discord: Drakethos
+- discord server: https://discord.gg/cQegN9fB6r
+
+buy me a coffee
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
 
 

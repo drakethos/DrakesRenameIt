@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    CI build support: when CI_NET48_FWPATH is set (by the GitHub Actions workflow),
+    point TargetFrameworkRootPath at the Microsoft.NETFramework.ReferenceAssemblies.net48
+    package so dotnet msbuild finds the correct mscorlib + netstandard facade on Linux.
+    On Windows (local builds) this env var is not set, so nothing changes.
+  -->
+  <PropertyGroup Condition="'$(CI_NET48_FWPATH)' != ''">
+    <TargetFrameworkRootPath>$(CI_NET48_FWPATH)/</TargetFrameworkRootPath>
+  </PropertyGroup>
+</Project>

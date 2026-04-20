@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04: mono-complete + nuget are pre-installed.
+    # dotnet SDK added via setup-dotnet for Roslyn (C#10).
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -25,107 +27,89 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
 
-      # ── Install .NET SDK for msbuild / csc ─────────────────────────────────
-      - name: Setup .NET
+      # ── Install .NET SDK (Roslyn C#10) ──────────────────────────────────────
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # ── Install Mono (provides msbuild that understands net481 csproj) ──────
-      - name: Install Mono + msbuild
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y mono-complete mono-devel msbuild
-
-      # ── Restore / download NuGet packages that carry game DLLs ─────────────
+      # ── Restore NuGet packages ──────────────────────────────────────────────
+      #  This pulls, among others:
+      #    • Microsoft.NETFramework.ReferenceAssemblies.net48 — official .NET 4.8
+      #      BCL + Facades/netstandard.dll; its .targets sets TargetFrameworkRootPath
+      #      and disables FrameworkPathOverride so the build uses real MS assemblies.
+      #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
+      #    • ILRepack.Lib.MSBuild.Task — ILRepacker post-build target
+      #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
       - name: Restore NuGet packages
         run: |
-          # Restore the packages listed in packages.config into the packages/ folder
-          # using nuget CLI (shipped with mono-complete)
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # ── Stage the game / BepInEx DLLs that the csproj HintPaths expect ──────
+      # ── Stage game / BepInEx DLLs from Pfhoenix ─────────────────────────────
       #
-      #  The csproj uses three path variables:
-      #    BepInExPath              → BepInEx core DLLs (0Harmony, BepInEx)
-      #    CorlibPath               → UnityEngine modules + Unity.TextMeshPro
-      #    PublicizedAssembliesPath → assembly_valheim_publicized, etc.
+      #  Fake "Valheim install" tree:
+      #    ci_valheim/valheim_Data/Managed/          ← CorlibPath
+      #      publicized_assemblies/                  ← PublicizedAssembliesPath
+      #    ci_valheim/BepInEx/core/                  ← BepInExPath
       #
-      #  Pfhoenix.Valheim.ModProjectReferences ships the real (non-publicized)
-      #  game DLLs. Because the csproj only needs them to resolve types at
-      #  compile time (not to access private members — those go through
-      #  AccessTools reflection), we alias them under the _publicized names.
+      #  VALHEIM_INSTALL=ci_valheim satisfies JotunnLib's Paths.props HintPaths.
       # ────────────────────────────────────────────────────────────────────────
       - name: Stage game DLLs from Pfhoenix package
         run: |
-          # Find the extracted Pfhoenix package; nuget restore puts it under
-          # packages/Pfhoenix.Valheim.ModProjectReferences.*/
           PFHOENIX_LIB=$(ls -d packages/Pfhoenix.Valheim.ModProjectReferences.*/lib/net46 2>/dev/null | head -1)
           if [ -z "$PFHOENIX_LIB" ]; then
-            echo "ERROR: Pfhoenix package not found after restore" >&2
-            ls packages/ >&2
-            exit 1
+            echo "ERROR: Pfhoenix package not found" >&2; ls packages/ >&2; exit 1
           fi
           echo "Pfhoenix lib: $PFHOENIX_LIB"
 
-          # Directories that BepInExPath and CorlibPath will point to
-          mkdir -p ci_deps/bepinex/core ci_deps/corlib ci_deps/publicized
+          MANAGED="ci_valheim/valheim_Data/Managed"
+          PUBLICIZED="$MANAGED/publicized_assemblies"
+          BEPINEX="ci_valheim/BepInEx/core"
+          mkdir -p "$MANAGED" "$PUBLICIZED" "$BEPINEX"
 
-          # BepInEx core: 0Harmony + BepInEx (Pfhoenix ships them as lowercase)
-          cp "$PFHOENIX_LIB/0Harmony.dll"  ci_deps/bepinex/core/
-          cp "$PFHOENIX_LIB/bepinex.dll"   ci_deps/bepinex/core/BepInEx.dll
+          cp "$PFHOENIX_LIB/"*.dll "$MANAGED/"
 
-          # UnityEngine modules (CorlibPath)
-          for dll in \
-              UnityEngine.CoreModule.dll \
-              UnityEngine.ImageConversionModule.dll \
-              UnityEngine.IMGUIModule.dll \
-              UnityEngine.InputLegacyModule.dll \
-              UnityEngine.AnimationModule.dll \
-              UnityEngine.JSONSerializeModule.dll \
-              Unity.TextMeshPro.dll; do
-            cp "$PFHOENIX_LIB/$dll" ci_deps/corlib/
+          cp "$PFHOENIX_LIB/assembly_valheim.dll" "$PUBLICIZED/assembly_valheim_publicized.dll"
+          cp "$PFHOENIX_LIB/assembly_utils.dll"   "$PUBLICIZED/assembly_utils_publicized.dll"
+          cp "$PFHOENIX_LIB/gui_framework.dll"    "$PUBLICIZED/gui_framework_publicized.dll"
+
+          for src in assembly_googleanalytics assembly_guiutils assembly_lux \
+                     assembly_postprocessing assembly_simplemeshcombine \
+                     assembly_sunshafts SoftReferenceableAssets; do
+            [ -f "$PFHOENIX_LIB/$src.dll" ] && \
+              cp "$PFHOENIX_LIB/$src.dll" "$PUBLICIZED/${src}_publicized.dll" || true
           done
 
-          # Publicized assemblies (csproj expects *_publicized.dll names)
-          cp "$PFHOENIX_LIB/assembly_valheim.dll"  ci_deps/publicized/assembly_valheim_publicized.dll
-          cp "$PFHOENIX_LIB/assembly_utils.dll"    ci_deps/publicized/assembly_utils_publicized.dll
-          cp "$PFHOENIX_LIB/gui_framework.dll"     ci_deps/publicized/gui_framework_publicized.dll
+          cp "$PFHOENIX_LIB/0Harmony.dll" "$BEPINEX/"
+          cp "$PFHOENIX_LIB/bepinex.dll"  "$BEPINEX/BepInEx.dll"
+
+          echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
 
       # ── Build (Release) ─────────────────────────────────────────────────────
+      #  dotnet msbuild: Roslyn from .NET 8 → C# 10.
+      #  Directory.Build.props (repo file) reads CI_NET48_FWPATH → sets
+      #    TargetFrameworkRootPath to the net48 ref pack (mscorlib + netstandard).
+      #  Directory.Build.targets (repo file) reads CI_SKIP_POST_BUILD → no-ops
+      #    CopyOutput (Windows path + wrong-case Readme.md) and PackageMod
+      #    (PowerShell Compress-Archive). Zip assembled in the next step.
       - name: Build
+        env:
+          CI_NET48_FWPATH: ${{ github.workspace }}/packages/Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3/build
+          CI_SKIP_POST_BUILD: "true"
         run: |
-          # Explicitly target only Build and ILRepacker — this skips CopyOutput
-          # (writes to a local Windows r2modman path) and PackageMod (calls
-          # PowerShell Compress-Archive). The zip is assembled in the next step.
-          msbuild DrakeRenameit.csproj \
+          CI_ROOT="$(pwd)/ci_valheim"
+          MANAGED="$CI_ROOT/valheim_Data/Managed"
+          dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
-            /p:BepInExPath="$(pwd)/ci_deps/bepinex" \
-            /p:CorlibPath="$(pwd)/ci_deps/corlib" \
-            /p:PublicizedAssembliesPath="$(pwd)/ci_deps/publicized" \
+            /p:TargetFrameworkVersion=v4.8 \
+            /p:BepInExPath="$CI_ROOT/BepInEx" \
+            /p:CorlibPath="$MANAGED" \
+            /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
             /p:Version="${{ steps.ver.outputs.version }}" \
             /t:"Build;ILRepacker" \
             /v:minimal
 
       # ── Assemble Thunderstore zip (mirrors PackageMod target) ────────────────
-      #
-      #  PackageMod copies into $(ThunderstoreFolder):
-      #    DrakesRenameit.dll  (merged by ILRepack)
-      #    README.md
-      #    icon.png
-      #    CHANGELOG.md
-      #    manifest.json       (generated from the ManifestJson ItemGroup)
-      #
-      #  The manifest.json shape (from the csproj ItemGroup):
-      #  {
-      #    "name": "DrakesRenameit",
-      #    "version_number": "0.9.0",
-      #    "author": "DrakeMods",
-      #    "description": "...",
-      #    "website_url": "https://github.com/drakethos/DrakesRenameIt",
-      #    "dependencies": [ "denikson-BepInExPack_Valheim-5.4.2333", "ValheimModding-Jotunn-2.27.1" ]
-      #  }
-      # ────────────────────────────────────────────────────────────────────────
       - name: Assemble Thunderstore package
         id: pkg
         run: |
@@ -134,14 +118,11 @@ jobs:
           ZIP_NAME="DrakeMods-DrakesRenameit-${VERSION}.zip"
 
           mkdir -p "$PKG_DIR"
-
-          # The merged DLL ends up in bin/Release/ after ILRepack runs
           cp bin/Release/DrakesRenameit.dll "$PKG_DIR/"
           cp README.md                      "$PKG_DIR/"
           cp icon.png                       "$PKG_DIR/"
           cp CHANGELOG.md                   "$PKG_DIR/"
 
-          # Generate manifest.json (same fields as the csproj ManifestJson item)
           python3 - <<'PYEOF'
           import json, os
           manifest = {
@@ -164,7 +145,6 @@ jobs:
           cd "$PKG_DIR" && zip -r "../$ZIP_NAME" . && cd ..
 
           echo "zip=$ZIP_NAME" >> "$GITHUB_OUTPUT"
-          echo "Thunderstore zip: $ZIP_NAME"
           ls -lh "$ZIP_NAME"
         env:
           VERSION: ${{ steps.ver.outputs.version }}

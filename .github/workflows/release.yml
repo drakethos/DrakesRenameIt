@@ -34,35 +34,25 @@ jobs:
           dotnet-version: "8.0.x"
 
       # ── Restore NuGet packages ──────────────────────────────────────────────
+      #  This pulls, among others:
+      #    • Microsoft.NETFramework.ReferenceAssemblies.net48 — official .NET 4.8
+      #      BCL + Facades/netstandard.dll; its .targets sets TargetFrameworkRootPath
+      #      and disables FrameworkPathOverride so the build uses real MS assemblies.
+      #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
+      #    • ILRepack.Lib.MSBuild.Task — ILRepacker post-build target
+      #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
       - name: Restore NuGet packages
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # ── Download official .NET 4.8 reference assemblies ─────────────────────
-      #  Microsoft.NETFramework.ReferenceAssemblies.net48 ships the real .NET 4.8
-      #  BCL including mscorlib AND the netstandard.dll Facade (under Facades/).
-      #  We use its build/.NETFramework/v4.8/ directory as FrameworkPathOverride,
-      #  which gives the compiler both mscorlib and the proper netstandard facade
-      #  with no conflicts — exactly what Visual Studio uses on Windows.
-      # ────────────────────────────────────────────────────────────────────────
-      - name: Download .NET 4.8 reference assemblies
-        run: |
-          wget -q "https://www.nuget.org/api/v2/package/Microsoft.NETFramework.ReferenceAssemblies.net48/1.0.3" \
-               -O /tmp/netfw48.nupkg
-          mkdir -p /tmp/netfw48
-          unzip -q /tmp/netfw48.nupkg -d /tmp/netfw48
-          echo "NET48_FWPATH=/tmp/netfw48/build/.NETFramework/v4.8" >> "$GITHUB_ENV"
-
       # ── Stage game / BepInEx DLLs from Pfhoenix ─────────────────────────────
       #
-      #  We build a fake "Valheim install" tree so ALL reference paths resolve:
+      #  Fake "Valheim install" tree:
+      #    ci_valheim/valheim_Data/Managed/          ← CorlibPath
+      #      publicized_assemblies/                  ← PublicizedAssembliesPath
+      #    ci_valheim/BepInEx/core/                  ← BepInExPath
       #
-      #    ci_valheim/
-      #      valheim_Data/Managed/          ← CorlibPath
-      #        publicized_assemblies/       ← PublicizedAssembliesPath
-      #      BepInEx/core/                  ← BepInExPath
-      #
-      #  VALHEIM_INSTALL=ci_valheim is also picked up by JotunnLib's Paths.props.
+      #  VALHEIM_INSTALL=ci_valheim satisfies JotunnLib's Paths.props HintPaths.
       # ────────────────────────────────────────────────────────────────────────
       - name: Stage game DLLs from Pfhoenix package
         run: |
@@ -77,10 +67,8 @@ jobs:
           BEPINEX="ci_valheim/BepInEx/core"
           mkdir -p "$MANAGED" "$PUBLICIZED" "$BEPINEX"
 
-          # All Pfhoenix DLLs → Managed/ (CorlibPath + Jotunn corlib HintPaths)
           cp "$PFHOENIX_LIB/"*.dll "$MANAGED/"
 
-          # Publicized aliases the csproj HintPaths expect
           cp "$PFHOENIX_LIB/assembly_valheim.dll" "$PUBLICIZED/assembly_valheim_publicized.dll"
           cp "$PFHOENIX_LIB/assembly_utils.dll"   "$PUBLICIZED/assembly_utils_publicized.dll"
           cp "$PFHOENIX_LIB/gui_framework.dll"    "$PUBLICIZED/gui_framework_publicized.dll"
@@ -92,16 +80,16 @@ jobs:
               cp "$PFHOENIX_LIB/$src.dll" "$PUBLICIZED/${src}_publicized.dll" || true
           done
 
-          # BepInEx core
           cp "$PFHOENIX_LIB/0Harmony.dll" "$BEPINEX/"
           cp "$PFHOENIX_LIB/bepinex.dll"  "$BEPINEX/BepInEx.dll"
 
           echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
 
       # ── Build (Release) ─────────────────────────────────────────────────────
-      #  dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
-      #  FrameworkPathOverride → official .NET 4.8 BCL (includes netstandard
-      #  facade in Facades/ sub-dir, which the compiler picks up automatically).
+      #  dotnet msbuild: Roslyn from .NET 8 → C# 10.
+      #  Microsoft.NETFramework.ReferenceAssemblies.net48 (imported via csproj)
+      #  sets TargetFrameworkRootPath so mscorlib + netstandard facade resolve
+      #  cleanly — no FrameworkPathOverride needed.
       #  Targets Build + ILRepacker only; skips CopyOutput and PackageMod.
       - name: Build
         run: |
@@ -110,7 +98,6 @@ jobs:
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
-            /p:FrameworkPathOverride="$NET48_FWPATH" \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \

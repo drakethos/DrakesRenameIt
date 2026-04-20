@@ -10,7 +10,9 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
+    # ubuntu-22.04: mono-complete + msbuild + nuget are pre-installed.
+    # (Mono was dropped from ubuntu-24.04 and has no apt package there.)
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -24,18 +26,6 @@ jobs:
           VERSION="${TAG#v}"                # e.g. 0.9.0
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
-
-      # ── Install .NET SDK for msbuild / csc ─────────────────────────────────
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      # ── Install Mono (provides msbuild that understands net481 csproj) ──────
-      - name: Install Mono + msbuild
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y mono-complete mono-devel msbuild
 
       # ── Restore / download NuGet packages that carry game DLLs ─────────────
       - name: Restore NuGet packages

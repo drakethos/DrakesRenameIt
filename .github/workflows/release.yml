@@ -87,14 +87,28 @@ jobs:
 
       # ── Build (Release) ─────────────────────────────────────────────────────
       #  dotnet msbuild: Roslyn from .NET 8 → C# 10.
-      #  Microsoft.NETFramework.ReferenceAssemblies.net48 (imported via csproj)
-      #  sets TargetFrameworkRootPath so mscorlib + netstandard facade resolve
-      #  cleanly — no FrameworkPathOverride needed.
+      #  We write a Directory.Build.props that sets TargetFrameworkRootPath to
+      #  the Microsoft.NETFramework.ReferenceAssemblies.net48 package location.
+      #  MSBuild then resolves all .NET 4.8 reference assemblies (including the
+      #  proper netstandard.dll Facade) from that package automatically.
       #  Targets Build + ILRepacker only; skips CopyOutput and PackageMod.
       - name: Build
         run: |
           CI_ROOT="$(pwd)/ci_valheim"
           MANAGED="$CI_ROOT/valheim_Data/Managed"
+
+          # Write Directory.Build.props so dotnet msbuild finds the net48 ref pack.
+          # TargetFrameworkRootPath tells MSBuild where to look for framework DLLs:
+          #   {TargetFrameworkRootPath}/.NETFramework/v4.8/ → mscorlib + Facades/
+          NET48_PKG="$(pwd)/packages/Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3/build"
+          cat > Directory.Build.props <<EOF
+          <Project>
+            <PropertyGroup>
+              <TargetFrameworkRootPath>${NET48_PKG}/</TargetFrameworkRootPath>
+            </PropertyGroup>
+          </Project>
+          EOF
+
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \

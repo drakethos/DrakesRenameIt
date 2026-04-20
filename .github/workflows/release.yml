@@ -109,8 +109,18 @@ jobs:
           </Project>
           EOF
 
-          dotnet msbuild DrakeRenameit.csproj \
-            /p:Configuration=Release \
+          # Directory.Build.targets overrides CopyOutput and PackageMod to no-ops
+          # in CI: CopyOutput tries to copy Readme.md (Windows case) which doesn't
+          # exist on Linux FS, and PackageMod calls PowerShell Compress-Archive.
+          # We assemble the zip ourselves in the next step.
+          cat > Directory.Build.targets <<'EOF'
+          <Project>
+            <Target Name="CopyOutput" AfterTargets="Build" />
+            <Target Name="PackageMod" AfterTargets="Build" />
+          </Project>
+          EOF
+
+          dotnet msbuild DrakeRenameit.csproj \            /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \

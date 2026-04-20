@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.UI;
 
 /// <summary>Guards injected tooltip strings so unclosed rich-text color tags do not bleed into the rest of the tooltip.</summary>
 internal static class TooltipRichText

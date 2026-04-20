@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using BepInEx;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Permissions;
 
 /// <summary>Writes <c>ExcludedCategoryReference.txt</c> under <see cref="Paths.ConfigPath"/> on first run (or when outdated).</summary>
 internal static class ExcludedCategoryReferenceWriter

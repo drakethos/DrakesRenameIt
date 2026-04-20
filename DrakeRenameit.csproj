@@ -102,19 +102,19 @@
     <Compile Include="API\RenameItPermision.cs" />
     <Compile Include="extensions\ButtonExtensions.cs" />
     <Compile Include="RenameitConfig.cs" />
-    <Compile Include="ExcludedCategoryAliases.cs" />
-    <Compile Include="ExcludedCategoryReferenceWriter.cs" />
-    <Compile Include="RenameExclusionRules.cs" />
-    <Compile Include="RenamePermissionManager.cs" />
+    <Compile Include="Permissions\ExcludedCategoryAliases.cs" />
+    <Compile Include="Permissions\ExcludedCategoryReferenceWriter.cs" />
+    <Compile Include="Permissions\RenameExclusionRules.cs" />
+    <Compile Include="Permissions\RenamePermissionManager.cs" />
     <Compile Include="RenameUnlockCost.cs" />
     <Compile Include="DrakeRenameit.cs" />
-    <Compile Include="InventoryStackPatches.cs" />
-    <Compile Include="ItemTooltipPatches.cs" />
-    <Compile Include="Patches.cs" />
+    <Compile Include="Patches\InventoryStackPatches.cs" />
+    <Compile Include="Patches\ItemTooltipPatches.cs" />
+    <Compile Include="Patches\Patches.cs" />
     <Compile Include="StackIdentity.cs" />
-    <Compile Include="TooltipRichText.cs" />
+    <Compile Include="UI\TooltipRichText.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UIPanels.cs" />
+    <Compile Include="UI\UIPanels.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -158,8 +158,7 @@
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(ThunderstoreFolder)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md" />
     <!-- Zip the Thunderstore folder (skipped in CI; workflow assembles its own zip) -->
-    <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force"
-          Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
+    <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force" Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
   </Target>
   <!-- Define the JSON structure to be written to the manifest -->
   <ItemGroup>
@@ -182,4 +181,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
 </Project>

@@ -3,7 +3,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using HarmonyLib;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Patches;
 
 /// <summary>When <see cref="RenameitConfig.SeparateStacks"/> is on, only stacks with matching Drake fingerprints merge.</summary>
 /// <remarks>

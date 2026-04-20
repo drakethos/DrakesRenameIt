@@ -2,9 +2,10 @@ using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
+using DrakeRenameit.UI;
 using HarmonyLib;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Patches;
 
 /// <summary>Replaces visible crafted-by text when <see cref="DrakeRenameit.DrakeCraftedByDisplay"/> is set.</summary>
 /// <remarks>

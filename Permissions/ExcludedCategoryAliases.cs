@@ -1,4 +1,4 @@
-namespace DrakeRenameit;
+namespace DrakeRenameit.Permissions;
 
 /// <summary>Fixed alias tokens for <see cref="RenameitConfig.ExcludedCategory"/> (lowercase keys match <see cref="RenameExclusionRules"/>).</summary>
 public static class ExcludedCategoryAliases

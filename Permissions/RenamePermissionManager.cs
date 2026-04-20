@@ -3,7 +3,7 @@ using System.Text;
 using BepInEx.Logging;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Permissions;
 
 [Flags]
 public enum RenameDenialReason

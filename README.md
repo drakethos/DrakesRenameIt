@@ -123,7 +123,7 @@ Contact me:
   Discord: Drakethos
 - discord server: https://discord.gg/cQegN9fB6r
 
-buy me a coffee
+- buy me a coffee ☕
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
 
 

@@ -1,9 +1,10 @@
 ﻿using System.Linq;
+using DrakeRenameit.Permissions;
+using DrakeRenameit.UI;
 using HarmonyLib;
-using UnityEngine;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Patches;
 
 /// <summary>Shared hover text rename logic (ItemDrop + ItemStand / container stands).</summary>
 internal static class HoverRenameHelper

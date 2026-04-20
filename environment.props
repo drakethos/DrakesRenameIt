@@ -1,12 +1,13 @@
 <Project>
     <PropertyGroup>
-        <ValheimGamePath>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimGamePath>
-        <BepInExPath>C:\Users\Derrick\AppData\Roaming\r2modmanPlus-local\Valheim\profiles\drake\BepInEx</BepInExPath>
+    <ValheimGamePath>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimGamePath>
+        <R2ModPath>C:\Users\house\AppData\Roaming\r2modmanPlus-local\Valheim\profiles</R2ModPath>
+        <!-- Define the profile name -->
+        <ProfileName>drakeTest</ProfileName>
+        <!-- Point BepInExPath at the selected profile so changing ProfileName updates all targets -->
+        <BepInExPath>$(R2ModPath)\$(ProfileName)\BepInEx</BepInExPath>
         <CorlibPath>$(ValheimGamePath)\valheim_Data\Managed</CorlibPath>
         <PublicizedAssembliesPath>$(ValheimGamePath)\valheim_Data\Managed\publicized_assemblies</PublicizedAssembliesPath>
-        <R2ModPath>C:\Users\Derrick\AppData\Roaming\r2modmanPlus-local\Valheim\profiles</R2ModPath>
-        <!-- Define the profile name -->
-        <ProfileName>drake</ProfileName>
         <!-- Define the folder for the Thunderstore package -->
         <AfterTargets>ILRepacker</AfterTargets> <!-- If you are using KeyManager, change this to KeyManager as suggested in step 5.2 in the instructions -->
     </PropertyGroup>

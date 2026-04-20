@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
+using DrakeRenameit.Patches;
+using DrakeRenameit.Permissions;
+using DrakeRenameit.UI;
 using HarmonyLib;
 using Jotunn;
 using Jotunn.Managers;

@@ -29,6 +29,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _allowRenameResources;
     private static ConfigEntry<int> _nameCharLimit;
     private static ConfigEntry<int> _descCharLimit;
+    private static ConfigEntry<int> _craftedByCharLimit;
     private static ConfigEntry<string> _vipList;
     private static ConfigEntry<string> _menuHintColor;
     private static ConfigEntry<string> _excludedNames;
@@ -53,6 +54,7 @@ public static class RenameitConfig
     public static bool AllowRenameResources => _allowRenameResources.Value;
     public static bool AllowAdminOverride => _allowAdminOverride.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
+    public static int CraftedByCharLimit => _craftedByCharLimit.Value;
     public static string VipList => _vipList.Value;
     public static string MenuHintColor => _menuHintColor.Value;
     public static string ExcludedNames => _excludedNames.Value;
@@ -174,13 +176,19 @@ public static class RenameitConfig
             true
         );
 
-        
-        // Example: Lock renames to item owner
         _nameCharLimit = config.BindSynced(
             SectionLimits,
             "NameCharacterLimit",
             50,
             "Defines the limit for max characters in rename, be sure to account for <color=> tag codes etc.",
+           true
+        );
+
+        _craftedByCharLimit = config.BindSynced(
+            SectionLimits,
+            "CraftedByCharLimit",
+            50,
+            "Defines the limit for max characters in crafted by: edit, be sure to account for <color=> tag codes etc.",
            true
         );
         

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Permissions;
 
 /// <summary>Parses exclusion / allowlist config and evaluates <see cref="ItemDrop.ItemData"/> against it.</summary>
 internal static class RenameExclusionRules

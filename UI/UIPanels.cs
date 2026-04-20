@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using DrakeRenameit.Ext.UI;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
-using DrakeRenameit.Ext.UI;
 using Text = UnityEngine.UI.Text;
 using Image = UnityEngine.UI.Image;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.UI;
 
 public static class UIPanels
 {
@@ -589,7 +588,7 @@ public static class UIPanels
                 height: 30f).GetComponent<InputField>();
         }
 
-        RenameCraftedByInput!.characterLimit = RenameitConfig.NameCharLimit;
+        RenameCraftedByInput!.characterLimit = RenameitConfig.CraftedByCharLimit;
         RenameCraftedByInput.text = DrakeRenameit.getCraftedByDisplay(DrakeRenameit.CurrentItem);
 
         if (_buttonOkCraftedBy == null)

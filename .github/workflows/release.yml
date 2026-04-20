@@ -87,40 +87,20 @@ jobs:
 
       # ── Build (Release) ─────────────────────────────────────────────────────
       #  dotnet msbuild: Roslyn from .NET 8 → C# 10.
-      #  We write a Directory.Build.props that sets TargetFrameworkRootPath to
-      #  the Microsoft.NETFramework.ReferenceAssemblies.net48 package location.
-      #  MSBuild then resolves all .NET 4.8 reference assemblies (including the
-      #  proper netstandard.dll Facade) from that package automatically.
-      #  Targets Build + ILRepacker only; skips CopyOutput and PackageMod.
+      #  Directory.Build.props (repo file) reads CI_NET48_FWPATH → sets
+      #    TargetFrameworkRootPath to the net48 ref pack (mscorlib + netstandard).
+      #  Directory.Build.targets (repo file) reads CI_SKIP_POST_BUILD → no-ops
+      #    CopyOutput (Windows path + wrong-case Readme.md) and PackageMod
+      #    (PowerShell Compress-Archive). Zip assembled in the next step.
       - name: Build
+        env:
+          CI_NET48_FWPATH: ${{ github.workspace }}/packages/Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3/build
+          CI_SKIP_POST_BUILD: "true"
         run: |
           CI_ROOT="$(pwd)/ci_valheim"
           MANAGED="$CI_ROOT/valheim_Data/Managed"
-
-          # Write Directory.Build.props so dotnet msbuild finds the net48 ref pack.
-          # TargetFrameworkRootPath tells MSBuild where to look for framework DLLs:
-          #   {TargetFrameworkRootPath}/.NETFramework/v4.8/ → mscorlib + Facades/
-          NET48_PKG="$(pwd)/packages/Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3/build"
-          cat > Directory.Build.props <<EOF
-          <Project>
-            <PropertyGroup>
-              <TargetFrameworkRootPath>${NET48_PKG}/</TargetFrameworkRootPath>
-            </PropertyGroup>
-          </Project>
-          EOF
-
-          # Directory.Build.targets overrides CopyOutput and PackageMod to no-ops
-          # in CI: CopyOutput tries to copy Readme.md (Windows case) which doesn't
-          # exist on Linux FS, and PackageMod calls PowerShell Compress-Archive.
-          # We assemble the zip ourselves in the next step.
-          cat > Directory.Build.targets <<'EOF'
-          <Project>
-            <Target Name="CopyOutput" AfterTargets="Build" />
-            <Target Name="PackageMod" AfterTargets="Build" />
-          </Project>
-          EOF
-
-          dotnet msbuild DrakeRenameit.csproj \            /p:Configuration=Release \
+          dotnet msbuild DrakeRenameit.csproj \
+            /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \

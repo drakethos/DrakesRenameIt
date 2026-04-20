@@ -73,7 +73,9 @@ jobs:
               UnityEngine.InputLegacyModule.dll \
               UnityEngine.AnimationModule.dll \
               UnityEngine.JSONSerializeModule.dll \
-              Unity.TextMeshPro.dll; do
+              UnityEngine.UI.dll \
+              Unity.TextMeshPro.dll \
+              netstandard.dll; do
             cp "$PFHOENIX_LIB/$dll" ci_deps/corlib/
           done
 
@@ -94,11 +96,14 @@ jobs:
           # namespaces). Mono's bundled compiler tops out at C# 9.
           # FrameworkPathOverride points dotnet at mono's net4.8 BCL so the
           # correct mscorlib / System.* are used for the net481 TFM.
+          # ReferencePath appends ci_deps/corlib so the Unity/netstandard DLLs
+          # staged there are found without needing exact HintPaths.
           MONO_LIBS="/usr/lib/mono/4.8-api"
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
             /p:FrameworkPathOverride="$MONO_LIBS" \
+            /p:ReferencePath="$(pwd)/ci_deps/corlib;$(pwd)/ci_deps/bepinex/core;$(pwd)/ci_deps/publicized" \
             /p:BepInExPath="$(pwd)/ci_deps/bepinex" \
             /p:CorlibPath="$(pwd)/ci_deps/corlib" \
             /p:PublicizedAssembliesPath="$(pwd)/ci_deps/publicized" \

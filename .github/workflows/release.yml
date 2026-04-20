@@ -94,6 +94,7 @@ jobs:
             /p:CorlibPath="$(pwd)/ci_deps/corlib" \
             /p:PublicizedAssembliesPath="$(pwd)/ci_deps/publicized" \
             /p:Version="${{ steps.ver.outputs.version }}" \
+            /p:TargetFrameworkVersion=v4.8 \
             /t:"Build;ILRepacker" \
             /v:minimal
 

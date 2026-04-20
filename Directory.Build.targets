@@ -1,14 +1,12 @@
 <Project>
   <!--
     CI build support: when CI_SKIP_POST_BUILD is set (by the GitHub Actions workflow),
-    replace CopyOutput and PackageMod with empty no-ops.
-    CopyOutput writes to a local r2modman path and copies "Readme.md" (Windows
-    case) which doesn't exist on Linux.  PackageMod calls PowerShell
-    Compress-Archive.  The GitHub Actions workflow assembles the zip itself.
-    On Windows (local builds) this env var is not set, so normal targets run.
+    replace PackageMod with an empty no-op.
+    PackageMod calls PowerShell Compress-Archive which doesn't exist on Linux.
+    The GitHub Actions workflow assembles the zip itself.
+    CopyOutput is safe on Linux now that the csproj uses README.md (correct case).
+    On Windows (local builds) this env var is not set, so PackageMod runs normally.
   -->
-  <Target Name="CopyOutput" AfterTargets="Build"
-          Condition="'$(CI_SKIP_POST_BUILD)' != ''" />
-  <Target Name="PackageMod"  AfterTargets="Build"
+  <Target Name="PackageMod" AfterTargets="Build"
           Condition="'$(CI_SKIP_POST_BUILD)' != ''" />
 </Project>

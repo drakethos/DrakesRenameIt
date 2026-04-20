@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +33,29 @@ public static class UIPanels
     private static Button? _buttonOkCraftedBy;
     private static Button? _buttonResetCraftedBy;
 
+    // Unlock confirmation sub-panel
+    private static GameObject? _unlockConfirmPanel;
+    private static Text? _unlockConfirmBody;
+    private static Button? _buttonConfirmUnlock;
+    private static Button? _buttonConfirmCancel;
+
+    // Track whether we currently hold a BlockInput(true) so we never double-block or double-unblock
+    private static bool _inputBlocked;
+
+    internal static void EnsureInputBlocked()
+    {
+        if (_inputBlocked) return;
+        GUIManager.BlockInput(true);
+        _inputBlocked = true;
+    }
+
+    internal static void EnsureInputUnblocked()
+    {
+        if (!_inputBlocked) return;
+        GUIManager.BlockInput(false);
+        _inputBlocked = false;
+    }
+
     public static void OpenActionMenu(ItemDrop.ItemData item)
     {
         if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
@@ -51,14 +75,15 @@ public static class UIPanels
             if (unlockLabel != null)
             {
                 string cost = RenameUnlockCost.GetCostDisplayShort();
-                unlockLabel.text = string.IsNullOrEmpty(cost) ? "Unlock" : $"Unlock ({cost})";
+                unlockLabel.text = string.IsNullOrEmpty(cost) ? "\uD83D\uDD12 Unlock" : $"\uD83D\uDD12 Unlock ({cost})";
             }
 
             _buttonMenuRename.interactable = false;
             _buttonMenuDesc.interactable = false;
             _buttonMenuCraftedBy.interactable = false;
             _buttonMenuResetAll.interactable = false;
-            _buttonMenuUnlock.interactable = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
+            // Unlock button is always clickable — affordability is checked in the confirm panel
+            _buttonMenuUnlock.interactable = true;
         }
         else
         {
@@ -70,7 +95,7 @@ public static class UIPanels
 
         ActionMenuPanel.SetActive(true);
         ActionMenuPanel.transform.SetAsLastSibling();
-        GUIManager.BlockInput(true);
+        EnsureInputBlocked();
     }
 
     private static void EnsureActionMenu()
@@ -106,7 +131,7 @@ public static class UIPanels
             addContentSizeFitter: false);
 
         _buttonMenuUnlock = GUIManager.Instance.CreateButton(
-            text: "Unlock",
+            text: "\uD83D\uDD12 Unlock",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
@@ -119,9 +144,9 @@ public static class UIPanels
             var item = DrakeRenameit.CurrentItem;
             if (item == null)
                 return;
-            if (!DrakeRenameit.TryPayRenameUnlock(item))
-                return;
-            OpenActionMenu(item);
+            // Hide the action menu and show the confirmation panel instead
+            ActionMenuPanel!.SetActive(false);
+            OpenUnlockConfirmPanel(item);
         });
 
         _buttonMenuRename = GUIManager.Instance.CreateButton(
@@ -203,7 +228,181 @@ public static class UIPanels
     {
         if (ActionMenuPanel != null)
             ActionMenuPanel.SetActive(false);
-        GUIManager.BlockInput(false);
+        EnsureInputUnblocked();
+    }
+
+    // -------------------------------------------------------------------------
+    // Unlock Confirmation Panel
+    // -------------------------------------------------------------------------
+
+    /// <summary>Opens the unlock confirmation panel, hiding the action menu behind it.</summary>
+    private static void OpenUnlockConfirmPanel(ItemDrop.ItemData item)
+    {
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        EnsureUnlockConfirmPanel();
+        if (_unlockConfirmPanel == null || _unlockConfirmBody == null || _buttonConfirmUnlock == null)
+            return;
+
+        // Refresh body text with current cost info
+        RefreshUnlockConfirmBody();
+
+        // Enable/disable the pay button based on current affordability
+        bool canAfford = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
+        _buttonConfirmUnlock.interactable = canAfford;
+
+        _unlockConfirmPanel.SetActive(true);
+        _unlockConfirmPanel.transform.SetAsLastSibling();
+        // Input remains blocked from the action menu open — no extra block needed
+        EnsureInputBlocked();
+    }
+
+    private static void RefreshUnlockConfirmBody()
+    {
+        if (_unlockConfirmBody == null) return;
+
+        var costEntries = RenameUnlockCost.GetCostDisplayEntries();
+        bool canAfford = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
+
+        if (costEntries.Count == 0)
+        {
+            _unlockConfirmBody.text = "Unlock this item stack for editing?";
+            return;
+        }
+
+        var lines = new System.Text.StringBuilder();
+        lines.AppendLine("Unlock cost:");
+        lines.AppendLine();
+
+        foreach (var (localizedName, amount, prefabName) in costEntries)
+        {
+            // Count by token via the same path inventory uses
+            string token = RenameUnlockCost.GetItemTokenPublic(prefabName);
+            int have = Player.m_localPlayer != null
+                ? Player.m_localPlayer.GetInventory()?.CountItems(token) ?? 0
+                : 0;
+            string haveColor = have >= amount ? "lime" : "red";
+            lines.AppendLine($"  \uD83E\uDE99 {amount}x {localizedName}  <color={haveColor}>({have} in inv)</color>");
+        }
+
+        if (!canAfford)
+        {
+            lines.AppendLine();
+            lines.Append("<color=red>You don't have enough items to unlock.</color>");
+        }
+
+        _unlockConfirmBody.text = lines.ToString().TrimEnd();
+    }
+
+    private static void EnsureUnlockConfirmPanel()
+    {
+        if (_unlockConfirmPanel != null)
+            return;
+
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        _unlockConfirmPanel = GUIManager.Instance.CreateWoodpanel(
+            parent: GUIManager.CustomGUIFront.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 0f),
+            width: 340,
+            height: 240,
+            draggable: false);
+
+        GUIManager.Instance.CreateText(
+            text: "\uD83D\uDD12 Unlock Item",
+            parent: _unlockConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(0f, -44f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 20,
+            color: GUIManager.Instance.ValheimOrange,
+            outline: true,
+            outlineColor: Color.black,
+            width: 300,
+            height: 36,
+            addContentSizeFitter: false);
+
+        var bodyGo = GUIManager.Instance.CreateText(
+            text: "",
+            parent: _unlockConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 10f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 14,
+            color: Color.white,
+            outline: false,
+            outlineColor: Color.black,
+            width: 300,
+            height: 130,
+            addContentSizeFitter: false);
+        _unlockConfirmBody = bodyGo.GetComponent<Text>();
+
+        _buttonConfirmUnlock = GUIManager.Instance.CreateButton(
+            text: "\uD83D\uDD13 Unlock",
+            parent: _unlockConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(-55f, 35f),
+            width: 100f,
+            height: 30f).GetComponent<Button>();
+        _buttonConfirmUnlock.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            if (item == null)
+            {
+                CloseUnlockConfirmPanel(reopenActionMenu: false);
+                return;
+            }
+
+            if (!DrakeRenameit.TryPayRenameUnlock(item))
+            {
+                // Payment failed (race condition — inventory changed) — refresh the panel
+                RefreshUnlockConfirmBody();
+                _buttonConfirmUnlock!.interactable = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
+                return;
+            }
+
+            // Paid successfully — close confirm panel and reopen action menu (now unlocked)
+            CloseUnlockConfirmPanel(reopenActionMenu: true);
+        });
+
+        _buttonConfirmCancel = GUIManager.Instance.CreateButton(
+            text: "Cancel",
+            parent: _unlockConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(55f, 35f),
+            width: 100f,
+            height: 30f).GetComponent<Button>();
+        _buttonConfirmCancel.AddUniqueListener(() => CloseUnlockConfirmPanel(reopenActionMenu: false));
+    }
+
+    private static void CloseUnlockConfirmPanel(bool reopenActionMenu)
+    {
+        if (_unlockConfirmPanel != null)
+            _unlockConfirmPanel.SetActive(false);
+
+        if (reopenActionMenu && DrakeRenameit.CurrentItem != null)
+        {
+            // Re-show action menu (now unlocked) without releasing the input block
+            var item = DrakeRenameit.CurrentItem;
+            ActionMenuPanel?.SetActive(false);
+            OpenActionMenu(item);
+        }
+        else
+        {
+            // Cancel: fully close everything and release input
+            if (ActionMenuPanel != null)
+                ActionMenuPanel.SetActive(false);
+            DrakeRenameit.CurrentItem = null;
+            EnsureInputUnblocked();
+        }
     }
 
     public static void CreateCraftedByInput()
@@ -396,8 +595,8 @@ public static class UIPanels
             {
                 DrakeRenameit.ApplyRename(RenameNameInput.text.Trim());
 
-                InputNamePanel.SetActive(false); // hide panel on OK
-                GUIManager.BlockInput(false);
+                InputNamePanel.SetActive(false);
+                EnsureInputUnblocked();
             });
         }
 
@@ -518,8 +717,8 @@ public static class UIPanels
 
                 DrakeRenameit.ApplyRewriteDesc(RenameDescInput.text.Trim());
 
-                InputDescPanel.SetActive(false); // hide panel on OK
-                GUIManager.BlockInput(false);
+                InputDescPanel.SetActive(false);
+                EnsureInputUnblocked();
             });
         }
 

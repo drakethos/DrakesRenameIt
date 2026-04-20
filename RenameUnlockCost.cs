@@ -121,6 +121,18 @@ internal static class RenameUnlockCost
     /// <summary>Resolves a config prefab name or <c>$item_</c> token to <c>m_shared.m_name</c> for inventory ops.</summary>
     internal static string GetItemTokenPublic(string prefabName) => ResolveItemSharedName(prefabName);
 
+    /// <summary>Icon for a cost line (prefab spawn name from config, e.g. Coins).</summary>
+    internal static Sprite? GetItemIconSprite(string configPrefabName)
+    {
+        if (string.IsNullOrWhiteSpace(configPrefabName) || ObjectDB.instance == null)
+            return null;
+        var go = ObjectDB.instance.GetItemPrefab(configPrefabName);
+        if (go == null)
+            return null;
+        var drop = go.GetComponent<ItemDrop>();
+        return drop?.m_itemData?.GetIcon();
+    }
+
     private static bool TryBuildResolvedCost(
         out List<(string SharedName, int Amount, string ConfigKey)> lines,
         out string? error)

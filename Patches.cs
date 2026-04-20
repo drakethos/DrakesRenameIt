@@ -132,6 +132,13 @@ public static class Patches
             {
                 if (item != null && DrakeRenameit.IsMenuOpenModifierHeld())
                 {
+                    // Locked stack: go straight to unlock confirmation (not the main action menu)
+                    if (DrakeRenameit.ShowUnlockButton(item))
+                    {
+                        UIPanels.OpenUnlockMenuFromInventory(item);
+                        return;
+                    }
+
                     if (DrakeRenameit.AnyInventoryActionAvailable(item))
                     {
                         UIPanels.OpenActionMenu(item);
@@ -207,23 +214,24 @@ public static class InventoryGridTooltipPatch
 
         string menuColor = RenameitConfig.MenuHintColor;
         string menuMod = RenameitConfig.MenuModifierIsShift ? "Shift" : "Ctrl";
+        string lockSuffix = DrakeRenameit.GetMenuTooltipLockSuffix(item);
         bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
         bool elevated = Player.m_localPlayer != null &&
                           RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
 
         if (anyAction)
         {
-            sb.AppendLine($"<color={menuColor}><b>{menuMod} + Right Click for options</b></color>");
+            sb.AppendLine($"<color={menuColor}><b>{menuMod} + Right Click for options{lockSuffix}</b></color>");
         }
         else if (elevated)
         {
             sb.AppendLine(
-                $"<color={menuColor}><b>{menuMod} + Right Click for options</b></color><color=blue> Elevated override</color>");
+                $"<color={menuColor}><b>{menuMod} + Right Click for options{lockSuffix}</b></color><color=blue> Elevated override</color>");
         }
         else
         {
             string detail = BuildNoDrakeMenuHint(item);
-            sb.AppendLine($"<color=red><s>{menuMod} + Right Click for options</s></color>");
+            sb.AppendLine($"<color=red><s>{menuMod} + Right Click for options{lockSuffix}</s></color>");
             if (!string.IsNullOrEmpty(detail))
                 sb.AppendLine($"<color=red>{detail}</color>");
         }

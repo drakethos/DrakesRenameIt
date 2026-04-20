@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DrakeRenameit.Ext.UI;
 using Text = UnityEngine.UI.Text;
+using Image = UnityEngine.UI.Image;
 
 namespace DrakeRenameit;
 
@@ -35,7 +36,8 @@ public static class UIPanels
 
     // Unlock confirmation sub-panel
     private static GameObject? _unlockConfirmPanel;
-    private static Text? _unlockConfirmBody;
+    private static RectTransform? _unlockCostListRoot;
+    private static Text? _unlockAffordWarning;
     private static Button? _buttonConfirmUnlock;
     private static Button? _buttonConfirmCancel;
 
@@ -198,7 +200,7 @@ public static class UIPanels
         });
 
         _buttonMenuResetAll = GUIManager.Instance.CreateButton(
-            text: "Cancel All",
+            text: "Reset all",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
@@ -235,6 +237,13 @@ public static class UIPanels
     // Unlock Confirmation Panel
     // -------------------------------------------------------------------------
 
+    /// <summary>Opens the unlock cost panel directly (shift+click when stack is still locked).</summary>
+    public static void OpenUnlockMenuFromInventory(ItemDrop.ItemData item)
+    {
+        DrakeRenameit.CurrentItem = item;
+        OpenUnlockConfirmPanel(item);
+    }
+
     /// <summary>Opens the unlock confirmation panel, hiding the action menu behind it.</summary>
     private static void OpenUnlockConfirmPanel(ItemDrop.ItemData item)
     {
@@ -242,7 +251,7 @@ public static class UIPanels
             return;
 
         EnsureUnlockConfirmPanel();
-        if (_unlockConfirmPanel == null || _unlockConfirmBody == null || _buttonConfirmUnlock == null)
+        if (_unlockConfirmPanel == null || _unlockCostListRoot == null || _buttonConfirmUnlock == null)
             return;
 
         // Refresh body text with current cost info
@@ -260,39 +269,117 @@ public static class UIPanels
 
     private static void RefreshUnlockConfirmBody()
     {
-        if (_unlockConfirmBody == null) return;
+        if (_unlockCostListRoot == null)
+            return;
+
+        ClearUnlockCostListChildren();
 
         var costEntries = RenameUnlockCost.GetCostDisplayEntries();
         bool canAfford = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
 
         if (costEntries.Count == 0)
         {
-            _unlockConfirmBody.text = "Unlock this item stack for editing?";
+            AddUnlockPlainLine(_unlockCostListRoot, "Unlock this item stack for editing?");
+            if (_unlockAffordWarning != null)
+            {
+                _unlockAffordWarning.text = "";
+                _unlockAffordWarning.gameObject.SetActive(false);
+            }
+
             return;
         }
 
-        var lines = new System.Text.StringBuilder();
-        lines.AppendLine("Unlock cost:");
-        lines.AppendLine();
-
         foreach (var (localizedName, amount, prefabName) in costEntries)
         {
-            // Count by token via the same path inventory uses
             string token = RenameUnlockCost.GetItemTokenPublic(prefabName);
             int have = Player.m_localPlayer != null
                 ? Player.m_localPlayer.GetInventory()?.CountItems(token) ?? 0
                 : 0;
             string haveColor = have >= amount ? "lime" : "red";
-            lines.AppendLine($"  \uD83E\uDE99 {amount}x {localizedName}  <color={haveColor}>({have} in inv)</color>");
+            string line =
+                $"{amount}x {localizedName}  <color={haveColor}>({have} in inv)</color>";
+            var sprite = RenameUnlockCost.GetItemIconSprite(prefabName);
+            CreateUnlockCostRow(_unlockCostListRoot, sprite, line);
         }
 
-        if (!canAfford)
+        if (_unlockAffordWarning != null)
         {
-            lines.AppendLine();
-            lines.Append("<color=red>You don't have enough items to unlock.</color>");
+            if (!canAfford)
+            {
+                _unlockAffordWarning.text = "<color=red>You don't have enough items to unlock.</color>";
+                _unlockAffordWarning.gameObject.SetActive(true);
+            }
+            else
+            {
+                _unlockAffordWarning.text = "";
+                _unlockAffordWarning.gameObject.SetActive(false);
+            }
         }
+    }
 
-        _unlockConfirmBody.text = lines.ToString().TrimEnd();
+    private static void ClearUnlockCostListChildren()
+    {
+        if (_unlockCostListRoot == null)
+            return;
+        for (int i = _unlockCostListRoot.childCount - 1; i >= 0; i--)
+            UnityEngine.Object.Destroy(_unlockCostListRoot.GetChild(i).gameObject);
+    }
+
+    private static void AddUnlockPlainLine(RectTransform parent, string message)
+    {
+        var textGo = new GameObject("PlainLine", typeof(RectTransform), typeof(Text));
+        textGo.transform.SetParent(parent, false);
+        var te = textGo.GetComponent<Text>();
+        te.text = message;
+        if (GUIManager.Instance != null)
+            te.font = GUIManager.Instance.AveriaSerifBold;
+        te.fontSize = 14;
+        te.color = Color.white;
+        te.alignment = TextAnchor.UpperLeft;
+        te.horizontalOverflow = HorizontalWrapMode.Wrap;
+        var rt = textGo.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(300, 40);
+    }
+
+    private static void CreateUnlockCostRow(RectTransform parent, Sprite? icon, string richLine)
+    {
+        var row = new GameObject("CostRow", typeof(RectTransform));
+        row.transform.SetParent(parent, false);
+        var rowRt = row.GetComponent<RectTransform>();
+        rowRt.sizeDelta = new Vector2(300, 38);
+        var h = row.AddComponent<HorizontalLayoutGroup>();
+        h.spacing = 10;
+        h.childAlignment = TextAnchor.MiddleLeft;
+        h.childForceExpandWidth = false;
+        h.childForceExpandHeight = true;
+        h.padding = new RectOffset(2, 2, 2, 2);
+
+        var iconGo = new GameObject("icon", typeof(RectTransform), typeof(Image));
+        iconGo.transform.SetParent(row.transform, false);
+        var img = iconGo.GetComponent<Image>();
+        img.sprite = icon;
+        img.preserveAspect = true;
+        img.color = Color.white;
+        img.enabled = icon != null;
+        var iconLe = iconGo.AddComponent<LayoutElement>();
+        iconLe.preferredWidth = 32;
+        iconLe.preferredHeight = 32;
+        iconLe.minWidth = 32;
+
+        var textGo = new GameObject("line", typeof(RectTransform), typeof(Text));
+        textGo.transform.SetParent(row.transform, false);
+        var te = textGo.GetComponent<Text>();
+        te.text = richLine;
+        if (GUIManager.Instance != null)
+            te.font = GUIManager.Instance.AveriaSerifBold;
+        te.fontSize = 14;
+        te.color = Color.white;
+        te.alignment = TextAnchor.MiddleLeft;
+        te.supportRichText = true;
+        te.horizontalOverflow = HorizontalWrapMode.Wrap;
+        var teLe = textGo.AddComponent<LayoutElement>();
+        teLe.flexibleWidth = 1;
+        teLe.minWidth = 180;
     }
 
     private static void EnsureUnlockConfirmPanel()
@@ -308,8 +395,8 @@ public static class UIPanels
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 0f),
-            width: 340,
-            height: 240,
+            width: 360,
+            height: 280,
             draggable: false);
 
         GUIManager.Instance.CreateText(
@@ -327,21 +414,54 @@ public static class UIPanels
             height: 36,
             addContentSizeFitter: false);
 
-        var bodyGo = GUIManager.Instance.CreateText(
-            text: "",
+        GUIManager.Instance.CreateText(
+            text: "Unlock cost:",
             parent: _unlockConfirmPanel.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 10f),
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(0f, -78f),
             font: GUIManager.Instance.AveriaSerifBold,
             fontSize: 14,
             color: Color.white,
-            outline: false,
+            outline: true,
             outlineColor: Color.black,
             width: 300,
-            height: 130,
+            height: 22,
             addContentSizeFitter: false);
-        _unlockConfirmBody = bodyGo.GetComponent<Text>();
+
+        var listGo = new GameObject("UnlockCostList", typeof(RectTransform), typeof(VerticalLayoutGroup));
+        listGo.transform.SetParent(_unlockConfirmPanel.transform, false);
+        _unlockCostListRoot = listGo.GetComponent<RectTransform>();
+        _unlockCostListRoot.anchorMin = new Vector2(0.5f, 1f);
+        _unlockCostListRoot.anchorMax = new Vector2(0.5f, 1f);
+        _unlockCostListRoot.pivot = new Vector2(0.5f, 1f);
+        _unlockCostListRoot.sizeDelta = new Vector2(320, 150);
+        _unlockCostListRoot.anchoredPosition = new Vector2(0f, -102f);
+        var vlg = listGo.GetComponent<VerticalLayoutGroup>();
+        vlg.spacing = 6;
+        vlg.childAlignment = TextAnchor.UpperCenter;
+        vlg.childControlHeight = true;
+        vlg.childControlWidth = true;
+        vlg.childForceExpandHeight = false;
+        vlg.childForceExpandWidth = true;
+
+        var warnGo = GUIManager.Instance.CreateText(
+            text: "",
+            parent: _unlockConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(0f, 78f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 13,
+            color: Color.red,
+            outline: true,
+            outlineColor: Color.black,
+            width: 310,
+            height: 36,
+            addContentSizeFitter: false);
+        _unlockAffordWarning = warnGo.GetComponent<Text>();
+        _unlockAffordWarning.supportRichText = true;
+        _unlockAffordWarning.gameObject.SetActive(false);
 
         _buttonConfirmUnlock = GUIManager.Instance.CreateButton(
             text: "\uD83D\uDD13 Unlock",
@@ -349,7 +469,7 @@ public static class UIPanels
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(-55f, 35f),
-            width: 100f,
+            width: 110f,
             height: 30f).GetComponent<Button>();
         _buttonConfirmUnlock.AddUniqueListener(() =>
         {
@@ -373,12 +493,12 @@ public static class UIPanels
         });
 
         _buttonConfirmCancel = GUIManager.Instance.CreateButton(
-            text: "Cancel",
+            text: "\uD83D\uDD12 Cancel",
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(55f, 35f),
-            width: 100f,
+            width: 110f,
             height: 30f).GetComponent<Button>();
         _buttonConfirmCancel.AddUniqueListener(() => CloseUnlockConfirmPanel(reopenActionMenu: false));
     }

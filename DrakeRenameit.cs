@@ -400,6 +400,18 @@ namespace DrakeRenameit
                 : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         }
 
+        /// <summary>Lock/unlock emoji for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies (🔒 locked, 🔓 editable or elevated).</summary>
+        public static string GetMenuTooltipLockSuffix(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return "";
+            if (!RenameUnlockCost.UnlockCostApplies())
+                return "";
+            if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+                return " \uD83D\uDD13";
+            return IsRenameUnlocked(item) ? " \uD83D\uDD13" : " \uD83D\uDD12";
+        }
+
         /// <summary>Returns a player-facing reason string for why the action menu cannot open for this item.
         /// Used to show a <see cref="MessageHud"/> message when the modifier is held but the menu is blocked.</summary>
         public static string GetMenuBlockedReason(ItemDrop.ItemData? item)

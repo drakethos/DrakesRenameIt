@@ -11,9 +11,7 @@ permissions:
 jobs:
   build-and-release:
     # ubuntu-22.04: mono-complete + nuget are pre-installed.
-    # (Mono was dropped from ubuntu-24.04.)
-    # dotnet SDK is added via setup-dotnet for its Roslyn (C# 10 support) and
-    # the netstandard 2.1 reference assembly.
+    # dotnet SDK added via setup-dotnet for Roslyn (C#10) + netstandard 2.1 ref.
     runs-on: ubuntu-22.04
 
     steps:
@@ -29,7 +27,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
 
-      # ── Install .NET SDK (provides dotnet msbuild with C#10 Roslyn + netstandard 2.1)
+      # ── Install .NET SDK (Roslyn C#10 + netstandard 2.1 ref pack) ──────────
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -40,7 +38,7 @@ jobs:
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # ── Stage game / BepInEx DLLs ───────────────────────────────────────────
+      # ── Stage game / BepInEx DLLs from Pfhoenix + dotnet netstandard 2.1 ───
       #
       #  We build a fake "Valheim install" tree so ALL reference paths resolve:
       #
@@ -49,14 +47,14 @@ jobs:
       #        publicized_assemblies/       ← PublicizedAssembliesPath
       #      BepInEx/core/                  ← BepInExPath
       #
-      #  VALHEIM_INSTALL=ci_valheim is also picked up by JotunnLib's
-      #  JotunnLibRefsCorlib.props for its own HintPaths.
+      #  VALHEIM_INSTALL=ci_valheim is also picked up by JotunnLib's Paths.props.
       #
-      #  netstandard 2.1 is required by BepInEx/Jotunn; the Pfhoenix package
-      #  only ships the 2.0 stub, so we overwrite it from the dotnet SDK packs
-      #  (available after setup-dotnet above).
+      #  netstandard 2.1: BepInEx/Jotunn require it but Pfhoenix ships the 2.0
+      #  stub.  We generate a ci-netstandard.props file that adds the 2.1 dll as
+      #  an explicit <Reference> so the compiler sees it.  It is injected via
+      #  Directory.Build.props which msbuild always imports automatically.
       # ────────────────────────────────────────────────────────────────────────
-      - name: Stage game DLLs from Pfhoenix package
+      - name: Stage game DLLs and write Directory.Build.props
         run: |
           PFHOENIX_LIB=$(ls -d packages/Pfhoenix.Valheim.ModProjectReferences.*/lib/net46 2>/dev/null | head -1)
           if [ -z "$PFHOENIX_LIB" ]; then
@@ -69,27 +67,14 @@ jobs:
           BEPINEX="ci_valheim/BepInEx/core"
           mkdir -p "$MANAGED" "$PUBLICIZED" "$BEPINEX"
 
-          # All Pfhoenix DLLs into Managed/ (CorlibPath + Jotunn corlib HintPaths)
+          # All Pfhoenix DLLs → Managed/ (CorlibPath + Jotunn corlib HintPaths)
           cp "$PFHOENIX_LIB/"*.dll "$MANAGED/"
-
-          # Overwrite the 2.0 netstandard stub with the 2.1 ref assembly from
-          # the dotnet SDK (BepInEx and Jotunn require 2.1)
-          NS21=$(find "$DOTNET_ROOT/packs/NETStandard.Library.Ref" \
-                      -name "netstandard.dll" -path "*/netstandard2.1/*" \
-                      2>/dev/null | head -1)
-          if [ -z "$NS21" ]; then
-            NS21=$(find "$DOTNET_ROOT" -name "netstandard.dll" \
-                        -path "*/2.1*/*" 2>/dev/null | head -1)
-          fi
-          echo "netstandard 2.1: $NS21"
-          cp "$NS21" "$MANAGED/netstandard.dll"
 
           # Publicized aliases the csproj HintPaths expect
           cp "$PFHOENIX_LIB/assembly_valheim.dll" "$PUBLICIZED/assembly_valheim_publicized.dll"
           cp "$PFHOENIX_LIB/assembly_utils.dll"   "$PUBLICIZED/assembly_utils_publicized.dll"
           cp "$PFHOENIX_LIB/gui_framework.dll"    "$PUBLICIZED/gui_framework_publicized.dll"
 
-          # Extra *_publicized aliases for JotunnLibRefsCorlib.props
           for src in assembly_googleanalytics assembly_guiutils assembly_lux \
                      assembly_postprocessing assembly_simplemeshcombine \
                      assembly_sunshafts SoftReferenceableAssets; do
@@ -97,41 +82,46 @@ jobs:
               cp "$PFHOENIX_LIB/$src.dll" "$PUBLICIZED/${src}_publicized.dll" || true
           done
 
-          # BepInEx core (csproj: $(BepInExPath)\core\BepInEx.dll and 0Harmony.dll)
+          # BepInEx core
           cp "$PFHOENIX_LIB/0Harmony.dll" "$BEPINEX/"
           cp "$PFHOENIX_LIB/bepinex.dll"  "$BEPINEX/BepInEx.dll"
+
+          # Find netstandard 2.1 ref assembly from the dotnet SDK packs
+          NS21=$(find "$DOTNET_ROOT/packs/NETStandard.Library.Ref" \
+                      -name "netstandard.dll" -path "*/netstandard2.1/*" \
+                      2>/dev/null | head -1)
+          echo "netstandard 2.1 at: $NS21"
+
+          # Write Directory.Build.props so msbuild injects the 2.1 ref into
+          # every project in this directory automatically — no csproj edit needed.
+          cat > Directory.Build.props <<EOF
+          <Project>
+            <ItemGroup>
+              <Reference Include="netstandard">
+                <HintPath>${NS21}</HintPath>
+                <Private>false</Private>
+              </Reference>
+            </ItemGroup>
+          </Project>
+          EOF
+          echo "Directory.Build.props written:"
+          cat Directory.Build.props
 
           echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
 
       # ── Build (Release) ─────────────────────────────────────────────────────
-      #  dotnet msbuild uses Roslyn from .NET 8 → supports C# 10 file-scoped
-      #  namespaces.  Mono's bundled msbuild only handles C# 9.
+      #  dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
       #  FrameworkPathOverride → mono's net4.8 BCL (mscorlib, System.*).
-      #  Targets Build + ILRepacker only; skips CopyOutput (r2modman local path)
-      #  and PackageMod (PowerShell Compress-Archive).
-      - name: Build
-        run: |
+      #  Directory.Build.props (written above) injects netstandard 2.1.
+      #  Targets Build + ILRepacker only; skips CopyOutput and PackageMod.
       - name: Build
         run: |
           CI_ROOT="$(pwd)/ci_valheim"
           MANAGED="$CI_ROOT/valheim_Data/Managed"
-
-          # Build a local copy of the net4.8 framework reference assemblies that
-          # also contains netstandard 2.1 (BepInEx/Jotunn require it; mono's
-          # 4.8-api folder only has netstandard 2.0).
-          # FrameworkPathOverride points the compiler here for ALL BCL types.
-          FWPATH="$(pwd)/ci_framework"
-          cp -r /usr/lib/mono/4.8-api/ "$FWPATH"
-          NS21=$(find "$DOTNET_ROOT/packs/NETStandard.Library.Ref" \
-                      -name "netstandard.dll" -path "*/netstandard2.1/*" \
-                      2>/dev/null | head -1)
-          cp "$NS21" "$FWPATH/netstandard.dll"
-
-          # dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
-            /p:FrameworkPathOverride="$FWPATH" \
+            /p:FrameworkPathOverride="/usr/lib/mono/4.8-api" \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
@@ -141,12 +131,8 @@ jobs:
 
       # ── Assemble Thunderstore zip (mirrors PackageMod target) ────────────────
       #
-      #  Zip contents mirror $(ThunderstoreFolder) from PackageMod:
-      #    DrakesRenameit.dll  (ILRepack-merged output from bin/Release/)
-      #    README.md
-      #    icon.png
-      #    CHANGELOG.md
-      #    manifest.json       (same JSON shape as the csproj ManifestJson item)
+      #  Zip contents:  DrakesRenameit.dll + README.md + icon.png +
+      #                 CHANGELOG.md + manifest.json
       # ────────────────────────────────────────────────────────────────────────
       - name: Assemble Thunderstore package
         id: pkg

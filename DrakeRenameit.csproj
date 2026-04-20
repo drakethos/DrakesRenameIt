@@ -157,8 +157,9 @@
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(ThunderstoreFolder)\README.md" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(ThunderstoreFolder)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md" />
-    <!-- Zip the Thunderstore folder -->
-    <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force" />
+    <!-- Zip the Thunderstore folder (skipped in CI; workflow assembles its own zip) -->
+    <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force"
+          Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
   </Target>
   <!-- Define the JSON structure to be written to the manifest -->
   <ItemGroup>

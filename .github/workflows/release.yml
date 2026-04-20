@@ -112,13 +112,19 @@ jobs:
       - name: Build
         run: |
           CI_ROOT="$(pwd)/ci_valheim"
+          MANAGED="$CI_ROOT/valheim_Data/Managed"
+          # dotnet msbuild uses Roslyn from .NET 8 → C# 10 file-scoped namespaces.
+          # FrameworkPathOverride → mono's net4.8 BCL (mscorlib, System.*).
+          # AdditionalLibPaths adds our Managed/ dir so the compiler finds
+          # netstandard.dll (2.1) and the Unity/BepInEx DLLs we staged there.
           dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
             /p:TargetFrameworkVersion=v4.8 \
             /p:FrameworkPathOverride="/usr/lib/mono/4.8-api" \
+            "/p:AdditionalLibPaths=$MANAGED" \
             /p:BepInExPath="$CI_ROOT/BepInEx" \
-            /p:CorlibPath="$CI_ROOT/valheim_Data/Managed" \
-            /p:PublicizedAssembliesPath="$CI_ROOT/valheim_Data/Managed/publicized_assemblies" \
+            /p:CorlibPath="$MANAGED" \
+            /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
             /p:Version="${{ steps.ver.outputs.version }}" \
             /t:"Build;ILRepacker" \
             /v:minimal

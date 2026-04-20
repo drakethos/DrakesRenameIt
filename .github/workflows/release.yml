@@ -83,18 +83,26 @@ jobs:
           cp "$PFHOENIX_LIB/gui_framework.dll"     ci_deps/publicized/gui_framework_publicized.dll
 
       # ── Build (Release) ─────────────────────────────────────────────────────
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
       - name: Build
         run: |
-          # Explicitly target only Build and ILRepacker — this skips CopyOutput
-          # (writes to a local Windows r2modman path) and PackageMod (calls
-          # PowerShell Compress-Archive). The zip is assembled in the next step.
-          msbuild DrakeRenameit.csproj \
+          # Use dotnet msbuild (Roslyn from .NET 8 — supports C# 10 file-scoped
+          # namespaces). Mono's bundled compiler tops out at C# 9.
+          # FrameworkPathOverride points dotnet at mono's net4.8 BCL so the
+          # correct mscorlib / System.* are used for the net481 TFM.
+          MONO_LIBS="/usr/lib/mono/4.8-api"
+          dotnet msbuild DrakeRenameit.csproj \
             /p:Configuration=Release \
+            /p:TargetFrameworkVersion=v4.8 \
+            /p:FrameworkPathOverride="$MONO_LIBS" \
             /p:BepInExPath="$(pwd)/ci_deps/bepinex" \
             /p:CorlibPath="$(pwd)/ci_deps/corlib" \
             /p:PublicizedAssembliesPath="$(pwd)/ci_deps/publicized" \
             /p:Version="${{ steps.ver.outputs.version }}" \
-            /p:TargetFrameworkVersion=v4.8 \
             /t:"Build;ILRepacker" \
             /v:minimal
 

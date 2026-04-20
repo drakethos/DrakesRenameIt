@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
 using Jotunn.Managers;
 using UnityEngine;
@@ -32,6 +34,12 @@ public static class UIPanels
     public static InputField? RenameCraftedByInput { get; private set; }
     private static Button? _buttonOkCraftedBy;
     private static Button? _buttonResetCraftedBy;
+    private static Button? _buttonCraftedByLineLabelPick;
+    private static GameObject? _craftedByLineLabelPopover;
+    private static string? _craftedByLineLabelPendingToken;
+
+    /// <summary>Line label applied on crafted-by OK when allowed; null clears <see cref="DrakeRenameit.DrakeCraftedByLineLabel"/>.</summary>
+    internal static string? CraftedByLineLabelPendingToken => _craftedByLineLabelPendingToken;
 
     // Unlock confirmation sub-panel
     private static GameObject? _unlockConfirmPanel;
@@ -57,10 +65,36 @@ public static class UIPanels
         _inputBlocked = false;
     }
 
+    /// <summary>Hides rename / unlock UI and clears <see cref="DrakeRenameit.CurrentItem"/> (e.g. stale stack after drop).</summary>
+    public static void CloseAllRenameEditingUi()
+    {
+        if (InputNamePanel != null)
+            InputNamePanel.SetActive(false);
+        if (InputDescPanel != null)
+            InputDescPanel.SetActive(false);
+        if (InputCraftedByPanel != null)
+            InputCraftedByPanel.SetActive(false);
+        CloseCraftedByLineLabelPopover();
+        if (ActionMenuPanel != null)
+            ActionMenuPanel.SetActive(false);
+        if (_unlockConfirmPanel != null)
+            _unlockConfirmPanel.SetActive(false);
+        DrakeRenameit.CurrentItem = null;
+        EnsureInputUnblocked();
+    }
+
     public static void OpenActionMenu(ItemDrop.ItemData item)
     {
         if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
             return;
+
+        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        {
+            CloseAllRenameEditingUi();
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                "That item is no longer in your inventory.");
+            return;
+        }
 
         EnsureActionMenu();
         if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuResetAll == null || _buttonMenuUnlock == null)
@@ -215,7 +249,7 @@ public static class UIPanels
         });
 
         _buttonMenuCancel = GUIManager.Instance.CreateButton(
-            text: "Cancel",
+            text: "OK",
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
@@ -248,6 +282,14 @@ public static class UIPanels
     {
         if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
             return;
+
+        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        {
+            CloseAllRenameEditingUi();
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                "That item is no longer in your inventory.");
+            return;
+        }
 
         EnsureUnlockConfirmPanel();
         if (_unlockConfirmPanel == null || _unlockCostListRoot == null || _buttonConfirmUnlock == null)
@@ -481,7 +523,14 @@ public static class UIPanels
 
             if (!DrakeRenameit.TryPayRenameUnlock(item))
             {
-                // Payment failed (race condition — inventory changed) — refresh the panel
+                // Stack dropped / moved, or cost changed — don't leave a dead confirm panel open
+                if (DrakeRenameit.CurrentItem == null ||
+                    !DrakeRenameit.IsItemInLocalPlayerInventory(DrakeRenameit.CurrentItem))
+                {
+                    CloseAllRenameEditingUi();
+                    return;
+                }
+
                 RefreshUnlockConfirmBody();
                 _buttonConfirmUnlock!.interactable = RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer);
                 return;
@@ -552,7 +601,7 @@ public static class UIPanels
                 anchorMax: new Vector2(0.5f, 0.5f),
                 position: new Vector2(0f, 0f),
                 width: 350,
-                height: 170,
+                height: 230,
                 draggable: false);
 
             GUIManager.Instance.CreateText(
@@ -560,7 +609,7 @@ public static class UIPanels
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 1f),
                 anchorMax: new Vector2(0.5f, 1f),
-                position: new Vector2(15f, -65f),
+                position: new Vector2(15f, -56f),
                 font: GUIManager.Instance.AveriaSerifBold,
                 fontSize: 22,
                 color: GUIManager.Instance.ValheimOrange,
@@ -573,6 +622,7 @@ public static class UIPanels
 
         InputCraftedByPanel.SetActive(true);
         InputCraftedByPanel.transform.SetAsLastSibling();
+        EnsureCraftedByLineLabelControls();
 
         if (RenameCraftedByInput == null)
         {
@@ -580,7 +630,7 @@ public static class UIPanels
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0.5f),
                 anchorMax: new Vector2(0.5f, 0.5f),
-                position: new Vector2(0f, 8f),
+                position: new Vector2(0f, -28f),
                 contentType: InputField.ContentType.Standard,
                 placeholderText: "Display name on tooltip…",
                 fontSize: 18,
@@ -590,6 +640,8 @@ public static class UIPanels
 
         RenameCraftedByInput!.characterLimit = RenameitConfig.CraftedByCharLimit;
         RenameCraftedByInput.text = DrakeRenameit.getCraftedByDisplay(DrakeRenameit.CurrentItem);
+        if (DrakeRenameit.CurrentItem != null)
+            RefreshCraftedByLineLabelPicker(DrakeRenameit.CurrentItem);
 
         if (_buttonOkCraftedBy == null)
         {
@@ -621,6 +673,182 @@ public static class UIPanels
             {
                 if (DrakeRenameit.CurrentItem != null)
                     RenameCraftedByInput.text = DrakeRenameit.CurrentItem.m_crafterName ?? "";
+                var opts = RenameitConfig.GetCraftedByAllowedLabelsList();
+                _craftedByLineLabelPendingToken = null;
+                SetCraftedByLineLabelPickButtonText(opts, 0);
+                CloseCraftedByLineLabelPopover();
+            });
+        }
+    }
+
+    static void EnsureCraftedByLineLabelControls()
+    {
+        if (InputCraftedByPanel == null || GUIManager.Instance == null)
+            return;
+
+        var panelRt = InputCraftedByPanel.GetComponent<RectTransform>();
+        if (panelRt != null && panelRt.sizeDelta.y < 220f)
+            panelRt.sizeDelta = new Vector2(350f, 230f);
+
+        if (_buttonCraftedByLineLabelPick != null)
+            return;
+
+        GUIManager.Instance.CreateText(
+            text: "Tooltip line",
+            parent: InputCraftedByPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(-118f, -90f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 16,
+            color: Color.white,
+            outline: true,
+            outlineColor: Color.black,
+            width: 100f,
+            height: 28f,
+            addContentSizeFitter: false);
+
+        _buttonCraftedByLineLabelPick = GUIManager.Instance.CreateButton(
+            text: "…",
+            parent: InputCraftedByPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(32f, -90f),
+            width: 210f,
+            height: 28f).GetComponent<Button>();
+        _buttonCraftedByLineLabelPick.AddUniqueListener(() =>
+        {
+            if (_buttonCraftedByLineLabelPick == null || !_buttonCraftedByLineLabelPick.interactable)
+                return;
+            ToggleCraftedByLineLabelPopover();
+        });
+
+        _craftedByLineLabelPopover = GUIManager.Instance.CreateWoodpanel(
+            parent: InputCraftedByPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(24f, -118f),
+            width: 226,
+            height: 48,
+            draggable: false);
+        _craftedByLineLabelPopover.SetActive(false);
+    }
+
+    internal static void RefreshCraftedByLineLabelPicker(ItemDrop.ItemData item)
+    {
+        EnsureCraftedByLineLabelControls();
+        if (_buttonCraftedByLineLabelPick == null)
+            return;
+
+        bool mayCustomize = RenameitConfig.CraftedByLabelCustomizable ||
+                            RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+        var options = RenameitConfig.GetCraftedByAllowedLabelsList();
+
+        string? stored = item.m_customData != null &&
+                         item.m_customData.TryGetValue(DrakeRenameit.DrakeCraftedByLineLabel, out var ls) &&
+                         !string.IsNullOrEmpty(ls)
+            ? ls
+            : null;
+
+        int idx = 0;
+        string? pending = null;
+        if (mayCustomize && stored != null)
+        {
+            for (int i = 1; i < options.Count; i++)
+            {
+                if (!string.Equals(options[i], stored, StringComparison.Ordinal))
+                    continue;
+                idx = i;
+                pending = stored;
+                break;
+            }
+        }
+
+        _craftedByLineLabelPendingToken = pending;
+        SetCraftedByLineLabelPickButtonText(options, idx);
+        _buttonCraftedByLineLabelPick.interactable = mayCustomize;
+        CloseCraftedByLineLabelPopover();
+    }
+
+    static void SetCraftedByLineLabelPickButtonText(List<string> options, int idx)
+    {
+        if (_buttonCraftedByLineLabelPick == null)
+            return;
+        string label = idx <= 0 || idx >= options.Count
+            ? LocalizedDefaultCraftedByCaption()
+            : options[idx];
+        var t = _buttonCraftedByLineLabelPick.GetComponentInChildren<Text>();
+        if (t != null)
+            t.text = label + "  \u25BC";
+    }
+
+    static string LocalizedDefaultCraftedByCaption()
+    {
+        if (Localization.instance != null)
+        {
+            var s = Localization.instance.Localize("$item_crafter");
+            if (!string.IsNullOrEmpty(s))
+                return s;
+        }
+
+        var list = RenameitConfig.GetCraftedByAllowedLabelsList();
+        return list.Count > 0 ? list[0] : "Crafted by";
+    }
+
+    static void ToggleCraftedByLineLabelPopover()
+    {
+        if (_craftedByLineLabelPopover == null)
+            return;
+        if (_craftedByLineLabelPopover.activeSelf)
+        {
+            CloseCraftedByLineLabelPopover();
+            return;
+        }
+
+        RebuildCraftedByLineLabelPopoverContent();
+        _craftedByLineLabelPopover.SetActive(true);
+        _craftedByLineLabelPopover.transform.SetAsLastSibling();
+    }
+
+    static void CloseCraftedByLineLabelPopover()
+    {
+        if (_craftedByLineLabelPopover != null)
+            _craftedByLineLabelPopover.SetActive(false);
+    }
+
+    static void RebuildCraftedByLineLabelPopoverContent()
+    {
+        if (_craftedByLineLabelPopover == null || GUIManager.Instance == null)
+            return;
+
+        for (int i = _craftedByLineLabelPopover.transform.childCount - 1; i >= 0; i--)
+            UnityEngine.Object.Destroy(_craftedByLineLabelPopover.transform.GetChild(i).gameObject);
+
+        var options = RenameitConfig.GetCraftedByAllowedLabelsList();
+        const float rowH = 28f;
+        const float pad = 6f;
+        float h = pad * 2f + options.Count * rowH;
+        var rt = _craftedByLineLabelPopover.GetComponent<RectTransform>();
+        if (rt != null)
+            rt.sizeDelta = new Vector2(220f, h);
+
+        for (int i = 0; i < options.Count; i++)
+        {
+            int capture = i;
+            string rowText = i == 0 ? LocalizedDefaultCraftedByCaption() : options[i];
+            var btn = GUIManager.Instance.CreateButton(
+                text: rowText,
+                parent: _craftedByLineLabelPopover.transform,
+                anchorMin: new Vector2(0.5f, 1f),
+                anchorMax: new Vector2(0.5f, 1f),
+                position: new Vector2(0f, -pad - rowH * (i + 0.5f)),
+                width: 200f,
+                height: rowH - 2f).GetComponent<Button>();
+            btn.AddUniqueListener(() =>
+            {
+                _craftedByLineLabelPendingToken = capture == 0 ? null : options[capture];
+                SetCraftedByLineLabelPickButtonText(options, capture);
+                CloseCraftedByLineLabelPopover();
             });
         }
     }
@@ -713,9 +941,6 @@ public static class UIPanels
             _buttonOkName.GetComponent<Button>().AddUniqueListener(() =>
             {
                 DrakeRenameit.ApplyRename(RenameNameInput.text.Trim());
-
-                InputNamePanel.SetActive(false);
-                EnsureInputUnblocked();
             });
         }
 
@@ -835,9 +1060,6 @@ public static class UIPanels
                 }
 
                 DrakeRenameit.ApplyRewriteDesc(RenameDescInput.text.Trim());
-
-                InputDescPanel.SetActive(false);
-                EnsureInputUnblocked();
             });
         }
 

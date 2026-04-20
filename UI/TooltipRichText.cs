@@ -1,21 +1,31 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Jotunn.Managers;
+using UnityEngine;
 
 namespace DrakeRenameit.UI;
 
-/// <summary>Guards injected tooltip strings so unclosed rich-text color tags do not bleed into the rest of the tooltip.</summary>
+/// <summary>Guards injected tooltip strings so unclosed rich-text tags do not bleed into the rest of the tooltip.</summary>
 internal static class TooltipRichText
 {
+    private enum RtKind
+    {
+        Color,
+        Size
+    }
+
     /// <summary>
-    /// Appends <c>&lt;/color&gt;</c> for each unmatched color open (Valheim / TMP-style <c>&lt;color=…&gt;</c> and common <c>&lt;#RRGGBB&gt;</c> shorthand).
+    /// Appends <c>&lt;/size&gt;</c> / <c>&lt;/color&gt;</c> for each unmatched open, in correct LIFO order.
+    /// Handles Valheim / TMP-style <c>&lt;color=…&gt;</c> and common <c>&lt;#RRGGBB&gt;</c> shorthand for color.
     /// </summary>
-    internal static string EnsureColorTagsClosedForTooltip(string? text)
+    internal static string EnsureRichTextTagsClosedForTooltip(string? text)
     {
         if (string.IsNullOrEmpty(text))
             return text ?? "";
 
-        int depth = 0;
+        var stack = new Stack<RtKind>();
         for (int i = 0; i < text.Length;)
         {
             if (text[i] != '<')
@@ -32,32 +42,105 @@ internal static class TooltipRichText
             if (tag.Length >= 2 && tag[1] == '/')
             {
                 if (tag.StartsWith("</color", StringComparison.OrdinalIgnoreCase))
-                    depth = Math.Max(0, depth - 1);
+                {
+                    if (stack.Count > 0 && stack.Peek() == RtKind.Color)
+                        stack.Pop();
+                }
+                else if (tag.StartsWith("</size", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (stack.Count > 0 && stack.Peek() == RtKind.Size)
+                        stack.Pop();
+                }
             }
             else if (tag.StartsWith("<color", StringComparison.OrdinalIgnoreCase))
             {
-                depth++;
+                stack.Push(RtKind.Color);
             }
             else if (IsHashColorOpenTag(tag))
             {
-                depth++;
+                stack.Push(RtKind.Color);
+            }
+            else if (tag.StartsWith("<size", StringComparison.OrdinalIgnoreCase))
+            {
+                stack.Push(RtKind.Size);
             }
 
             i = end + 1;
         }
 
-        if (depth == 0)
+        if (stack.Count == 0)
             return text;
 
-        var sb = new StringBuilder(text, text.Length + depth * 8);
-        for (int d = 0; d < depth; d++)
-            sb.Append("</color>");
+        var sb = new StringBuilder(text, text.Length + stack.Count * 10);
+        while (stack.Count > 0)
+        {
+            var k = stack.Pop();
+            sb.Append(k == RtKind.Color ? "</color>" : "</size>");
+        }
+
         return sb.ToString();
+    }
+
+    /// <summary>Crafted-by display: if the player did not add any color markup, wrap the string in Valheim’s tooltip stat orange (same as <see cref="GUIManager.ValheimOrange"/>).</summary>
+    internal static string WrapCraftedByDisplayWithDefaultStatColorIfNeeded(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+        if (HasExplicitColorMarkup(text))
+            return text;
+        return GetValheimTooltipStatColorOpenTag() + text + "</color>";
+    }
+
+    internal static bool HasExplicitColorMarkup(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return false;
+        if (text.IndexOf("<color", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        for (int i = 0; i < text.Length - 3; i++)
+        {
+            if (text[i] != '<' || text[i + 1] != '#')
+                continue;
+            int j = i + 2;
+            while (j < text.Length && IsHex(text[j]))
+                j++;
+            if (j == i + 2)
+                continue;
+            if (j - (i + 2) < 3 || j - (i + 2) > 8)
+                continue;
+            if (j < text.Length && text[j] == '>')
+                return true;
+        }
+
+        return false;
+    }
+
+    static bool IsHex(char c) =>
+        c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
+
+    static string GetValheimTooltipStatColorOpenTag()
+    {
+        try
+        {
+            var g = GUIManager.Instance;
+            if (g != null)
+            {
+                Color c = g.ValheimOrange;
+                return "<color=#" + ColorUtility.ToHtmlStringRGB(c) + ">";
+            }
+        }
+        catch
+        {
+            /* GUIManager / ColorUtility unavailable */
+        }
+
+        // Matches Jotunn “Orange” preset used elsewhere in Drake mods when GUIManager is not ready.
+        return "<color=#ff8800>";
     }
 
     private static bool IsHashColorOpenTag(string tag)
     {
-        // e.g. <#ff0> <#ffffff> (user / game shorthand)
         if (tag.Length < 5 || tag[0] != '<' || tag[1] != '#' || tag[tag.Length - 1] != '>')
             return false;
         string hex = tag.Substring(2, tag.Length - 3);

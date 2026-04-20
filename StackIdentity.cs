@@ -15,6 +15,7 @@ internal static class StackIdentity
         Append(sb, item, DrakeRenameit.DrakeNewName);
         Append(sb, item, DrakeRenameit.DrakeNewDesc);
         Append(sb, item, DrakeRenameit.DrakeCraftedByDisplay);
+        Append(sb, item, DrakeRenameit.DrakeCraftedByLineLabel);
         return sb.ToString();
     }
 

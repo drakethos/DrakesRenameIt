@@ -28,10 +28,24 @@ namespace DrakeRenameit
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
         public const string DrakeCraftedByDisplay = "Drake_CraftedByDisplay";
+        /// <summary>When set, tooltip line uses this prefix instead of the localized <c>$item_crafter</c> label (text before “: name”).</summary>
+        public const string DrakeCraftedByLineLabel = "Drake_CraftedByLineLabel";
         /// <summary>When set on a stack, <see cref="RenameitConfig.UnlockCost"/> has been paid and rename/description/crafted-by edits are allowed (if other rules pass).</summary>
         public const string DrakeRenameUnlocked = "Drake_RenameUnlocked";
         public static ItemDrop.ItemData? CurrentItem { get; set; }
         private readonly Harmony harmony = new Harmony("drakesmod.DrakeRenameit");
+
+        /// <summary>
+        /// True when <paramref name="item"/> is the same instance currently held in the local player's inventory.
+        /// Used to avoid paying or writing custom data to a stale <see cref="ItemDrop.ItemData"/> after the stack was dropped or moved.
+        /// </summary>
+        public static bool IsItemInLocalPlayerInventory(ItemDrop.ItemData? item)
+        {
+            if (item == null || Player.m_localPlayer == null)
+                return false;
+            var inv = Player.m_localPlayer.GetInventory();
+            return inv != null && inv.ContainsItem(item);
+        }
 
         private Texture2D TestTex;
         private Sprite TestSprite;
@@ -79,13 +93,51 @@ namespace DrakeRenameit
             return item.m_customData.TryGetValue(DrakeNewName, out _);
         }
 
+        /// <summary>True when the stack has any Drake rename / description / crafted-by customization (keys present with content where applicable).</summary>
+        public static bool HasAnyDrakeRenameCustomization(ItemDrop.ItemData? item)
+        {
+            if (item?.m_customData == null)
+                return false;
+            if (hasNewName(item))
+                return true;
+            if (hasNewDesc(item))
+                return true;
+            if (HasCraftedByDisplayOverride(item))
+                return true;
+            return HasCraftedByLineLabelOverride(item);
+        }
+
+        static bool ReadRenameUnlockedFlag(ItemDrop.ItemData item)
+        {
+            if (!item.m_customData.TryGetValue(DrakeRenameUnlocked, out var v))
+                return false;
+            return v == "1" || string.Equals(v, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// When <see cref="RenameitConfig.UnlockCostEnabled"/> applies: stacks that already carry Drake custom data but no unlock flag
+        /// are treated as unlocked and the flag is written once (pre-unlock-cost worlds, config toggles, or imports).
+        /// When unlock cost is off, only the explicit flag counts (legacy behavior).
+        /// </summary>
         public static bool IsRenameUnlocked(ItemDrop.ItemData? item)
         {
             if (item?.m_customData == null)
                 return false;
-            if (!item.m_customData.TryGetValue(DrakeRenameUnlocked, out var v))
-                return false;
-            return v == "1" || string.Equals(v, "true", StringComparison.OrdinalIgnoreCase);
+
+            bool hasFlag = ReadRenameUnlockedFlag(item);
+
+            if (RenameUnlockCost.UnlockCostApplies())
+            {
+                if (!hasFlag && HasAnyDrakeRenameCustomization(item))
+                {
+                    SetRenameUnlocked(item);
+                    return true;
+                }
+
+                return hasFlag;
+            }
+
+            return hasFlag;
         }
 
         internal static void SetRenameUnlocked(ItemDrop.ItemData item)
@@ -112,6 +164,13 @@ namespace DrakeRenameit
         {
             if (item == null || Player.m_localPlayer == null)
                 return false;
+            if (!IsItemInLocalPlayerInventory(item))
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center,
+                    "That stack is no longer in your inventory. Put it back, then unlock again.");
+                return false;
+            }
+
             if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
                 return false;
             if (!RenameUnlockCost.TryConsumeUnlockCost(Player.m_localPlayer, out var err))
@@ -133,6 +192,13 @@ namespace DrakeRenameit
             return item.m_customData.TryGetValue(DrakeCraftedByDisplay, out var s) && !string.IsNullOrEmpty(s);
         }
 
+        public static bool HasCraftedByLineLabelOverride(ItemDrop.ItemData? item)
+        {
+            if (item?.m_customData == null)
+                return false;
+            return item.m_customData.TryGetValue(DrakeCraftedByLineLabel, out var s) && !string.IsNullOrEmpty(s);
+        }
+
         /// <summary>True if the player may clear at least one Drake customization that is currently set on the item.</summary>
         public static bool CanResetAnyCustomization(ItemDrop.ItemData? item)
         {
@@ -142,7 +208,8 @@ namespace DrakeRenameit
                 return true;
             if (CanChangeDesc(item, false) && hasNewDesc(item))
                 return true;
-            if (CanChangeCraftedByLabel(item, false) && HasCraftedByDisplayOverride(item))
+            if (CanChangeCraftedByLabel(item, false) &&
+                (HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item)))
                 return true;
             return false;
         }
@@ -152,16 +219,25 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return;
+            if (!IsItemInLocalPlayerInventory(item))
+            {
+                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                    "That item is no longer in your inventory.");
+                return;
+            }
+
             if (CanChangeName(item, false) && hasNewName(item))
                 resetName(item);
             if (CanChangeDesc(item, false) && hasNewDesc(item))
                 resetDesc(item);
-            if (!CanChangeCraftedByLabel(item, false) || !HasCraftedByDisplayOverride(item))
+            if (!CanChangeCraftedByLabel(item, false) ||
+                (!HasCraftedByDisplayOverride(item) && !HasCraftedByLineLabelOverride(item)))
                 return;
             if (item.m_customData == null)
                 return;
             string oldDisplay = getCraftedByDisplay(item);
             item.m_customData.Remove(DrakeCraftedByDisplay);
+            item.m_customData.Remove(DrakeCraftedByLineLabel);
             string newDisplay = item.m_crafterName ?? "";
             RenameEvents.RaiseCraftedByDisplayChanged(
                 Player.m_localPlayer,
@@ -323,23 +399,35 @@ namespace DrakeRenameit
         public static void ApplyRewriteDesc(string newDesc)
         {
             if (CurrentItem == null) return;
+            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            {
+                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                    "That item is no longer in your inventory. Put it back, then try again.");
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
 
             RewriteItemDesc(newDesc);
-            CurrentItem = null;
-
+            var item = CurrentItem;
             UIPanels.InputDescPanel!.SetActive(false);
-            UIPanels.EnsureInputUnblocked();
+            UIPanels.OpenActionMenu(item);
         }
 
         public static void ApplyRename(string newName)
         {
             if (CurrentItem == null) return;
+            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            {
+                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                    "That item is no longer in your inventory. Put it back, then try again.");
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
 
             RenameItem(newName);
-            CurrentItem = null;
-
+            var item = CurrentItem;
             UIPanels.InputNamePanel!.SetActive(false);
-            UIPanels.EnsureInputUnblocked();
+            UIPanels.OpenActionMenu(item);
         }
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)
@@ -467,6 +555,7 @@ namespace DrakeRenameit
             if (UIPanels.InputCraftedByPanel == null)
                 UIPanels.CreateCraftedByInput();
             UIPanels.RenameCraftedByInput!.text = getCraftedByDisplay(item);
+            UIPanels.RefreshCraftedByLineLabelPicker(item);
             UIPanels.InputCraftedByPanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
         }
@@ -474,6 +563,13 @@ namespace DrakeRenameit
         public static void ApplyCraftedByLabel(string display)
         {
             if (CurrentItem == null) return;
+            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            {
+                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                    "That item is no longer in your inventory. Put it back, then try again.");
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
 
             if (CurrentItem.m_customData == null)
                 CurrentItem.m_customData = new Dictionary<string, string>();
@@ -484,6 +580,17 @@ namespace DrakeRenameit
             else
                 CurrentItem.m_customData[DrakeCraftedByDisplay] = display;
 
+            bool mayEditLineLabel = CraftedByLabelCustomizable ||
+                                    RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+            if (mayEditLineLabel)
+            {
+                var pending = UIPanels.CraftedByLineLabelPendingToken;
+                if (string.IsNullOrEmpty(pending))
+                    CurrentItem.m_customData.Remove(DrakeCraftedByLineLabel);
+                else if (IsAllowedCustomCraftedByLineLabel(pending))
+                    CurrentItem.m_customData[DrakeCraftedByLineLabel] = pending;
+            }
+
             string newDisplay = string.IsNullOrEmpty(display) ? (CurrentItem.m_crafterName ?? "") : display;
             RenameEvents.RaiseCraftedByDisplayChanged(
                 Player.m_localPlayer,
@@ -492,9 +599,9 @@ namespace DrakeRenameit
                 oldDisplay,
                 newDisplay);
 
-            CurrentItem = null;
+            var item = CurrentItem;
             UIPanels.InputCraftedByPanel!.SetActive(false);
-            UIPanels.EnsureInputUnblocked();
+            UIPanels.OpenActionMenu(item);
         }
 
         /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/> or <see cref="RenameitConfig.ExcludedCategory"/>.</summary>
@@ -507,6 +614,18 @@ namespace DrakeRenameit
         public static bool IsRenameAllowlisted(ItemDrop.ItemData? item)
         {
             return RenameExclusionRules.MatchesRenameAllowlist(item);
+        }
+
+        static bool IsAllowedCustomCraftedByLineLabel(string value)
+        {
+            var options = GetCraftedByAllowedLabelsList();
+            for (int i = 1; i < options.Count; i++)
+            {
+                if (string.Equals(options[i], value, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
         }
     }
 }

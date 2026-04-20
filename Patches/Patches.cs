@@ -17,7 +17,7 @@ internal static class HoverRenameHelper
         if (!DrakeRenameit.hasNewName(item))
             return;
 
-        string customName = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
+        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
         if (customName == null || item.m_shared.m_name == null)
             return;
 
@@ -45,7 +45,7 @@ internal static class PickupHudMessageHelper
         if (item?.m_shared == null || !DrakeRenameit.hasNewName(item))
             return false;
 
-        string customName = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
+        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
         if (string.IsNullOrEmpty(customName))
             return false;
 
@@ -203,7 +203,7 @@ public static class InventoryGridTooltipPatch
         if (item?.m_shared == null || tooltip == null)
             return;
 
-        var topic = TooltipRichText.EnsureColorTagsClosedForTooltip(DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name);
+        var topic = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name);
         string currentText = item.GetTooltip();
         currentText = ItemTooltipPatches.ApplyCraftedByDisplayToTooltipText(currentText, item);
 
@@ -259,7 +259,7 @@ public static class InventoryGridTooltipPatch
             return currentText;
         if (DrakeRenameit.hasNewDesc(item))
         {
-            string customDesc = TooltipRichText.EnsureColorTagsClosedForTooltip(
+            string customDesc = TooltipRichText.EnsureRichTextTagsClosedForTooltip(
                 DrakeRenameit.getPropperDesc(item, item.m_shared.m_description));
             string originalDesc = item.m_shared.m_description;
 

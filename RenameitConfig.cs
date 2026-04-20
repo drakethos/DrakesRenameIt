@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Configuration;
 using ServerSync;
 
@@ -12,6 +14,7 @@ public static class RenameitConfig
     private const string SectionLimits = "Limits";
     private const string SectionAdmin = "Admin";
     private const string SectionUnlock = "UnlockCost";
+    private const string SectionCraftedBy = "CraftedBy";
 
     // The sync object ties everything to server authority
     private static ConfigSync configSync = new ConfigSync(DrakeRenameit.ModName)
@@ -40,6 +43,8 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _separateStacks;
     private static ConfigEntry<bool> _separateStacksHardLock;
     private static ConfigEntry<bool> _craftedByLabelEnabled;
+    private static ConfigEntry<bool> _craftedByLabelCustomizable;
+    private static ConfigEntry<string> _craftedByAllowedLabels;
     private static ConfigEntry<string> _menuOpenModifier;
     private static ConfigEntry<bool> _unlockCostEnabled;
     private static ConfigEntry<string> _unlockCost;
@@ -51,6 +56,10 @@ public static class RenameitConfig
     public static bool RewriteDescriptionsEnabled => _rewriteDescriptionsEnable.Value;
     public static bool RenameEnabled => _RenameEnable.Value;
     public static bool CraftedByLabelEnabled => _craftedByLabelEnabled.Value;
+    /// <summary>When true, any player who may open the crafted-by editor can pick a tooltip line label from <see cref="CraftedByAllowedLabels"/>. When false, the picker is disabled for non-elevated players (admins/VIPs still can).</summary>
+    public static bool CraftedByLabelCustomizable => _craftedByLabelCustomizable.Value;
+    /// <summary>Comma- or semicolon-separated tooltip prefixes (text before “: name”). The first entry is the default (vanilla localized line); additional entries are stored on the item when chosen.</summary>
+    public static string CraftedByAllowedLabels => _craftedByAllowedLabels.Value;
     public static bool AllowRenameResources => _allowRenameResources.Value;
     public static bool AllowAdminOverride => _allowAdminOverride.Value;
     public static int NameCharLimit => _nameCharLimit.Value;
@@ -83,7 +92,31 @@ public static class RenameitConfig
     public static bool MenuModifierIsShift =>
         string.Equals(_menuOpenModifier.Value, "Shift", StringComparison.OrdinalIgnoreCase);
 
-    
+    /// <summary>Parsed <see cref="CraftedByAllowedLabels"/>; first entry is always the “use game default line” option in the UI.</summary>
+    public static List<string> GetCraftedByAllowedLabelsList()
+    {
+        var raw = _craftedByAllowedLabels?.Value;
+        if (string.IsNullOrWhiteSpace(raw))
+            return new List<string> { "Crafted By", "Belongs To", "Return to" };
+
+        var parts = raw.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => s.Length > 0)
+            .ToList();
+        if (parts.Count == 0)
+            return new List<string> { "Crafted By", "Belongs To", "Return to" };
+
+        var deduped = new List<string>();
+        foreach (var p in parts)
+        {
+            if (deduped.Exists(x => string.Equals(x, p, StringComparison.Ordinal)))
+                continue;
+            deduped.Add(p);
+        }
+
+        return deduped;
+    }
+
     public static void Bind(ConfigFile config)
     {
         // Example: Lock renames to item owner
@@ -189,7 +222,23 @@ public static class RenameitConfig
             "CraftedByCharLimit",
             50,
             "Defines the limit for max characters in crafted by: edit, be sure to account for <color=> tag codes etc.",
-           true
+            true
+        );
+
+        _craftedByLabelCustomizable = config.BindSynced(
+            SectionCraftedBy,
+            "LabelCustomizable",
+            true,
+            "If true, players who can edit crafted-by may choose a tooltip line label from AllowedLabels. If false, the label picker is greyed out for normal players (shows the default line only) while admins/VIPs can still change it. Separate from CraftedByLabelEnabled in General.",
+            true
+        );
+
+        _craftedByAllowedLabels = config.BindSynced(
+            SectionCraftedBy,
+            "AllowedLabels",
+            "Crafted By, Belongs To, Return to",
+            "Comma- or semicolon-separated labels shown before the crafter name (e.g. “Belongs To: Name”). The first entry is the default (vanilla localized “crafted by” line is used on the tooltip when that option is selected).",
+            true
         );
         
         _descCharLimit = config.BindSynced(

@@ -23,8 +23,33 @@ description: >-
 ## Patches
 
 - Use `[HarmonyPatch]` with explicit type/method names; set **`HarmonyPriority`** when order vs other mods matters (e.g. run **last** on shared postfix).
+- **Method drift**: if `AccessTools.Method`/`DeclaredMethod` fails across game versions, scan `GetMethods` for matching name + parameter signature (e.g. static `GetTooltip(ItemData, int, bool)` on `ItemDrop.ItemData`).
 
 ## Networking
 
 - **`ZNet.instance`** may be null off-server or during menus; guard calls.
 - Peers: **`ZNet.instance.GetPeers()`** / **`m_peers`**; IDs on sockets differ from character names.
+
+## Item tooltips and crafted-by line
+
+- Vanilla builds the crafter segment as **`\n$item_crafter: {m_crafterName}`** in the tooltip pipeline, then **localizes** `$item_crafter` to the visible label (e.g. “Crafted by”).
+- The UI often wraps **`m_crafterName`** in **`<color=…>`** tags, so a naive `string.Replace(oldName, newName)` on the final tooltip string **misses** matches.
+- The localized label comes from **`Localization.instance.Localize("$item_crafter")`** (guard for null `Localization.instance`).
+- Postfixes on **`ItemDrop.ItemData.GetTooltip`** (static overload with `ItemData, int, bool` when present) are a common place to rewrite the result string while preserving color and locale behavior.
+- Injected TMP-style rich text should auto-close **`<color>`** / **`<#RRGGBB>`** and **`<size>`** so tags do not bleed into the next line; use a small stack (LIFO) to append **`</size>`** / **`</color>`** as needed. Stat-value orange in mod UI often matches **`GUIManager.Instance.ValheimOrange`** → **`ColorUtility.ToHtmlStringRGB`** for `<color=#…>` tags.
+
+## Per-item persistent data
+
+- **`ItemDrop.ItemData.m_customData`** is a `Dictionary<string, string>` suitable for mod keys (rename text, display overrides, stack identity). Treat keys as a stable contract (constants on plugin class).
+- Anything that changes **merge/stack** behavior should be folded into a **fingerprint** compared in **`Inventory.AddItem` / `FindFreeStackItem`**-style logic if the mod enforces separate stacks.
+
+## Jotunn UI (`GUIManager`)
+
+- **`GUIManager.Instance`**: **`CreateWoodpanel`**, **`CreateButton`**, **`CreateInputField`**, **`CreateText`** under **`GUIManager.CustomGUIFront`** for overlay UI.
+- **`GUIManager.BlockInput(true/false)`**: pair carefully so the game does not stay input-locked after closing panels.
+- **Dropdowns**: Jotunn exposes **`GUIManager.ApplyDropdownStyle(Dropdown, …)`** for styled **`UnityEngine.UI.Dropdown`**. Building a full Dropdown template in code is heavy; a **button that toggles a small wood-panel list of buttons** is a practical pattern for short option lists.
+
+## Server-authoritative config (ServerSync pattern)
+
+- Use a **`ConfigSync`** instance with **`AddConfigEntry`** and **`SynchronizedConfig = true`** on entries the server must own; keep client-only keys (e.g. UI modifier) unsynced.
+- Helper **`Bind(section, key, default, desc)`** + **`configSync.AddConfigEntry(entry)`** reduces duplication.

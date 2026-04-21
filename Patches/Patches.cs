@@ -278,6 +278,61 @@ public static class InventoryGridTooltipPatch
 [HarmonyPatch(typeof(ItemStand))]
 public static class ItemStandPatch
 {
+    private const string ItemStandRenameZdoKey = "DrakeRenameIt_CustomName";
+
+    /// <summary>Container-backed stands first, then vanilla attached <see cref="ItemDrop.ItemData"/> (publicized <c>GetAttachedItem</c>).</summary>
+    private static ItemDrop.ItemData? TryGetStandOccupantItem(ItemStand stand)
+    {
+        if (stand == null)
+            return null;
+
+        var fromContainer = TryGetFirstContainerItem(stand);
+        if (fromContainer?.m_shared != null)
+            return fromContainer;
+
+        var getAttached = AccessTools.Method(typeof(ItemStand), nameof(ItemStand.GetAttachedItem), Type.EmptyTypes);
+        if (getAttached?.Invoke(stand, null) is ItemDrop.ItemData attached && attached.m_shared != null)
+            return attached;
+
+        return null;
+    }
+
+    /// <summary>
+    /// Clears the cached label when the stand is visually empty. When occupied, only <b>sets</b> the ZDO from
+    /// <see cref="ItemDrop.ItemData"/> if Drake rename keys are present on that instance — vanilla's attached
+    /// visual item is often a copy without <c>m_customData</c>, and clearing from that would wipe a correct value
+    /// written by <see cref="GrabItem"/>.
+    /// </summary>
+    private static void SyncItemStandRenameZdoFromOccupant(ItemStand stand, ZDO zdo, string itemName)
+    {
+        if (string.IsNullOrEmpty(itemName))
+        {
+            zdo.Set(ItemStandRenameZdoKey, string.Empty);
+            return;
+        }
+
+        var occupant = TryGetStandOccupantItem(stand);
+        if (occupant?.m_shared == null)
+            return;
+
+        if (!DrakeRenameit.hasNewName(occupant))
+            return;
+
+        string display = DrakeRenameit.GetDisplayNameForUi(occupant, localize: false);
+        zdo.Set(ItemStandRenameZdoKey, TooltipRichText.EnsureRichTextTagsClosedForTooltip(display));
+    }
+
+    private static bool ItemStandHadVisualBeforeUse(ItemStand stand)
+    {
+        if (stand == null)
+            return false;
+
+        // Must use reflection: direct m_visualName access throws FieldAccessException at runtime when the
+        // game loads non-publicized ItemStand (compile against publicized, run against vanilla IL).
+        var visual = AccessTools.Field(typeof(ItemStand), "m_visualName")?.GetValue(stand) as string;
+        return !string.IsNullOrEmpty(visual);
+    }
+
     private static string TryGetStandCustomNameFromZdo(ItemStand stand)
     {
         if (stand == null)
@@ -289,8 +344,8 @@ public static class ItemStandPatch
         if (zdo == null)
             return "";
 
-        // DrakeRenameIt stores the computed visual name here when grabbing items from the stand.
-        string raw = zdo.GetString("DrakeRenameIt_CustomName", "");
+        // Cached display label for item-stand hover / shop-style labels (cleared when the stand is empty or holds a vanilla-named stack).
+        string raw = zdo.GetString(ItemStandRenameZdoKey, "");
         if (string.IsNullOrWhiteSpace(raw))
             return "";
 
@@ -402,19 +457,38 @@ public static class ItemStandPatch
     }
 
     [HarmonyPatch(nameof(ItemStand.UseItem))]
+    [HarmonyPrefix]
+    static void UseItem_Prefix(ItemStand __instance, out bool __state)
+    {
+        // Used with postfix: pickup is "had something mounted" + stack is back in the humanoid's inventory.
+        __state = ItemStandHadVisualBeforeUse(__instance);
+    }
+
+    [HarmonyPatch(nameof(ItemStand.UseItem))]
     [HarmonyPostfix]
     [HarmonyPriority(Priority.Last)]
-    static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item)
+    static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item, bool __state)
     {
         if (item?.m_shared == null)
             return;
 
-        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
-        if (customName != item.m_shared.m_name)
+        var nview = AccessTools.Field(typeof(ItemStand), "m_nview")?.GetValue(__instance) as ZNetView;
+        var zdo = nview?.GetZDO();
+        if (zdo == null)
+            return;
+
+        Inventory? inv = user?.GetInventory();
+        if (__state && inv != null && inv.ContainsItem(item))
         {
-            var zdo = ((ZNetView)AccessTools.Field(typeof(ItemStand), "m_nview").GetValue(__instance)).GetZDO();
-            zdo.Set("DrakeRenameIt_CustomName", customName);
+            zdo.Set(ItemStandRenameZdoKey, string.Empty);
+            return;
         }
+
+        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
+        if (DrakeRenameit.hasNewName(item) || customName != item.m_shared.m_name)
+            zdo.Set(ItemStandRenameZdoKey, TooltipRichText.EnsureRichTextTagsClosedForTooltip(customName));
+        else
+            zdo.Set(ItemStandRenameZdoKey, string.Empty);
     }
 
     [HarmonyPatch(nameof(ItemStand.SetVisualItem))]
@@ -422,8 +496,11 @@ public static class ItemStandPatch
     [HarmonyPriority(Priority.Last)]
     static void FixStandText(ItemStand __instance, string itemName, int variant, int quality)
     {
+        if (__instance == null)
+            return;
+
         var mNviewField = AccessTools.Field(typeof(ItemStand), "m_nview");
-        object? nviewObj = __instance != null ? mNviewField?.GetValue(__instance) : null;
+        object? nviewObj = mNviewField?.GetValue(__instance);
         var nview = nviewObj as ZNetView;
 
         if (nview == null)
@@ -433,7 +510,9 @@ public static class ItemStandPatch
 
         if (zdo == null) return;
 
-        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(zdo.GetString("DrakeRenameIt_CustomName", ""));
+        SyncItemStandRenameZdoFromOccupant(__instance, zdo, itemName);
+
+        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(zdo.GetString(ItemStandRenameZdoKey, ""));
         if (!string.IsNullOrEmpty(customName))
         {
             var currentItemField = AccessTools.Field(typeof(ItemStand), "m_currentItemName");

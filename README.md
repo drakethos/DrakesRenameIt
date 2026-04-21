@@ -1,4 +1,4 @@
-# DrakesRenameIt V0.9.0 Release Canidate
+# DrakesRenameIt V0.9.1 Release Canidate
 
 A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 
@@ -26,6 +26,24 @@ localization with an additional name, simply leave the $string intact and add ar
 <p>Edit descriptions!</p>
 <img width="264" height="260" alt="image" src="https://github.com/user-attachments/assets/a33411d4-4e0d-49c2-977a-f19fe03eb83a" />
 
+<p>Works on item stands: make them big and colorful</p>
+<img width="284" height="149" alt="image" src="https://github.com/user-attachments/assets/aa1b75d4-475d-4772-b18c-0abeb1283d9f" />
+
+<p>Now with customizable crafted by names and messages</p>
+<img width="249" height="246" alt="image" src="https://github.com/user-attachments/assets/ce1e72e2-0a43-4d77-a9aa-5ea849534628" />
+
+<p>New simplified single modifier right click menu to access 3 editible items, with fast reset.
+<img width="302" height="271" alt="image" src="https://github.com/user-attachments/assets/d9b2f38c-ae50-40a9-ae05-6f290c60980d" />
+
+<p>Configurable cost mode to make editing items more special</p>
+<img width="346" height="254" alt="image" src="https://github.com/user-attachments/assets/16d5c388-92a7-45bb-87df-fddc64b2d45e" />
+
+<p>Configurable list of alternates to Crafted By to update</p>
+<img width="348" height="239" alt="image" src="https://github.com/user-attachments/assets/3de2900f-3fe3-499e-b650-3e9774e6eb51" />
+
+<p>Configurable flag to allow items to show when warded great for showing things off for a shop. could put price tags on them etc.</p>
+<img width="331" height="247" alt="image" src="https://github.com/user-attachments/assets/6ab2dee8-37cb-45de-80e5-1c69f1e2b93b" />
+
 ### Features with rename:
 - Fully supports the same sign codes like <color=blue> <b>bold</b> etc for full information check official Valheim documentation
   on sign features.
@@ -45,6 +63,7 @@ localization with an additional name, simply leave the $string intact and add ar
 - *New* one unified menu for all rename, description, and crafted by edits with a slick new design.
 - *New* configurable costs for editing items to make it more special and prevent abuse.
 - *New* Vast array of configurations for whats allowed to be edited, by name and category.
+- *New* Allow Item stands to be configured to show name on wards.
 #### What this Mod doesn't do:
   - <s>your taxes
   - change every single item that exists

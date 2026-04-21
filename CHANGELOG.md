@@ -56,3 +56,6 @@
   - Added SeparateStacks and SeparateStacksHardLock: auto-pickup and merges require matching Drake identity; hard lock prevents manual drag-merges too.
   - Major under-the-hood refactors, null-check hardening, and tooltip/UI improvements.
   - VIP permission system improvements.
+- Version 0.9.1
+  - Quick bug fix dropping items and glitch with item stands.
+  - Added ward visibility option for itemstands.

@@ -48,6 +48,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _menuOpenModifier;
     private static ConfigEntry<bool> _unlockCostEnabled;
     private static ConfigEntry<string> _unlockCost;
+    private static ConfigEntry<bool> _showItemStandItemNameWhenNoAccess;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -88,6 +89,12 @@ public static class RenameitConfig
 
     /// <summary>Comma- or semicolon-separated list: <c>ItemPrefabName:amount</c> (e.g. <c>Coins:4</c>, <c>Coal:10</c>) or <c>$item_token:amount</c>. Resolved via the game ObjectDB when running.</summary>
     public static string UnlockCost => _unlockCost.Value;
+
+    /// <summary>
+    /// When true, item stands in warded/private areas keep the "no access" line, but also show the stand's item name on the hover label.
+    /// This is purely a display/label convenience and does not change permissions.
+    /// </summary>
+    public static bool ShowItemStandItemNameWhenNoAccess => _showItemStandItemNameWhenNoAccess.Value;
 
     public static bool MenuModifierIsShift =>
         string.Equals(_menuOpenModifier.Value, "Shift", StringComparison.OrdinalIgnoreCase);
@@ -174,6 +181,14 @@ public static class RenameitConfig
             "ShowReason",
             true,
             "If true, denied rename/description actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
+            true
+        );
+
+        _showItemStandItemNameWhenNoAccess = config.BindSynced(
+            SectionGeneral,
+            "ShowItemStandItemNameWhenNoAccess",
+            true,
+            "If true, item stands inside warded/private areas still show 'no access' but also append the stand's current item name to the hover label (display only; permissions unchanged).",
             true
         );
 

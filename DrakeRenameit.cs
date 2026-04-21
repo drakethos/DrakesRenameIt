@@ -85,6 +85,22 @@ namespace DrakeRenameit
             return getPropperName(item, item.m_shared.m_name);
         }
 
+        /// <summary>
+        /// Returns the item name for UI display, applying Drake custom name (if any) and ensuring rich-text tags are closed.
+        /// Optionally localizes the result (useful for HUD messages).
+        /// </summary>
+        public static string GetDisplayNameForUi(ItemDrop.ItemData? item, bool localize)
+        {
+            if (item?.m_shared == null)
+                return "";
+
+            string raw = GetPropperName(item) ?? item.m_shared.m_name;
+            string safe = UI.TooltipRichText.EnsureRichTextTagsClosedForTooltip(raw);
+            if (!localize || Localization.instance == null)
+                return safe;
+            return Localization.instance.Localize(safe);
+        }
+
         public static bool hasNewDesc(ItemDrop.ItemData? item)
         {
             if (item.m_customData == null)

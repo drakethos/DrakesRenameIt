@@ -2,6 +2,7 @@
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;
+using static DrakeRenameit.RenameitConfig;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 
 namespace DrakeRenameit.Patches;
@@ -17,7 +18,7 @@ internal static class HoverRenameHelper
         if (!DrakeRenameit.hasNewName(item))
             return;
 
-        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
+        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
         if (customName == null || item.m_shared.m_name == null)
             return;
 
@@ -45,13 +46,9 @@ internal static class PickupHudMessageHelper
         if (item?.m_shared == null || !DrakeRenameit.hasNewName(item))
             return false;
 
-        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item));
-        if (string.IsNullOrEmpty(customName))
+        localizedName = DrakeRenameit.GetDisplayNameForUi(item, localize: true);
+        if (string.IsNullOrEmpty(localizedName))
             return false;
-
-        localizedName = Localization.instance != null
-            ? Localization.instance.Localize(customName)
-            : customName;
         return true;
     }
 }
@@ -111,7 +108,7 @@ public static class Patches
 
             if (DrakeRenameit.hasNewName(item))
             {
-                var newName = DrakeRenameit.GetPropperName(item);
+                var newName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
                 if (!string.IsNullOrEmpty(newName))
                     __result = newName;
             }
@@ -276,6 +273,62 @@ public static class InventoryGridTooltipPatch
 [HarmonyPatch(typeof(ItemStand))]
 public static class ItemStandPatch
 {
+    private static string TryGetStandCustomNameFromZdo(ItemStand stand)
+    {
+        if (stand == null)
+            return "";
+
+        var mNviewField = AccessTools.Field(typeof(ItemStand), "m_nview");
+        var nview = mNviewField?.GetValue(stand) as ZNetView;
+        var zdo = nview?.GetZDO();
+        if (zdo == null)
+            return "";
+
+        // DrakeRenameIt stores the computed visual name here when grabbing items from the stand.
+        string raw = zdo.GetString("DrakeRenameIt_CustomName", "");
+        if (string.IsNullOrWhiteSpace(raw))
+            return "";
+
+        string safe = TooltipRichText.EnsureRichTextTagsClosedForTooltip(raw);
+        return Localization.instance != null ? Localization.instance.Localize(safe) : safe;
+    }
+
+    private static string TryGetStandCurrentItemName(ItemStand stand)
+    {
+        if (stand == null)
+            return "";
+
+        var currentItemField = AccessTools.Field(typeof(ItemStand), "m_currentItemName");
+        if (currentItemField == null)
+            return "";
+
+        var raw = currentItemField.GetValue(stand) as string;
+        if (string.IsNullOrWhiteSpace(raw))
+            return "";
+
+        string safe = TooltipRichText.EnsureRichTextTagsClosedForTooltip(raw);
+        return Localization.instance != null ? Localization.instance.Localize(safe) : safe;
+    }
+
+    private static bool HoverTextContainsNoAccess(string hoverText)
+    {
+        if (string.IsNullOrEmpty(hoverText))
+            return false;
+
+        const string token = "$piece_noaccess";
+        if (hoverText.Contains(token))
+            return true;
+
+        if (Localization.instance == null)
+            return false;
+
+        string localized = Localization.instance.Localize(token);
+        if (string.IsNullOrEmpty(localized))
+            return false;
+
+        return hoverText.IndexOf(localized, System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
     /// <summary>ZenDragon-style and other container stands: first item in attached <see cref="Container"/>.</summary>
     private static ItemDrop.ItemData? TryGetFirstContainerItem(ItemStand stand)
     {
@@ -291,6 +344,26 @@ public static class ItemStandPatch
         return items[0];
     }
 
+    private static string TryGetBestStandLabel(ItemStand stand)
+    {
+        // Preferred: the stand's own current-item name (often what other mods tweak for shop labels).
+        string label = TryGetStandCurrentItemName(stand);
+        if (!string.IsNullOrEmpty(label))
+            return label;
+
+        // Fallback: our own cached name on the ZDO (set when interacting with stands).
+        label = TryGetStandCustomNameFromZdo(stand);
+        if (!string.IsNullOrEmpty(label))
+            return label;
+
+        // Fallback: if ZenItemStands (or similar) turns the stand into a container, use its first item name.
+        var item = TryGetFirstContainerItem(stand);
+        if (item?.m_shared == null)
+            return "";
+
+        return DrakeRenameit.GetDisplayNameForUi(item, localize: true);
+    }
+
     [HarmonyPatch(nameof(ItemStand.GetHoverText))]
     [HarmonyPostfix]
     [HarmonyPriority(Priority.Last)]
@@ -298,6 +371,18 @@ public static class ItemStandPatch
     {
         if (__instance == null || string.IsNullOrEmpty(__result))
             return;
+
+        // If the stand is in a warded/private area, vanilla replaces the interact text with "no access".
+        // When enabled, keep "no access" but also show the stand label (item name / shop label) for shop-sign style use.
+        if (ShowItemStandItemNameWhenNoAccess && HoverTextContainsNoAccess(__result))
+        {
+            string label = TryGetBestStandLabel(__instance);
+            if (!string.IsNullOrEmpty(label) &&
+                __result.IndexOf(label, System.StringComparison.Ordinal) < 0)
+                __result = $"{label}\n{__result}";
+
+            return;
+        }
 
         var item = TryGetFirstContainerItem(__instance);
         if (item?.m_shared == null)
@@ -317,7 +402,7 @@ public static class ItemStandPatch
         if (item?.m_shared == null)
             return;
 
-        string customName = DrakeRenameit.getPropperName(item);
+        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
         if (customName != item.m_shared.m_name)
         {
             var zdo = ((ZNetView)AccessTools.Field(typeof(ItemStand), "m_nview").GetValue(__instance)).GetZDO();
@@ -341,11 +426,62 @@ public static class ItemStandPatch
 
         if (zdo == null) return;
 
-        string customName = zdo.GetString("DrakeRenameIt_CustomName", "");
+        string customName = TooltipRichText.EnsureRichTextTagsClosedForTooltip(zdo.GetString("DrakeRenameIt_CustomName", ""));
         if (!string.IsNullOrEmpty(customName))
         {
             var currentItemField = AccessTools.Field(typeof(ItemStand), "m_currentItemName");
             currentItemField?.SetValue(__instance, customName);
         }
+    }
+}
+
+/// <summary>Rewrites the "dropped" HUD message to use the renamed item display name.</summary>
+[HarmonyPatch]
+internal static class DropHudMessagePatches
+{
+    private static ItemDrop.ItemData? PendingDroppedItem;
+
+    [HarmonyPatch(typeof(Player), nameof(Player.DropItem), new[] { typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int) })]
+    [HarmonyPrefix]
+    private static void PlayerDropItemPrefix(ItemDrop.ItemData item)
+    {
+        PendingDroppedItem = item;
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.DropItem), new[] { typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int) })]
+    [HarmonyPostfix]
+    private static void PlayerDropItemPostfix()
+    {
+        PendingDroppedItem = null;
+    }
+
+    // Character.Message is the common sink for TopLeft messages (including dropped).
+    [HarmonyPatch(typeof(Character), nameof(Character.Message), new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite) })]
+    [HarmonyPrefix]
+    private static void CharacterMessagePrefix(ref string msg)
+    {
+        var item = PendingDroppedItem;
+        if (item?.m_shared == null || string.IsNullOrEmpty(msg))
+            return;
+        if (!DrakeRenameit.hasNewName(item))
+            return;
+
+        string droppedToken = "$msg_dropped";
+        string droppedLocalized = Localization.instance != null ? Localization.instance.Localize(droppedToken) : droppedToken;
+        if (msg.IndexOf(droppedToken, System.StringComparison.Ordinal) < 0 &&
+            msg.IndexOf(droppedLocalized, System.StringComparison.OrdinalIgnoreCase) < 0)
+            return;
+
+        string originalName = Localization.instance != null
+            ? Localization.instance.Localize(item.m_shared.m_name)
+            : item.m_shared.m_name;
+        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: true);
+        if (string.IsNullOrEmpty(customName) || string.IsNullOrEmpty(originalName))
+            return;
+
+        if (msg.Contains(originalName))
+            msg = msg.Replace(originalName, customName);
+        else if (msg.Contains(item.m_shared.m_name))
+            msg = msg.Replace(item.m_shared.m_name, customName);
     }
 }

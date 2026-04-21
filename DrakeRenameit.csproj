@@ -111,6 +111,7 @@
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="Patches\InventoryStackPatches.cs" />
     <Compile Include="Patches\ItemTooltipPatches.cs" />
+    <Compile Include="Patches\DecoratedNamePatches.cs" />
     <Compile Include="Patches\Patches.cs" />
     <Compile Include="StackIdentity.cs" />
     <Compile Include="UI\TooltipRichText.cs" />

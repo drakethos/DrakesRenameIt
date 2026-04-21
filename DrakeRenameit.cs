@@ -64,7 +64,6 @@ namespace DrakeRenameit
             AddVip();
             RenamePermissionManager.Init(Logger);
             RenameUnlockCost.Init(Logger);
-
             InventoryStackPatches.Apply(harmony, Logger);
             ItemTooltipPatches.Apply(harmony, Logger);
             harmony.PatchAll();

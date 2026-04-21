@@ -7,7 +7,10 @@ using HarmonyLib;
 
 namespace DrakeRenameit.Patches;
 
-/// <summary>Replaces visible crafted-by text when <see cref="DrakeRenameit.DrakeCraftedByDisplay"/> and/or <see cref="DrakeRenameit.DrakeCraftedByLineLabel"/> is set.</summary>
+/// <summary>
+/// Replaces visible crafted-by text when <see cref="DrakeRenameit.DrakeCraftedByDisplay"/> and/or
+/// <see cref="DrakeRenameit.DrakeCraftedByLineLabel"/> is set.
+/// </summary>
 /// <remarks>
 /// Vanilla builds the line as <c>\n$item_crafter: {m_crafterName}</c> then localizes; the UI often wraps the name in
 /// <c>&lt;color&gt;</c> tags, so a plain <see cref="string.Replace(string, string)"/> on <see cref="ItemDrop.ItemData.m_crafterName"/> misses.
@@ -20,7 +23,7 @@ internal static class ItemTooltipPatches
         var sig = new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool) };
 
         var target = AccessTools.DeclaredMethod(t, "GetTooltip", sig)
-                      ?? AccessTools.Method(t, "GetTooltip", sig);
+                     ?? AccessTools.Method(t, "GetTooltip", sig);
 
         if (target == null)
         {
@@ -29,11 +32,12 @@ internal static class ItemTooltipPatches
                 if (m.Name != "GetTooltip" || !m.IsStatic)
                     continue;
                 var p = m.GetParameters();
-                if (p.Length == 3 && p[0].ParameterType == typeof(ItemDrop.ItemData) && p[1].ParameterType == typeof(int) &&
+                if (p.Length == 3 &&
+                    p[0].ParameterType == typeof(ItemDrop.ItemData) &&
+                    p[1].ParameterType == typeof(int) &&
                     p[2].ParameterType == typeof(bool))
                 {
                     target = m;
-                    log.LogInfo("[DrakesRenameIt] Crafted-by tooltip: using scanned GetTooltip(ItemData,int,bool).");
                     break;
                 }
             }
@@ -41,7 +45,8 @@ internal static class ItemTooltipPatches
 
         if (target == null)
         {
-            log.LogWarning("[DrakesRenameIt] Crafted-by display: static GetTooltip(ItemData,int,bool) not found — tooltip override disabled.");
+            log.LogWarning(
+                "[DrakesRenameIt] Crafted-by display: static GetTooltip(ItemData,int,bool) not found — tooltip override disabled.");
             return;
         }
 
@@ -50,7 +55,7 @@ internal static class ItemTooltipPatches
             postfix: new HarmonyMethod(typeof(ItemTooltipPatches), nameof(CraftedByDisplayPostfix)));
     }
 
-    static void CraftedByDisplayPostfix(
+    internal static void CraftedByDisplayPostfix(
         ItemDrop.ItemData item,
         int qualityLevel,
         bool crafting,

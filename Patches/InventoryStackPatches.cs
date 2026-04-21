@@ -30,7 +30,10 @@ internal static class InventoryStackPatches
                 finalizer: new HarmonyMethod(typeof(InventoryStackPatches), nameof(AddItem_IncomingCleanup)));
         }
         else
-            log.LogWarning("[DrakesRenameIt] SeparateStacks: AddItem(ItemData) not found — incoming stack tracking disabled.");
+        {
+            log.LogWarning(
+                "[DrakesRenameIt] SeparateStacks: AddItem(ItemData) not found — incoming stack tracking disabled.");
+        }
 
         // FindFreeStackItem has had 2- and 3-arg variants (worldLevel added in newer Valheim).
         // Harmony matches prefix params by name, so one prefix covers both — we just need to bind.
@@ -55,7 +58,10 @@ internal static class InventoryStackPatches
                 prefix: new HarmonyMethod(typeof(InventoryStackPatches), nameof(FindFreeStackItem_Prefix)));
         }
         else
-            log.LogWarning("[DrakesRenameIt] SeparateStacks: FindFreeStackItem not found — merge-from-pickup may ignore identity.");
+        {
+            log.LogWarning(
+                "[DrakesRenameIt] SeparateStacks: FindFreeStackItem not found — merge-from-pickup may ignore identity.");
+        }
 
         // AddItem cell-overload has also varied in arity; find by signature: (ItemData, int, int, int[, ...]).
         MethodInfo? addAtCell = null;
@@ -81,15 +87,18 @@ internal static class InventoryStackPatches
                 prefix: new HarmonyMethod(typeof(InventoryStackPatches), nameof(AddItemAtCell_Prefix)));
         }
         else
-            log.LogWarning("[DrakesRenameIt] SeparateStacks: AddItem(ItemData,int,int,int...) not found — cell merge guard disabled.");
+        {
+            log.LogWarning(
+                "[DrakesRenameIt] SeparateStacks: AddItem(ItemData,int,int,int...) not found — cell merge guard disabled.");
+        }
     }
 
-    static void AddItem_IncomingPrefix(ItemDrop.ItemData item)
+    internal static void AddItem_IncomingPrefix(ItemDrop.ItemData item)
     {
         IncomingStackItem = item;
     }
 
-    static void AddItem_IncomingCleanup(Exception? __exception)
+    internal static void AddItem_IncomingCleanup(Exception? __exception)
     {
         IncomingStackItem = null;
     }
@@ -98,7 +107,7 @@ internal static class InventoryStackPatches
     /// Replicates vanilla <c>FindFreeStackItem</c> and requires matching Drake fingerprint when
     /// <see cref="RenameitConfig.SeparateStacks"/> is on and the incoming stack is known.
     /// </summary>
-    static bool FindFreeStackItem_Prefix(
+    internal static bool FindFreeStackItem_Prefix(
         Inventory __instance,
         string name,
         int quality,
@@ -139,7 +148,7 @@ internal static class InventoryStackPatches
         return false;
     }
 
-    static bool AddItemAtCell_Prefix(
+    internal static bool AddItemAtCell_Prefix(
         ItemDrop.ItemData item,
         int amount,
         int x,

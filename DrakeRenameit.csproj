@@ -108,10 +108,12 @@
     <Compile Include="Permissions\RenameExclusionRules.cs" />
     <Compile Include="Permissions\RenamePermissionManager.cs" />
     <Compile Include="RenameUnlockCost.cs" />
+    <Compile Include="AgentDebug\AgentDebugLog.cs" />
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="Patches\InventoryStackPatches.cs" />
     <Compile Include="Patches\ItemTooltipPatches.cs" />
     <Compile Include="Patches\DecoratedNamePatches.cs" />
+    <Compile Include="Patches\UpgradeListNamePatches.cs" />
     <Compile Include="Patches\Patches.cs" />
     <Compile Include="StackIdentity.cs" />
     <Compile Include="UI\TooltipRichText.cs" />

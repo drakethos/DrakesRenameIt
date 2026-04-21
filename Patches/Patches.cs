@@ -1,4 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using BepInEx.Logging;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;
@@ -374,13 +379,15 @@ public static class ItemStandPatch
 
         // If the stand is in a warded/private area, vanilla replaces the interact text with "no access".
         // When enabled, keep "no access" but also show the stand label (item name / shop label) for shop-sign style use.
-        if (ShowItemStandItemNameWhenNoAccess && HoverTextContainsNoAccess(__result))
+        if (HoverTextContainsNoAccess(__result))
         {
-            string label = TryGetBestStandLabel(__instance);
-            if (!string.IsNullOrEmpty(label) &&
-                __result.IndexOf(label, System.StringComparison.Ordinal) < 0)
-                __result = $"{label}\n{__result}";
-
+            if (ShowItemStandItemNameWhenNoAccess)
+            {
+                string label = TryGetBestStandLabel(__instance);
+                if (!string.IsNullOrEmpty(label) &&
+                    __result.IndexOf(label, System.StringComparison.Ordinal) < 0)
+                    __result = $"{label}\n{__result}";
+            }
             return;
         }
 
@@ -436,52 +443,272 @@ public static class ItemStandPatch
 }
 
 /// <summary>Rewrites the "dropped" HUD message to use the renamed item display name.</summary>
-[HarmonyPatch]
 internal static class DropHudMessagePatches
 {
     private static ItemDrop.ItemData? PendingDroppedItem;
+    private static float PendingDroppedItemSetAt;
+    private const float PendingDroppedItemTtlSeconds = 2.5f;
 
-    [HarmonyPatch(typeof(Player), nameof(Player.DropItem), new[] { typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int) })]
-    [HarmonyPrefix]
-    private static void PlayerDropItemPrefix(ItemDrop.ItemData item)
+    /// <summary>
+    /// Typed prefix on vanilla <see cref="Humanoid.DropItem(Inventory, ItemDrop.ItemData, int)"/> — Harmony
+    /// <c>object[] __args</c> multi-target patches often never run; runtime logs showed zero DropHud events until this.
+    /// </summary>
+    internal static void ApplyDropItemPendingCapture(Harmony harmony, ManualLogSource log)
+    {
+        try
+        {
+            var sig = new[] { typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int) };
+            var m = AccessTools.Method(typeof(Humanoid), nameof(Humanoid.DropItem), sig)
+                    ?? AccessTools.DeclaredMethod(typeof(Humanoid), nameof(Humanoid.DropItem), sig);
+
+            if (m == null)
+            {
+                foreach (var cand in typeof(Humanoid).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                {
+                    if (cand.Name != nameof(Humanoid.DropItem))
+                        continue;
+                    var p = cand.GetParameters();
+                    if (p.Length == 3 &&
+                        p[0].ParameterType == typeof(Inventory) &&
+                        p[1].ParameterType == typeof(ItemDrop.ItemData) &&
+                        p[2].ParameterType == typeof(int))
+                    {
+                        m = cand;
+                        break;
+                    }
+                }
+            }
+
+            if (m == null)
+            {
+                log.LogWarning("[DrakesRenameIt] Drop HUD: Humanoid.DropItem(Inventory,ItemData,int) not found.");
+                return;
+            }
+
+            harmony.Patch(m, prefix: new HarmonyMethod(typeof(DropHudMessagePatches), nameof(HumanoidDropItemTypedPrefix)));
+            log.LogInfo("[DrakesRenameIt] Drop HUD: patched typed " + m.DeclaringType?.Name + "." + m.Name);
+        }
+        catch (Exception ex)
+        {
+            log.LogError("[DrakesRenameIt] Drop HUD: typed DropItem patch failed: " + ex);
+        }
+    }
+
+    // Manual-only (applied in <see cref="ApplyDropItemPendingCapture"/>).
+    private static void HumanoidDropItemTypedPrefix(Inventory inventory, ItemDrop.ItemData item, int amount)
     {
         PendingDroppedItem = item;
+        PendingDroppedItemSetAt = UnityEngine.Time.time;
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.DropItem), new[] { typeof(Inventory), typeof(ItemDrop.ItemData), typeof(int) })]
-    [HarmonyPostfix]
-    private static void PlayerDropItemPostfix()
-    {
-        PendingDroppedItem = null;
-    }
-
-    // Character.Message is the common sink for TopLeft messages (including dropped).
-    [HarmonyPatch(typeof(Character), nameof(Character.Message), new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite) })]
-    [HarmonyPrefix]
-    private static void CharacterMessagePrefix(ref string msg)
+    internal static void TryRewriteDroppedMessage(ref string msg)
     {
         var item = PendingDroppedItem;
         if (item?.m_shared == null || string.IsNullOrEmpty(msg))
             return;
-        if (!DrakeRenameit.hasNewName(item))
+
+        // Some builds emit the dropped message after DropItem returns; keep the pending item briefly.
+        // If it's too old, drop it so we don't rewrite unrelated messages.
+        var age = UnityEngine.Time.time - PendingDroppedItemSetAt;
+        if (age > PendingDroppedItemTtlSeconds)
+        {
+            PendingDroppedItem = null;
             return;
+        }
 
         string droppedToken = "$msg_dropped";
         string droppedLocalized = Localization.instance != null ? Localization.instance.Localize(droppedToken) : droppedToken;
-        if (msg.IndexOf(droppedToken, System.StringComparison.Ordinal) < 0 &&
-            msg.IndexOf(droppedLocalized, System.StringComparison.OrdinalIgnoreCase) < 0)
+        var hasTok = msg.IndexOf(droppedToken, System.StringComparison.Ordinal) >= 0;
+        var hasLoc = msg.IndexOf(droppedLocalized, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        // Some locales / builds show "Dropped …" without leaving $msg_dropped in the final string, or localize differently.
+        var looksLikeDroppedLine = DrakeRenameit.hasNewName(item) &&
+                                   msg.IndexOf("drop", System.StringComparison.OrdinalIgnoreCase) >= 0 &&
+                                   msg.Length < 280;
+        if (!hasTok && !hasLoc && !looksLikeDroppedLine)
             return;
 
         string originalName = Localization.instance != null
             ? Localization.instance.Localize(item.m_shared.m_name)
             : item.m_shared.m_name;
-        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: true);
-        if (string.IsNullOrEmpty(customName) || string.IsNullOrEmpty(originalName))
+
+        string displayNameLocalized = DrakeRenameit.hasNewName(item)
+            ? DrakeRenameit.GetDisplayNameForUi(item, localize: true)
+            : (Localization.instance != null
+                ? Localization.instance.Localize(TooltipRichText.EnsureRichTextTagsClosedForTooltip(item.m_shared.m_name))
+                : TooltipRichText.EnsureRichTextTagsClosedForTooltip(item.m_shared.m_name));
+
+        if (string.IsNullOrEmpty(displayNameLocalized))
             return;
 
-        if (msg.Contains(originalName))
-            msg = msg.Replace(originalName, customName);
-        else if (msg.Contains(item.m_shared.m_name))
-            msg = msg.Replace(item.m_shared.m_name, customName);
+        // Vanilla Humanoid.DropItem passes "$msg_dropped " + m_shared.m_name (token) — replace whole tail in one shot.
+        const string dropPrefix = "$msg_dropped ";
+        if (DrakeRenameit.hasNewName(item) &&
+            msg.StartsWith(dropPrefix, StringComparison.Ordinal) &&
+            !string.IsNullOrEmpty(item.m_shared.m_name))
+        {
+            var tail = msg.Substring(dropPrefix.Length).TrimStart();
+            if (string.Equals(tail, item.m_shared.m_name, StringComparison.Ordinal))
+            {
+                msg = dropPrefix + displayNameLocalized;
+                PendingDroppedItem = null;
+                return;
+            }
+        }
+
+        // Replace first occurrence only; use regex so matched span length can differ from needle (case / edge cases).
+        if (!string.IsNullOrEmpty(originalName))
+        {
+            try
+            {
+                var rx = new Regex(Regex.Escape(originalName), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+                    TimeSpan.FromMilliseconds(250));
+                if (rx.IsMatch(msg))
+                {
+                    msg = rx.Replace(msg, _ => displayNameLocalized, 1);
+                    PendingDroppedItem = null;
+                    return;
+                }
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                /* ignore */
+            }
+        }
+
+        // Fallback: token id on the item (not always equal to localized segment in the HUD line).
+        if (!string.IsNullOrEmpty(item.m_shared.m_name))
+        {
+            try
+            {
+                var rx2 = new Regex(Regex.Escape(item.m_shared.m_name), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+                    TimeSpan.FromMilliseconds(250));
+                if (rx2.IsMatch(msg))
+                {
+                    msg = rx2.Replace(msg, _ => displayNameLocalized, 1);
+                    PendingDroppedItem = null;
+                    return;
+                }
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                /* ignore */
+            }
+        }
+
+        // Append, when the dropped message has no inline name.
+        if (string.Equals(msg, droppedToken, System.StringComparison.Ordinal) ||
+            string.Equals(msg, droppedLocalized, System.StringComparison.OrdinalIgnoreCase))
+        {
+            msg = string.Equals(msg, droppedToken, System.StringComparison.Ordinal)
+                ? $"{droppedToken} {displayNameLocalized}"
+                : $"{droppedLocalized} {displayNameLocalized}";
+            PendingDroppedItem = null;
+        }
+    }
+
+    /// <summary>
+    /// Patch only the <see cref="MessageHud.ShowMessage"/> overload that carries the HUD text as a <see cref="string"/>.
+    /// A broad multi-target patch with <c>ref string text</c> breaks <see cref="Harmony.PatchAll"/> when overloads do not match.
+    /// </summary>
+    internal static void ApplyMessageHudShowMessage(Harmony harmony, ManualLogSource log)
+    {
+        try
+        {
+            var hudType = typeof(MessageHud);
+            var msgEnum = AccessTools.Inner(hudType, "MessageType")
+                ?? hudType.GetNestedType("MessageType", BindingFlags.Public | BindingFlags.NonPublic);
+            if (msgEnum == null)
+            {
+                log.LogWarning("[DrakesRenameIt] Drop HUD: MessageHud.MessageType nested type not found.");
+                return;
+            }
+
+            MethodBase? best = null;
+            foreach (var m in hudType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (m.Name != "ShowMessage")
+                    continue;
+                var p = m.GetParameters();
+                if (p.Length < 2)
+                    continue;
+                if (p[0].ParameterType != msgEnum || p[1].ParameterType != typeof(string))
+                    continue;
+
+                // Prefer the same shape as Character.Message (type, text, amount, sprite).
+                if (p.Length == 4 &&
+                    p[2].ParameterType == typeof(int) &&
+                    p[3].ParameterType == typeof(UnityEngine.Sprite))
+                {
+                    best = m;
+                    break;
+                }
+
+                best ??= m;
+            }
+
+            if (best == null)
+            {
+                log.LogWarning("[DrakesRenameIt] Drop HUD: no suitable MessageHud.ShowMessage overload found.");
+                return;
+            }
+
+            int stringArgIndex = -1;
+            var ps = best.GetParameters();
+            for (int i = 0; i < ps.Length; i++)
+            {
+                if (ps[i].ParameterType == typeof(string))
+                {
+                    stringArgIndex = i;
+                    break;
+                }
+            }
+
+            if (stringArgIndex < 0)
+            {
+                log.LogWarning("[DrakesRenameIt] Drop HUD: ShowMessage overload has no string parameter: " + best);
+                return;
+            }
+
+            var prefix = stringArgIndex == 0
+                ? new HarmonyMethod(typeof(DropHudMessagePatches), nameof(MessageHudShowMessageStringArg0))
+                : new HarmonyMethod(typeof(DropHudMessagePatches), nameof(MessageHudShowMessageStringArg1));
+
+            harmony.Patch(best, prefix: prefix);
+            log.LogInfo("[DrakesRenameIt] Drop HUD: patched MessageHud." + best.Name + " stringArg=" + stringArgIndex + " :: " + best);
+        }
+        catch (Exception ex)
+        {
+            log.LogError("[DrakesRenameIt] Drop HUD: MessageHud patch failed: " + ex);
+        }
+    }
+
+    // Manual-only MessageHud prefixes (applied in <see cref="ApplyMessageHudShowMessage"/>).
+    private static void MessageHudShowMessageStringArg0(ref string __0)
+    {
+        TryRewriteDroppedMessage(ref __0);
+    }
+
+    private static void MessageHudShowMessageStringArg1(ref string __1)
+    {
+        TryRewriteDroppedMessage(ref __1);
+    }
+
+    // Character.Message — kept for non-Player characters / mods that call the base implementation.
+    [HarmonyPatch(typeof(Character), nameof(Character.Message), new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite) })]
+    [HarmonyPrefix]
+    private static void CharacterMessagePrefix(MessageHud.MessageType type, ref string msg)
+    {
+        TryRewriteDroppedMessage(ref msg);
+    }
+
+    /// <summary>
+    /// Local <see cref="Player"/> overrides <see cref="Character.Message"/> and forwards straight to <see cref="MessageHud.instance.ShowMessage"/>,
+    /// so drop notifications never hit the <see cref="Character.Message"/> patch. Pickup works because we patch <see cref="Character.ShowPickupMessage"/> instead.
+    /// </summary>
+    [HarmonyPatch(typeof(Player), nameof(Player.Message), new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite) })]
+    [HarmonyPrefix]
+    private static void PlayerMessagePrefix(MessageHud.MessageType type, ref string msg)
+    {
+        TryRewriteDroppedMessage(ref msg);
     }
 }

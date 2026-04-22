@@ -106,7 +106,7 @@ internal static class ItemTooltipPatches
                 return custom;
         }
 
-        // 1) Exact fragment from ItemData.GetTooltip StringBuilder (often before full localization pass)
+        // Exact fragment from ItemData.GetTooltip StringBuilder (often before full localization pass)
         var tokenSpaced = "\n$item_crafter: " + oldName + " ";
         if (text.Contains(tokenSpaced))
             return text.Replace(tokenSpaced, "\n$item_crafter: " + newDisplay + " ");
@@ -122,7 +122,7 @@ internal static class ItemTooltipPatches
                 label = loc;
         }
 
-        // 2) Plain localized line (no color tags)
+        // Plain localized line (no color tags)
         foreach (var suffix in new[] { " ", "" })
         {
             var needle = "\n" + label + ": " + oldName + suffix;
@@ -130,7 +130,7 @@ internal static class ItemTooltipPatches
                 return text.Replace(needle, "\n" + label + ": " + newDisplay + (suffix == " " ? " " : ""));
         }
 
-        // 3) Name wrapped in <color=…>…</color> after "Label:"
+        // Name wrapped in <color=…>…</color> after "Label:"
         try
         {
             string escLabel = Regex.Escape(label);
@@ -147,7 +147,7 @@ internal static class ItemTooltipPatches
             /* ignore */
         }
 
-        // 4) Same line, $item_crafter key still present but localized label unknown
+        // Same line, $item_crafter key still present but localized label unknown
         try
         {
             var rxTok = new Regex(
@@ -162,7 +162,7 @@ internal static class ItemTooltipPatches
             /* ignore */
         }
 
-        // 5) First line that looks like crafted-by: replace only that occurrence of oldName
+        // First line that looks like crafted-by: replace only that occurrence of oldName
         var lines = text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
         for (int i = 0; i < lines.Length; i++)
         {

@@ -131,7 +131,7 @@ public static class RenameitConfig
             SectionGeneral,
             "LockToOwner",
             true,
-            "If true, only the crafter/owner can rename or edit description. Items with no crafter (raw resources, m_crafterID 0 and no crafter name) are not locked until someone claims them (NameClaimsOwner) or they are crafted.",
+            "If true, only the crafter/owner can rename the item, edit its description, or 'Crafted By' : name. Items with no crafter (raw resources, m_crafterID and no crafter name) are not locked until someone claims them (NameClaimsOwner) or they are crafted.",
            true
         );
         
@@ -148,7 +148,7 @@ public static class RenameitConfig
             SectionGeneral,
             "AllowRenameResources",
             true,
-            "If true, items with no crafter (picked-up / uncrafted stacks) can be renamed. This is NOT the same as ExcludedCategory Material: Material blocks by item type even for crafted items. If disabled, NameClaimsOwner cannot apply to those stacks.",
+            "If true, items with no crafter (picked-up / uncrafted stacks) can be renamed. This is NOT the same as ExcludedCategory Material: Material blocks by item type even for crafted items. If disabled, NameClaimsOwner cannot apply to those items.",
            true
         );
 
@@ -156,7 +156,7 @@ public static class RenameitConfig
             SectionGeneral,
             "RenameEnabled",
             true,
-            "If enabled, allows players to edit item names. Could be cycled to pre change some items in a world then block others from adding new ones.",
+            "If enabled, allows players to edit item names. Could be used to leave renamed items in a world then block others from changing new ones.",
            true
         );
         
@@ -180,7 +180,7 @@ public static class RenameitConfig
             SectionGeneral,
             "ShowReason",
             true,
-            "If true, denied rename/description actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
+            "If true, denied edit item actions show specific reasons (ownership, exclusion, resources). If false, generic messages only. Server-synced so clients cannot override the server's disclosure policy.",
             true
         );
 
@@ -204,7 +204,7 @@ public static class RenameitConfig
             SectionGeneral,
             "SeparateStacksHardLock",
             false,
-            "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (no dialog; target stack keeps its custom name, description, and crafted-by display).",
+            "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (target stack keeps its custom name, description, and crafted-by display).",
             true
         );
 
@@ -240,6 +240,14 @@ public static class RenameitConfig
             true
         );
 
+        _descCharLimit = config.BindSynced(
+            SectionLimits,
+            "DescriptionCharacterLimit",
+            1000,
+            "Defines the limit for max characters description, be sure to account for <color=> tag codes etc.",
+            true
+        );
+
         _craftedByLabelCustomizable = config.BindSynced(
             SectionCraftedBy,
             "LabelCustomizable",
@@ -255,20 +263,12 @@ public static class RenameitConfig
             "Comma- or semicolon-separated labels shown before the crafter name (e.g. “Belongs To: Name”). The first entry is the default (vanilla localized “crafted by” line is used on the tooltip when that option is selected).",
             true
         );
-        
-        _descCharLimit = config.BindSynced(
-            SectionLimits,
-            "DescriptionCharacterLimit",
-            1000,
-            "Defines the limit for max characters description, be sure to account for <color=> tag codes etc.",
-           true
-        );
 
         _allowAdminOverride = config.BindSynced(
             SectionAdmin,
             "AllowAdminOverride",
             true,
-            "If enabled anyone designated as admin or added to VIP list with api hook, will be able to edit names and descriptions regardless of ownership or enabled.",
+            "If enabled anyone designated as admin or added to VIP list with api hook, will be able to edit names, descriptions, and crafted-by regardless of ownership or enabled.",
            true
         );        
         
@@ -317,7 +317,7 @@ public static class RenameitConfig
             SectionExclusions,
             "ExcludedCategory",
             "",
-            "Comma-separated category tokens (non-elevated players). Examples: Swords,Armor,Material,Bows. Full lists of Skills.SkillType and ItemDrop.ItemData.ItemType names plus aliases are written to BepInEx/config/<this mod GUID>/ExcludedCategoryReference.txt on first run (or when the mod version changes). Does not bypass RenameEnabled when that is off. Elevated users ignore when AdminOverride is on.",
+            "Comma-separated category tokens (non-elevated players). Examples: Swords,Armor,Material,Bows. Full lists of Skills.SkillType and ItemDrop.ItemData.ItemType names plus aliases are written to BepInEx/config/<this mod GUID>/ExcludedCategoryReference.txt on first run (or when the mod version changes). Does not bypass RenameEnabled when that is off. Elevated users ignore when AdminOverride is on. See generated file: ExcludedCategoryReference.txt for a list of what can go in.",
             true
         );
 

@@ -5,10 +5,10 @@ using HarmonyLib;
 
 namespace DrakeRenameit.Patches;
 
-/// <summary>When <see cref="RenameitConfig.SeparateStacks"/> is on, only stacks with matching Drake fingerprints merge.</summary>
+/// <summary>When <see cref="RenameitConfig.SeparateStacks"/> is on, only stacks with matching fingerprints merge.</summary>
 /// <remarks>
 /// <see cref="Inventory.FindFreeStackItem"/> is implemented as a simple loop; we replace it when we know the incoming
-/// item (<see cref="IncomingStackItem"/> from <c>AddItem(ItemData)</c>) so merge decisions always include Drake identity.
+/// item (<see cref="IncomingStackItem"/> from <c>AddItem(ItemData)</c>) so merge decisions always include custom data.
 /// A postfix on <c>ref __result</c> is unreliable across Harmony versions; a prefix that skips the original does not.
 /// </remarks>
 internal static class InventoryStackPatches
@@ -104,7 +104,7 @@ internal static class InventoryStackPatches
     }
 
     /// <summary>
-    /// Replicates vanilla <c>FindFreeStackItem</c> and requires matching Drake fingerprint when
+    /// Replicates vanilla <c>FindFreeStackItem</c> and requires matching custom data when
     /// <see cref="RenameitConfig.SeparateStacks"/> is on and the incoming stack is known.
     /// </summary>
     internal static bool FindFreeStackItem_Prefix(

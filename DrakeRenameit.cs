@@ -96,7 +96,9 @@ namespace DrakeRenameit
                 return "";
 
             string raw = GetPropperName(item) ?? item.m_shared.m_name;
-            string safe = UI.TooltipRichText.EnsureRichTextTagsClosedForTooltip(raw);
+            string prefix = DurabilityNameModifier.GetPrefixRaw(item);
+            string combined = string.IsNullOrEmpty(prefix) ? raw : prefix + " " + raw;
+            string safe = UI.TooltipRichText.EnsureRichTextTagsClosedForTooltip(combined);
             if (!localize || Localization.instance == null)
                 return safe;
             return Localization.instance.Localize(safe);
@@ -658,7 +660,7 @@ namespace DrakeRenameit
             UIPanels.OpenActionMenu(item);
         }
 
-        /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/> or <see cref="RenameitConfig.ExcludedCategory"/>.</summary>
+        /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/>, <see cref="RenameitConfig.ExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStackable"/>) stackable items. Does not consider <see cref="RenameitConfig.RenameAllowlist"/>.</summary>
         public static bool IsExcluded(ItemDrop.ItemData? item)
         {
             return RenameExclusionRules.IsExcludedFromConfig(item);

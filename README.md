@@ -1,3 +1,6 @@
+
+<img width="256" height="256" alt="icon" src="https://github.com/user-attachments/assets/47b41d4d-e109-480c-9d26-2ad4dadf377e" />
+
 # DrakesRenameIt V0.9.9 Release Canidate
 
 A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
@@ -30,7 +33,7 @@ localization with an additional name, simply leave the $string intact and add ar
 <p>Now with customizable "crafted by" names and messages</p>
 <img width="249" height="246" alt="image" src="https://github.com/user-attachments/assets/ce1e72e2-0a43-4d77-a9aa-5ea849534628" />
 
-<p>New simplified single modifier. Right click menu to access 3 editible items, with fast reset.
+<p>New simplified single modifier. Right click menu to access 3 editible items, with fast reset.</p>
 <img width="302" height="271" alt="image" src="https://github.com/user-attachments/assets/d9b2f38c-ae50-40a9-ae05-6f290c60980d" />
 
 <p>Configurable cost mode: set in game prices to make renaming more meaningful.</p>
@@ -143,3 +146,5 @@ Contact me:
 
 - buy me a coffee ☕
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
+
+

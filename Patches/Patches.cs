@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
+using DrakeRenameit;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;
@@ -20,25 +21,51 @@ internal static class HoverRenameHelper
         if (item?.m_shared == null || string.IsNullOrEmpty(__result))
             return;
 
-        if (!DrakeRenameit.hasNewName(item))
-            return;
-
-        string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
-        if (customName == null || item.m_shared.m_name == null)
-            return;
-
-        // Replace the default name in the hover text with our rename
-        if (Localization.instance == null)
+        if (DrakeRenameit.hasNewName(item))
         {
-            __result = __result.Replace(item.m_shared.m_name, customName);
+            string customName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
+            if (customName == null || item.m_shared.m_name == null)
+                return;
+
+            // Replace the default name in the hover text with our rename
+            if (Localization.instance == null)
+            {
+                __result = __result.Replace(item.m_shared.m_name, customName);
+                return;
+            }
+
+            string localizedOriginalName = Localization.instance.Localize(item.m_shared.m_name);
+            string localizedCustomName = Localization.instance.Localize(customName);
+
+            if (__result.Contains(localizedOriginalName))
+                __result = __result.Replace(localizedOriginalName, localizedCustomName);
             return;
         }
 
-        string localizedOriginalName = Localization.instance.Localize(item.m_shared.m_name);
-        string localizedCustomName = Localization.instance.Localize(customName);
+        if (!DurabilityNameModifier.AffectsDisplay(item))
+            return;
 
-        if (__result.Contains(localizedOriginalName))
-            __result = __result.Replace(localizedOriginalName, localizedCustomName);
+        string locBase = Localization.instance != null
+            ? Localization.instance.Localize(item.m_shared.m_name)
+            : item.m_shared.m_name;
+        if (string.IsNullOrEmpty(locBase))
+            return;
+
+        string prefixRaw = DurabilityNameModifier.GetPrefixRaw(item);
+        string locPrefix = Localization.instance != null
+            ? Localization.instance.Localize(prefixRaw)
+            : prefixRaw;
+        string replacement =
+            TooltipRichText.EnsureRichTextTagsClosedForTooltip(locPrefix + " " + locBase);
+
+        if (__result.Contains(locBase))
+            __result = __result.Replace(locBase, replacement);
+        else if (!string.IsNullOrEmpty(item.m_shared.m_name) && __result.Contains(item.m_shared.m_name))
+        {
+            string repTok = TooltipRichText.EnsureRichTextTagsClosedForTooltip(
+                locPrefix + " " + item.m_shared.m_name);
+            __result = __result.Replace(item.m_shared.m_name, repTok);
+        }
     }
 }
 
@@ -48,7 +75,9 @@ internal static class PickupHudMessageHelper
     internal static bool TryGetLocalizedCustomNameForHud(ItemDrop.ItemData? item, out string localizedName)
     {
         localizedName = "";
-        if (item?.m_shared == null || !DrakeRenameit.hasNewName(item))
+        if (item?.m_shared == null)
+            return false;
+        if (!DrakeRenameit.hasNewName(item) && !DurabilityNameModifier.AffectsDisplay(item))
             return false;
 
         localizedName = DrakeRenameit.GetDisplayNameForUi(item, localize: true);
@@ -116,6 +145,14 @@ public static class Patches
                 var newName = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
                 if (!string.IsNullOrEmpty(newName))
                     __result = newName;
+            }
+            else if (DurabilityNameModifier.AffectsDisplay(item))
+            {
+                string prefix = DurabilityNameModifier.GetPrefixRaw(item);
+                string locPrefix = Localization.instance != null
+                    ? Localization.instance.Localize(prefix)
+                    : prefix;
+                __result = TooltipRichText.EnsureRichTextTagsClosedForTooltip(locPrefix + " " + __result);
             }
         }
     }
@@ -205,7 +242,7 @@ public static class InventoryGridTooltipPatch
         if (item?.m_shared == null || tooltip == null)
             return;
 
-        var topic = TooltipRichText.EnsureRichTextTagsClosedForTooltip(DrakeRenameit.GetPropperName(item) ?? item.m_shared.m_name);
+        var topic = DrakeRenameit.GetDisplayNameForUi(item, localize: false);
         string currentText = item.GetTooltip();
         currentText = ItemTooltipPatches.ApplyCraftedByDisplayToTooltipText(currentText, item);
 
@@ -315,7 +352,7 @@ public static class ItemStandPatch
         if (occupant?.m_shared == null)
             return;
 
-        if (!DrakeRenameit.hasNewName(occupant))
+        if (!DrakeRenameit.hasNewName(occupant) && !DurabilityNameModifier.AffectsDisplay(occupant))
             return;
 
         string display = DrakeRenameit.GetDisplayNameForUi(occupant, localize: false);
@@ -450,7 +487,7 @@ public static class ItemStandPatch
         if (item?.m_shared == null)
             return;
 
-        if (!DrakeRenameit.hasNewName(item))
+        if (!DrakeRenameit.hasNewName(item) && !DurabilityNameModifier.AffectsDisplay(item))
             return;
 
         HoverRenameHelper.ApplyRenameToHoverResult(ref __result, item!);
@@ -599,8 +636,9 @@ internal static class DropHudMessagePatches
         string droppedLocalized = Localization.instance != null ? Localization.instance.Localize(droppedToken) : droppedToken;
         var hasTok = msg.IndexOf(droppedToken, System.StringComparison.Ordinal) >= 0;
         var hasLoc = msg.IndexOf(droppedLocalized, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        bool careAboutDisplay = DrakeRenameit.hasNewName(item) || DurabilityNameModifier.AffectsDisplay(item);
         // Some locales / builds show "Dropped …" without leaving $msg_dropped in the final string, or localize differently.
-        var looksLikeDroppedLine = DrakeRenameit.hasNewName(item) &&
+        var looksLikeDroppedLine = careAboutDisplay &&
                                    msg.IndexOf("drop", System.StringComparison.OrdinalIgnoreCase) >= 0 &&
                                    msg.Length < 280;
         if (!hasTok && !hasLoc && !looksLikeDroppedLine)
@@ -610,18 +648,14 @@ internal static class DropHudMessagePatches
             ? Localization.instance.Localize(item.m_shared.m_name)
             : item.m_shared.m_name;
 
-        string displayNameLocalized = DrakeRenameit.hasNewName(item)
-            ? DrakeRenameit.GetDisplayNameForUi(item, localize: true)
-            : (Localization.instance != null
-                ? Localization.instance.Localize(TooltipRichText.EnsureRichTextTagsClosedForTooltip(item.m_shared.m_name))
-                : TooltipRichText.EnsureRichTextTagsClosedForTooltip(item.m_shared.m_name));
+        string displayNameLocalized = DrakeRenameit.GetDisplayNameForUi(item, localize: true);
 
         if (string.IsNullOrEmpty(displayNameLocalized))
             return;
 
         // Vanilla Humanoid.DropItem passes "$msg_dropped " + m_shared.m_name (token) — replace whole tail in one shot.
         const string dropPrefix = "$msg_dropped ";
-        if (DrakeRenameit.hasNewName(item) &&
+        if (careAboutDisplay &&
             msg.StartsWith(dropPrefix, StringComparison.Ordinal) &&
             !string.IsNullOrEmpty(item.m_shared.m_name))
         {

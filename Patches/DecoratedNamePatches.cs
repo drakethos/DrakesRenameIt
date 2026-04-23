@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System;
 using System.Reflection;
+using DrakeRenameit;
 
 namespace DrakeRenameit.Patches
 {
@@ -59,7 +60,7 @@ namespace DrakeRenameit.Patches
             var item = __instance;
             if (item?.m_shared == null || string.IsNullOrEmpty(__result))
                 return;
-            if (!DrakeRenameit.hasNewName(item))
+            if (!DrakeRenameit.hasNewName(item) && !DurabilityNameModifier.AffectsDisplay(item))
                 return;
 
             // Whatever method we patched is already returning a display string; swap only the base-name fragment.

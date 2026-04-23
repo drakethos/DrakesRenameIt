@@ -75,10 +75,20 @@ internal static class RenameExclusionRules
         return false;
     }
 
-    /// <summary>Excluded by explicit name or by category (admin / allowlist handled elsewhere).</summary>
+    /// <summary>True when <see cref="MatchesExcludedName"/>, <see cref="MatchesExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStackable"/>) the item is stackable. Allowlist is not applied here.</summary>
     public static bool IsExcludedFromConfig(ItemDrop.ItemData? item)
     {
-        return MatchesExcludedName(item) || MatchesExcludedCategory(item);
+        return MatchesExcludedName(item) || MatchesExcludedCategory(item) || MatchesExcludeStackable(item);
+    }
+
+    /// <summary>When <see cref="RenameitConfig.ExcludeStackable"/> is on: items with <c>m_maxStackSize &gt; 1</c> (vanilla stackable).</summary>
+    public static bool MatchesExcludeStackable(ItemDrop.ItemData? item)
+    {
+        if (!RenameitConfig.ExcludeStackable)
+            return false;
+        if (item?.m_shared == null)
+            return false;
+        return item.m_shared.m_maxStackSize > 1;
     }
 
     private static IEnumerable<string> SplitList(string? csv)

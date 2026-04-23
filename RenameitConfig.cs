@@ -15,6 +15,7 @@ public static class RenameitConfig
     private const string SectionAdmin = "Admin";
     private const string SectionUnlock = "UnlockCost";
     private const string SectionCraftedBy = "CraftedBy";
+    private const string SectionModifiers = "Modifiers";
 
     // The sync object ties everything to server authority
     private static ConfigSync configSync = new ConfigSync(DrakeRenameit.ModName)
@@ -38,6 +39,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _excludedNames;
     private static ConfigEntry<string> _excludedCategory;
     private static ConfigEntry<string> _renameAllowlist;
+    private static ConfigEntry<bool> _excludeStackable;
     private static ConfigEntry<bool> _vipOnlyOverride;
     private static ConfigEntry<bool> _showReason;
     private static ConfigEntry<bool> _separateStacks;
@@ -49,6 +51,10 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _unlockCostEnabled;
     private static ConfigEntry<string> _unlockCost;
     private static ConfigEntry<bool> _showItemStandItemNameWhenNoAccess;
+    private static ConfigEntry<bool> _durabilityModifierEnabled;
+    private static ConfigEntry<string> _durabilityUnbrokenLabel;
+    private static ConfigEntry<string> _durabilityBrokenLabel;
+    private static ConfigEntry<string> _durabilityTierModifiers;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -71,6 +77,8 @@ public static class RenameitConfig
     public static string ExcludedCategory => _excludedCategory.Value;
     /// <summary>Comma-separated internal item ids (<c>m_shared.m_name</c>) that may always be renamed.</summary>
     public static string RenameAllowlist => _renameAllowlist.Value;
+    /// <summary>When true, non-elevated players cannot rename, edit description, or crafted-by for items with <c>m_maxStackSize &gt; 1</c>. Does not affect <see cref="SeparateStacks"/> or other General stack settings. Elevated users ignore this when <see cref="AllowAdminOverride"/> applies.</summary>
+    public static bool ExcludeStackable => _excludeStackable.Value;
     public static bool VipOnlyOverride => _vipOnlyOverride.Value;
     public static bool ShowReason => _showReason.Value;
     public static bool SeparateStacks => _separateStacks.Value;
@@ -95,6 +103,21 @@ public static class RenameitConfig
     /// This is purely a display/label convenience and does not change permissions.
     /// </summary>
     public static bool ShowItemStandItemNameWhenNoAccess => _showItemStandItemNameWhenNoAccess.Value;
+
+    /// <summary>When true, a durability tier label is prepended to item display names (inventory, hover, HUD) for items with max durability &gt; 0.</summary>
+    public static bool DurabilityModifierEnabled => _durabilityModifierEnabled.Value;
+
+    /// <summary>Label at full durability (~100%). May include rich-text color tags.</summary>
+    public static string DurabilityUnbrokenLabel => _durabilityUnbrokenLabel.Value;
+
+    /// <summary>Label only when the item is at 0 durability (broken in-game, unusable until repaired). Not used for merely worn items.</summary>
+    public static string DurabilityBrokenLabel => _durabilityBrokenLabel.Value;
+
+    /// <summary>
+    /// In-between wear tiers only: <c>{Rusty,0.2},{Tarnished,0.6}</c> — fraction 0–1 or percent &gt; 1. When current/max is at or below a threshold, the first matching tier (lowest threshold first) wins.
+    /// Durability above the highest tier but below full gets no extra label.
+    /// </summary>
+    public static string DurabilityTierModifiers => _durabilityTierModifiers.Value;
 
     public static bool MenuModifierIsShift =>
         string.Equals(_menuOpenModifier.Value, "Shift", StringComparison.OrdinalIgnoreCase);
@@ -321,11 +344,51 @@ public static class RenameitConfig
             true
         );
 
+        _excludeStackable = config.BindSynced(
+            SectionExclusions,
+            "ExcludeStackable",
+            false,
+            "If true, non-elevated players cannot change names, descriptions, or crafted-by on items that stack in vanilla (m_maxStackSize > 1). Does not change SeparateStacks / SeparateStacksHardLock or any other General stacking options. Admins and VIPs (when AllowAdminOverride is on) are unaffected. Items on RenameAllowlist bypass this, same as other exclusion rules.",
+            true
+        );
+
         _renameAllowlist = config.BindSynced(
             SectionExclusions,
             "RenameAllowlist",
             "",
-            "Comma-separated entries: Jotunn Token ($item_...) or Item (spawn name) or English display name — same rules as ExcludedNames. When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, and the uncrafted (AllowRenameResources) rule. Does NOT bypass global RenameEnabled/RewriteDescriptionsEnabled when those are off (only elevated users can). Does not bypass LockToOwner ownership.",
+            "Comma-separated entries: Jotunn Token ($item_...) or Item (spawn name) or English display name — same rules as ExcludedNames. When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStackable, and the uncrafted (AllowRenameResources) rule. Does NOT bypass global RenameEnabled/RewriteDescriptionsEnabled when those are off (only elevated users can). Does not bypass LockToOwner ownership.",
+            true
+        );
+
+        _durabilityModifierEnabled = config.BindSynced(
+            SectionModifiers,
+            "DurabilityModifierEnabled",
+            false,
+            "If true, prepends a durability label in front of the item name everywhere Drake builds display names (custom name or vanilla). Does not change stored rename text. Only applies to items with durability (max durability > 0). Server-synced.",
+            true
+        );
+
+        _durabilityUnbrokenLabel = config.BindSynced(
+            SectionModifiers,
+            "DurabilityUnbrokenLabel",
+            "Pristine",
+            "Prepended at full durability (100%). Empty = no label when pristine. Rich-text color tags allowed.",
+            true
+        );
+
+        _durabilityBrokenLabel = config.BindSynced(
+            SectionModifiers,
+            "DurabilityBrokenLabel",
+            "Broken",
+            "Prepended only when durability is 0 (item is broken in-game and must be repaired). Not used for worn but usable gear. Empty = no label when broken.",
+            true
+        );
+
+        _durabilityTierModifiers = config.BindSynced(
+            SectionModifiers,
+            "DurabilityTierModifiers",
+            "{Rusty,0.2},{Tarnished,0.6}",
+            "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Between the top band and full durability there is no label (unless you add a high threshold near 1).",
             true
         );
     }

@@ -74,6 +74,10 @@ internal static class DurabilityNameModifier
     private static bool TryGetDurabilityRatio(ItemDrop.ItemData item, out float ratio)
     {
         ratio = 1f;
+        // Prefabs with no durability bar (wood, coins, food without decay as equipment, etc.) keep m_maxDurability at 0.
+        if (item.m_shared.m_maxDurability <= 0f)
+            return false;
+
         float max;
         try
         {

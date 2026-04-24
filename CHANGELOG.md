@@ -62,3 +62,8 @@
   - Code refactor and cleanup
   - Cleanup config descriptions
   - Cleanup Readme
+- Version 0.9.10
+  - **Modifiers** config: optional durability name prefixes (`DurabilityModifierEnabled`, `DurabilityUnbrokenLabel`, `DurabilityBrokenLabel`, `DurabilityTierModifiers`).
+  - Broken label only at 0 durability; wear tiers for in-between; no label in the gap below pristine.
+  - Skips modifiers for items with no durability (`m_maxDurability` 0), e.g. wood and coins.
+  - Added exclusion for stacks

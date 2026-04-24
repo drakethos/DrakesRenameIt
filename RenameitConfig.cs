@@ -364,7 +364,7 @@ public static class RenameitConfig
             SectionModifiers,
             "DurabilityModifierEnabled",
             false,
-            "If true, prepends a durability label in front of the item name everywhere Drake builds display names (custom name or vanilla). Does not change stored rename text. Only applies to items with durability (max durability > 0). Server-synced.",
+            "If true, prepends a durability label in front of the item name everywhere Drake builds display names (custom name or vanilla). Does not change stored rename text. Only applies to items that use durability (m_maxDurability > 0); resources like wood or coins are unchanged. Server-synced.",
             true
         );
 

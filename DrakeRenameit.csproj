@@ -15,7 +15,7 @@
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
     <CompanyName>DrakeMods</CompanyName>
-    <Version>0.9.9</Version>
+    <Version>0.9.10</Version>
     <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
     <ThunderstoreFolder>C:\Modding\Thunderstore\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
     <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>

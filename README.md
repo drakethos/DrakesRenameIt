@@ -147,4 +147,6 @@ Contact me:
 - buy me a coffee ☕
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
 
-
+Credits:
+Used Cursor AI assitance to complete desired features
+Big shout out and thanks to nchnc for the intense testing of this mod!

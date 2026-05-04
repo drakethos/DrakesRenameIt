@@ -66,4 +66,7 @@
   - **Modifiers** config: optional durability name prefixes (`DurabilityModifierEnabled`, `DurabilityUnbrokenLabel`, `DurabilityBrokenLabel`, `DurabilityTierModifiers`).
   - Broken label only at 0 durability; wear tiers for in-between; no label in the gap below pristine.
   - Skips modifiers for items with no durability (`m_maxDurability` 0), e.g. wood and coins.
-  - Added exclusion for stacks
+  - **ExcludeStacks** (Exclusions): when enabled, non-elevated players cannot rename, edit descriptions, or crafted-by labels on vanilla stackable items (`m_maxStackSize > 1`). Overridden when **AllowAdminOverride** applies (admins/VIPs). **RenameAllowlist** bypasses like other exclusions. Independent of **SeparateStacks** / **SeparateStacksHardLock** under General — those merge rules still apply; elevated users can always edit stacks when override is on.
+  - Build: removed duplicate `environment.props` import (fixes MSB4011 when Jotunn already imports it via `SolutionDir`).
+  - Fixed nullable-analysis warnings (`RenameitConfig` config fields, `InventoryStackPatches` Harmony ref signature, menu button null checks, `GetPropperName` / `hasNewDesc`, and related files).
+  - API: `RenameDenialReason.ExcludedStackable` renamed to `ExcludedStacks` (flag value unchanged); config key **`ExcludeStacks`** replaces **`ExcludeStackable`** in config files if you used a draft build with the old name.

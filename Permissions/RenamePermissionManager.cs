@@ -17,7 +17,7 @@ public enum RenameDenialReason
     ExcludedByCategory = 1 << 5,
     GlobalCraftedByDisabled = 1 << 6,
     UnlockCostRequired = 1 << 7,
-    ExcludedStackable = 1 << 8
+    ExcludedStacks = 1 << 8
 }
 
 public enum RenamePermissionOperation
@@ -42,7 +42,7 @@ public readonly struct RenamePermissionResult
 /// <summary>Single place for rename / description / crafted-by display permission checks, logging, and player-facing messages.</summary>
 /// <remarks>
 /// Evaluation order: Admin/VIP override → global feature toggles → LockToOwner (only if item has a crafter) →
-/// RenameAllowlist → (excluded name, excluded category, exclude stackable, uncrafted/resource rule) → optional one-time unlock cost (stack flag).
+/// RenameAllowlist → (excluded name, excluded category, exclude stacks, uncrafted/resource rule) → optional one-time unlock cost (stack flag).
 /// </remarks>
 public static class RenamePermissionManager
 {
@@ -186,11 +186,11 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(false, r);
         }
 
-        if (RenameExclusionRules.MatchesExcludeStackable(item))
+        if (RenameExclusionRules.MatchesExcludeStacks(item))
         {
-            var r = RenameDenialReason.ExcludedStackable;
+            var r = RenameDenialReason.ExcludedStacks;
             if (logDenied)
-                LogDenied(op, item, r, $"ExcludeStackable: m_maxStackSize={item.m_shared.m_maxStackSize} Item={item.m_shared.m_name}");
+                LogDenied(op, item, r, $"ExcludeStacks: m_maxStackSize={item.m_shared.m_maxStackSize} Item={item.m_shared.m_name}");
             return new RenamePermissionResult(false, r);
         }
 
@@ -287,7 +287,7 @@ public static class RenamePermissionManager
             parts.Append("Excluded by name. ");
         if ((reasons & RenameDenialReason.ExcludedByCategory) != 0)
             parts.Append("Excluded by category. ");
-        if ((reasons & RenameDenialReason.ExcludedStackable) != 0)
+        if ((reasons & RenameDenialReason.ExcludedStacks) != 0)
             parts.Append("Stackable items cannot be customized (config). ");
         if ((reasons & RenameDenialReason.UncraftedResourceBlocked) != 0)
             parts.Append("Uncrafted resources cannot be changed (config). ");

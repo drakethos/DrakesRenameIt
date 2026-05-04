@@ -25,36 +25,36 @@ public static class RenameitConfig
         MinimumRequiredVersion = DrakeRenameit.Version,
     };
 
-    private static ConfigEntry<bool> _lockToOwner;
-    private static ConfigEntry<bool> _rewriteDescriptionsEnable;
-    private static ConfigEntry<bool> _RenameEnable;
-    private static ConfigEntry<bool> _nameClaimsOwner;
-    private static ConfigEntry<bool> _allowAdminOverride;
-    private static ConfigEntry<bool> _allowRenameResources;
-    private static ConfigEntry<int> _nameCharLimit;
-    private static ConfigEntry<int> _descCharLimit;
-    private static ConfigEntry<int> _craftedByCharLimit;
-    private static ConfigEntry<string> _vipList;
-    private static ConfigEntry<string> _menuHintColor;
-    private static ConfigEntry<string> _excludedNames;
-    private static ConfigEntry<string> _excludedCategory;
-    private static ConfigEntry<string> _renameAllowlist;
-    private static ConfigEntry<bool> _excludeStackable;
-    private static ConfigEntry<bool> _vipOnlyOverride;
-    private static ConfigEntry<bool> _showReason;
-    private static ConfigEntry<bool> _separateStacks;
-    private static ConfigEntry<bool> _separateStacksHardLock;
-    private static ConfigEntry<bool> _craftedByLabelEnabled;
-    private static ConfigEntry<bool> _craftedByLabelCustomizable;
-    private static ConfigEntry<string> _craftedByAllowedLabels;
-    private static ConfigEntry<string> _menuOpenModifier;
-    private static ConfigEntry<bool> _unlockCostEnabled;
-    private static ConfigEntry<string> _unlockCost;
-    private static ConfigEntry<bool> _showItemStandItemNameWhenNoAccess;
-    private static ConfigEntry<bool> _durabilityModifierEnabled;
-    private static ConfigEntry<string> _durabilityUnbrokenLabel;
-    private static ConfigEntry<string> _durabilityBrokenLabel;
-    private static ConfigEntry<string> _durabilityTierModifiers;
+    private static ConfigEntry<bool> _lockToOwner = default!;
+    private static ConfigEntry<bool> _rewriteDescriptionsEnable = default!;
+    private static ConfigEntry<bool> _RenameEnable = default!;
+    private static ConfigEntry<bool> _nameClaimsOwner = default!;
+    private static ConfigEntry<bool> _allowAdminOverride = default!;
+    private static ConfigEntry<bool> _allowRenameResources = default!;
+    private static ConfigEntry<int> _nameCharLimit = default!;
+    private static ConfigEntry<int> _descCharLimit = default!;
+    private static ConfigEntry<int> _craftedByCharLimit = default!;
+    private static ConfigEntry<string> _vipList = default!;
+    private static ConfigEntry<string> _menuHintColor = default!;
+    private static ConfigEntry<string> _excludedNames = default!;
+    private static ConfigEntry<string> _excludedCategory = default!;
+    private static ConfigEntry<string> _renameAllowlist = default!;
+    private static ConfigEntry<bool> _excludeStacks = default!;
+    private static ConfigEntry<bool> _vipOnlyOverride = default!;
+    private static ConfigEntry<bool> _showReason = default!;
+    private static ConfigEntry<bool> _separateStacks = default!;
+    private static ConfigEntry<bool> _separateStacksHardLock = default!;
+    private static ConfigEntry<bool> _craftedByLabelEnabled = default!;
+    private static ConfigEntry<bool> _craftedByLabelCustomizable = default!;
+    private static ConfigEntry<string> _craftedByAllowedLabels = default!;
+    private static ConfigEntry<string> _menuOpenModifier = default!;
+    private static ConfigEntry<bool> _unlockCostEnabled = default!;
+    private static ConfigEntry<string> _unlockCost = default!;
+    private static ConfigEntry<bool> _showItemStandItemNameWhenNoAccess = default!;
+    private static ConfigEntry<bool> _durabilityModifierEnabled = default!;
+    private static ConfigEntry<string> _durabilityUnbrokenLabel = default!;
+    private static ConfigEntry<string> _durabilityBrokenLabel = default!;
+    private static ConfigEntry<string> _durabilityTierModifiers = default!;
 
     
     public static bool LockToOwner => _lockToOwner.Value;
@@ -77,8 +77,8 @@ public static class RenameitConfig
     public static string ExcludedCategory => _excludedCategory.Value;
     /// <summary>Comma-separated internal item ids (<c>m_shared.m_name</c>) that may always be renamed.</summary>
     public static string RenameAllowlist => _renameAllowlist.Value;
-    /// <summary>When true, non-elevated players cannot rename, edit description, or crafted-by for items with <c>m_maxStackSize &gt; 1</c>. Does not affect <see cref="SeparateStacks"/> or other General stack settings. Elevated users ignore this when <see cref="AllowAdminOverride"/> applies.</summary>
-    public static bool ExcludeStackable => _excludeStackable.Value;
+    /// <summary>When true, non-elevated players cannot rename, edit description, or crafted-by for items with vanilla stack limits &gt; 1 (<c>m_maxStackSize &gt; 1</c>). Overrides by admins/VIPs apply when <see cref="AllowAdminOverride"/> is on. Separate from General <see cref="SeparateStacks"/> / <see cref="SeparateStacksHardLock"/>.</summary>
+    public static bool ExcludeStacks => _excludeStacks.Value;
     public static bool VipOnlyOverride => _vipOnlyOverride.Value;
     public static bool ShowReason => _showReason.Value;
     public static bool SeparateStacks => _separateStacks.Value;
@@ -125,7 +125,7 @@ public static class RenameitConfig
     /// <summary>Parsed <see cref="CraftedByAllowedLabels"/>; first entry is always the “use game default line” option in the UI.</summary>
     public static List<string> GetCraftedByAllowedLabelsList()
     {
-        var raw = _craftedByAllowedLabels?.Value;
+        var raw = _craftedByAllowedLabels.Value;
         if (string.IsNullOrWhiteSpace(raw))
             return new List<string> { "Crafted By", "Belongs To", "Return to" };
 
@@ -344,11 +344,11 @@ public static class RenameitConfig
             true
         );
 
-        _excludeStackable = config.BindSynced(
+        _excludeStacks = config.BindSynced(
             SectionExclusions,
-            "ExcludeStackable",
+            "ExcludeStacks",
             false,
-            "If true, non-elevated players cannot change names, descriptions, or crafted-by on items that stack in vanilla (m_maxStackSize > 1). Does not change SeparateStacks / SeparateStacksHardLock or any other General stacking options. Admins and VIPs (when AllowAdminOverride is on) are unaffected. Items on RenameAllowlist bypass this, same as other exclusion rules.",
+            "When true, non-elevated players cannot rename, change descriptions, or edit crafted-by on stackable vanilla items (m_maxStackSize > 1). Valheim admins and VIP users override this when AllowAdminOverride is on. Items on RenameAllowlist bypass this like other exclusions. Does not change SeparateStacks / SeparateStacksHardLock (General stacking still applies separately; admins remain able to rename stacks when elevated).",
             true
         );
 
@@ -356,7 +356,7 @@ public static class RenameitConfig
             SectionExclusions,
             "RenameAllowlist",
             "",
-            "Comma-separated entries: Jotunn Token ($item_...) or Item (spawn name) or English display name — same rules as ExcludedNames. When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStackable, and the uncrafted (AllowRenameResources) rule. Does NOT bypass global RenameEnabled/RewriteDescriptionsEnabled when those are off (only elevated users can). Does not bypass LockToOwner ownership.",
+            "Comma-separated entries: Jotunn Token ($item_...) or Item (spawn name) or English display name — same rules as ExcludedNames. When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStacks, and the uncrafted (AllowRenameResources) rule. Does NOT bypass global RenameEnabled/RewriteDescriptionsEnabled when those are off (only elevated users can). Does not bypass LockToOwner ownership.",
             true
         );
 
@@ -379,7 +379,7 @@ public static class RenameitConfig
         _durabilityBrokenLabel = config.BindSynced(
             SectionModifiers,
             "DurabilityBrokenLabel",
-            "Broken",
+            "<#f00>Broken</color>",
             "Prepended only when durability is 0 (item is broken in-game and must be repaired). Not used for worn but usable gear. Empty = no label when broken.",
             true
         );
@@ -387,8 +387,8 @@ public static class RenameitConfig
         _durabilityTierModifiers = config.BindSynced(
             SectionModifiers,
             "DurabilityTierModifiers",
-            "{Rusty,0.2},{Tarnished,0.6}",
-            "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Between the top band and full durability there is no label (unless you add a high threshold near 1).",
+            "{<#c50>Rusty</color,0.4},{<#888>Worn</color>,0.6},{<#aaa>Tarnished</color>,0.8}",
+            "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Between the top band and full durability there is no label. Supports <color> tags but you MUST terminate them with </color>  (unless you add a high threshold near 1).",
             true
         );
     }

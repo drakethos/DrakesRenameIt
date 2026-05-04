@@ -23,12 +23,11 @@ namespace DrakeRenameit.Patches
             var t = typeof(ItemDrop.ItemData);
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-            // Prefer known names when present.
+            // Prefer known names when present (avoid AccessTools — missing overloads spam HarmonyX warnings).
             foreach (var preferred in new[] { "GetDecoratedName", "GetDecoratedNameWithQuality", "GetName" })
             {
-                var m = AccessTools.DeclaredMethod(t, preferred)
-                        ?? AccessTools.Method(t, preferred);
-                if (m != null && m.ReturnType == typeof(string) && !m.IsStatic)
+                var m = TryBindInstanceStringMethod(t, preferred, flags);
+                if (m != null)
                     return m;
             }
 
@@ -52,6 +51,24 @@ namespace DrakeRenameit.Patches
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Prefer parameterless helpers; otherwise first instance overload returning <see cref="string"/>.
+        /// </summary>
+        static MethodInfo? TryBindInstanceStringMethod(Type t, string name, BindingFlags flags)
+        {
+            MethodInfo? withParams = null;
+            foreach (var m in t.GetMethods(flags))
+            {
+                if (m.Name != name || m.IsStatic || m.ReturnType != typeof(string))
+                    continue;
+                if (m.GetParameters().Length == 0)
+                    return m;
+                withParams ??= m;
+            }
+
+            return withParams;
         }
 
         [HarmonyPostfix]

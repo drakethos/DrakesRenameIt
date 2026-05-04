@@ -22,23 +22,24 @@ internal static class TooltipRichText
     /// </summary>
     internal static string EnsureRichTextTagsClosedForTooltip(string? text)
     {
-        if (string.IsNullOrEmpty(text))
-            return text ?? "";
+        if (text == null || text.Length == 0)
+            return "";
 
+        string s = text;
         var stack = new Stack<RtKind>();
-        for (int i = 0; i < text.Length;)
+        for (int i = 0; i < s.Length;)
         {
-            if (text[i] != '<')
+            if (s[i] != '<')
             {
                 i++;
                 continue;
             }
 
-            int end = text.IndexOf('>', i);
+            int end = s.IndexOf('>', i);
             if (end < 0)
                 break;
 
-            string tag = text.Substring(i, end - i + 1);
+            string tag = s.Substring(i, end - i + 1);
             if (tag.Length >= 2 && tag[1] == '/')
             {
                 if (tag.StartsWith("</color", StringComparison.OrdinalIgnoreCase))
@@ -69,9 +70,9 @@ internal static class TooltipRichText
         }
 
         if (stack.Count == 0)
-            return text;
+            return s;
 
-        var sb = new StringBuilder(text, text.Length + stack.Count * 10);
+        var sb = new StringBuilder(s, s.Length + stack.Count * 10);
         while (stack.Count > 0)
         {
             var k = stack.Pop();

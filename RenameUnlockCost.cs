@@ -199,7 +199,7 @@ internal static class RenameUnlockCost
         if (prefab != null)
         {
             var drop = prefab.GetComponent<ItemDrop>();
-            var sn = drop?.m_itemData?.m_shared?.m_name;
+            var sn = drop?.m_itemData?.m_shared?.m_name ?? "";
             if (!string.IsNullOrEmpty(sn))
                 return sn;
         }

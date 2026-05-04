@@ -14,54 +14,108 @@ namespace DrakeRenameit.Patches;
 /// <remarks>
 /// Vanilla builds the line as <c>\n$item_crafter: {m_crafterName}</c> then localizes; the UI often wraps the name in
 /// <c>&lt;color&gt;</c> tags, so a plain <see cref="string.Replace(string, string)"/> on <see cref="ItemDrop.ItemData.m_crafterName"/> misses.
+/// Use plain reflection for lookup — <see cref="AccessTools.Method(System.Type,string,System.Type[])"/> logs HarmonyX warnings when a signature is absent.
 /// </remarks>
 internal static class ItemTooltipPatches
 {
+    /// <summary>
+    /// Walk <see cref="ItemDrop.ItemData"/> and base types with <see cref="BindingFlags.DeclaredOnly"/> —
+    /// <see cref="Type.GetMethods(BindingFlags)"/> with <c>NonPublic</c> does not return inherited private/internal members,
+    /// so a <c>GetTooltip</c> moved to a base type can be missed by a flat scan on <see cref="ItemDrop.ItemData"/> alone.
+    /// </summary>
+    const BindingFlags DeclaredTooltipFlags =
+        BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
     internal static void Apply(Harmony harmony, ManualLogSource log)
     {
-        var t = typeof(ItemDrop.ItemData);
-        var sig = new[] { typeof(ItemDrop.ItemData), typeof(int), typeof(bool) };
-
-        var target = AccessTools.DeclaredMethod(t, "GetTooltip", sig)
-                     ?? AccessTools.Method(t, "GetTooltip", sig);
+        var target = ResolveGetTooltipPatchTarget(typeof(ItemDrop.ItemData));
 
         if (target == null)
         {
-            foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
-            {
-                if (m.Name != "GetTooltip" || !m.IsStatic)
-                    continue;
-                var p = m.GetParameters();
-                if (p.Length == 3 &&
-                    p[0].ParameterType == typeof(ItemDrop.ItemData) &&
-                    p[1].ParameterType == typeof(int) &&
-                    p[2].ParameterType == typeof(bool))
-                {
-                    target = m;
-                    break;
-                }
-            }
-        }
-
-        if (target == null)
-        {
-            log.LogWarning(
-                "[DrakesRenameIt] Crafted-by display: static GetTooltip(ItemData,int,bool) not found — tooltip override disabled.");
+            // InventoryGridTooltipPatch (CreateItemTooltip postfix) calls ApplyCraftedByDisplayToTooltipText after item.GetTooltip().
+            log.LogDebug(
+                "[DrakesRenameIt] Crafted-by display: no patchable GetTooltip overload on ItemData hierarchy; " +
+                "grid tooltips still apply crafted-by via CreateItemTooltip.");
             return;
         }
 
-        harmony.Patch(
-            target,
-            postfix: new HarmonyMethod(typeof(ItemTooltipPatches), nameof(CraftedByDisplayPostfix)));
+        harmony.Patch(target, postfix: SelectPostfix(target));
     }
 
-    internal static void CraftedByDisplayPostfix(
+    static MethodInfo? ResolveGetTooltipPatchTarget(Type leafType)
+    {
+        MethodInfo? staticThree = null;
+        MethodInfo? instZero = null;
+        MethodInfo? instIntBool = null;
+
+        for (var t = leafType; t != null && t != typeof(object); t = t.BaseType)
+        {
+            foreach (var m in t.GetMethods(DeclaredTooltipFlags))
+            {
+                if (m.Name != "GetTooltip" || m.ReturnType != typeof(string))
+                    continue;
+
+                if (m.IsStatic)
+                {
+                    var p = m.GetParameters();
+                    if (p.Length == 3 &&
+                        p[0].ParameterType == typeof(ItemDrop.ItemData) &&
+                        p[1].ParameterType == typeof(int) &&
+                        p[2].ParameterType == typeof(bool))
+                        staticThree ??= m;
+                    continue;
+                }
+
+                var ip = m.GetParameters();
+                if (ip.Length == 0)
+                    instZero ??= m;
+                else if (ip.Length == 2 &&
+                         ip[0].ParameterType == typeof(int) &&
+                         ip[1].ParameterType == typeof(bool))
+                    instIntBool ??= m;
+            }
+        }
+
+        return staticThree ?? instZero ?? instIntBool;
+    }
+
+    static HarmonyMethod SelectPostfix(MethodInfo target)
+    {
+        if (target.IsStatic)
+            return new HarmonyMethod(typeof(ItemTooltipPatches), nameof(CraftedByDisplayStaticPostfix));
+
+        var ps = target.GetParameters();
+        if (ps.Length == 0)
+            return new HarmonyMethod(typeof(ItemTooltipPatches), nameof(CraftedByDisplayInstancePostfix));
+        if (ps.Length == 2 &&
+            ps[0].ParameterType == typeof(int) &&
+            ps[1].ParameterType == typeof(bool))
+            return new HarmonyMethod(typeof(ItemTooltipPatches), nameof(CraftedByDisplayInstanceQualityCraftingPostfix));
+
+        throw new InvalidOperationException("ResolveGetTooltipPatchTarget and SelectPostfix are out of sync.");
+    }
+
+    internal static void CraftedByDisplayStaticPostfix(
         ItemDrop.ItemData item,
         int qualityLevel,
         bool crafting,
         ref string __result)
     {
         __result = ApplyCraftedByDisplayToTooltipText(__result, item);
+    }
+
+    internal static void CraftedByDisplayInstancePostfix(ItemDrop.ItemData __instance, ref string __result)
+    {
+        __result = ApplyCraftedByDisplayToTooltipText(__result, __instance);
+    }
+
+    internal static void CraftedByDisplayInstanceQualityCraftingPostfix(
+        ItemDrop.ItemData __instance,
+        int qualityLevel,
+        bool crafting,
+        ref string __result)
+    {
+        __result = ApplyCraftedByDisplayToTooltipText(__result, __instance);
     }
 
     /// <summary>Inventory / shared: rewrite the crafted-by segment like description replacement (handles color tags + localization).</summary>
@@ -101,7 +155,7 @@ internal static class ItemTooltipPatches
 
         if (!string.IsNullOrEmpty(lineLabelOverride))
         {
-            var custom = TryReplaceCraftedByWithCustomLineLabel(text, oldName, newDisplay, lineLabelOverride);
+            var custom = TryReplaceCraftedByWithCustomLineLabel(text, oldName, newDisplay, lineLabelOverride!);
             if (custom != null)
                 return custom;
         }

@@ -25,7 +25,8 @@ description: >-
 
 - **`ExcludedNames`**: comma-separated `m_shared.m_name` ids blocked for non-admins.
 - **`ExcludedCategory`**: comma-separated `Skills.SkillType` and/or `ItemDrop.ItemData.ItemType` names, plus aliases (Armor, Weapons, Tools, Ranged, Melee, Shields, Ammo, Fish).
-- **`RenameAllowlist`**: comma-separated `m_shared.m_name` ids that bypass name/category exclusions and the uncrafted/resource block (not global rename disable or ownership).
+- **`ExcludeStacks`**: when on, vanilla stackable items (`m_maxStackSize > 1`) blocked for non-elevated rename/description/crafted-by (separate from **SeparateStacks** merge rules).
+- **`RenameAllowlist`**: comma-separated `m_shared.m_name` ids that bypass name/category exclusions, **ExcludeStacks**, and the uncrafted/resource block (not global rename disable or ownership).
 - Admins/VIP still bypass exclusions when **`AllowAdminOverride`** is on.
 
 ## Custom data keys (`DrakeRenameit.cs` constants)

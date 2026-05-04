@@ -17,10 +17,10 @@ public static class UIPanels
     public static GameObject? InputDescPanel { get; private set; }
     public static InputField? RenameNameInput { get; private set; }
     public static InputField? RenameDescInput { get; private set; }
-    private static Button _buttonOkName;
-    private static Button _buttonOkDesc;
-    private static Button _buttonResetName;
-    private static Button _buttonResetDesc;
+    private static Button _buttonOkName = default!;
+    private static Button _buttonOkDesc = default!;
+    private static Button _buttonResetName = default!;
+    private static Button _buttonResetDesc = default!;
 
     public static GameObject? ActionMenuPanel { get; private set; }
     private static Button? _buttonMenuRename;
@@ -97,7 +97,8 @@ public static class UIPanels
         }
 
         EnsureActionMenu();
-        if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuResetAll == null || _buttonMenuUnlock == null)
+        if (ActionMenuPanel == null || _buttonMenuRename == null || _buttonMenuDesc == null || _buttonMenuCraftedBy == null ||
+            _buttonMenuResetAll == null || _buttonMenuUnlock == null)
             return;
 
         DrakeRenameit.CurrentItem = item;

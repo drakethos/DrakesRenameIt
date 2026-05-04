@@ -104,7 +104,8 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 
 - **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`, matches internal item name), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
 - **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. A full reference file is generated at **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** on first run or when the mod version changes.
-- **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, and the unowned-resource check, but still require **RenameEnabled** / **RewriteDescriptionsEnabled** to be on and still obey **LockToOwner** if another player owns the item. **AllowAdminOverride** elevation bypasses the global toggles and most restrictions as usual.
+- **ExcludeStacks** — When **true**, stackable vanilla items (`m_maxStackSize > 1`) cannot be renamed, have descriptions changed, or crafted-by labels edited by non-elevated players. **AllowAdminOverride** still lets admins and VIPs edit those stacks. **RenameAllowlist** can bypass this for specific items. This is separate from **SeparateStacks** / **SeparateStacksHardLock** in General: those control whether differently customized stacks merge; they do not replace admin override for editing.
+- **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require **RenameEnabled** / **RewriteDescriptionsEnabled** to be on and still obey **LockToOwner** if another player owns the item. **AllowAdminOverride** elevation bypasses the global toggles and most restrictions as usual.
 
 #### UI (not synced — client only)
 
@@ -113,7 +114,7 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **
 
 #### Permission order (how rules stack)
 
-**Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then allow of the following: **excluded names**, **excluded category**, and **AllowRenameResources** for raw resources.
+**Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then any of the following: **excluded names**, **excluded category**, **ExcludeStacks** (stackable items), and **AllowRenameResources** for raw resources.
 
 ### Known Issues:
 Known Issues:

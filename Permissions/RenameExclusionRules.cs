@@ -75,16 +75,16 @@ internal static class RenameExclusionRules
         return false;
     }
 
-    /// <summary>True when <see cref="MatchesExcludedName"/>, <see cref="MatchesExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStackable"/>) the item is stackable. Allowlist is not applied here.</summary>
+    /// <summary>True when <see cref="MatchesExcludedName"/>, <see cref="MatchesExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStacks"/>) the item is stackable. Allowlist is not applied here.</summary>
     public static bool IsExcludedFromConfig(ItemDrop.ItemData? item)
     {
-        return MatchesExcludedName(item) || MatchesExcludedCategory(item) || MatchesExcludeStackable(item);
+        return MatchesExcludedName(item) || MatchesExcludedCategory(item) || MatchesExcludeStacks(item);
     }
 
-    /// <summary>When <see cref="RenameitConfig.ExcludeStackable"/> is on: items with <c>m_maxStackSize &gt; 1</c> (vanilla stackable).</summary>
-    public static bool MatchesExcludeStackable(ItemDrop.ItemData? item)
+    /// <summary>When <see cref="RenameitConfig.ExcludeStacks"/> is on: items with <c>m_maxStackSize &gt; 1</c> (vanilla stackable).</summary>
+    public static bool MatchesExcludeStacks(ItemDrop.ItemData? item)
     {
-        if (!RenameitConfig.ExcludeStackable)
+        if (!RenameitConfig.ExcludeStacks)
             return false;
         if (item?.m_shared == null)
             return false;
@@ -95,7 +95,7 @@ internal static class RenameExclusionRules
     {
         if (string.IsNullOrWhiteSpace(csv))
             yield break;
-        foreach (var part in csv.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var part in csv!.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
         {
             var t = part.Trim();
             if (t.Length > 0)

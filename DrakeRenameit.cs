@@ -53,8 +53,6 @@ namespace DrakeRenameit
             return inv != null && inv.ContainsItem(item);
         }
 
-        private Texture2D TestTex;
-        private Sprite TestSprite;
 
 
         private void Awake()
@@ -83,6 +81,8 @@ namespace DrakeRenameit
 
         public static string GetPropperName(ItemDrop.ItemData? item)
         {
+            if (item?.m_shared == null)
+                return "";
             return getPropperName(item, item.m_shared.m_name);
         }
 
@@ -106,7 +106,7 @@ namespace DrakeRenameit
 
         public static bool hasNewDesc(ItemDrop.ItemData? item)
         {
-            if (item.m_customData == null)
+            if (item?.m_customData == null)
                 return false;
             return item.m_customData.TryGetValue(DrakeNewDesc, out _);
         }
@@ -323,11 +323,15 @@ namespace DrakeRenameit
 
         public static string getPropperName(ItemDrop.ItemData? item)
         {
+            if (item?.m_shared == null)
+                return "";
             return getPropperName(item, item.m_shared.m_name);
         }
 
         public static string getPropperName(ItemDrop.ItemData? item, String defaultName)
         {
+            if (item == null)
+                return defaultName;
             string name;
             if (item.m_customData == null)
                 item.m_customData = new Dictionary<string, string>();
@@ -340,11 +344,15 @@ namespace DrakeRenameit
 
         public static string getPropperDesc(ItemDrop.ItemData? item)
         {
+            if (item?.m_shared == null)
+                return "";
             return getPropperDesc(item, item.m_shared.m_description);
         }
 
         public static string getPropperDesc(ItemDrop.ItemData? item, String defaultDesc)
         {
+            if (item == null)
+                return defaultDesc;
             string name;
             if (item.m_customData == null)
                 item.m_customData = new Dictionary<string, string>();
@@ -368,7 +376,7 @@ namespace DrakeRenameit
             string startName = GetPropperName(item);
             UIPanels.RenameNameInput!.text = startName;
 
-            UIPanels.InputNamePanel.SetActive(true);
+            UIPanels.InputNamePanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
         }
 
@@ -643,7 +651,7 @@ namespace DrakeRenameit
                 var pending = UIPanels.CraftedByLineLabelPendingToken;
                 if (string.IsNullOrEmpty(pending))
                     CurrentItem.m_customData.Remove(DrakeCraftedByLineLabel);
-                else if (IsAllowedCustomCraftedByLineLabel(pending))
+                else if (IsAllowedCustomCraftedByLineLabel(pending!))
                     CurrentItem.m_customData[DrakeCraftedByLineLabel] = pending;
             }
 
@@ -660,7 +668,7 @@ namespace DrakeRenameit
             UIPanels.OpenActionMenu(item);
         }
 
-        /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/>, <see cref="RenameitConfig.ExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStackable"/>) stackable items. Does not consider <see cref="RenameitConfig.RenameAllowlist"/>.</summary>
+        /// <summary>True if the item is blocked by <see cref="RenameitConfig.ExcludedNames"/>, <see cref="RenameitConfig.ExcludedCategory"/>, or (when <see cref="RenameitConfig.ExcludeStacks"/>) stackable items. Does not consider <see cref="RenameitConfig.RenameAllowlist"/>.</summary>
         public static bool IsExcluded(ItemDrop.ItemData? item)
         {
             return RenameExclusionRules.IsExcludedFromConfig(item);

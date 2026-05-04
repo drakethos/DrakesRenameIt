@@ -111,7 +111,7 @@ internal static class InventoryStackPatches
         Inventory __instance,
         string name,
         int quality,
-        ref ItemDrop.ItemData __result)
+        ref ItemDrop.ItemData? __result)
     {
         if (!RenameitConfig.SeparateStacks || IncomingStackItem == null)
             return true;
@@ -133,7 +133,7 @@ internal static class InventoryStackPatches
         string name,
         int quality,
         ItemDrop.ItemData? itemData,
-        ref ItemDrop.ItemData __result)
+        ref ItemDrop.ItemData? __result)
     {
         if (itemData?.m_shared == null)
             return true;

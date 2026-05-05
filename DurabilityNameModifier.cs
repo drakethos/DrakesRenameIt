@@ -12,7 +12,7 @@ internal static class DurabilityNameModifier
 
     private static readonly Regex TierRegex = new Regex(@"\{([^}]*)\}", RegexOptions.Compiled);
 
-    /// <summary>True when this item should use a durability prefix (feature on, rules parse, item has durability, label non-empty).</summary>
+    /// <summary>True when this item should use a durability prefix (feature on, item uses equipment-style wear, label non-empty).</summary>
     internal static bool AffectsDisplay(ItemDrop.ItemData? item) =>
         !string.IsNullOrEmpty(GetPrefixRaw(item));
 
@@ -71,11 +71,34 @@ internal static class DurabilityNameModifier
         return tiers;
     }
 
+    /// <summary>
+    /// True for forge-repair gear/tools: vanilla <c>m_useDurability</c>, not spoilage timers on food/seeds/etc.
+    /// Excludes <see cref="ItemDrop.ItemData.ItemType"/> buckets that never use tier labels (Materials, Consumables, Fish…).
+    /// </summary>
+    private static bool UsesWearTierDurabilityItem(ItemDrop.ItemData item)
+    {
+        var s = item.m_shared;
+        if (!s.m_useDurability || s.m_maxDurability <= 0f)
+            return false;
+
+        return s.m_itemType switch
+        {
+            ItemDrop.ItemData.ItemType.None => false,
+            ItemDrop.ItemData.ItemType.Material => false,
+            ItemDrop.ItemData.ItemType.Consumable => false,
+            ItemDrop.ItemData.ItemType.Fish => false,
+            ItemDrop.ItemData.ItemType.Misc => false,
+            ItemDrop.ItemData.ItemType.Ammo => false,
+            ItemDrop.ItemData.ItemType.Customization => false,
+            ItemDrop.ItemData.ItemType.Trophy => false,
+            _ => true,
+        };
+    }
+
     private static bool TryGetDurabilityRatio(ItemDrop.ItemData item, out float ratio)
     {
         ratio = 1f;
-        // Prefabs with no durability bar (wood, coins, food without decay as equipment, etc.) keep m_maxDurability at 0.
-        if (item.m_shared.m_maxDurability <= 0f)
+        if (!UsesWearTierDurabilityItem(item))
             return false;
 
         float max;

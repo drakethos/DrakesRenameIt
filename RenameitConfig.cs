@@ -364,7 +364,7 @@ public static class RenameitConfig
             SectionModifiers,
             "DurabilityModifierEnabled",
             false,
-            "If true, prepends a durability label in front of the item name everywhere Drake builds display names (custom name or vanilla). Does not change stored rename text. Only applies to items that use durability (m_maxDurability > 0); resources like wood or coins are unchanged. Server-synced.",
+            "If true, prepends a durability wear label (Pristine / tiers / Broken) in front of the item name everywhere Drake builds display names — only for forge-repair gear and tools (<c>m_useDurability</c>), not spoilage timers on berries, meals, fish, materials, trophies, ammo, etc. Empty labels still skip showing a prefix for that tier. Does not change stored rename text. Server-synced.",
             true
         );
 
@@ -387,7 +387,7 @@ public static class RenameitConfig
         _durabilityTierModifiers = config.BindSynced(
             SectionModifiers,
             "DurabilityTierModifiers",
-            "{<#c50>Rusty</color,0.4},{<#888>Worn</color>,0.6},{<#aaa>Tarnished</color>,0.8}",
+            "{<#c50>Rusty</color>,0.4},{<#888>Worn</color>,0.6},{<#aaa>Tarnished</color>,0.8}",
             "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Between the top band and full durability there is no label. Supports <color> tags but you MUST terminate them with </color>  (unless you add a high threshold near 1).",
             true
         );

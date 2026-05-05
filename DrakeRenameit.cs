@@ -511,8 +511,6 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return false;
-            if (item.m_crafterID == 0L && string.IsNullOrEmpty(item.m_crafterName))
-                return false;
             return RenamePermissionManager
                 .Evaluate(RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer, showError).Allowed;
         }
@@ -611,11 +609,27 @@ namespace DrakeRenameit
             return item.m_crafterName ?? "";
         }
 
+        /// <summary>
+        /// Stacks with no crafter yet cannot show a crafted-by line until someone is assigned — claim for the local
+        /// player when they open the editor (permission already validated).
+        /// </summary>
+        private static void EnsureLocalPlayerCrafterIfAbsent(ItemDrop.ItemData item)
+        {
+            var local = Player.m_localPlayer;
+            if (local == null)
+                return;
+            if (item.m_crafterID != 0L || !string.IsNullOrEmpty(item.m_crafterName))
+                return;
+            item.m_crafterID = local.GetPlayerID();
+            item.m_crafterName = local.GetPlayerName();
+        }
+
         public static void OpenCraftedByEditor(ItemDrop.ItemData? item)
         {
             if (InventoryGui.instance == null) return;
             if (item == null) return;
             CurrentItem = item;
+            EnsureLocalPlayerCrafterIfAbsent(item);
             if (UIPanels.InputCraftedByPanel == null)
                 UIPanels.CreateCraftedByInput();
             UIPanels.RenameCraftedByInput!.text = getCraftedByDisplay(item);
@@ -634,6 +648,8 @@ namespace DrakeRenameit
                 UIPanels.CloseAllRenameEditingUi();
                 return;
             }
+
+            EnsureLocalPlayerCrafterIfAbsent(CurrentItem);
 
             if (CurrentItem.m_customData == null)
                 CurrentItem.m_customData = new Dictionary<string, string>();

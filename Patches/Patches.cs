@@ -5,8 +5,10 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
 using DrakeRenameit;
+using DrakeRenameit.ModText;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
+using static DrakeRenameit.ModText.RenameItLocalization;
 using HarmonyLib;
 using static DrakeRenameit.RenameitConfig;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
@@ -253,7 +255,7 @@ public static class InventoryGridTooltipPatch
         sb.AppendLine("\n");
 
         string menuColor = RenameitConfig.MenuHintColor;
-        string menuMod = RenameitConfig.MenuModifierIsShift ? "Shift" : "Ctrl";
+        string menuHint = RenameItLocalization.GetMenuTooltipHint(RenameitConfig.MenuOpenModifier);
         string lockSuffix = DrakeRenameit.GetMenuTooltipLockSuffix(item);
         bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
         bool elevated = Player.m_localPlayer != null &&
@@ -261,17 +263,17 @@ public static class InventoryGridTooltipPatch
 
         if (anyAction)
         {
-            sb.AppendLine($"<color={menuColor}><b>{menuMod} + Right Click for options{lockSuffix}</b></color>");
+            sb.AppendLine($"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color>");
         }
         else if (elevated)
         {
             sb.AppendLine(
-                $"<color={menuColor}><b>{menuMod} + Right Click for options{lockSuffix}</b></color><color=blue> Elevated override</color>");
+                $"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color><color=blue>{T(LKeys.TooltipElevatedOverride)}</color>");
         }
         else
         {
             string detail = BuildNoDrakeMenuHint(item);
-            sb.AppendLine($"<color=red><s>{menuMod} + Right Click for options{lockSuffix}</s></color>");
+            sb.AppendLine($"<color=red><s>{menuHint}{lockSuffix}</s></color>");
             if (!string.IsNullOrEmpty(detail))
                 sb.AppendLine($"<color=red>{detail}</color>");
         }

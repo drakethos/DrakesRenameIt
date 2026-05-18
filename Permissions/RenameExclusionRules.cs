@@ -8,7 +8,7 @@ namespace DrakeRenameit.Permissions;
 internal static class RenameExclusionRules
 {
     /// <summary>
-    /// Allow rename for this item even if it matches ExcludedNames / ExcludedCategory or would be blocked by AllowRenameResources (uncrafted).
+    /// Allow rename for this item even if it matches ExcludedNames / ExcludedCategory or would be blocked by AllowRenameUnownedItems (unowned stacks).
     /// Does not bypass RenameEnabled, LockToOwner rules, or ownership (non-admins still need to own the item when ownership applies).
     /// </summary>
     public static bool MatchesRenameAllowlist(ItemDrop.ItemData? item)

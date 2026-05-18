@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <!-- Ensures Jotunn Paths.props can resolve Environment.props without a .sln; avoids duplicating imports (MSB4011). -->
@@ -17,7 +17,7 @@
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
     <CompanyName>DrakeMods</CompanyName>
-    <Version>0.9.10</Version>
+    <Version>1.0.0</Version>
     <ThunderstoreBasePath>C:\Modding\Thunderstore</ThunderstoreBasePath>
     <ThunderstoreFolder>C:\Modding\Thunderstore\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
     <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
@@ -104,6 +104,10 @@
     <Compile Include="API\RenameEvents.cs" />
     <Compile Include="API\RenameItPermision.cs" />
     <Compile Include="extensions\ButtonExtensions.cs" />
+    <Compile Include="Localization\LKeys.cs" />
+    <Compile Include="Localization\LocalizationDefaults.cs" />
+    <Compile Include="Localization\RenameItLocalization.cs" />
+    <Compile Include="MenuKeyBinding.cs" />
     <Compile Include="RenameitConfig.cs" />
     <Compile Include="Permissions\ExcludedCategoryAliases.cs" />
     <Compile Include="Permissions\ExcludedCategoryReferenceWriter.cs" />
@@ -126,7 +130,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <AssetsToCopy Include="Assets\**\*" />
+    <LocalizationJson Include="Assets\Localization\*.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -135,24 +139,27 @@
     </PropertyGroup>
     <Error Condition="!Exists('packages\JotunnLib.2.26.1\build\JotunnLib.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\JotunnLib.2.26.1\build\JotunnLib.props'))" />
   </Target>
-  <Target Name="CopyOutput" AfterTargets="Build">
+  <Target Name="CopyLocalizationToOutput" AfterTargets="ILRepacker">
+    <MakeDir Directories="$(TargetDir)Assets\Localization" />
+    <Copy SourceFiles="@(LocalizationJson)"
+          DestinationFolder="$(TargetDir)Assets\Localization"
+          SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyOutput" AfterTargets="CopyLocalizationToOutput" Condition="'$(R2ModPath)' != ''">
     <PropertyGroup>
-      <!-- Construct the target folder dynamically -->
       <TargetFolder>$(CompanyName)-$(AssemblyName)</TargetFolder>
-      <!-- Combine the base path, profile, and plugins folder -->
       <FullDestinationPath>$(R2ModPath)\$(ProfileName)\BepInEx\plugins\$(TargetFolder)</FullDestinationPath>
     </PropertyGroup>
-    <!-- Ensure the target folder exists -->
-    <MakeDir Directories="$(FullDestinationPath)" />
-    <!-- Copy the DLL to the correct folder -->
+    <MakeDir Directories="$(FullDestinationPath)\Assets\Localization" />
     <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(FullDestinationPath)\" />
-    <!-- Copy assets -->
-    <Copy SourceFiles="@(AssetsToCopy)" DestinationFolder="$(FullDestinationPath)\Assets\" />
+    <Copy SourceFiles="@(LocalizationJson)"
+          DestinationFolder="$(FullDestinationPath)\Assets\Localization"
+          SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(FullDestinationPath)\README.md" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(FullDestinationPath)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(FullDestinationPath)\CHANGELOG.md" />
   </Target>
-  <Target Name="PackageMod" AfterTargets="Build">
+  <Target Name="PackageMod" AfterTargets="CopyLocalizationToOutput">
     <!-- Ensure the Thunderstore folder exists -->
     <MakeDir Directories="$(ThunderstoreFolder)" />
     <!-- Generate the manifest.json file -->
@@ -162,6 +169,10 @@
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(ThunderstoreFolder)\README.md" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(ThunderstoreFolder)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md" />
+    <MakeDir Directories="$(ThunderstoreFolder)\Assets\Localization" />
+    <Copy SourceFiles="@(LocalizationJson)"
+          DestinationFolder="$(ThunderstoreFolder)\Assets\Localization"
+          SkipUnchangedFiles="true" />
     <!-- Zip the Thunderstore folder (skipped in CI; workflow assembles its own zip) -->
     <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force" Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
   </Target>

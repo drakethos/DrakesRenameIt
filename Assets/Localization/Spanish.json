@@ -1,0 +1,84 @@
+{
+  "entries": [
+    { "key": "menu_title", "value": "Drake's Renameit" },
+    { "key": "menu_rename", "value": "Renombrar" },
+    { "key": "menu_description", "value": "Descripción" },
+    { "key": "menu_crafted_by", "value": "Creado por" },
+    { "key": "menu_reset_all", "value": "Restablecer todo" },
+    { "key": "menu_ok", "value": "Aceptar" },
+    { "key": "menu_unlock", "value": "🔒 Desbloquear" },
+    { "key": "menu_unlock_cost", "value": "🔒 Desbloquear ({0})" },
+
+    { "key": "btn_cancel", "value": "Cancelar" },
+    { "key": "btn_ok", "value": "Aceptar" },
+    { "key": "btn_reset", "value": "Restablecer" },
+    { "key": "btn_yes", "value": "Sí" },
+    { "key": "btn_no", "value": "No" },
+
+    { "key": "reset_all_title", "value": "¿Restablecer todas las personalizaciones?" },
+    { "key": "reset_all_body", "value": "Borra el nombre, la descripción y el «creado por» de este objeto." },
+
+    { "key": "panel_rename_title", "value": "Renombrar objeto" },
+    { "key": "panel_desc_title", "value": "Editar descripción" },
+    { "key": "panel_crafted_by_title", "value": "Creado por (visual)" },
+    { "key": "placeholder_rename", "value": "Escribe el nuevo nombre…" },
+    { "key": "placeholder_desc", "value": "Escribe la nueva descripción…" },
+    { "key": "placeholder_crafted_by", "value": "Nombre en la información…" },
+    { "key": "tooltip_line_label", "value": "Línea de información" },
+    { "key": "crafted_by_line_pick", "value": "…" },
+
+    { "key": "unlock_panel_title", "value": "🖊 Desbloquear objeto" },
+    { "key": "unlock_pay_btn", "value": "🖊 Pagar" },
+    { "key": "unlock_cost_label", "value": "Coste de desbloqueo:" },
+    { "key": "crafted_by_fallback", "value": "Creado por" },
+    { "key": "unlock_prompt", "value": "¿Desbloquear este objeto para editarlo?" },
+    { "key": "unlock_cost_afford_warning", "value": "<color=red>No tienes suficientes objetos para desbloquear.</color>" },
+    { "key": "unlock_cost_line", "value": "{0}x {1}  <color={2}>({3} en inv.)</color>" },
+
+    { "key": "msg_item_not_in_inventory", "value": "Ese objeto ya no está en tu inventario." },
+    { "key": "msg_item_not_in_inventory_unlock", "value": "Ese objeto ya no está en tu inventario. Vuelve a ponerlo y desbloquéalo de nuevo." },
+    { "key": "msg_item_not_in_inventory_apply", "value": "Ese objeto ya no está en tu inventario. Vuelve a ponerlo e inténtalo otra vez." },
+    { "key": "msg_item_unlocked", "value": "Objeto desbloqueado para editar." },
+    { "key": "msg_cannot_edit_item", "value": "Este objeto no se puede editar." },
+    { "key": "msg_desc_empty", "value": "¡La descripción no puede estar vacía!" },
+
+    { "key": "tooltip_menu_hint", "value": "{0} + clic derecho para opciones" },
+    { "key": "tooltip_menu_hint_right_click", "value": "Clic derecho para opciones" },
+    { "key": "tooltip_elevated_override", "value": " Anulación elevada" },
+    { "key": "menu_key_fallback", "value": "Tecla" },
+
+    { "key": "denial_rename_disabled", "value": "Renombrar está desactivado." },
+    { "key": "denial_desc_disabled", "value": "Editar descripciones está desactivado." },
+    { "key": "denial_crafted_by_disabled", "value": "Editar «creado por» está desactivado." },
+    { "key": "denial_not_enough_unlock", "value": "Faltan requisitos para desbloquear." },
+    { "key": "denial_unlock_first", "value": "Desbloquea este objeto primero (menú de acción)." },
+
+    { "key": "denial_rename_disabled_config", "value": "Renombrar desactivado (config)." },
+    { "key": "denial_desc_disabled_config", "value": "Editar descripción desactivado (config)." },
+    { "key": "denial_crafted_by_disabled_config", "value": "Editar «creado por» desactivado (config)." },
+    { "key": "denial_not_enough_unlock_inventory", "value": "Faltan requisitos de desbloqueo." },
+    { "key": "denial_pay_unlock_first", "value": "Paga el coste de desbloqueo en el menú de acción antes de editar." },
+    { "key": "denial_excluded_name", "value": "Excluido por nombre. " },
+    { "key": "denial_excluded_category", "value": "Excluido por categoría. " },
+    { "key": "denial_excluded_stacks", "value": "Los objetos apilables no se pueden personalizar (config). " },
+    { "key": "denial_uncrafted", "value": "Los objetos sin dueño no se pueden cambiar (config). " },
+    { "key": "denial_not_owner", "value": "No eres el dueño de este objeto. " },
+
+    { "key": "denial_cannot_rename", "value": "Este objeto no se puede renombrar." },
+    { "key": "denial_cannot_desc", "value": "La descripción de este objeto no se puede cambiar." },
+    { "key": "denial_cannot_crafted_by", "value": "La línea «creado por» no se puede cambiar." },
+    { "key": "denial_action_not_allowed", "value": "Acción no permitida." },
+
+    { "key": "tooltip_cannot_rename", "value": "No se puede renombrar este objeto." },
+    { "key": "tooltip_cannot_desc", "value": "No se puede editar la descripción." },
+    { "key": "tooltip_cannot_crafted_by", "value": "No se puede editar «creado por»." },
+    { "key": "tooltip_not_allowed", "value": "No permitido." },
+    { "key": "tooltip_not_enough_resources_unlock", "value": "No hay suficientes recursos para desbloquear." },
+
+    { "key": "unlock_err_no_player", "value": "No hay jugador local." },
+    { "key": "unlock_err_not_configured", "value": "El coste de desbloqueo no está configurado." },
+    { "key": "unlock_err_empty", "value": "El coste de desbloqueo está vacío." },
+    { "key": "unlock_err_no_inventory", "value": "Sin inventario." },
+    { "key": "unlock_err_not_enough", "value": "Faltan requisitos de desbloqueo." }
+  ]
+}

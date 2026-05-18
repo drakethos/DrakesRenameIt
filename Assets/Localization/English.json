@@ -1,0 +1,96 @@
+{
+  "entries": [
+    { "key": "menu_title", "value": "Drake's Renameit" },
+    { "key": "menu_rename", "value": "Rename" },
+    { "key": "menu_description", "value": "Description" },
+    { "key": "menu_crafted_by", "value": "Crafted by" },
+    { "key": "menu_reset_all", "value": "Reset All" },
+    { "key": "menu_ok", "value": "OK" },
+    {
+      "key": "menu_unlock",
+      "value": "🖊 Unlock"
+    },
+    {
+      "key": "menu_unlock_cost",
+      "value": "🖊 Unlock ({0})"
+    },
+
+    { "key": "btn_cancel", "value": "Cancel" },
+    { "key": "btn_ok", "value": "OK" },
+    { "key": "btn_reset", "value": "Reset" },
+    { "key": "btn_yes", "value": "Yes" },
+    { "key": "btn_no", "value": "No" },
+
+    { "key": "reset_all_title", "value": "Reset all data?" },
+    { "key": "reset_all_body", "value": "Clears all custom data on this item." },
+
+    { "key": "panel_rename_title", "value": "Rename Item" },
+    { "key": "panel_desc_title", "value": "Rewrite Item Desc" },
+    { "key": "panel_crafted_by_title", "value": "Crafted by" },
+    { "key": "placeholder_rename", "value": "Enter new name..." },
+    { "key": "placeholder_desc", "value": "Enter new desc" },
+    { "key": "placeholder_crafted_by", "value": "Display name on tooltip…" },
+    { "key": "tooltip_line_label", "value": "Tooltip line" },
+    { "key": "crafted_by_line_pick", "value": "…" },
+
+    { "key": "unlock_panel_title", "value": "🖊 Unlock Item" },
+    {
+      "key": "unlock_pay_btn",
+      "value": "🖊 Pay"
+    },
+    { "key": "unlock_cost_label", "value": "Unlock cost:" },
+    { "key": "crafted_by_fallback", "value": "Crafted by" },
+    { "key": "unlock_prompt", "value": "Unlock this item for editing?" },
+    { "key": "unlock_cost_afford_warning", "value": "<color=red>You don't have enough items to unlock.</color>" },
+    { "key": "unlock_cost_line", "value": "{0}x {1}  <color={2}>({3} in inv)</color>" },
+
+    { "key": "msg_item_not_in_inventory", "value": "That item is no longer in your inventory." },
+    { "key": "msg_item_not_in_inventory_unlock", "value": "That item is no longer in your inventory. Put it back, then unlock again." },
+    { "key": "msg_item_not_in_inventory_apply", "value": "That item is no longer in your inventory. Put it back, then try again." },
+    { "key": "msg_item_unlocked", "value": "Item unlocked for editing." },
+    { "key": "msg_cannot_edit_item", "value": "This item cannot be edited." },
+    { "key": "msg_desc_empty", "value": "Description must not be empty!" },
+
+    { "key": "tooltip_menu_hint", "value": "{0} + Right Click for options" },
+    { "key": "tooltip_menu_hint_right_click", "value": "Right Click for options" },
+    { "key": "tooltip_elevated_override", "value": " Elevated override" },
+    { "key": "menu_key_fallback", "value": "Key" },
+
+    { "key": "denial_rename_disabled", "value": "Renaming is disabled." },
+    { "key": "denial_desc_disabled", "value": "Description is disabled." },
+    { "key": "denial_crafted_by_disabled", "value": "Crafted-by is disabled." },
+    { "key": "denial_not_enough_unlock", "value": "Missing requriements to unlock." },
+    { "key": "denial_unlock_first", "value": "Unlock this item first." },
+
+    { "key": "denial_rename_disabled_config", "value": "Renaming  disabled." },
+    { "key": "denial_desc_disabled_config", "value": "Description editing disabled" },
+    { "key": "denial_crafted_by_disabled_config", "value": "Crafted-by label editing disabled." },
+    {
+      "key": "denial_not_enough_unlock_inventory",
+      "value": "Not enough resources to unlock."
+    },
+    { "key": "denial_pay_unlock_first", "value": "Pay the unlock cost in the action menu to edit this item." },
+    { "key": "denial_excluded_name", "value": "Excluded by name. " },
+    { "key": "denial_excluded_category", "value": "Excluded by category. " },
+    { "key": "denial_excluded_stacks", "value": "Stackable items cannot be customized. " },
+    { "key": "denial_uncrafted", "value": "Unowned items cannot be changed." },
+    { "key": "denial_not_owner", "value": "You don't own this item. " },
+
+    { "key": "denial_cannot_rename", "value": "This item cannot be renamed." },
+    { "key": "denial_cannot_desc", "value": "This item's description cannot be changed." },
+    { "key": "denial_cannot_crafted_by", "value": "This item's crafted-by label cannot be changed." },
+    { "key": "denial_action_not_allowed", "value": "Action not allowed." },
+
+    { "key": "tooltip_cannot_rename", "value": "Cannot rename this item." },
+    { "key": "tooltip_cannot_desc", "value": "Cannot edit description." },
+    { "key": "tooltip_cannot_crafted_by", "value": "Cannot edit crafted-by label." },
+    { "key": "tooltip_not_allowed", "value": "Not allowed." },
+    { "key": "tooltip_not_enough_resources_unlock", "value": "Not enough resources to unlock." },
+
+    { "key": "unlock_err_no_player", "value": "No local player." },
+    { "key": "unlock_err_not_configured", "value": "Unlock cost is not configured." },
+    { "key": "unlock_err_empty", "value": "Unlock cost is empty." },
+    { "key": "unlock_err_no_inventory", "value": "No inventory." },
+    { "key": "unlock_err_not_enough", "value": "Missing unlock requirements." }
+  ]
+}

@@ -1,4 +1,6 @@
-- Version 0.1.0 - Current
+- Version 1.0.0
+  - **1.0 release**: configurable menu key bindings (Shift/Ctrl/Alt/combos), Cancel on edit panels, Reset all confirmation, centralized localization (`Assets/Localization/English.json`).
+- Version 0.1.0
   - Initial upload and baseline version.
     - Current Feature List:
       - Change any in game item name to anything.

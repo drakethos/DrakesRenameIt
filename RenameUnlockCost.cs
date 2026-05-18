@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using BepInEx.Logging;
+using DrakeRenameit.ModText;
 using UnityEngine;
+using static DrakeRenameit.ModText.RenameItLocalization;
 
 namespace DrakeRenameit;
 
@@ -46,26 +48,26 @@ internal static class RenameUnlockCost
         errorMessage = "";
         if (player == null)
         {
-            errorMessage = "No local player.";
+            errorMessage = T(LKeys.UnlockErrNoPlayer);
             return false;
         }
 
         if (!TryBuildResolvedCost(out var lines, out var parseError))
         {
-            errorMessage = parseError ?? "Unlock cost is not configured.";
+            errorMessage = parseError ?? T(LKeys.UnlockErrNotConfigured);
             return false;
         }
 
         if (lines.Count == 0)
         {
-            errorMessage = "Unlock cost is empty.";
+            errorMessage = T(LKeys.UnlockErrEmpty);
             return false;
         }
 
         var inv = player.GetInventory();
         if (inv == null)
         {
-            errorMessage = "No inventory.";
+            errorMessage = T(LKeys.UnlockErrNoInventory);
             return false;
         }
 
@@ -73,7 +75,7 @@ internal static class RenameUnlockCost
         {
             if (inv.CountItems(sharedName) < amount)
             {
-                errorMessage = "Not enough items to unlock (see tooltip / config).";
+                errorMessage = T(LKeys.UnlockErrNotEnough);
                 return false;
             }
         }

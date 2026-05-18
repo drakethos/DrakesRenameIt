@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
+using DrakeRenameit.ModText;
+using static DrakeRenameit.ModText.RenameItLocalization;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,13 +14,14 @@ namespace DrakeRenameit.UI;
 
 public static class UIPanels
 {
-    private const string RenameItemDescription = "Rewrite Item Desc";
     public static GameObject? InputNamePanel { get; private set; }
     public static GameObject? InputDescPanel { get; private set; }
     public static InputField? RenameNameInput { get; private set; }
     public static InputField? RenameDescInput { get; private set; }
     private static Button _buttonOkName = default!;
     private static Button _buttonOkDesc = default!;
+    private static Button _buttonCancelName = default!;
+    private static Button _buttonCancelDesc = default!;
     private static Button _buttonResetName = default!;
     private static Button _buttonResetDesc = default!;
 
@@ -29,14 +32,35 @@ public static class UIPanels
     private static Button? _buttonMenuResetAll;
     private static Button? _buttonMenuUnlock;
     private static Button? _buttonMenuCancel;
+    private static Text? _actionMenuTitleText;
+    private static Text? _craftedByPanelTitleText;
+    private static Text? _craftedByTooltipLineLabelText;
 
     public static GameObject? InputCraftedByPanel { get; private set; }
     public static InputField? RenameCraftedByInput { get; private set; }
     private static Button? _buttonOkCraftedBy;
+    private static Button? _buttonCancelCraftedBy;
     private static Button? _buttonResetCraftedBy;
     private static Button? _buttonCraftedByLineLabelPick;
     private static GameObject? _craftedByLineLabelPopover;
     private static string? _craftedByLineLabelPendingToken;
+
+    const float ActionMenuButtonWidth = 200f;
+    const float ActionMenuOkButtonWidth = 64f;
+    const float ActionMenuBottomButtonGap = 8f;
+    const float ActionMenuResetButtonWidth =
+        ActionMenuButtonWidth - ActionMenuOkButtonWidth - ActionMenuBottomButtonGap;
+
+    const float CraftedByPanelWidth = 400f;
+    const float CraftedByPanelHeight = 258f;
+    const float CraftedByContentWidth = 340f;
+    const float CraftedByDropdownWidth = 280f;
+    const float CraftedByDropdownHeight = 32f;
+    const float CraftedByPopoverWidth = 290f;
+    const float CraftedByPopoverRowHeight = 32f;
+    const float CraftedByFooterButtonWidth = 72f;
+    const float CraftedByInputAnchorY = -56f;
+    const float CraftedByFooterButtonY = 32f;
 
     /// <summary>Line label applied on crafted-by OK when allowed; null clears <see cref="DrakeRenameit.DrakeCraftedByLineLabel"/>.</summary>
     internal static string? CraftedByLineLabelPendingToken => _craftedByLineLabelPendingToken;
@@ -47,6 +71,12 @@ public static class UIPanels
     private static Text? _unlockAffordWarning;
     private static Button? _buttonConfirmUnlock;
     private static Button? _buttonConfirmCancel;
+    private static Text? _unlockPanelTitleText;
+    private static Text? _unlockCostLabelText;
+
+    private static GameObject? _resetAllConfirmPanel;
+    private static Button? _buttonResetAllConfirmYes;
+    private static Button? _buttonResetAllConfirmNo;
 
     // Track whether we currently hold a BlockInput(true) so we never double-block or double-unblock
     private static bool _inputBlocked;
@@ -65,6 +95,36 @@ public static class UIPanels
         _inputBlocked = false;
     }
 
+    static void SetButtonLabel(Button? button, string label)
+    {
+        if (button == null)
+            return;
+        var text = button.GetComponentInChildren<Text>(true);
+        if (text != null)
+            text.text = label;
+    }
+
+    static void RefreshActionMenuLabels()
+    {
+        if (_actionMenuTitleText != null)
+            _actionMenuTitleText.text = T(LKeys.MenuTitle);
+        SetButtonLabel(_buttonMenuRename, T(LKeys.MenuRename));
+        SetButtonLabel(_buttonMenuDesc, T(LKeys.MenuDescription));
+        SetButtonLabel(_buttonMenuCraftedBy, T(LKeys.MenuCraftedBy));
+        SetButtonLabel(_buttonMenuResetAll, T(LKeys.MenuResetAll));
+        SetButtonLabel(_buttonMenuCancel, T(LKeys.MenuOk));
+    }
+
+    static void RefreshUnlockPanelStaticLabels()
+    {
+        if (_unlockPanelTitleText != null)
+            _unlockPanelTitleText.text = T(LKeys.UnlockPanelTitle);
+        if (_unlockCostLabelText != null)
+            _unlockCostLabelText.text = T(LKeys.UnlockCostLabel);
+        SetButtonLabel(_buttonConfirmUnlock, T(LKeys.UnlockPayBtn));
+        SetButtonLabel(_buttonConfirmCancel, T(LKeys.BtnCancel));
+    }
+
     /// <summary>Hides rename / unlock UI and clears <see cref="DrakeRenameit.CurrentItem"/> (e.g. stale stack after drop).</summary>
     public static void CloseAllRenameEditingUi()
     {
@@ -79,8 +139,53 @@ public static class UIPanels
             ActionMenuPanel.SetActive(false);
         if (_unlockConfirmPanel != null)
             _unlockConfirmPanel.SetActive(false);
+        if (_resetAllConfirmPanel != null)
+            _resetAllConfirmPanel.SetActive(false);
         DrakeRenameit.CurrentItem = null;
         EnsureInputUnblocked();
+    }
+
+    /// <summary>Discards unsaved edits and returns to the action menu (does not write to the item).</summary>
+    public static void CancelNameEditor() =>
+        CancelEditor(
+            () =>
+            {
+                if (DrakeRenameit.CurrentItem != null && RenameNameInput != null)
+                    RenameNameInput.text = DrakeRenameit.GetPropperName(DrakeRenameit.CurrentItem);
+            },
+            () => InputNamePanel?.SetActive(false));
+
+    public static void CancelDescEditor() =>
+        CancelEditor(
+            () =>
+            {
+                if (DrakeRenameit.CurrentItem != null && RenameDescInput != null)
+                    RenameDescInput.text = DrakeRenameit.getPropperDesc(DrakeRenameit.CurrentItem);
+            },
+            () => InputDescPanel?.SetActive(false));
+
+    public static void CancelCraftedByEditor() =>
+        CancelEditor(
+            () =>
+            {
+                if (DrakeRenameit.CurrentItem == null)
+                    return;
+                if (RenameCraftedByInput != null)
+                    RenameCraftedByInput.text = DrakeRenameit.getCraftedByDisplay(DrakeRenameit.CurrentItem);
+                RefreshCraftedByLineLabelPicker(DrakeRenameit.CurrentItem);
+                CloseCraftedByLineLabelPopover();
+            },
+            () => InputCraftedByPanel?.SetActive(false));
+
+    private static void CancelEditor(Action revertFields, Action hidePanel)
+    {
+        revertFields();
+        hidePanel();
+        var item = DrakeRenameit.CurrentItem;
+        if (item != null && DrakeRenameit.IsItemInLocalPlayerInventory(item))
+            OpenActionMenu(item);
+        else
+            CloseAllRenameEditingUi();
     }
 
     public static void OpenActionMenu(ItemDrop.ItemData item)
@@ -92,7 +197,7 @@ public static class UIPanels
         {
             CloseAllRenameEditingUi();
             Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                "That item is no longer in your inventory.");
+                T(LKeys.MsgItemNotInInventory));
             return;
         }
 
@@ -112,8 +217,8 @@ public static class UIPanels
             {
                 string cost = RenameUnlockCost.GetCostDisplayShort();
                 unlockLabel.text = string.IsNullOrEmpty(cost)
-                    ? $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock"
-                    : $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock ({cost})";
+                    ? T(LKeys.MenuUnlock)
+                    : T(LKeys.MenuUnlockCost, cost);
             }
 
             _buttonMenuRename.interactable = false;
@@ -131,6 +236,8 @@ public static class UIPanels
             _buttonMenuResetAll.interactable = DrakeRenameit.CanResetAnyCustomization(item);
         }
 
+        RefreshActionMenuLabels();
+        ApplyActionMenuLayout();
         ActionMenuPanel.SetActive(true);
         ActionMenuPanel.transform.SetAsLastSibling();
         EnsureInputBlocked();
@@ -153,8 +260,8 @@ public static class UIPanels
             height: 280,
             draggable: false);
 
-        GUIManager.Instance.CreateText(
-            text: "DrakesRenameIt",
+        _actionMenuTitleText = GUIManager.Instance.CreateText(
+            text: T(LKeys.MenuTitle),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -164,12 +271,13 @@ public static class UIPanels
             color: GUIManager.Instance.ValheimOrange,
             outline: true,
             outlineColor: Color.black,
-            width: 280,
+            width: ActionMenuButtonWidth,
             height: 40,
-            addContentSizeFitter: false);
+            addContentSizeFitter: false).GetComponent<Text>();
+        _actionMenuTitleText.alignment = TextAnchor.MiddleCenter;
 
         _buttonMenuUnlock = GUIManager.Instance.CreateButton(
-            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock",
+            text: T(LKeys.MenuUnlock),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
@@ -188,12 +296,12 @@ public static class UIPanels
         });
 
         _buttonMenuRename = GUIManager.Instance.CreateButton(
-            text: "Rename",
+            text: T(LKeys.MenuRename),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 40f),
-            width: 200f,
+            width: ActionMenuButtonWidth,
             height: 32f).GetComponent<Button>();
         _buttonMenuRename.AddUniqueListener(() =>
         {
@@ -204,12 +312,12 @@ public static class UIPanels
         });
 
         _buttonMenuDesc = GUIManager.Instance.CreateButton(
-            text: "Description",
+            text: T(LKeys.MenuDescription),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 0f),
-            width: 200f,
+            width: ActionMenuButtonWidth,
             height: 32f).GetComponent<Button>();
         _buttonMenuDesc.AddUniqueListener(() =>
         {
@@ -220,12 +328,12 @@ public static class UIPanels
         });
 
         _buttonMenuCraftedBy = GUIManager.Instance.CreateButton(
-            text: "Crafted by",
+            text: T(LKeys.MenuCraftedBy),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, -40f),
-            width: 200f,
+            width: ActionMenuButtonWidth,
             height: 32f).GetComponent<Button>();
         _buttonMenuCraftedBy.AddUniqueListener(() =>
         {
@@ -236,30 +344,66 @@ public static class UIPanels
         });
 
         _buttonMenuResetAll = GUIManager.Instance.CreateButton(
-            text: "Reset all",
+            text: T(LKeys.MenuResetAll),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(-66f, -80f),
-            width: 120f,
+            position: new Vector2(-40f, -80f),
+            width: ActionMenuResetButtonWidth,
             height: 28f).GetComponent<Button>();
         _buttonMenuResetAll.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
             if (item != null)
-                DrakeRenameit.ResetAllCustomizations(item);
-            CloseActionMenuOnly();
+                OpenResetAllConfirmPanel(item);
         });
 
         _buttonMenuCancel = GUIManager.Instance.CreateButton(
-            text: "OK",
+            text: T(LKeys.MenuOk),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(66f, -80f),
-            width: 120f,
+            position: new Vector2(40f, -80f),
+            width: ActionMenuOkButtonWidth,
             height: 28f).GetComponent<Button>();
         _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);
+
+        ApplyActionMenuLayout();
+    }
+
+    static void ApplyActionMenuLayout()
+    {
+        if (_actionMenuTitleText != null)
+        {
+            _actionMenuTitleText.alignment = TextAnchor.MiddleCenter;
+            var titleRt = _actionMenuTitleText.rectTransform;
+            titleRt.anchoredPosition = new Vector2(0f, -48f);
+            titleRt.sizeDelta = new Vector2(ActionMenuButtonWidth, 40f);
+        }
+
+        float menuHalf = ActionMenuButtonWidth * 0.5f;
+        float resetHalf = ActionMenuResetButtonWidth * 0.5f;
+        float okHalf = ActionMenuOkButtonWidth * 0.5f;
+        float resetCenterX = -menuHalf + resetHalf;
+        float okCenterX = menuHalf - okHalf;
+
+        SetButtonLayout(_buttonMenuRename, 0f, 40f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuDesc, 0f, 0f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuCraftedBy, 0f, -40f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuResetAll, resetCenterX, -80f, ActionMenuResetButtonWidth, 28f);
+        SetButtonLayout(_buttonMenuCancel, okCenterX, -80f, ActionMenuOkButtonWidth, 28f);
+        SetButtonLayout(_buttonMenuUnlock, 0f, 72f, 220f, 30f);
+    }
+
+    static void SetButtonLayout(Button? button, float x, float y, float width, float height)
+    {
+        if (button == null)
+            return;
+        var rt = button.GetComponent<RectTransform>();
+        if (rt == null)
+            return;
+        rt.anchoredPosition = new Vector2(x, y);
+        rt.sizeDelta = new Vector2(width, height);
     }
 
     private static void CloseActionMenuOnly()
@@ -267,6 +411,128 @@ public static class UIPanels
         if (ActionMenuPanel != null)
             ActionMenuPanel.SetActive(false);
         EnsureInputUnblocked();
+    }
+
+    // -------------------------------------------------------------------------
+    // Reset all confirmation
+    // -------------------------------------------------------------------------
+
+    const float ResetAllConfirmPanelWidth = 300f;
+    const float ResetAllConfirmPanelHeight = 178f;
+    const float ResetAllConfirmTextWidth = 272f;
+
+    private static void OpenResetAllConfirmPanel(ItemDrop.ItemData item)
+    {
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        {
+            CloseAllRenameEditingUi();
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                T(LKeys.MsgItemNotInInventory));
+            return;
+        }
+
+        EnsureResetAllConfirmPanel();
+        if (_resetAllConfirmPanel == null || _buttonResetAllConfirmYes == null)
+            return;
+
+        DrakeRenameit.CurrentItem = item;
+        _resetAllConfirmPanel.SetActive(true);
+        _resetAllConfirmPanel.transform.SetAsLastSibling();
+        EnsureInputBlocked();
+    }
+
+    private static void EnsureResetAllConfirmPanel()
+    {
+        if (_resetAllConfirmPanel != null || GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        _resetAllConfirmPanel = GUIManager.Instance.CreateWoodpanel(
+            parent: GUIManager.CustomGUIFront.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: new Vector2(0f, 0f),
+            width: ResetAllConfirmPanelWidth,
+            height: ResetAllConfirmPanelHeight,
+            draggable: false);
+
+        GUIManager.Instance.CreateText(
+            text: T(LKeys.ResetAllTitle),
+            parent: _resetAllConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(0f, -40f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 20,
+            color: GUIManager.Instance.ValheimOrange,
+            outline: true,
+            outlineColor: Color.black,
+            width: ResetAllConfirmTextWidth,
+            height: 44,
+            addContentSizeFitter: false);
+
+        GUIManager.Instance.CreateText(
+            text: T(LKeys.ResetAllBody),
+            parent: _resetAllConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 1f),
+            anchorMax: new Vector2(0.5f, 1f),
+            position: new Vector2(0f, -108f),
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 14,
+            color: Color.white,
+            outline: true,
+            outlineColor: Color.black,
+            width: ResetAllConfirmTextWidth,
+            height: 64,
+            addContentSizeFitter: false);
+
+        _buttonResetAllConfirmYes = GUIManager.Instance.CreateButton(
+            text: T(LKeys.BtnYes),
+            parent: _resetAllConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(-55f, 35f),
+            width: 110f,
+            height: 30f).GetComponent<Button>();
+        _buttonResetAllConfirmYes.AddUniqueListener(() =>
+        {
+            var item = DrakeRenameit.CurrentItem;
+            if (item != null)
+                DrakeRenameit.ResetAllCustomizations(item);
+            CloseResetAllConfirmPanel(reopenActionMenu: false);
+        });
+
+        _buttonResetAllConfirmNo = GUIManager.Instance.CreateButton(
+            text: T(LKeys.BtnNo),
+            parent: _resetAllConfirmPanel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(55f, 35f),
+            width: 110f,
+            height: 30f).GetComponent<Button>();
+        _buttonResetAllConfirmNo.AddUniqueListener(() => CloseResetAllConfirmPanel(reopenActionMenu: true));
+    }
+
+    private static void CloseResetAllConfirmPanel(bool reopenActionMenu)
+    {
+        if (_resetAllConfirmPanel != null)
+            _resetAllConfirmPanel.SetActive(false);
+
+        if (reopenActionMenu && DrakeRenameit.CurrentItem != null)
+        {
+            var item = DrakeRenameit.CurrentItem;
+            ActionMenuPanel?.SetActive(false);
+            OpenActionMenu(item);
+        }
+        else
+        {
+            if (ActionMenuPanel != null)
+                ActionMenuPanel.SetActive(false);
+            DrakeRenameit.CurrentItem = null;
+            EnsureInputUnblocked();
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -290,7 +556,7 @@ public static class UIPanels
         {
             CloseAllRenameEditingUi();
             Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                "That item is no longer in your inventory.");
+                T(LKeys.MsgItemNotInInventory));
             return;
         }
 
@@ -298,7 +564,7 @@ public static class UIPanels
         if (_unlockConfirmPanel == null || _unlockCostListRoot == null || _buttonConfirmUnlock == null)
             return;
 
-        // Refresh body text with current cost info
+        RefreshUnlockPanelStaticLabels();
         RefreshUnlockConfirmBody();
 
         // Enable/disable the pay button based on current affordability
@@ -323,7 +589,7 @@ public static class UIPanels
 
         if (costEntries.Count == 0)
         {
-            AddUnlockPlainLine(_unlockCostListRoot, "Unlock this item stack for editing?");
+            AddUnlockPlainLine(_unlockCostListRoot, T(LKeys.UnlockPrompt));
             if (_unlockAffordWarning != null)
             {
                 _unlockAffordWarning.text = "";
@@ -340,8 +606,7 @@ public static class UIPanels
                 ? Player.m_localPlayer.GetInventory()?.CountItems(token) ?? 0
                 : 0;
             string haveColor = have >= amount ? "lime" : "red";
-            string line =
-                $"{amount}x {localizedName}  <color={haveColor}>({have} in inv)</color>";
+            string line = T(LKeys.UnlockCostLine, amount, localizedName, haveColor, have);
             var sprite = RenameUnlockCost.GetItemIconSprite(prefabName);
             CreateUnlockCostRow(_unlockCostListRoot, sprite, line);
         }
@@ -350,7 +615,7 @@ public static class UIPanels
         {
             if (!canAfford)
             {
-                _unlockAffordWarning.text = "<color=red>You don't have enough items to unlock.</color>";
+                _unlockAffordWarning.text = T(LKeys.UnlockCostAffordWarning);
                 _unlockAffordWarning.gameObject.SetActive(true);
             }
             else
@@ -443,8 +708,8 @@ public static class UIPanels
             height: 280,
             draggable: false);
 
-        GUIManager.Instance.CreateText(
-            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Unlock Item",
+        _unlockPanelTitleText = GUIManager.Instance.CreateText(
+            text: T(LKeys.UnlockPanelTitle),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -456,10 +721,10 @@ public static class UIPanels
             outlineColor: Color.black,
             width: 300,
             height: 36,
-            addContentSizeFitter: false);
+            addContentSizeFitter: false).GetComponent<Text>();
 
-        GUIManager.Instance.CreateText(
-            text: "Unlock cost:",
+        _unlockCostLabelText = GUIManager.Instance.CreateText(
+            text: T(LKeys.UnlockCostLabel),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -471,7 +736,7 @@ public static class UIPanels
             outlineColor: Color.black,
             width: 300,
             height: 22,
-            addContentSizeFitter: false);
+            addContentSizeFitter: false).GetComponent<Text>();
 
         var listGo = new GameObject("UnlockCostList", typeof(RectTransform), typeof(VerticalLayoutGroup));
         listGo.transform.SetParent(_unlockConfirmPanel.transform, false);
@@ -508,12 +773,12 @@ public static class UIPanels
         _unlockAffordWarning.gameObject.SetActive(false);
 
         _buttonConfirmUnlock = GUIManager.Instance.CreateButton(
-            text: $"{DrakeRenameit.TooltipUnlockCostLockedEmoji} Pay",
+            text: T(LKeys.UnlockPayBtn),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
-            position: new Vector2(-55f, 35f),
-            width: 110f,
+            position: new Vector2(-62f, 35f),
+            width: 120f,
             height: 30f).GetComponent<Button>();
         _buttonConfirmUnlock.AddUniqueListener(() =>
         {
@@ -544,7 +809,7 @@ public static class UIPanels
         });
 
         _buttonConfirmCancel = GUIManager.Instance.CreateButton(
-            text: "Cancel",
+            text: T(LKeys.BtnCancel),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
@@ -603,29 +868,31 @@ public static class UIPanels
                 anchorMin: new Vector2(0.5f, 0.5f),
                 anchorMax: new Vector2(0.5f, 0.5f),
                 position: new Vector2(0f, 0f),
-                width: 350,
-                height: 230,
+                width: CraftedByPanelWidth,
+                height: CraftedByPanelHeight,
                 draggable: false);
 
-            GUIManager.Instance.CreateText(
-                text: "Crafted by (display)",
+            _craftedByPanelTitleText = GUIManager.Instance.CreateText(
+                text: T(LKeys.PanelCraftedByTitle),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 1f),
                 anchorMax: new Vector2(0.5f, 1f),
-                position: new Vector2(15f, -56f),
+                position: new Vector2(0f, -44f),
                 font: GUIManager.Instance.AveriaSerifBold,
                 fontSize: 22,
                 color: GUIManager.Instance.ValheimOrange,
                 outline: true,
                 outlineColor: Color.black,
-                width: 300,
-                height: 60,
-                addContentSizeFitter: false);
+                width: CraftedByContentWidth,
+                height: 40,
+                addContentSizeFitter: false).GetComponent<Text>();
+            _craftedByPanelTitleText.alignment = TextAnchor.MiddleCenter;
         }
 
         InputCraftedByPanel.SetActive(true);
         InputCraftedByPanel.transform.SetAsLastSibling();
         EnsureCraftedByLineLabelControls();
+        ApplyCraftedByPanelLayout();
 
         if (RenameCraftedByInput == null)
         {
@@ -633,12 +900,13 @@ public static class UIPanels
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0.5f),
                 anchorMax: new Vector2(0.5f, 0.5f),
-                position: new Vector2(0f, -28f),
+                position: new Vector2(0f, CraftedByInputAnchorY),
                 contentType: InputField.ContentType.Standard,
-                placeholderText: "Display name on tooltip…",
+                placeholderText: T(LKeys.PlaceholderCraftedBy),
                 fontSize: 18,
-                width: 300,
-                height: 30f).GetComponent<InputField>();
+                width: CraftedByContentWidth,
+                height: 34f).GetComponent<InputField>();
+            CenterInputFieldText(RenameCraftedByInput);
         }
 
         RenameCraftedByInput!.characterLimit = RenameitConfig.CraftedByCharLimit;
@@ -646,15 +914,28 @@ public static class UIPanels
         if (DrakeRenameit.CurrentItem != null)
             RefreshCraftedByLineLabelPicker(DrakeRenameit.CurrentItem);
 
-        if (_buttonOkCraftedBy == null)
+        if (_buttonCancelCraftedBy == null)
         {
-            _buttonOkCraftedBy = GUIManager.Instance.CreateButton(
-                text: "OK",
+            _buttonCancelCraftedBy = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnCancel),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(-42f, 35f),
-                width: 80f,
+                position: new Vector2(-134f, CraftedByFooterButtonY),
+                width: CraftedByFooterButtonWidth,
+                height: 30f).GetComponent<Button>();
+            _buttonCancelCraftedBy.AddUniqueListener(CancelCraftedByEditor);
+        }
+
+        if (_buttonOkCraftedBy == null)
+        {
+            _buttonOkCraftedBy = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnOk),
+                parent: InputCraftedByPanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(0f, CraftedByFooterButtonY),
+                width: CraftedByFooterButtonWidth,
                 height: 30f).GetComponent<Button>();
             _buttonOkCraftedBy.AddUniqueListener(() =>
             {
@@ -665,12 +946,12 @@ public static class UIPanels
         if (_buttonResetCraftedBy == null)
         {
             _buttonResetCraftedBy = GUIManager.Instance.CreateButton(
-                text: "Reset",
+                text: T(LKeys.BtnReset),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(42f, 35f),
-                width: 80f,
+                position: new Vector2(134f, CraftedByFooterButtonY),
+                width: CraftedByFooterButtonWidth,
                 height: 30f).GetComponent<Button>();
             _buttonResetCraftedBy.AddUniqueListener(() =>
             {
@@ -684,41 +965,118 @@ public static class UIPanels
         }
     }
 
+    static void ApplyCraftedByPanelLayout()
+    {
+        if (InputCraftedByPanel == null)
+            return;
+
+        var panelRt = InputCraftedByPanel.GetComponent<RectTransform>();
+        if (panelRt != null)
+            panelRt.sizeDelta = new Vector2(CraftedByPanelWidth, CraftedByPanelHeight);
+
+        if (_craftedByPanelTitleText != null)
+        {
+            _craftedByPanelTitleText.alignment = TextAnchor.MiddleCenter;
+            var titleRt = _craftedByPanelTitleText.rectTransform;
+            titleRt.anchoredPosition = new Vector2(0f, -44f);
+            titleRt.sizeDelta = new Vector2(CraftedByContentWidth, 40f);
+        }
+
+        const float dropdownY = -98f;
+        const float labelAboveY = -72f;
+
+        if (_craftedByTooltipLineLabelText != null)
+        {
+            _craftedByTooltipLineLabelText.alignment = TextAnchor.MiddleCenter;
+            var labelRt = _craftedByTooltipLineLabelText.rectTransform;
+            labelRt.anchoredPosition = new Vector2(0f, labelAboveY);
+            labelRt.sizeDelta = new Vector2(CraftedByDropdownWidth, 22f);
+        }
+
+        if (_buttonCraftedByLineLabelPick != null)
+        {
+            var pickRt = _buttonCraftedByLineLabelPick.GetComponent<RectTransform>();
+            if (pickRt != null)
+            {
+                pickRt.sizeDelta = new Vector2(CraftedByDropdownWidth, CraftedByDropdownHeight);
+                pickRt.anchoredPosition = new Vector2(0f, dropdownY);
+            }
+        }
+
+        if (_craftedByLineLabelPopover != null)
+        {
+            var popRt = _craftedByLineLabelPopover.GetComponent<RectTransform>();
+            if (popRt != null)
+                popRt.anchoredPosition = new Vector2(0f, dropdownY - CraftedByDropdownHeight - 6f);
+        }
+
+        if (RenameCraftedByInput != null)
+        {
+            var inputRt = RenameCraftedByInput.GetComponent<RectTransform>();
+            if (inputRt != null)
+            {
+                inputRt.sizeDelta = new Vector2(CraftedByContentWidth, 34f);
+                inputRt.anchoredPosition = new Vector2(0f, CraftedByInputAnchorY);
+            }
+
+            CenterInputFieldText(RenameCraftedByInput);
+        }
+
+        float contentHalf = CraftedByContentWidth * 0.5f;
+        float btnHalf = CraftedByFooterButtonWidth * 0.5f;
+        SetButtonLayout(_buttonCancelCraftedBy, -contentHalf + btnHalf, CraftedByFooterButtonY, CraftedByFooterButtonWidth, 30f);
+        SetButtonLayout(_buttonOkCraftedBy, 0f, CraftedByFooterButtonY, CraftedByFooterButtonWidth, 30f);
+        SetButtonLayout(_buttonResetCraftedBy, contentHalf - btnHalf, CraftedByFooterButtonY, CraftedByFooterButtonWidth, 30f);
+    }
+
+    static void CenterInputFieldText(InputField? field)
+    {
+        if (field?.textComponent == null)
+            return;
+        field.textComponent.alignment = TextAnchor.MiddleCenter;
+        field.textComponent.horizontalOverflow = HorizontalWrapMode.Overflow;
+        if (field.placeholder != null)
+        {
+            var ph = field.placeholder.GetComponent<Text>();
+            if (ph != null)
+                ph.alignment = TextAnchor.MiddleCenter;
+        }
+    }
+
     static void EnsureCraftedByLineLabelControls()
     {
         if (InputCraftedByPanel == null || GUIManager.Instance == null)
             return;
 
-        var panelRt = InputCraftedByPanel.GetComponent<RectTransform>();
-        if (panelRt != null && panelRt.sizeDelta.y < 220f)
-            panelRt.sizeDelta = new Vector2(350f, 230f);
+        ApplyCraftedByPanelLayout();
 
         if (_buttonCraftedByLineLabelPick != null)
             return;
 
-        GUIManager.Instance.CreateText(
-            text: "Tooltip line",
+        _craftedByTooltipLineLabelText = GUIManager.Instance.CreateText(
+            text: T(LKeys.TooltipLineLabel),
             parent: InputCraftedByPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(-118f, -90f),
+            position: new Vector2(0f, -72f),
             font: GUIManager.Instance.AveriaSerifBold,
             fontSize: 16,
             color: Color.white,
             outline: true,
             outlineColor: Color.black,
-            width: 100f,
-            height: 28f,
-            addContentSizeFitter: false);
+            width: CraftedByDropdownWidth,
+            height: 22f,
+            addContentSizeFitter: false).GetComponent<Text>();
+        _craftedByTooltipLineLabelText.alignment = TextAnchor.MiddleCenter;
 
         _buttonCraftedByLineLabelPick = GUIManager.Instance.CreateButton(
-            text: "…",
+            text: T(LKeys.CraftedByLinePick),
             parent: InputCraftedByPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(32f, -90f),
-            width: 210f,
-            height: 28f).GetComponent<Button>();
+            position: new Vector2(0f, -98f),
+            width: CraftedByDropdownWidth,
+            height: CraftedByDropdownHeight).GetComponent<Button>();
         _buttonCraftedByLineLabelPick.AddUniqueListener(() =>
         {
             if (_buttonCraftedByLineLabelPick == null || !_buttonCraftedByLineLabelPick.interactable)
@@ -730,8 +1088,8 @@ public static class UIPanels
             parent: InputCraftedByPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(24f, -118f),
-            width: 226,
+            position: new Vector2(0f, -98f - CraftedByDropdownHeight - 6f),
+            width: CraftedByPopoverWidth,
             height: 48,
             draggable: false);
         _craftedByLineLabelPopover.SetActive(false);
@@ -795,7 +1153,7 @@ public static class UIPanels
         }
 
         var list = RenameitConfig.GetCraftedByAllowedLabelsList();
-        return list.Count > 0 ? list[0] : "Crafted by";
+        return list.Count > 0 ? list[0] : T(LKeys.CraftedByFallback);
     }
 
     static void ToggleCraftedByLineLabelPopover()
@@ -828,13 +1186,14 @@ public static class UIPanels
             UnityEngine.Object.Destroy(_craftedByLineLabelPopover.transform.GetChild(i).gameObject);
 
         var options = RenameitConfig.GetCraftedByAllowedLabelsList();
-        const float rowH = 28f;
-        const float pad = 6f;
+        const float pad = 8f;
+        float rowH = CraftedByPopoverRowHeight;
         float h = pad * 2f + options.Count * rowH;
         var rt = _craftedByLineLabelPopover.GetComponent<RectTransform>();
         if (rt != null)
-            rt.sizeDelta = new Vector2(220f, h);
+            rt.sizeDelta = new Vector2(CraftedByPopoverWidth, h);
 
+        float rowBtnWidth = CraftedByPopoverWidth - 16f;
         for (int i = 0; i < options.Count; i++)
         {
             int capture = i;
@@ -845,8 +1204,8 @@ public static class UIPanels
                 anchorMin: new Vector2(0.5f, 1f),
                 anchorMax: new Vector2(0.5f, 1f),
                 position: new Vector2(0f, -pad - rowH * (i + 0.5f)),
-                width: 200f,
-                height: rowH - 2f).GetComponent<Button>();
+                width: rowBtnWidth,
+                height: rowH - 4f).GetComponent<Button>();
             btn.AddUniqueListener(() =>
             {
                 _craftedByLineLabelPendingToken = capture == 0 ? null : options[capture];
@@ -895,7 +1254,7 @@ public static class UIPanels
 
         // Title text
         GUIManager.Instance.CreateText(
-            text: "Rename Item",
+            text: T(LKeys.PanelRenameTitle),
             parent: InputNamePanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -918,7 +1277,7 @@ public static class UIPanels
                 anchorMax: new Vector2(0.5f, 0.5f),
                 position: new Vector2(0f, 0f), // slightly above center
                 contentType: InputField.ContentType.Standard,
-                placeholderText: "Enter new name...",
+                placeholderText: T(LKeys.PlaceholderRename),
                 fontSize: 18,
                 width: 300,
                 height: 30f).GetComponent<InputField>();
@@ -927,16 +1286,29 @@ public static class UIPanels
         RenameNameInput!.characterLimit = RenameitConfig.NameCharLimit;
         RenameNameInput.text = DrakeRenameit.GetPropperName(DrakeRenameit.CurrentItem);
 
-        // OK Button
-        if (_buttonOkName == null)
+        if (_buttonCancelName == null)
         {
-            _buttonOkName = GUIManager.Instance.CreateButton(
-                text: "OK",
+            _buttonCancelName = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnCancel),
                 parent: InputNamePanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(-42f, 35f), // 20px above bottom
-                width: 80f,
+                position: new Vector2(-100f, 35f),
+                width: 72f,
+                height: 30f).GetComponent<Button>();
+            _buttonCancelName.gameObject.SetActive(true);
+            _buttonCancelName.AddUniqueListener(CancelNameEditor);
+        }
+
+        if (_buttonOkName == null)
+        {
+            _buttonOkName = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnOk),
+                parent: InputNamePanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(0f, 35f),
+                width: 72f,
                 height: 30f).GetComponent<Button>();
 
             _buttonOkName.gameObject.SetActive(true);
@@ -950,12 +1322,12 @@ public static class UIPanels
         if (_buttonResetName == null)
         {
             _buttonResetName = GUIManager.Instance.CreateButton(
-                text: "Reset",
+                text: T(LKeys.BtnReset),
                 parent: InputNamePanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(42f, 35f), // 20px above bottom
-                width: 80,
+                position: new Vector2(100f, 35f),
+                width: 72f,
                 height: 30f).GetComponent<Button>();
             _buttonResetName.gameObject.SetActive(true);
             _buttonResetName.GetComponent<Button>().AddUniqueListener(() =>
@@ -1007,7 +1379,7 @@ public static class UIPanels
 
         // Title text
         GUIManager.Instance.CreateText(
-            text: RenameItemDescription,
+            text: T(LKeys.PanelDescTitle),
             parent: InputDescPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -1030,7 +1402,7 @@ public static class UIPanels
                 anchorMax: new Vector2(0.5f, 0.5f),
                 position: new Vector2(0f, 0f), // slightly above center
                 contentType: InputField.ContentType.Standard,
-                placeholderText: "Enter new desc",
+                placeholderText: T(LKeys.PlaceholderDesc),
                 fontSize: 16,
                 width: 225,
                 height: 240f).GetComponent<InputField>();
@@ -1042,23 +1414,36 @@ public static class UIPanels
         RenameDescInput!.characterLimit = RenameitConfig.DescCharLimit;
 
 
-        // OK Button
-        if (_buttonOkDesc == null)
+        if (_buttonCancelDesc == null)
         {
-            _buttonOkDesc = GUIManager.Instance.CreateButton(
-                text: "OK",
+            _buttonCancelDesc = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnCancel),
                 parent: InputDescPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(-42f, 35f), // 20px above bottom
-                width: 80f,
+                position: new Vector2(-80f, 35f),
+                width: 68f,
+                height: 30f).GetComponent<Button>();
+            _buttonCancelDesc.gameObject.SetActive(true);
+            _buttonCancelDesc.AddUniqueListener(CancelDescEditor);
+        }
+
+        if (_buttonOkDesc == null)
+        {
+            _buttonOkDesc = GUIManager.Instance.CreateButton(
+                text: T(LKeys.BtnOk),
+                parent: InputDescPanel.transform,
+                anchorMin: new Vector2(0.5f, 0f),
+                anchorMax: new Vector2(0.5f, 0f),
+                position: new Vector2(0f, 35f),
+                width: 68f,
                 height: 30f).GetComponent<Button>();
             _buttonOkDesc.gameObject.SetActive(true);
             _buttonOkDesc.AddUniqueListener(() =>
             {
                 if (String.IsNullOrEmpty(RenameDescInput.text))
                 {
-                    GetPlayerAndSendError("Description must not be empty!");
+                    GetPlayerAndSendError(T(LKeys.MsgDescEmpty));
                     return;
                 }
 
@@ -1069,12 +1454,12 @@ public static class UIPanels
         if (_buttonResetDesc == null)
         {
             _buttonResetDesc = GUIManager.Instance.CreateButton(
-                text: "Reset",
+                text: T(LKeys.BtnReset),
                 parent: InputDescPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
-                position: new Vector2(42f, 35f), // 20px above bottom
-                width: 80,
+                position: new Vector2(80f, 35f),
+                width: 68f,
                 height: 30f).GetComponent<Button>();
             _buttonResetDesc.gameObject.SetActive(true);
             _buttonResetDesc.GetComponent<Button>().AddUniqueListener(() =>

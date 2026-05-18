@@ -1,7 +1,9 @@
 using System;
 using System.Text;
 using BepInEx.Logging;
+using DrakeRenameit.ModText;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
+using static DrakeRenameit.ModText.RenameItLocalization;
 
 namespace DrakeRenameit.Permissions;
 
@@ -194,11 +196,11 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(false, r);
         }
 
-        if (!RenameitConfig.AllowRenameResources && IsUnownedResourceStack(item))
+        if (!RenameitConfig.AllowRenameUnownedItems && IsUnownedResourceStack(item))
         {
             var r = RenameDenialReason.UncraftedResourceBlocked;
             if (logDenied)
-                LogDenied(op, item, r, "Uncrafted/resource blocked (AllowRenameResources false).");
+                LogDenied(op, item, r, "Unowned item blocked (AllowRenameUnownedItems false).");
             return new RenamePermissionResult(false, r);
         }
 
@@ -250,49 +252,49 @@ public static class RenamePermissionManager
         if (!RenameitConfig.ShowReason)
         {
             if ((reasons & RenameDenialReason.GlobalRenameDisabled) != 0)
-                return "Renaming is disabled.";
+                return T(LKeys.DenialRenameDisabled);
             if ((reasons & RenameDenialReason.GlobalDescDisabled) != 0)
-                return "Description editing is disabled.";
+                return T(LKeys.DenialDescDisabled);
             if ((reasons & RenameDenialReason.GlobalCraftedByDisabled) != 0)
-                return "Crafted-by label editing is disabled.";
+                return T(LKeys.DenialCraftedByDisabled);
             if ((reasons & RenameDenialReason.UnlockCostRequired) != 0)
             {
                 if (Player.m_localPlayer != null &&
                     RenameUnlockCost.UnlockCostApplies() &&
                     !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
-                    return "Not enough items to unlock.";
-                return "Unlock this stack first (action menu).";
+                    return T(LKeys.DenialNotEnoughUnlock);
+                return T(LKeys.DenialUnlockFirst);
             }
 
             return GenericDeniedLine(op);
         }
 
         if ((reasons & RenameDenialReason.GlobalRenameDisabled) != 0)
-            return "Renaming is disabled for this world (config).";
+            return T(LKeys.DenialRenameDisabledConfig);
         if ((reasons & RenameDenialReason.GlobalDescDisabled) != 0)
-            return "Description editing is disabled for this world (config).";
+            return T(LKeys.DenialDescDisabledConfig);
         if ((reasons & RenameDenialReason.GlobalCraftedByDisabled) != 0)
-            return "Crafted-by label editing is disabled for this world (config).";
+            return T(LKeys.DenialCraftedByDisabledConfig);
         if ((reasons & RenameDenialReason.UnlockCostRequired) != 0)
         {
             if (Player.m_localPlayer != null &&
                 RenameUnlockCost.UnlockCostApplies() &&
                 !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
-                return "Not enough items in inventory to unlock this stack for editing.";
-            return "Pay the unlock cost in the action menu (Unlock) before editing this stack.";
+                return T(LKeys.DenialNotEnoughUnlockInventory);
+            return T(LKeys.DenialPayUnlockFirst);
         }
 
         var parts = new StringBuilder();
         if ((reasons & RenameDenialReason.ExcludedByName) != 0)
-            parts.Append("Excluded by name. ");
+            parts.Append(T(LKeys.DenialExcludedName));
         if ((reasons & RenameDenialReason.ExcludedByCategory) != 0)
-            parts.Append("Excluded by category. ");
+            parts.Append(T(LKeys.DenialExcludedCategory));
         if ((reasons & RenameDenialReason.ExcludedStacks) != 0)
-            parts.Append("Stackable items cannot be customized (config). ");
+            parts.Append(T(LKeys.DenialExcludedStacks));
         if ((reasons & RenameDenialReason.UncraftedResourceBlocked) != 0)
-            parts.Append("Uncrafted resources cannot be changed (config). ");
+            parts.Append(T(LKeys.DenialUncrafted));
         if ((reasons & RenameDenialReason.NotOwner) != 0)
-            parts.Append("You don't own this item. ");
+            parts.Append(T(LKeys.DenialNotOwner));
 
         if (parts.Length > 0)
             return parts.ToString().Trim();
@@ -303,10 +305,10 @@ public static class RenamePermissionManager
     private static string GenericDeniedLine(RenamePermissionOperation op) =>
         op switch
         {
-            RenamePermissionOperation.RenameItemName => "This item cannot be renamed.",
-            RenamePermissionOperation.RewriteDescription => "This item's description cannot be changed.",
-            RenamePermissionOperation.EditCraftedByLabel => "This item's crafted-by label cannot be changed.",
-            _ => "Action not allowed."
+            RenamePermissionOperation.RenameItemName => T(LKeys.DenialCannotRename),
+            RenamePermissionOperation.RewriteDescription => T(LKeys.DenialCannotDesc),
+            RenamePermissionOperation.EditCraftedByLabel => T(LKeys.DenialCannotCraftedBy),
+            _ => T(LKeys.DenialActionNotAllowed)
         };
 
     public static string BuildPlayerMessage(RenamePermissionOperation op, RenameDenialReason reasons) =>
@@ -326,16 +328,16 @@ public static class RenamePermissionManager
                 if (Player.m_localPlayer != null &&
                     RenameUnlockCost.UnlockCostApplies() &&
                     !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
-                    return "Not enough resources to unlock.";
-                return "Unlock this stack first (action menu).";
+                    return T(LKeys.TooltipNotEnoughResourcesUnlock);
+                return T(LKeys.DenialUnlockFirst);
             }
 
             return op switch
             {
-                RenamePermissionOperation.RenameItemName => "Cannot rename this item.",
-                RenamePermissionOperation.RewriteDescription => "Cannot edit description.",
-                RenamePermissionOperation.EditCraftedByLabel => "Cannot edit crafted-by label.",
-                _ => "Not allowed."
+                RenamePermissionOperation.RenameItemName => T(LKeys.TooltipCannotRename),
+                RenamePermissionOperation.RewriteDescription => T(LKeys.TooltipCannotDesc),
+                RenamePermissionOperation.EditCraftedByLabel => T(LKeys.TooltipCannotCraftedBy),
+                _ => T(LKeys.TooltipNotAllowed)
             };
         }
 

@@ -117,8 +117,9 @@ jobs:
           PKG_DIR="DrakeMods-DrakesRenameit-${VERSION}"
           ZIP_NAME="DrakeMods-DrakesRenameit-${VERSION}.zip"
 
-          mkdir -p "$PKG_DIR"
+          mkdir -p "$PKG_DIR/Assets/Localization"
           cp bin/Release/DrakesRenameit.dll "$PKG_DIR/"
+          cp Assets/Localization/*.json "$PKG_DIR/Assets/Localization/"
           cp README.md                      "$PKG_DIR/"
           cp icon.png                       "$PKG_DIR/"
           cp CHANGELOG.md                   "$PKG_DIR/"

@@ -10,8 +10,10 @@ using Jotunn;
 using Jotunn.Managers;
 using Jotunn.Utils;
 using UnityEngine;
+using DrakeRenameit.ModText;
 using RenameEvents = global::DrakeRenameit.API.RenameEvents;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
+using static DrakeRenameit.ModText.RenameItLocalization;
 using static DrakeRenameit.RenameitConfig;
 
 namespace DrakeRenameit
@@ -23,7 +25,7 @@ namespace DrakeRenameit
     {
         public const string CompanyName = "DrakeMods";
         public const string ModName = "DrakesRenameit";
-        public const string Version = "0.9.10";
+        public const string Version = "1.0.0";
         public const string GUID = "com." + CompanyName + "." + ModName;
         public const string DrakeNewName = "Drake_Rename";
         public const string DrakeNewDesc = "Drake_Rename_Desc";
@@ -57,6 +59,7 @@ namespace DrakeRenameit
 
         private void Awake()
         {
+            RenameItLocalization.Init(this, Logger);
             Bind(Config);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             AddVip();
@@ -216,7 +219,7 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(item))
             {
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center,
-                    "That item is no longer in your inventory. Put it back, then unlock again.");
+                    T(LKeys.MsgItemNotInInventoryUnlock));
                 return false;
             }
 
@@ -226,7 +229,7 @@ namespace DrakeRenameit
             {
                 string why = GetMenuBlockedReason(item);
                 Player.m_localPlayer.Message(MessageHud.MessageType.Center,
-                    string.IsNullOrEmpty(why) ? "This item cannot be edited." : why);
+                    string.IsNullOrEmpty(why) ? T(LKeys.MsgCannotEditItem) : why);
                 return false;
             }
 
@@ -237,7 +240,7 @@ namespace DrakeRenameit
             }
 
             SetRenameUnlocked(item);
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Item unlocked for editing.");
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, T(LKeys.MsgItemUnlocked));
             return true;
         }
 
@@ -279,7 +282,7 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(item))
             {
                 Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                    "That item is no longer in your inventory.");
+                    T(LKeys.MsgItemNotInInventory));
                 return;
             }
 
@@ -416,7 +419,7 @@ namespace DrakeRenameit
                     name);
             }
 
-            if (NameClaimsOwner && (AllowRenameResources || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
+            if (NameClaimsOwner && (AllowRenameUnownedItems || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
                 String.IsNullOrEmpty(CurrentItem.m_crafterName))
             {
                 Player localPlayer = Player.m_localPlayer;
@@ -448,7 +451,7 @@ namespace DrakeRenameit
             }
             
 
-            if (NameClaimsOwner && (AllowRenameResources || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
+            if (NameClaimsOwner && (AllowRenameUnownedItems || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
                 String.IsNullOrEmpty(CurrentItem.m_crafterName))
             {
                 Player localPlayer = Player.m_localPlayer;
@@ -467,7 +470,7 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
                 Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                    "That item is no longer in your inventory. Put it back, then try again.");
+                    T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;
             }
@@ -484,7 +487,7 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
                 Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                    "That item is no longer in your inventory. Put it back, then try again.");
+                    T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;
             }
@@ -538,12 +541,8 @@ namespace DrakeRenameit
             return WouldHaveAnyDrakeEditIfUnlockIgnored(item);
         }
 
-        public static bool IsMenuOpenModifierHeld()
-        {
-            return MenuModifierIsShift
-                ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)
-                : Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        }
+        public static bool IsMenuOpenModifierHeld() =>
+            MenuKeyBinding.IsHeld(MenuOpenModifier);
 
         /// <summary>Suffix for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies: 🔒 until paid, then 🖊️ (open-lock glyphs are easy to confuse with locked in Valheim fonts).</summary>
         public static string GetMenuTooltipLockSuffix(ItemDrop.ItemData? item)
@@ -588,7 +587,7 @@ namespace DrakeRenameit
                     RenamePermissionOperation.EditCraftedByLabel, craftedResult.Reasons));
 
             if (parts.Count == 0)
-                return "This item cannot be edited.";
+                return T(LKeys.MsgCannotEditItem);
 
             // Deduplicate and join
             var seen = new System.Collections.Generic.HashSet<string>();
@@ -644,7 +643,7 @@ namespace DrakeRenameit
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
                 Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
-                    "That item is no longer in your inventory. Put it back, then try again.");
+                    T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;
             }

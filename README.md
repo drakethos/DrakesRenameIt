@@ -1,7 +1,7 @@
 
 <img width="256" height="256" alt="icon" src="https://github.com/user-attachments/assets/47b41d4d-e109-480c-9d26-2ad4dadf377e" />
 
-# DrakesRenameIt V0.9.10 Release Candidate
+# DrakesRenameIt V1.0
 
 A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 

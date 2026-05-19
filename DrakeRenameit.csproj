@@ -22,7 +22,7 @@
     <ThunderstoreFolder>C:\Modding\Thunderstore\$(CompanyName)-$(AssemblyName)-$(Version)</ThunderstoreFolder>
     <ZipOutput>$(ThunderstoreFolder).zip</ZipOutput>
     <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
-    <Description>Rename, change description, and update the Crafted by line for any item in your inventory. You can even recolor them too with sign color codes!</Description>
+    <Description>Rename, change description, and update the Crafted by line for any item in your inventory. You can even recolor them too with sign color codes! Fully configurable with server sync settings.</Description>
     <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
     <Dependencies>"denikson-BepInExPack_Valheim-5.4.2333", "ValheimModding-Jotunn-2.29.0"</Dependencies>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>

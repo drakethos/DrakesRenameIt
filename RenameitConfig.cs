@@ -54,6 +54,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _renameAllowlist = default!;
     private static ConfigEntry<bool> _excludeStacks = default!;
     private static ConfigEntry<bool> _vipOnlyOverride = default!;
+    private static ConfigEntry<bool> _showDenialUi = default!;
     private static ConfigEntry<bool> _showReason = default!;
     private static ConfigEntry<bool> _separateStacks = default!;
     private static ConfigEntry<bool> _separateStacksHardLock = default!;
@@ -93,6 +94,11 @@ public static class RenameitConfig
     /// <summary>When true, non-elevated players cannot rename, edit description, or crafted-by for items with vanilla stack limits &gt; 1 (<c>m_maxStackSize &gt; 1</c>). Overrides by admins/VIPs apply when <see cref="AllowAdminOverride"/> is on. Separate from <see cref="SeparateStacks"/> / <see cref="SeparateStacksHardLock"/>.</summary>
     public static bool ExcludeStacks => _excludeStacks.Value;
     public static bool VipOnlyOverride => _vipOnlyOverride.Value;
+    /// <summary>
+    /// When true, access denials (not owner, excluded, feature off, etc.) show red menu hints, tooltip lines, and center messages.
+    /// Does not affect unlock-cost prompts, inventory placement errors, or validation messages.
+    /// </summary>
+    public static bool ShowDenialUi => _showDenialUi.Value;
     public static bool ShowReason => _showReason.Value;
     public static bool SeparateStacks => _separateStacks.Value;
 
@@ -262,11 +268,18 @@ public static class RenameitConfig
             "If true, unowned items may be renamed or given a description/crafted-by display. Unowned means no crafter id and no crafter name — e.g. picked up from the world, spawned (console/admin), loot drops, and uncrafted resource stacks. When false, those stacks are blocked unless on RenameAllowlist. Not the same as ExcludedCategory Material (that blocks by item type even when crafted). When false, NameClaimsOwner cannot claim those stacks.",
             true);
 
+        _showDenialUi = config.BindSynced(
+            SectionGeneral, DisplayGeneral,
+            "ShowDenialUi",
+            true,
+            "If true, access denials (not your item, excluded, rename disabled, etc.) show a red strikethrough menu hint, denial lines in tooltips, and a center message when modifier+right-click cannot open the menu. If false, those access cues are hidden. Unlock-cost, not-in-inventory, and empty-field errors are unchanged. Server-synced.",
+            true);
+
         _showReason = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "ShowReason",
-            true,
-            "If true, denied edit actions show specific reasons (ownership, exclusion, unowned, etc.). If false, generic messages only. Server-synced.",
+            false,
+            "If true, denial text (when ShowDenialUi is on) uses specific reasons (ownership, exclusion, unowned, etc.). If false, generic messages only. Has no effect when ShowDenialUi is off. Server-synced.",
             true);
 
         _showItemStandItemNameWhenNoAccess = config.BindSynced(
@@ -416,7 +429,9 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "CraftedBy", SectionCraftedBy,
             "LabelCustomizable", "AllowedLabels");
         MigrateSectionKeys(config, "General", SectionGeneral,
-            "LockToOwner", "NameClaimsOwner", "AllowRenameUnownedItems", "ShowReason", "ShowItemStandItemNameWhenNoAccess");
+            "LockToOwner", "NameClaimsOwner", "AllowRenameUnownedItems", "ShowDenialUi", "ShowReason", "ShowItemStandItemNameWhenNoAccess");
+
+        MigrateHideDisabledDenialUiToShowDenialUi(config);
         MigrateSectionKeys(config, "Stacks", SectionStacks,
             "SeparateStacks", "SeparateStacksHardLock", "ExcludeStacks");
         MigrateSectionKeys(config, "UnlockCost", SectionUnlockCost,
@@ -450,5 +465,19 @@ public static class RenameitConfig
             return false;
         target.Value = legacy.Value;
         return true;
+    }
+
+    /// <summary>Renamed <c>HideDisabledDenialUi</c> → <c>ShowDenialUi</c> (inverted).</summary>
+    private static void MigrateHideDisabledDenialUiToShowDenialUi(ConfigFile config)
+    {
+        foreach (var section in new[] { SectionGeneral, "General" })
+        {
+            if (!config.TryGetEntry(section, "HideDisabledDenialUi", out ConfigEntry<bool> legacy))
+                continue;
+            if (!config.TryGetEntry(SectionGeneral, "ShowDenialUi", out ConfigEntry<bool> target))
+                return;
+            target.Value = !legacy.Value;
+            return;
+        }
     }
 }

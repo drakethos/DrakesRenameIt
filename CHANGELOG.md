@@ -1,5 +1,6 @@
 - Version 1.0.0
   - **1.0 release**: configurable menu key bindings (Shift/Ctrl/Alt/combos), Cancel on edit panels, Reset all confirmation, centralized localization (`Assets/Localization/English.json`).
+  - Added **ShowDenialUi** (General, server-synced): when off, blocked items show no red menu hint, denial tooltip lines, or center message on failed modifier+right-click. **ShowReason** default is now false; it only applies when **ShowDenialUi** is on.
 - Version 0.1.0
   - Initial upload and baseline version.
     - Current Feature List:

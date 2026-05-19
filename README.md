@@ -7,9 +7,9 @@ A Valheim mod that lets you rename items, rewrite descriptions and  now even upd
 
 ### How to use
 
-Hold **Shift** or **Ctrl** (configurable: **MenuOpenModifier** in `UI-NotSynced`) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Choose an action; only available options are clickable. 
+Hold your configured keys (**MenuOpenModifier** in `UI-NotSynced` — default **Shift**, or **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Choose an action; only available options are clickable.
 
-"Okay" will confirm the dialog with your change, while the "reset" button will bring it back to the item's original localized string.
+**Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
 <p>Rename anything:</p>
@@ -46,25 +46,24 @@ localization with an additional name, simply leave the $string intact and add ar
 <img width="331" height="247" alt="image" src="https://github.com/user-attachments/assets/6ab2dee8-37cb-45de-80e5-1c69f1e2b93b" />
 
 ### Features with rename:
-- Fully supports the same sign codes like <color=blue> <b>bold</b> etc for full information check official Valheim documentation
-  on sign features.
-  - You can resize using <size=...> Do not recommend over 200, or things start to get funky.
-- Supports localization strings
-- Lets you rename any existing item and renames that instance.
-- Fully supports multiplayer play, just ensure each client has the mod.
-- recolor the UI tips with configs
-- Admin override does not apply to the rules
-- You can enable and disable parts of the mod now.
-- API hooks for other mods to track name and description changes
-- Doesn't ACTUALLY rename items, so any mod that needs to deal with the items shared, the name won't experience any issues! (hopefully...)
-- *New* Change crafted by name.
-- *New* Seperate stacks by customization with configurable options.
-- *New* Admin override configurable for auto detection or VIP list only
-- *New* Configurable options for showing reasons for denials and more detailed config options for exclusions and allowlists.
-- *New* one unified menu for all rename, description, and crafted by edits with a slick new design.
-- *New* configurable costs for editing items, making changes more meaningful and preventing abuse.
-- *New* Vast array of configurations for what's allowed to be edited, by name and category.
-- *New* Allow Item stands to be configured to show name on wards.
+- Fully supports the same sign codes like `<color=blue>`, `<b>bold</b>`, etc. — see official Valheim sign documentation for the full list.
+  - You can resize using `<size=...>`. Values over ~200 are not recommended; layout can break.
+- Supports localization strings (`$item_...` tokens); leave tokens intact and wrap extra text around them to keep localization.
+- Rename, description, and **Crafted by** (display name + optional **tooltip line** prefix such as “Belongs To”) on that item instance only — internal prefab ids are unchanged for other mods.
+- Fully supports multiplayer; every client needs the mod.
+- **MenuHintColor** and flexible **MenuOpenModifier** key bindings (per-client UI).
+- Toggle rename, descriptions, and crafted-by independently; **ShowDenialUi** / **ShowReason** control blocked-item feedback.
+- **AllowAdminOverride** + **VipList** / API VIPs bypass ownership and exclusions; **VipOnlyOverride** can require VIP list only (ignore Valheim server admin).
+- **Unlock cost** — optional per-stack payment before edits; tooltip shows lock / pen icons; admins and VIPs skip when override applies.
+- **Separate stacks** — customized stacks only merge when name, description, and crafted-by data match; optional hard lock blocks manual drag-merges too.
+- **ExcludeStacks** — block non-elevated edits on vanilla stackable items (`m_maxStackSize > 1`), separate from merge rules.
+- **Durability modifiers** — optional wear labels prepended to display names (Pristine / tiers / Broken).
+- Exclusions by item name, category, and **RenameAllowlist** bypasses; reference file generated for category tokens.
+- Unified action menu (rename, description, crafted by) with fast reset; **Cancel** and **Reset all** confirmation.
+- Item stands: custom names on hover; **ShowItemStandItemNameWhenNoAccess** shows the stand item name even in warded “no access” areas.
+- Centralized localization (`Assets/Localization/*.json`); English and Spanish included.
+- API hooks for other mods (`RenameEvents`: name, description, crafted-by display changes).
+- Tooltip rich-text safety (unclosed tags auto-closed); crafted-by display can get default orange coloring when unstyled.
 #### What this Mod doesn't do:
   - <s>your taxes
   - change every single item that exists
@@ -74,47 +73,72 @@ localization with an additional name, simply leave the $string intact and add ar
   - let you down!</s>
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). **Almost everything is server-synced** so the host controls rules for the world; the exceptions are **ShiftColor** and **CtrlColor** (per-client UI only).
+Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Almost everything is server-synced**; per-client exceptions are **MenuOpenModifier** and **MenuHintColor** (`UI-NotSynced`). Legacy section names are migrated automatically on load.
 
-#### General (server-synced)
+#### Features (server-synced)
 
-- **RenameEnabled** — When on, non-elevated players may rename items (via the action menu). Turn off to block new renames while keeping other features.
+- **RenameEnabled** — When on, players may edit display names from the action menu (subject to all other rules). Turn off to block new renames while keeping descriptions or crafted-by.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
-- **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the “Crafted by” line in tooltips. Real crafter id/name used by the game (ownership, locks) is unchanged.
-- **SeparateStacks** — When on, stacks only merge automatically when the tag matches (custom name, description, and crafted-by display key). Auto pickup and other automatic merges will not combine mismatched stacks.
-- **SeparateStacksHardLock** — Only applies when **SeparateStacks** is on. When **true** (default), mismatched stacks cannot be merged. This includes manual drags onto another stack. When **false**, you can drag one stack onto another and they combine immediately. The target stack will keep its custom name, description, and crafted-by display.
-- **LockToOwner** — When on, only the crafter / owner can rename or change description. Stacks with **no** crafter yet (raw picked-up resources: no crafter id and no crafter name) are **not** treated as “someone else’s” until they are crafted or claimed. After **NameClaimsOwner** assigns you as crafter, others are blocked as usual.
-- **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter (and “crafted by” style ownership) so **LockToOwner** can protect that item from edit. Works with uncrafted resources when **AllowRenameResources** (and allowlist if needed) permits the edit.
-- **AllowRenameResources** — When on, unowned resource-style items (no crafter yet) can be renamed or given a description. When off, those items are blocked **unless** they are on **RenameAllowlist** (then claim rules can still apply). This is separate from **ExcludedCategory** `Material`, which can still block by item type for crafted gear.
-- **ShowReason** — When on, denied rename/description attempts show **why** (ownership, exclusion, resources, etc.) in the center message and inventory tooltip. When off, messages stay generic. **Server-synced** so clients cannot enable detailed reasons against the host’s preference. Denials are still logged to the BepInEx log for admins.
-
-#### Limits (server-synced)
-
-- **NameCharacterLimit** — Max length for custom names. Counts rich text tags (`<color>`, `<size>`, etc.), require adequate headroom.
-- **CraftedByCharLimit** — Max length for Crafted By: names. Counts rich text tags (`<color>`, `<size>`, etc.), require adequate headroom.
-- **DescriptionCharacterLimit** — Same idea for custom descriptions.
+- **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the crafted-by line in tooltips (name and optional line prefix). Real crafter id/name used by the game (ownership, locks) is unchanged.
 
 #### Admin (server-synced)
 
-- **AllowAdminOverride** — When on, “elevated” players (see below) bypass **LockToOwner**, exclusions, and resource rules, and can still rename or edit descriptions even when **RenameEnabled** / **RewriteDescriptionsEnabled** are off for everyone else (“regardless of ownership or enabled,” per config).
+- **AllowAdminOverride** — When on, “elevated” players (see below) bypass **LockToOwner**, exclusions, unowned-resource blocks, unlock cost, and most per-item rules. Elevated players can still edit when feature toggles are off for everyone else.
 - **VipList** — Comma-separated **player names** or **player IDs** (same strings as the API `AddVIP`). Used when **AllowAdminOverride** is on. Valheim server admins also count as elevated unless **VipOnlyOverride** is on.
-- **VipOnlyOverride** — When **true** (and **AllowAdminOverride** is on), **only** VIP list / API VIPs count as elevated; Valheim’s server admin flag is **ignored** for bypassing rules. Useful to test VIP-only behavior. When **false**, either Valheim admin **or** VIP counts as elevated.
+- **VipOnlyOverride** — When **true** (and **AllowAdminOverride** is on), **only** VIP list / API VIPs count as elevated; Valheim’s server admin flag is **ignored** for bypassing rules. When **false**, either Valheim admin **or** VIP counts as elevated.
 
 #### Exclusions (server-synced)
 
-- **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`, matches internal item name), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
-- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. A full reference file is generated at **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** on first run or when the mod version changes.
-- **ExcludeStacks** — When **true**, stackable vanilla items (`m_maxStackSize > 1`) cannot be renamed, have descriptions changed, or crafted-by labels edited by non-elevated players. **AllowAdminOverride** still lets admins and VIPs edit those stacks. **RenameAllowlist** can bypass this for specific items. This is separate from **SeparateStacks** / **SeparateStacksHardLock** in General: those control whether differently customized stacks merge; they do not replace admin override for editing.
-- **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require **RenameEnabled** / **RewriteDescriptionsEnabled** to be on and still obey **LockToOwner** if another player owns the item. **AllowAdminOverride** elevation bypasses the global toggles and most restrictions as usual.
+- **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions/crafted-by changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. Reference file: **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** on first run or version change.
+- **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require the relevant **Features** toggles to be on and still obey **LockToOwner** if another player owns the item.
 
-#### UI (not synced — client only)
+#### Crafted by (server-synced)
 
-- **MenuOpenModifier** — `Shift` or `Ctrl` + right-click opens the Drake menu. The other modifier + right-click uses default behavior.
-- **ModifierColor** — Tooltip hint color for **MenuOpenModifier** (Unity color name or `#rrggbb`).
+- **LabelCustomizable** — When on, players who may open the crafted-by editor can pick a **tooltip line** prefix from **AllowedLabels**. When off, the picker is greyed for normal players; elevated players can still change it.
+- **AllowedLabels** — Comma- or semicolon-separated prefixes shown before the crafter name (e.g. `Belongs To: Name`). The **first** entry is the default row (uses the game’s localized crafted-by line when selected). Further entries are stored on the item when chosen.
+
+#### General (server-synced)
+
+- **LockToOwner** — When on, only the crafter / owner can rename or change description/crafted-by. Stacks with **no** crafter yet are not locked until claimed or crafted.
+- **NameClaimsOwner** — When on, successfully applying a new name or description on an **unowned** stack sets you as crafter so **LockToOwner** can protect it. Requires **AllowRenameUnownedItems** or **RenameAllowlist** for raw resources.
+- **AllowRenameUnownedItems** — When on, unowned stacks (no crafter id and no crafter name — picked up resources, loot, etc.) may be edited. When off, blocked **unless** on **RenameAllowlist**. Separate from **ExcludedCategory** `Material`, which blocks by item type even when crafted.
+- **ShowDenialUi** — When on, access denials show a red menu hint, tooltip denial lines, and a center message on failed modifier+right-click. When off, those cues are hidden (silent). Unlock-cost, not-in-inventory, and validation errors are unchanged.
+- **ShowReason** — When on (and **ShowDenialUi** is on), denial text explains **why** (ownership, exclusion, etc.). When off, generic messages only. No effect when **ShowDenialUi** is off. Denials are still logged to BepInEx for admins.
+- **ShowItemStandItemNameWhenNoAccess** — When on, item stands in warded/private areas still show “no access” but also append the stand’s current item name on the hover label (display only; permissions unchanged).
+
+#### Stacks (server-synced)
+
+- **SeparateStacks** — When on, stacks only merge when Drake identity matches (custom name, description, crafted-by display, and crafted-by line label). Auto pickup will not combine mismatched customized stacks.
+- **SeparateStacksHardLock** — Only when **SeparateStacks** is on. When **true**, mismatched stacks never merge, including manual drags. When **false**, auto pickup still separates mismatches, but you can drag-merge in one step (target keeps its custom data).
+- **ExcludeStacks** — When **true**, non-elevated players cannot rename, edit descriptions, or crafted-by on vanilla stackable items (`m_maxStackSize > 1`). **RenameAllowlist** and elevated override bypass this. Independent of **SeparateStacks** merge behavior.
+
+#### Unlock cost (server-synced)
+
+- **UnlockCostEnabled** — When on (and **UnlockCost** parses to at least one item), each stack must be unlocked once before rename/description/crafted-by edits. Pay from inventory via **Unlock** in the action menu. Elevated players skip when **AllowAdminOverride** applies. Stacks already customized before unlock existed are grandfathered (unlock flag written once).
+- **UnlockCost** — Comma- or semicolon-separated `PrefabName:amount` (e.g. `Coins:5`, `Coal:10`) or `$item_token:amount`. Invalid or empty cost is ignored.
+
+#### Limits (server-synced)
+
+- **NameCharacterLimit** — Max length for custom names (rich-text tag codes count toward the limit).
+- **CraftedByCharLimit** — Max length for crafted-by display names (rich-text tags count).
+- **DescriptionCharacterLimit** — Max length for custom descriptions.
+
+#### Modifiers (server-synced)
+
+- **DurabilityModifierEnabled** — When on, prepends a wear label to display names for items with forge durability (`m_useDurability`), not spoilage timers. Does not change stored rename text.
+- **DurabilityUnbrokenLabel** — Label at full durability (~100%). Rich-text allowed; empty = no label when pristine.
+- **DurabilityBrokenLabel** — Label only at **0** durability (broken in-game). Not used for merely worn gear.
+- **DurabilityTierModifiers** — In-between wear bands: `{Name,fraction}` or `{Name,percent}` (e.g. `{Rusty,0.4},{Worn,0.6}`). Lowest matching threshold wins; gap above highest tier but below full gets no extra label. Skips items with no durability (`m_maxDurability` 0).
+
+#### UI-NotSynced (client only)
+
+- **MenuOpenModifier** — Keys held while right-clicking an inventory item to open the Drake menu. Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only.
+- **MenuHintColor** — Tooltip hint color for the menu shortcut (Unity color name or `#rrggbb`).
 
 #### Permission order (how rules stack)
 
-**Admin/VIP override** → **global toggles** (rename, description, crafted-by label) → **LockToOwner** (only matters once an owner exists) → **RenameAllowlist** → then any of the following: **excluded names**, **excluded category**, **ExcludeStacks** (stackable items), and **AllowRenameResources** for raw resources.
+**Admin/VIP override** (and unlock-cost skip when elevated) → **Features toggles** (rename, description, crafted-by) → **LockToOwner** (once an owner exists) → **RenameAllowlist** → **excluded names**, **excluded category**, **ExcludeStacks**, and **AllowRenameUnownedItems** for raw resources → **unlock cost** (if enabled) for the stack.
 
 ### Known Issues:
 Known Issues:
@@ -126,7 +150,9 @@ Known Issues:
 - Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that. However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for Valheim.
 -   Probably a seperate mod though!
 #### API Docs:
-Events live in namespace `DrakeRenameit.API` (`RenameEvents`).
+Types live in namespace `DrakeRenameit.API`.
+
+**Events** (`RenameEvents`):
 
 ```csharp
 using DrakeRenameit.API;
@@ -134,6 +160,27 @@ using DrakeRenameit.API;
 RenameEvents.OnItemNameChanged += (player, item, oldName, newName) => { /* ... */ };
 RenameEvents.OnItemDescriptionChanged += (player, item, oldDesc, newDesc) => { /* ... */ };
 RenameEvents.OnCraftedByDisplayChanged += (player, item, itemPrefabName, oldDisplay, newDisplay) => { /* ... */ };
+```
+
+**VIP / elevated checks** (`RenameitPermission`) — requires **AllowAdminOverride** on the server for bypass rules to apply. Use the player’s **character name** or **`GetPlayerID().ToString()`** (same values as **VipList** in config):
+
+```csharp
+using DrakeRenameit.API;
+
+// At mod startup or when your mod grants perks:
+RenameitPermission.AddVIP("SomePlayerName");
+RenameitPermission.AddVIP(Player.m_localPlayer.GetPlayerID().ToString());
+
+// Or bulk from your own list:
+RenameitPermission.AddVIP(new List<string> { "Alice", "76561198000000000" });
+
+RenameitPermission.RemoveVIP("SomePlayerName");
+
+foreach (string vip in RenameitPermission.GetVIPs())
+    Logger.LogInfo($"VIP: {vip}");
+
+if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+    Logger.LogInfo("Local player bypasses ownership/exclusions (VIP or Valheim admin, per config).");
 ```
 
 Contact me:

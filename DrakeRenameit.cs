@@ -227,9 +227,13 @@ namespace DrakeRenameit
                 return false;
             if (!WouldHaveAnyDrakeEditIfUnlockIgnored(item))
             {
-                string why = GetMenuBlockedReason(item);
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center,
-                    string.IsNullOrEmpty(why) ? T(LKeys.MsgCannotEditItem) : why);
+                if (RenameitConfig.ShowDenialUi)
+                {
+                    string why = GetMenuBlockedReason(item);
+                    if (!string.IsNullOrEmpty(why))
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, why);
+                }
+
                 return false;
             }
 
@@ -560,6 +564,8 @@ namespace DrakeRenameit
         /// Used to show a <see cref="MessageHud"/> message when the modifier is held but the menu is blocked.</summary>
         public static string GetMenuBlockedReason(ItemDrop.ItemData? item)
         {
+            if (!RenameitConfig.ShowDenialUi)
+                return "";
             if (item == null || Player.m_localPlayer == null)
                 return "";
 
@@ -567,20 +573,20 @@ namespace DrakeRenameit
 
             var nameResult = RenamePermissionManager.TryGetDenial(
                 RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer);
-            if (!nameResult.Allowed)
+            if (!nameResult.Allowed && RenamePermissionManager.HasAccessDenial(nameResult.Reasons))
                 parts.Add(RenamePermissionManager.FormatDenialForPlayer(
                     RenamePermissionOperation.RenameItemName, nameResult.Reasons));
 
             var descResult = RenamePermissionManager.TryGetDenial(
                 RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer);
-            if (!descResult.Allowed && (parts.Count == 0 ||
-                descResult.Reasons != nameResult.Reasons))
+            if (!descResult.Allowed && RenamePermissionManager.HasAccessDenial(descResult.Reasons) &&
+                (parts.Count == 0 || descResult.Reasons != nameResult.Reasons))
                 parts.Add(RenamePermissionManager.FormatDenialForPlayer(
                     RenamePermissionOperation.RewriteDescription, descResult.Reasons));
 
             var craftedResult = RenamePermissionManager.TryGetDenial(
                 RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer);
-            if (!craftedResult.Allowed &&
+            if (!craftedResult.Allowed && RenamePermissionManager.HasAccessDenial(craftedResult.Reasons) &&
                 (parts.Count == 0 ||
                  (craftedResult.Reasons != nameResult.Reasons && craftedResult.Reasons != descResult.Reasons)))
                 parts.Add(RenamePermissionManager.FormatDenialForPlayer(

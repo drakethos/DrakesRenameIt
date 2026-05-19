@@ -45,7 +45,7 @@ description: >-
 
 ## Config sections (high level)
 
-- **General**: rename/desc/crafted-by feature toggles, stacks, unlock cost, etc. **`CraftedByLabelEnabled`** — players may edit crafted-by **display** at all.
+- **General**: rename/desc/crafted-by feature toggles, stacks, unlock cost, etc. **`CraftedByLabelEnabled`** — players may edit crafted-by **display** at all. **`ShowDenialUi`** / **`ShowReason`** — blocked-item UI on/off vs. detailed denial text (ShowReason only matters when ShowDenialUi is on).
 - **`CraftedBy`** (synced): **`LabelCustomizable`** — non-elevated players may pick from **`AllowedLabels`**; if false, picker is greyed but **elevated** users still can. **`AllowedLabels`** — comma/semicolon list; **first entry** is the UI “default” row (clears **`DrakeCraftedByLineLabel`**; tooltip uses game localization for the line). Further entries are stored verbatim on the item when chosen.
 - **`RenameitConfig.GetCraftedByAllowedLabelsList()`** parses **`AllowedLabels`** (dedupe, trim).
 

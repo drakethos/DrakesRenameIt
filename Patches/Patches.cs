@@ -188,9 +188,12 @@ public static class Patches
                     }
 
                     // Modifier is held but nothing is available — show the reason instead of silently doing nothing
-                    string reason = DrakeRenameit.GetMenuBlockedReason(item);
-                    if (!string.IsNullOrEmpty(reason))
-                        Player.m_localPlayer?.Message(MessageHud.MessageType.Center, reason);
+                    if (RenameitConfig.ShowDenialUi)
+                    {
+                        string reason = DrakeRenameit.GetMenuBlockedReason(item);
+                        if (!string.IsNullOrEmpty(reason))
+                            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, reason);
+                    }
                     return;
                 }
 
@@ -270,7 +273,7 @@ public static class InventoryGridTooltipPatch
             sb.AppendLine(
                 $"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color><color=blue>{T(LKeys.TooltipElevatedOverride)}</color>");
         }
-        else
+        else if (RenameitConfig.ShowDenialUi)
         {
             string detail = BuildNoDrakeMenuHint(item);
             sb.AppendLine($"<color=red><s>{menuHint}{lockSuffix}</s></color>");

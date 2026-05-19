@@ -134,7 +134,8 @@ public static class RenamePermissionManager
     {
         var result = TryGetDenial(op, item, local, logDenied: showErrorToPlayer);
 
-        if (!result.Allowed && showErrorToPlayer && local != null)
+        if (!result.Allowed && showErrorToPlayer && local != null &&
+            ShouldShowDenialMessageToPlayer(result.Reasons))
             local.Message(MessageHud.MessageType.Center, FormatDenialForPlayer(op, result.Reasons));
 
         return result;
@@ -246,6 +247,29 @@ public static class RenamePermissionManager
         _log?.LogInfo($"[Permission] DENY {op} item={id} reasons={reasons} — {detail}");
     }
 
+    /// <summary>Rule-based access denial (owner, exclusions, feature off, etc.). Does not include the unlock-cost gate.</summary>
+    public static bool HasAccessDenial(RenameDenialReason reasons)
+    {
+        const RenameDenialReason access =
+            RenameDenialReason.GlobalRenameDisabled |
+            RenameDenialReason.GlobalDescDisabled |
+            RenameDenialReason.NotOwner |
+            RenameDenialReason.UncraftedResourceBlocked |
+            RenameDenialReason.ExcludedByName |
+            RenameDenialReason.ExcludedByCategory |
+            RenameDenialReason.GlobalCraftedByDisabled |
+            RenameDenialReason.ExcludedStacks;
+        return (reasons & access) != 0;
+    }
+
+    /// <summary>Whether <see cref="FormatDenialForPlayer"/> may be shown (access vs. unlock-cost gate).</summary>
+    internal static bool ShouldShowDenialMessageToPlayer(RenameDenialReason reasons)
+    {
+        if ((reasons & RenameDenialReason.UnlockCostRequired) != 0)
+            return true;
+        return RenameitConfig.ShowDenialUi && HasAccessDenial(reasons);
+    }
+
     /// <summary>Player-facing denial text (respects ShowReason). Use for MessageHud and tooltips.</summary>
     public static string FormatDenialForPlayer(RenamePermissionOperation op, RenameDenialReason reasons)
     {
@@ -321,17 +345,14 @@ public static class RenamePermissionManager
         if (res.Allowed)
             return "";
 
+        if ((res.Reasons & RenameDenialReason.UnlockCostRequired) != 0)
+            return FormatUnlockCostHint(op, res.Reasons);
+
+        if (!RenameitConfig.ShowDenialUi || !HasAccessDenial(res.Reasons))
+            return "";
+
         if (!RenameitConfig.ShowReason)
         {
-            if ((res.Reasons & RenameDenialReason.UnlockCostRequired) != 0)
-            {
-                if (Player.m_localPlayer != null &&
-                    RenameUnlockCost.UnlockCostApplies() &&
-                    !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
-                    return T(LKeys.TooltipNotEnoughResourcesUnlock);
-                return T(LKeys.DenialUnlockFirst);
-            }
-
             return op switch
             {
                 RenamePermissionOperation.RenameItemName => T(LKeys.TooltipCannotRename),
@@ -342,5 +363,19 @@ public static class RenamePermissionManager
         }
 
         return FormatDenialForPlayer(op, res.Reasons);
+    }
+
+    static string FormatUnlockCostHint(RenamePermissionOperation op, RenameDenialReason reasons)
+    {
+        if (!RenameitConfig.ShowReason)
+        {
+            if (Player.m_localPlayer != null &&
+                RenameUnlockCost.UnlockCostApplies() &&
+                !RenameUnlockCost.CanPlayerAfford(Player.m_localPlayer))
+                return T(LKeys.TooltipNotEnoughResourcesUnlock);
+            return T(LKeys.DenialUnlockFirst);
+        }
+
+        return FormatDenialForPlayer(op, reasons);
     }
 }

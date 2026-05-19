@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using ServerSync;
 
 namespace DrakeRenameit;
 
 public static class RenameitConfig
 {
+    /// <summary>Gameplay sections 01–09: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>.</summary>
+    private const int ExpectedSyncedEntryCount = 30;
+
+    internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
     private const string SectionAdmin = "01 Admin";
     private const string SectionFeatures = "02 Features";
@@ -48,6 +53,7 @@ public static class RenameitConfig
     private static ConfigEntry<int> _descCharLimit = default!;
     private static ConfigEntry<int> _craftedByCharLimit = default!;
     private static ConfigEntry<string> _vipList = default!;
+    private static ConfigEntry<bool> _configLock = default!;
     private static ConfigEntry<string> _menuHintColor = default!;
     private static ConfigEntry<string> _excludedNames = default!;
     private static ConfigEntry<string> _excludedCategory = default!;
@@ -86,6 +92,8 @@ public static class RenameitConfig
     public static int NameCharLimit => _nameCharLimit.Value;
     public static int CraftedByCharLimit => _craftedByCharLimit.Value;
     public static string VipList => _vipList.Value;
+    /// <summary>When true, only Valheim server admins can edit synced config (including <see cref="VipList"/>). Keep enabled on public servers.</summary>
+    public static bool LockSyncedConfig => _configLock.Value;
     public static string MenuHintColor => _menuHintColor.Value;
     public static string ExcludedNames => _excludedNames.Value;
     public static string ExcludedCategory => _excludedCategory.Value;
@@ -170,233 +178,213 @@ public static class RenameitConfig
             SectionAdmin, DisplayAdmin,
             "AllowAdminOverride",
             true,
-            "If enabled, Valheim server admins and VIP list / API users may bypass ownership, exclusions, and most per-item blocks (still respects Features toggles unless elevated logic applies).",
-            true);
+            "If enabled, Valheim server admins and VIP list / API users may bypass ownership, exclusions, and most per-item blocks (still respects Features toggles unless elevated logic applies). Does NOT grant Valheim admin commands.");
+
+        _configLock = config.BindSynced(
+            SectionAdmin, DisplayAdmin,
+            "LockSyncedConfig",
+            true,
+            "When true, only Valheim server admins can change synced gameplay settings (sections 01–09: Admin through Modifiers). Clients cannot push config edits to the server. UI section (10) stays per-client. Strongly recommended for public servers.");
+        configSync.AddLockingConfigEntry(_configLock);
+        _lockingConfigRegistered = true;
 
         _vipList = config.BindSynced(
             SectionAdmin, DisplayAdmin,
             "VipList",
             "",
-            "Comma-separated player names or player IDs (same as API AddVIP). When AdminOverride is on, VIPs can bypass restrictions. If VipOnlyOverride is on, ONLY VIP/API users count as elevated (Valheim server admin is ignored for overrides).",
-            true);
+            "Comma- or semicolon-separated character names and/or platform user IDs (Steam ID / GetPlayerID — same as adminlist.txt IDs). Server-synced; edit on the server only when LockSyncedConfig is on. Grants mod bypass only, not Valheim admin.");
 
         _vipOnlyOverride = config.BindSynced(
             SectionAdmin, DisplayAdmin,
             "VipOnlyOverride",
             false,
-            "If true (and AdminOverride is on), only VIP list / AddVIP API users are treated as elevated for bypassing rules—Valheim server admin is NOT. Useful for testing VIP behavior locally. If false, Valheim admin OR VIP is elevated.",
-            true);
+            "If true (and AdminOverride is on), only VIP list / AddVIP API users are treated as elevated for bypassing rules—Valheim server admin is NOT. Useful for testing VIP behavior locally. If false, Valheim admin OR VIP is elevated.");
 
         // --- Features (rename / description / crafted-by toggles) ---
         _RenameEnable = config.BindSynced(
             SectionFeatures, DisplayFeatures,
             "RenameEnabled",
             true,
-            "If enabled, players may edit item display names (subject to all other rules). Turn off to freeze names on new edits while leaving descriptions/crafted-by alone.",
-            true);
+            "If enabled, players may edit item display names (subject to all other rules). Turn off to freeze names on new edits while leaving descriptions/crafted-by alone.");
 
         _rewriteDescriptionsEnable = config.BindSynced(
             SectionFeatures, DisplayFeatures,
             "RewriteDescriptionsEnabled",
             true,
-            "If enabled, players may edit item descriptions. Turn off to pre-place lore text and block further description changes.",
-            true);
+            "If enabled, players may edit item descriptions. Turn off to pre-place lore text and block further description changes.");
 
         _craftedByLabelEnabled = config.BindSynced(
             SectionFeatures, DisplayFeatures,
             "CraftedByLabelEnabled",
             true,
-            "If true, players may set a display-only override for the crafted-by line (real crafter id/name unchanged).",
-            true);
+            "If true, players may set a display-only override for the crafted-by line (real crafter id/name unchanged).");
 
         // --- Exclusions ---
         _excludedNames = config.BindSynced(
             SectionExclusions, DisplayExclusions,
             "ExcludedNames",
             "",
-            "Comma-separated entries: Jotunn Token ($item_...) OR Item spawn name (AxeStone) OR English display name. Admins/VIP ignore when AdminOverride is on. See ExcludedCategory and RenameAllowlist.",
-            true);
+            "Comma-separated entries: Jotunn Token ($item_...) OR Item spawn name (AxeStone) OR English display name. Admins/VIP ignore when AdminOverride is on. See ExcludedCategory and RenameAllowlist.");
 
         _excludedCategory = config.BindSynced(
             SectionExclusions, DisplayExclusions,
             "ExcludedCategory",
             "",
-            "Comma-separated category tokens (non-elevated players). Examples: Swords,Armor,Material,Bows. Reference file: BepInEx/config/<mod GUID>/ExcludedCategoryReference.txt on first run or version change.",
-            true);
+            "Comma-separated category tokens (non-elevated players). Examples: Swords,Armor,Material,Bows. Reference file: BepInEx/config/<mod GUID>/ExcludedCategoryReference.txt on first run or version change.");
 
         _renameAllowlist = config.BindSynced(
             SectionExclusions, DisplayExclusions,
             "RenameAllowlist",
             "",
-            "Comma-separated entries (same format as ExcludedNames). When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStacks, and the unowned (AllowRenameUnownedItems) rule. Does NOT bypass global Features toggles when those are off. Does not bypass LockToOwner.",
-            true);
+            "Comma-separated entries (same format as ExcludedNames). When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStacks, and the unowned (AllowRenameUnownedItems) rule. Does NOT bypass global Features toggles when those are off. Does not bypass LockToOwner.");
 
         // --- Crafted by labels ---
         _craftedByLabelCustomizable = config.BindSynced(
             SectionCraftedBy, DisplayCraftedBy,
             "LabelCustomizable",
             true,
-            "If true, players who can edit crafted-by may choose a tooltip line label from AllowedLabels. If false, the label picker is greyed out for normal players (default line only) while admins/VIPs can still change it.",
-            true);
+            "If true, players who can edit crafted-by may choose a tooltip line label from AllowedLabels. If false, the label picker is greyed out for normal players (default line only) while admins/VIPs can still change it.");
 
         _craftedByAllowedLabels = config.BindSynced(
             SectionCraftedBy, DisplayCraftedBy,
             "AllowedLabels",
             "Crafted By, Belongs To, Return to",
-            "Comma- or semicolon-separated labels shown before the crafter name (e.g. “Belongs To: Name”). The first entry is the default (vanilla localized crafted-by line when that option is selected).",
-            true);
+            "Comma- or semicolon-separated labels shown before the crafter name (e.g. “Belongs To: Name”). The first entry is the default (vanilla localized crafted-by line when that option is selected).");
 
         // --- General (ownership & behavior) ---
         _lockToOwner = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "LockToOwner",
             true,
-            "If true, only the crafter/owner can rename the item, edit its description, or crafted-by display. Items with no crafter (unowned stacks) are not locked until someone claims them (NameClaimsOwner) or the item is crafted.",
-            true);
+            "If true, only the crafter/owner can rename the item, edit its description, or crafted-by display. Items with no crafter (unowned stacks) are not locked until someone claims them (NameClaimsOwner) or the item is crafted.");
 
         _nameClaimsOwner = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "NameClaimsOwner",
             true,
-            "If true, renaming an unowned item assigns ownership to the renamer. Used with LockToOwner: the first successful rename on an unclaimed stack makes you the owner.",
-            true);
+            "If true, renaming an unowned item assigns ownership to the renamer. Used with LockToOwner: the first successful rename on an unclaimed stack makes you the owner.");
 
         _allowRenameUnownedItems = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "AllowRenameUnownedItems",
             true,
-            "If true, unowned items may be renamed or given a description/crafted-by display. Unowned means no crafter id and no crafter name — e.g. picked up from the world, spawned (console/admin), loot drops, and uncrafted resource stacks. When false, those stacks are blocked unless on RenameAllowlist. Not the same as ExcludedCategory Material (that blocks by item type even when crafted). When false, NameClaimsOwner cannot claim those stacks.",
-            true);
+            "If true, unowned items may be renamed or given a description/crafted-by display. Unowned means no crafter id and no crafter name — e.g. picked up from the world, spawned (console/admin), loot drops, and uncrafted resource stacks. When false, those stacks are blocked unless on RenameAllowlist. Not the same as ExcludedCategory Material (that blocks by item type even when crafted). When false, NameClaimsOwner cannot claim those stacks.");
 
         _showDenialUi = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "ShowDenialUi",
             true,
-            "If true, access denials (not your item, excluded, rename disabled, etc.) show a red strikethrough menu hint, denial lines in tooltips, and a center message when modifier+right-click cannot open the menu. If false, those access cues are hidden. Unlock-cost, not-in-inventory, and empty-field errors are unchanged. Server-synced.",
-            true);
+            "If true, access denials (not your item, excluded, rename disabled, etc.) show a red strikethrough menu hint, denial lines in tooltips, and a center message when modifier+right-click cannot open the menu. If false, those access cues are hidden. Unlock-cost, not-in-inventory, and empty-field errors are unchanged. Server-synced.");
 
         _showReason = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "ShowReason",
             false,
-            "If true, denial text (when ShowDenialUi is on) uses specific reasons (ownership, exclusion, unowned, etc.). If false, generic messages only. Has no effect when ShowDenialUi is off. Server-synced.",
-            true);
+            "If true, denial text (when ShowDenialUi is on) uses specific reasons (ownership, exclusion, unowned, etc.). If false, generic messages only. Has no effect when ShowDenialUi is off. Server-synced.");
 
         _showItemStandItemNameWhenNoAccess = config.BindSynced(
             SectionGeneral, DisplayGeneral,
             "ShowItemStandItemNameWhenNoAccess",
             true,
-            "If true, item stands inside warded/private areas still show 'no access' but also append the stand's current item name to the hover label (display only; permissions unchanged).",
-            true);
+            "If true, item stands inside warded/private areas still show 'no access' but also append the stand's current item name to the hover label (display only; permissions unchanged).");
 
         // --- Stacks (merge rules, stackable edit block) ---
         _separateStacks = config.BindSynced(
             SectionStacks, DisplayStacks,
             "SeparateStacks",
             true,
-            "If true, stacks only combine when Drake custom name, description, and crafted-by display match (same identity). Renamed or customized stacks no longer absorb mismatched pickups automatically.",
-            true);
+            "If true, stacks only combine when Drake custom name, description, and crafted-by display match (same identity). Renamed or customized stacks no longer absorb mismatched pickups automatically.");
 
         _separateStacksHardLock = config.BindSynced(
             SectionStacks, DisplayStacks,
             "SeparateStacksHardLock",
             false,
-            "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (target stack keeps its custom data).",
-            true);
+            "Only applies when SeparateStacks is on. If true, mismatched stacks never merge — including manual drags. If false, auto pickup still will not combine mismatched stacks, but you can drag one stack onto another to merge immediately (target stack keeps its custom data).");
 
         _excludeStacks = config.BindSynced(
             SectionStacks, DisplayStacks,
             "ExcludeStacks",
             false,
-            "When true, non-elevated players cannot rename, change descriptions, or edit crafted-by on stackable vanilla items (m_maxStackSize > 1). Admins/VIPs override when AllowAdminOverride is on. Items on RenameAllowlist bypass this. Does not change SeparateStacks merge behavior.",
-            true);
+            "When true, non-elevated players cannot rename, change descriptions, or edit crafted-by on stackable vanilla items (m_maxStackSize > 1). Admins/VIPs override when AllowAdminOverride is on. Items on RenameAllowlist bypass this. Does not change SeparateStacks merge behavior.");
 
         // --- Unlock cost (per-stack pay gate) ---
         _unlockCostEnabled = config.BindSynced(
             SectionUnlockCost, DisplayUnlockCost,
             "UnlockCostEnabled",
             false,
-            "If true, each item stack must be unlocked once (pay UnlockCost from your inventory) before rename, description, or crafted-by edits apply. Invalid/empty UnlockCost is ignored. Elevated players skip the cost when AdminOverride applies.",
-            true);
+            "If true, each item stack must be unlocked once (pay UnlockCost from your inventory) before rename, description, or crafted-by edits apply. Invalid/empty UnlockCost is ignored. Elevated players skip the cost when AdminOverride applies.");
 
         _unlockCost = config.BindSynced(
             SectionUnlockCost, DisplayUnlockCost,
             "UnlockCost",
             "Coins:5",
-            "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu.",
-            true);
+            "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu.");
 
         // --- Limits ---
         _nameCharLimit = config.BindSynced(
             SectionLimits, DisplayLimits,
             "NameCharacterLimit",
             50,
-            "Max characters for rename text (count <color=> tag codes toward the limit).",
-            true);
+            "Max characters for rename text (count <color=> tag codes toward the limit).");
 
         _craftedByCharLimit = config.BindSynced(
             SectionLimits, DisplayLimits,
             "CraftedByCharLimit",
             50,
-            "Max characters for crafted-by display name (count rich-text tags toward the limit).",
-            true);
+            "Max characters for crafted-by display name (count rich-text tags toward the limit).");
 
         _descCharLimit = config.BindSynced(
             SectionLimits, DisplayLimits,
             "DescriptionCharacterLimit",
             1000,
-            "Max characters for item description (count rich-text tags toward the limit).",
-            true);
+            "Max characters for item description (count rich-text tags toward the limit).");
 
         // --- Modifiers (durability display) ---
         _durabilityModifierEnabled = config.BindSynced(
             SectionModifiers, DisplayModifiers,
             "DurabilityModifierEnabled",
             false,
-            "If true, prepends a durability wear label (Pristine / tiers / Broken) in front of the item name everywhere Drake builds display names — only for forge-repair gear and tools (m_useDurability), not spoilage timers. Does not change stored rename text.",
-            true);
+            "If true, prepends a durability wear label (Pristine / tiers / Broken) in front of the item name everywhere Drake builds display names — only for forge-repair gear and tools (m_useDurability), not spoilage timers. Does not change stored rename text.");
 
         _durabilityUnbrokenLabel = config.BindSynced(
             SectionModifiers, DisplayModifiers,
             "DurabilityUnbrokenLabel",
             "Pristine",
-            "Prepended at full durability (100%). Empty = no label when pristine. Rich-text color tags allowed.",
-            true);
+            "Prepended at full durability (100%). Empty = no label when pristine. Rich-text color tags allowed.");
 
         _durabilityBrokenLabel = config.BindSynced(
             SectionModifiers, DisplayModifiers,
             "DurabilityBrokenLabel",
             "<#f00>Broken</color>",
-            "Prepended only when durability is 0 (item is broken in-game and must be repaired). Not used for worn but usable gear. Empty = no label when broken.",
-            true);
+            "Prepended only when durability is 0 (item is broken in-game and must be repaired). Not used for worn but usable gear. Empty = no label when broken.");
 
         _durabilityTierModifiers = config.BindSynced(
             SectionModifiers, DisplayModifiers,
             "DurabilityTierModifiers",
             "{<#c50>Rusty</color>,0.4},{<#888>Worn</color>,0.6},{<#aaa>Tarnished</color>,0.8}",
-            "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Supports <color> tags; terminate with </color> unless you add a high threshold near 1.",
-            true);
+            "Wear bands between broken and pristine: {Name,fraction} or {Name,percent}. Each applies when current/max is at or below that value; lowest matching band wins. Supports <color> tags; terminate with </color> unless you add a high threshold near 1.");
 
-        // --- UI (not server-synced) ---
-        _menuHintColor = config.BindSynced(
+        // --- UI (client-only; never registered with ServerSync) ---
+        _menuHintColor = config.BindClientOnly(
             SectionUI, DisplayUI,
             "MenuHintColor",
             "yellow",
-            "Color for the inventory tooltip hint (Modifier + Right Click). Unity color names or hex (#fff / #ffffff).",
-            false);
+            "Color for the inventory tooltip hint (Modifier + Right Click). Unity color names or hex (#fff / #ffffff). Per-client only.");
 
-        _menuOpenModifier = config.Bind(
-            SectionUI,
+        _menuOpenModifier = config.BindClientOnly(
+            SectionUI, DisplayUI,
             "MenuOpenModifier",
             "Shift",
-            new ConfigDescription(
-                "Keys held while right-clicking an inventory item to open the Drake menu. Examples: Shift, Ctrl, Alt, Shift+Alt, F1. Combine with + , or &. Use None for right-click only. Not server-synced (per-client).",
-                null,
-                new ConfigurationManagerAttributes { Category = DisplayUI }));
-        configSync.AddConfigEntry(_menuOpenModifier).SynchronizedConfig = false;
+            "Keys held while right-clicking an inventory item to open the Drake menu. Examples: Shift, Ctrl, Alt, Shift+Alt, F1. Combine with + , or &. Use None for right-click only. Per-client only.");
 
         MigrateLegacyConfigSections(config);
+
+        global::DrakeRenameit.API.RenameitPermission.WireVipListSync(_vipList, configSync);
+        FinalizeServerSync();
     }
+
+    private static int _syncedEntryCount;
+    private static bool _lockingConfigRegistered;
 
     private static ConfigEntry<T> BindSynced<T>(
         this ConfigFile config,
@@ -404,8 +392,7 @@ public static class RenameitConfig
         string displayCategory,
         string key,
         T defaultValue,
-        string description,
-        bool sync = true)
+        string description)
     {
         var entry = config.Bind(
             section,
@@ -413,15 +400,57 @@ public static class RenameitConfig
             defaultValue,
             new ConfigDescription(description, null, new ConfigurationManagerAttributes { Category = displayCategory }));
         var syncedEntry = configSync.AddConfigEntry(entry);
-        syncedEntry.SynchronizedConfig = sync;
+        syncedEntry.SynchronizedConfig = true;
+        _syncedEntryCount++;
         return entry;
+    }
+
+    private static ConfigEntry<T> BindClientOnly<T>(
+        this ConfigFile config,
+        string section,
+        string displayCategory,
+        string key,
+        T defaultValue,
+        string description)
+    {
+        return config.Bind(
+            section,
+            key,
+            defaultValue,
+            new ConfigDescription(description, null, new ConfigurationManagerAttributes { Category = displayCategory }));
+    }
+
+    private static void FinalizeServerSync()
+    {
+        if (!_lockingConfigRegistered)
+            Log?.LogError("[ServerSync] LockSyncedConfig was not registered via AddLockingConfigEntry — synced settings are not admin-locked.");
+
+        if (_syncedEntryCount != ExpectedSyncedEntryCount)
+            Log?.LogError($"[ServerSync] Expected {ExpectedSyncedEntryCount} synced entries, registered {_syncedEntryCount}.");
+
+        configSync.SourceOfTruthChanged += OnConfigAuthorityChanged;
+        OnConfigAuthorityChanged(configSync.IsSourceOfTruth);
+    }
+
+    private static void OnConfigAuthorityChanged(bool localIsAuthoritative)
+    {
+        if (localIsAuthoritative)
+        {
+            if (!LockSyncedConfig)
+                Log?.LogWarning(
+                    "[ServerSync] LockSyncedConfig is false on the host. Non-admin clients can change and broadcast gameplay settings (sections 01–09). Set LockSyncedConfig = true on the server.");
+            return;
+        }
+
+        if (!LockSyncedConfig)
+            Log?.LogInfo("[ServerSync] Connected to a host with config lock disabled; server values still apply until changed.");
     }
 
     /// <summary>Copies values from pre-reorder section names so existing cfg files keep working.</summary>
     private static void MigrateLegacyConfigSections(ConfigFile config)
     {
         MigrateSectionKeys(config, "Admin", SectionAdmin,
-            "AllowAdminOverride", "VipList", "VipOnlyOverride");
+            "AllowAdminOverride", "LockSyncedConfig", "VipList", "VipOnlyOverride");
         MigrateSectionKeys(config, "Features", SectionFeatures,
             "RenameEnabled", "RewriteDescriptionsEnabled", "CraftedByLabelEnabled");
         MigrateSectionKeys(config, "Exclusions", SectionExclusions,

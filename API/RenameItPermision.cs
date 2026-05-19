@@ -1,40 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using BepInEx.Configuration;
 using Jotunn.Managers;
+using ServerSync;
 
 namespace DrakeRenameit.API;
 
 public static class RenameitPermission
 {
-    private static readonly HashSet<string> vipList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
+    private static readonly HashSet<string> vipList = new(StringComparer.OrdinalIgnoreCase);
     public static bool IsAdminOrVIP()
     {
-        Player local = Player.m_localPlayer;
-        if (local != null)
-            return IsElevatedForOverrides(local);
-        return false;
+        Player? local = Player.m_localPlayer;
+        return local != null && IsElevatedForOverrides(local);
     }
 
     /// <summary>True when the player may bypass ownership, exclusions, and resource rules (subject to <see cref="RenameitConfig.AllowAdminOverride"/>).</summary>
-    public static bool IsAdminOrVIP(Player player)
+    public static bool IsAdminOrVIP(Player player) => IsElevatedForOverrides(player);
+
+    /// <summary>True when the player is on the server-synced VIP list (or runtime API on server / offline only). Does not include Valheim admin.</summary>
+    public static bool IsModVip(Player? player)
     {
-        return IsElevatedForOverrides(player);
+        if (player == null)
+            return false;
+
+        foreach (string key in GetVipIdentityKeys(player))
+        {
+            if (vipList.Contains(key))
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
-    /// VIP list / API first; if <see cref="RenameitConfig.VipOnlyOverride"/> is true, Valheim server admin is not treated as elevated.
-    /// Otherwise Valheim admin (<see cref="IsValheimAdmin"/>) also counts.
+    /// Mod VIP first; if <see cref="RenameitConfig.VipOnlyOverride"/> is true, Valheim server admin is not treated as elevated.
+    /// Otherwise Valheim admin (<see cref="IsValheimAdmin"/>) also counts. Never grants Valheim admin powers.
     /// </summary>
     public static bool IsElevatedForOverrides(Player? player)
     {
         if (!RenameitConfig.AllowAdminOverride || player == null)
             return false;
 
-        string pid = player.GetPlayerID().ToString();
-        string name = player.GetPlayerName();
-
-        if (vipList.Contains(name) || vipList.Contains(pid))
+        if (IsModVip(player))
             return true;
 
         if (RenameitConfig.VipOnlyOverride)
@@ -44,36 +52,67 @@ public static class RenameitPermission
     }
 
     /// <summary>Valheim server admin (adminlist / Jotunn-synced), independent of VIP-only mode.</summary>
-    public static bool IsValheimAdmin(Player? player)
+    public static bool IsValheimAdmin(Player? player) => IsAdminSafe(player);
+
+    /// <summary>Subscribe to ServerSync config updates; call once from <see cref="RenameitConfig.Bind"/>.</summary>
+    internal static void WireVipListSync(ConfigEntry<string> vipListEntry, ConfigSync configSync)
     {
-        return IsAdminSafe(player);
+        vipListEntry.SettingChanged += (_, _) => ReloadVipsFromSyncedConfig();
+        configSync.SourceOfTruthChanged += _ => ReloadVipsFromSyncedConfig();
+        ReloadVipsFromSyncedConfig();
     }
 
-    // Public API for other mods
+    /// <summary>Replace in-memory VIP entries from the current synced <see cref="RenameitConfig.VipList"/> value.</summary>
+    public static void ReloadVipsFromSyncedConfig()
+    {
+        vipList.Clear();
+        foreach (string entry in ParseVipListEntries(RenameitConfig.VipList))
+            vipList.Add(entry);
+    }
+
+    internal static IEnumerable<string> ParseVipListEntries(string raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            yield break;
+
+        foreach (string part in raw.Split(',', ';'))
+        {
+            string trimmed = part.Trim();
+            if (trimmed.Length > 0)
+                yield return trimmed;
+        }
+    }
+
+    // Public API for other mods (server / offline only when connected to a remote server)
     public static void AddVIP(string nameOrId)
     {
-        if (!string.IsNullOrEmpty(nameOrId))
-            vipList.Add(nameOrId);
+        if (!CanMutateVipListAtRuntime())
+            return;
+        if (!string.IsNullOrWhiteSpace(nameOrId))
+            vipList.Add(nameOrId.Trim());
     }
 
     public static void AddVIP(List<string> list)
     {
-        if (list.Count > 0)
+        if (!CanMutateVipListAtRuntime())
+            return;
+
+        foreach (string s in list)
         {
-            foreach (var s in list)
-            {
-                vipList.Add(s);
-            }
+            if (!string.IsNullOrWhiteSpace(s))
+                vipList.Add(s.Trim());
         }
     }
 
     public static void RemoveVIP(string nameOrId)
     {
+        if (!CanMutateVipListAtRuntime())
+            return;
         if (!string.IsNullOrEmpty(nameOrId))
-            vipList.Remove(nameOrId);
+            vipList.Remove(nameOrId.Trim());
     }
 
-    public static IEnumerable<string> GetVIPs() => vipList;
+    public static IEnumerable<string> GetVIPs() => new List<string>(vipList);
 
     /// <summary>
     /// True when the player is a Valheim server admin (adminlist entries are socket/Steam IDs, not character names).
@@ -90,6 +129,56 @@ public static class RenameitPermission
         return IsValheimAdminForRemotePlayer(player);
     }
 
+    private static IEnumerable<string> GetVipIdentityKeys(Player player)
+    {
+        string name = player.GetPlayerName();
+        if (!string.IsNullOrEmpty(name))
+            yield return name;
+
+        yield return player.GetPlayerID().ToString();
+
+        string? hostId = TryGetPeerHostId(player);
+        if (!string.IsNullOrEmpty(hostId))
+            yield return hostId;
+    }
+
+    private static string? TryGetPeerHostId(Player player)
+    {
+        if (ZNet.instance == null)
+            return null;
+
+        try
+        {
+            ZDOID zid = player.GetZDOID();
+            foreach (ZNetPeer peer in ZNet.instance.GetPeers())
+            {
+                if (!peer.IsReady() || peer.m_characterID != zid)
+                    continue;
+
+                string? hostId = peer.m_socket?.GetHostName();
+                return string.IsNullOrEmpty(hostId) ? null : hostId;
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return null;
+    }
+
+    /// <summary>Runtime VIP API is server-authoritative; clients use synced VipList from the host.</summary>
+    private static bool CanMutateVipListAtRuntime()
+    {
+        if (ZNet.instance == null)
+            return true;
+
+        if (ZNet.GetConnectionStatus() == ZNet.ConnectionStatus.None)
+            return true;
+
+        return ZNet.instance.IsServer();
+    }
+
     /// <summary>
     /// Dedicated / server: resolve peer by character and test adminlist using <see cref="ISocket.GetHostName"/> (same as vanilla adminlist IDs).
     /// </summary>
@@ -97,30 +186,18 @@ public static class RenameitPermission
     {
         try
         {
-            if (ZNet.instance.m_adminList == null)
+            if (ZNet.instance!.m_adminList == null)
                 return false;
 
-            ZDOID zid = player.GetZDOID();
+            string? hostId = TryGetPeerHostId(player);
+            if (string.IsNullOrEmpty(hostId))
+                return false;
 
-            foreach (ZNetPeer peer in ZNet.instance.GetPeers())
-            {
-                if (!peer.IsReady())
-                    continue;
-                if (peer.m_characterID != zid)
-                    continue;
-
-                string? hostId = peer.m_socket != null ? peer.m_socket.GetHostName() : null;
-                if (string.IsNullOrEmpty(hostId))
-                    return false;
-
-                return ZNet.instance.ListContainsId(ZNet.instance.m_adminList, hostId);
-            }
+            return ZNet.instance.ListContainsId(ZNet.instance.m_adminList, hostId);
         }
         catch
         {
             return false;
         }
-
-        return false;
     }
 }

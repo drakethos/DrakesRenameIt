@@ -1,4 +1,5 @@
 - Version 1.0.0
+  - **ServerSync hardening**: **LockSyncedConfig** (default on) locks all gameplay sections (01–09) for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) stay client-local. Startup audit logs if lock or synced entry count is wrong. VIP list reloads when ServerSync updates **VipList**; runtime **AddVIP** / **RemoveVIP** is server-only on remote clients. VIP matching uses name, `GetPlayerID()`, and peer host ID; VIP grants mod bypass only, not Valheim admin.
   - **1.0 release**: configurable menu key bindings (Shift/Ctrl/Alt/combos), Cancel on edit panels, Reset all confirmation, centralized localization (`Assets/Localization/English.json`).
   - Added **ShowDenialUi** (General, server-synced): when off, blocked items show no red menu hint, denial tooltip lines, or center message on failed modifier+right-click. **ShowReason** default is now false; it only applies when **ShowDenialUi** is on.
 - Version 0.1.0

@@ -60,9 +60,9 @@ namespace DrakeRenameit
         private void Awake()
         {
             RenameItLocalization.Init(this, Logger);
+            RenameitConfig.Log = Logger;
             Bind(Config);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
-            AddVip();
             RenamePermissionManager.Init(Logger);
             RenameUnlockCost.Init(Logger);
             InventoryStackPatches.Apply(harmony, Logger);
@@ -71,16 +71,6 @@ namespace DrakeRenameit
             harmony.PatchAll();
             DropHudMessagePatches.ApplyMessageHudShowMessage(harmony, Logger);
         }
-
-        private static void AddVip()
-        {
-            List<string> vipList = VipList.Split(',')
-                .Select(s => s.Trim().ToLowerInvariant())
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToList();
-            RenameitPermission.AddVIP(vipList);
-        }
-
 
         public static string GetPropperName(ItemDrop.ItemData? item)
         {

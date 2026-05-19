@@ -11,14 +11,18 @@ description: >-
 
 - **BepInEx** plugin: `DrakeRenameit` in `DrakeRenameit.cs`, Harmony id `drakesmod.DrakeRenameit`.
 - Depends on **Jotunn** (and ServerSync for config). Uses **`RenameitConfig`** (synced entries via ServerSync).
+- **`LockSyncedConfig`** (default true) via **`AddLockingConfigEntry`** — locks **all** sections 01–09 for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) use **`BindClientOnly`** (no ServerSync).
+- **`BindSynced`** always sets **`SynchronizedConfig = true`**; **`FinalizeServerSync`** audits 30 synced entries + lock registration.
+- **`RenameitPermission.WireVipListSync`** reloads VIP hash from **`VipList`** on **`SettingChanged`** / **`SourceOfTruthChanged`** (not one-shot at Awake). Other rules read **`RenameitConfig.*`** live at use time.
 
 ## Permissions (`API/RenameItPermision.cs`)
 
 - **`RenameitConfig.AllowAdminOverride`** must be **true** for any admin/VIP bypass paths.
-- **`IsAdminOrVIP` / `IsAdminOrVIP(Player)`**  
-  - **Valheim admin**: `IsAdminSafe` — local player uses **`Jotunn.Managers.SynchronizationManager.Instance.PlayerIsAdmin`**; remote players use **ZNet peer socket host id** + **`ListContainsId`** on **`m_adminList`** (not character name).  
-  - **VIP**: config list + **`AddVIP` / `RemoveVIP` / `GetVIPs`** (name or `GetPlayerID().ToString()`).
-- Admin **or** VIP is enough; do not break VIP when changing admin detection.
+- **`IsModVip`** — VIP list only (name, `GetPlayerID()`, peer host id). Does **not** grant Valheim admin.
+- **`IsAdminOrVIP` / `IsElevatedForOverrides`**  
+  - **Valheim admin**: `IsValheimAdmin` / `IsAdminSafe` — Jotunn **`PlayerIsAdmin`** (local) or **`m_adminList`** + peer **`GetHostName()`** (remote).  
+  - **VIP**: synced **`VipList`** + server-only runtime **`AddVIP` / `RemoveVIP`** when connected to a remote host.
+- Admin **or** VIP is enough unless **`VipOnlyOverride`**; do not conflate VIP with Valheim admin.
 - **`RenamePermissionManager`** gates **`RenamePermissionOperation.EditCraftedByLabel`** with **`CraftedByLabelEnabled`** (General section). **Tooltip line label** picker uses **`CraftedByLabelCustomizable`** OR **`RenameitPermission.IsElevatedForOverrides`** (same elevated rule as elsewhere).
 
 ## Exclusions (`RenameitConfig`, `RenameExclusionRules.cs`)

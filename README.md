@@ -73,7 +73,7 @@ localization with an additional name, simply leave the $string intact and add ar
   - let you down!</s>
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Almost everything is server-synced**; per-client exceptions are **MenuOpenModifier** and **MenuHintColor** (`UI-NotSynced`). Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is never registered with ServerSync — per-client only. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
@@ -84,7 +84,8 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Se
 #### Admin (server-synced)
 
 - **AllowAdminOverride** — When on, “elevated” players (see below) bypass **LockToOwner**, exclusions, unowned-resource blocks, unlock cost, and most per-item rules. Elevated players can still edit when feature toggles are off for everyone else.
-- **VipList** — Comma-separated **player names** or **player IDs** (same strings as the API `AddVIP`). Used when **AllowAdminOverride** is on. Valheim server admins also count as elevated unless **VipOnlyOverride** is on.
+- **LockSyncedConfig** — When **true** (default), only Valheim **server admins** can change server-synced settings in-game (including **VipList**). Clients cannot push config edits to the host. Keep this on for public servers.
+- **VipList** — Comma- or semicolon-separated **character names** and/or **platform user IDs** (Steam ID / `GetPlayerID()`, same format as `adminlist.txt`). Server-synced; edit on the **server** cfg when locked. Grants **mod** bypass only — **not** Valheim admin (ghost, kick, etc.).
 - **VipOnlyOverride** — When **true** (and **AllowAdminOverride** is on), **only** VIP list / API VIPs count as elevated; Valheim’s server admin flag is **ignored** for bypassing rules. When **false**, either Valheim admin **or** VIP counts as elevated.
 
 #### Exclusions (server-synced)

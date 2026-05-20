@@ -7,7 +7,7 @@ using static DrakeRenameit.ModText.RenameItLocalization;
 
 namespace DrakeRenameit;
 
-/// <summary>Parses <see cref="RenameitConfig.MenuOpenModifier"/> and tests held keys (supports combos like Shift+Alt).</summary>
+/// <summary>Parses menu key bindings (<see cref="RenameitConfig.MenuOpenModifier"/> — local override or server default) and tests held keys (supports combos like Shift+Alt).</summary>
 public static class MenuKeyBinding
 {
     /// <summary>When the binding is empty or <c>None</c>, only right-click is required (no modifier).</summary>

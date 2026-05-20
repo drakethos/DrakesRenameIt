@@ -1,7 +1,3 @@
-- Version 1.0.0
-  - **ServerSync hardening**: **LockSyncedConfig** (default on) locks all gameplay sections (01–09) for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) stay client-local. Startup audit logs if lock or synced entry count is wrong. VIP list reloads when ServerSync updates **VipList**; runtime **AddVIP** / **RemoveVIP** is server-only on remote clients. VIP matching uses name, `GetPlayerID()`, and peer host ID; VIP grants mod bypass only, not Valheim admin.
-  - **1.0 release**: configurable menu key bindings (Shift/Ctrl/Alt/combos), Cancel on edit panels, Reset all confirmation, centralized localization (`Assets/Localization/English.json`).
-  - Added **ShowDenialUi** (General, server-synced): when off, blocked items show no red menu hint, denial tooltip lines, or center message on failed modifier+right-click. **ShowReason** default is now false; it only applies when **ShowDenialUi** is on.
 - Version 0.1.0
   - Initial upload and baseline version.
     - Current Feature List:
@@ -74,3 +70,23 @@
   - Build: removed duplicate `environment.props` import (fixes MSB4011 when Jotunn already imports it via `SolutionDir`).
   - Fixed nullable-analysis warnings (`RenameitConfig` config fields, `InventoryStackPatches` Harmony ref signature, menu button null checks, `GetPropperName` / `hasNewDesc`, and related files).
   - API: `RenameDenialReason.ExcludedStackable` renamed to `ExcludedStacks` (flag value unchanged); config key **`ExcludeStacks`** replaces **`ExcludeStackable`** in config files if you used a draft build with the old name.
+- Version 1.0.0
+  - **ServerSync hardening**
+    - **LockSyncedConfig** (default on) locks all gameplay sections **01–09** for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, optional **MenuOpenModifier** override) stay per-client.
+    - Every synced entry uses explicit **BindSynced** registration; startup audit logs if **LockSyncedConfig** was not registered or synced entry count is wrong (31 entries).
+    - **VipList** reloads when ServerSync pushes updates (**SettingChanged** / **SourceOfTruthChanged**), not only once at load. VIP matching uses character name, **GetPlayerID()**, and peer host ID. Runtime **AddVIP** / **RemoveVIP** is server-only on remote clients. VIP grants mod bypass only, not Valheim admin.
+  - **ShowDenialUi** (General, server-synced, new in 1.0) — when off, blocked items show **no** red strikethrough menu hint, denial tooltip lines, or center message on failed modifier+right-click (silent denials). Unlock-cost, not-in-inventory, and validation messages are unchanged. Legacy **HideDisabledDenialUi** cfg values migrate automatically (inverted). **ShowReason** default is now **false** (specific denial reasons only when **ShowDenialUi** and **ShowReason** are both on).
+  - **Menu key bindings**
+    - **MenuOpenModifier** (UI-NotSynced): full support for **Shift**, **Ctrl**, **Alt**, combos (**Shift+Alt**, etc.), **F1** and other **KeyCode** names, and **None** (right-click only). Tooltip hints use the resolved binding.
+    - **ServerDefaultMenuOpenModifier** (General, server-synced, default **Shift**): modpack hosts set the server-wide default; players with an **empty** local **MenuOpenModifier** follow the server. Any **non-empty** local value always overrides on that machine (personal preference without editing every client cfg).
+  - **Localization**
+    - Centralized strings via **RenameItLocalization** and **LKeys**; defaults in code, overrides in **Assets/Localization/English.json**.
+    - **Spanish.json** included; language file name must match Valheim’s language id.
+    - Menus, editors, unlock flow, permission denials, HUD messages, and tooltip hints are localized (no hard-coded English in those paths).
+  - **UI cleanup**
+    - **Cancel** on rename, description, and crafted-by editors (reverts pending edits, closes panel).
+    - **Reset all** confirmation dialog before clearing every Drake customization on a stack.
+    - Unified action menu layout and button wiring; localized labels throughout.
+  - **Config & docs**
+    - Numbered cfg sections **01 Admin** through **10 UI-NotSynced** for Configuration Manager tab order; legacy section names migrate automatically.
+    - README overhaul for 1.0 (permissions, config sections, menu keys, denial UI).

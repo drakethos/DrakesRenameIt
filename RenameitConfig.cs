@@ -10,7 +10,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–09: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>.</summary>
-    private const int ExpectedSyncedEntryCount = 30;
+    private const int ExpectedSyncedEntryCount = 31;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -68,6 +68,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _craftedByLabelCustomizable = default!;
     private static ConfigEntry<string> _craftedByAllowedLabels = default!;
     private static ConfigEntry<string> _menuOpenModifier = default!;
+    private static ConfigEntry<string> _serverDefaultMenuOpenModifier = default!;
     private static ConfigEntry<bool> _unlockCostEnabled = default!;
     private static ConfigEntry<string> _unlockCost = default!;
     private static ConfigEntry<bool> _showItemStandItemNameWhenNoAccess = default!;
@@ -116,8 +117,17 @@ public static class RenameitConfig
     /// </summary>
     public static bool SeparateStacksHardLock => _separateStacksHardLock.Value;
 
-    /// <summary>Keys held + right-click open the Drake action menu (e.g. Shift, Ctrl, Alt, Shift+Alt, F1). Use None for right-click only.</summary>
-    public static string MenuOpenModifier => _menuOpenModifier.Value;
+    /// <summary>Server-synced default for menu keys when the local <c>MenuOpenModifier</c> entry is empty (modpack compatibility).</summary>
+    public static string ServerDefaultMenuOpenModifier => _serverDefaultMenuOpenModifier.Value;
+
+    /// <summary>
+    /// Keys held + right-click open the Drake action menu. Uses the local UI entry when set; otherwise <see cref="ServerDefaultMenuOpenModifier"/>.
+    /// Examples: Shift, Ctrl, Alt, Shift+Alt, F1. Use None for right-click only.
+    /// </summary>
+    public static string MenuOpenModifier =>
+        string.IsNullOrWhiteSpace(_menuOpenModifier.Value)
+            ? _serverDefaultMenuOpenModifier.Value
+            : _menuOpenModifier.Value;
 
     /// <summary>When true (and <see cref="UnlockCost"/> parses to at least one item), a stack must be unlocked once before rename/description/crafted-by edits. Admins/VIPs still bypass when <see cref="AllowAdminOverride"/> applies.</summary>
     public static bool UnlockCostEnabled => _unlockCostEnabled.Value;
@@ -288,6 +298,12 @@ public static class RenameitConfig
             true,
             "If true, item stands inside warded/private areas still show 'no access' but also append the stand's current item name to the hover label (display only; permissions unchanged).");
 
+        _serverDefaultMenuOpenModifier = config.BindSynced(
+            SectionGeneral, DisplayGeneral,
+            "ServerDefaultMenuOpenModifier",
+            "Shift",
+            "Default keys for opening the Renameit menu when a player's local MenuOpenModifier (section 10) is empty. Set on the server/modpack for compatibility (e.g. None if another mod uses Shift). Non-empty local MenuOpenModifier always overrides on that client.");
+
         // --- Stacks (merge rules, stackable edit block) ---
         _separateStacks = config.BindSynced(
             SectionStacks, DisplayStacks,
@@ -374,8 +390,8 @@ public static class RenameitConfig
         _menuOpenModifier = config.BindClientOnly(
             SectionUI, DisplayUI,
             "MenuOpenModifier",
-            "Shift",
-            "Keys held while right-clicking an inventory item to open the Drake menu. Examples: Shift, Ctrl, Alt, Shift+Alt, F1. Combine with + , or &. Use None for right-click only. Per-client only.");
+            "",
+            "Optional per-client override for menu keys. Leave empty to use ServerDefaultMenuOpenModifier from the server. When set, always wins on this machine. Examples: Shift, Ctrl, Alt, Shift+Alt, F1, None. Combine with + , or &.");
 
         MigrateLegacyConfigSections(config);
 
@@ -458,7 +474,8 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "CraftedBy", SectionCraftedBy,
             "LabelCustomizable", "AllowedLabels");
         MigrateSectionKeys(config, "General", SectionGeneral,
-            "LockToOwner", "NameClaimsOwner", "AllowRenameUnownedItems", "ShowDenialUi", "ShowReason", "ShowItemStandItemNameWhenNoAccess");
+            "LockToOwner", "NameClaimsOwner", "AllowRenameUnownedItems", "ShowDenialUi", "ShowReason", "ShowItemStandItemNameWhenNoAccess",
+            "ServerDefaultMenuOpenModifier");
 
         MigrateHideDisabledDenialUiToShowDenialUi(config);
         MigrateSectionKeys(config, "Stacks", SectionStacks,

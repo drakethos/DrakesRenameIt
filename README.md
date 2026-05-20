@@ -7,7 +7,7 @@ A Valheim mod that lets you rename items, rewrite descriptions and  now even upd
 
 ### How to use
 
-Hold your configured keys (**MenuOpenModifier** in `UI-NotSynced` — default **Shift**, or **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Choose an action; only available options are clickable.
+Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
 
 **Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
@@ -51,7 +51,7 @@ localization with an additional name, simply leave the $string intact and add ar
 - Supports localization strings (`$item_...` tokens); leave tokens intact and wrap extra text around them to keep localization.
 - Rename, description, and **Crafted by** (display name + optional **tooltip line** prefix such as “Belongs To”) on that item instance only — internal prefab ids are unchanged for other mods.
 - Fully supports multiplayer; every client needs the mod.
-- **MenuHintColor** and flexible **MenuOpenModifier** key bindings (per-client UI).
+- **ServerDefaultMenuOpenModifier** (server-synced) with optional per-client **MenuOpenModifier** override, plus **MenuHintColor**.
 - Toggle rename, descriptions, and crafted-by independently; **ShowDenialUi** / **ShowReason** control blocked-item feedback.
 - **AllowAdminOverride** + **VipList** / API VIPs bypass ownership and exclusions; **VipOnlyOverride** can require VIP list only (ignore Valheim server admin).
 - **Unlock cost** — optional per-stack payment before edits; tooltip shows lock / pen icons; admins and VIPs skip when override applies.
@@ -107,6 +107,7 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Se
 - **ShowDenialUi** — When on, access denials show a red menu hint, tooltip denial lines, and a center message on failed modifier+right-click. When off, those cues are hidden (silent). Unlock-cost, not-in-inventory, and validation errors are unchanged.
 - **ShowReason** — When on (and **ShowDenialUi** is on), denial text explains **why** (ownership, exclusion, etc.). When off, generic messages only. No effect when **ShowDenialUi** is off. Denials are still logged to BepInEx for admins.
 - **ShowItemStandItemNameWhenNoAccess** — When on, item stands in warded/private areas still show “no access” but also append the stand’s current item name on the hover label (display only; permissions unchanged).
+- **ServerDefaultMenuOpenModifier** — Default keys for opening the Drake menu when a player’s local **MenuOpenModifier** is empty. Set on the host for modpack compatibility (e.g. `None` if another mod uses Shift). Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only.
 
 #### Stacks (server-synced)
 
@@ -134,7 +135,7 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Se
 
 #### UI-NotSynced (client only)
 
-- **MenuOpenModifier** — Keys held while right-clicking an inventory item to open the Drake menu. Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only.
+- **MenuOpenModifier** — Optional per-client override for menu keys. Leave empty to use **ServerDefaultMenuOpenModifier** from the server. When set, always applies on this machine. Same key syntax as the server default.
 - **MenuHintColor** — Tooltip hint color for the menu shortcut (Unity color name or `#rrggbb`).
 
 #### Permission order (how rules stack)
@@ -148,8 +149,8 @@ Known Issues:
 - if there is a high demand for this:
     - Renamable pieces (that have hover names)
 ##### Distant crazy features
-- Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that. However this may require a lot of work since I believe it would require new prefabs of items which may be a mess for Valheim.
--   Probably a seperate mod though!
+- Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that
+- Look out for a full DrakesCustomizationSuite in the works planning on more mods for customizing your items and what not!
 #### API Docs:
 Types live in namespace `DrakeRenameit.API`.
 

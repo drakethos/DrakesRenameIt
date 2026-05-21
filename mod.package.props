@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <!-- Thunderstore package id — do not rename after publish -->
+    <ThunderstoreName>DrakesRenameit</ThunderstoreName>
+    <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
+    <RootNamespace>DrakeRenameit</RootNamespace>
+    <AssemblyName>DrakesRenameit</AssemblyName>
+    <Version>1.0.0</Version>
+    <!-- BepIn plugin display name — do not change (existing installs / docs) -->
+    <BepInPluginName>DrakesRenameit</BepInPluginName>
+    <BepInGuid>com.drakesworkshop.renameit</BepInGuid>
+    <ModInfoClass>DrakeRenameit</ModInfoClass>
+    <Description>DrakesWorkshop — Rename, change description, and update the Crafted by line for any item in your inventory. You can even recolor them too with sign color codes! Fully configurable with server sync settings.</Description>
+    <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2333" />
+    <ThunderstoreDependency Include="ValheimModding-Jotunn-2.29.0" />
+    <ThunderstoreDependency Include="DrakeMods-DrakesCustomizeLibs-0.3.0" />
+  </ItemGroup>
+</Project>

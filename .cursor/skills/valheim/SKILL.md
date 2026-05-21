@@ -51,5 +51,5 @@ description: >-
 
 ## Server-authoritative config (ServerSync pattern)
 
-- Use a **`ConfigSync`** instance with **`AddConfigEntry`** and **`SynchronizedConfig = true`** on entries the server must own; keep client-only keys (e.g. UI modifier) unsynced.
+- Use **`DrakeConfigSync`** from **DrakesWorkshopLibs** (`CustomizeLibsAPI.CreateConfigSync`): **`BindSynced`**, **`AddLockingConfigEntry`**, **`FinalizeBinding`**. Only Libs embeds ServerSync. Keep client-only keys via **`BindClientOnly`**.
 - Helper **`Bind(section, key, default, desc)`** + **`configSync.AddConfigEntry(entry)`** reduces duplication.

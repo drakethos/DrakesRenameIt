@@ -39,8 +39,8 @@ jobs:
       #      BCL + Facades/netstandard.dll; its .targets sets TargetFrameworkRootPath
       #      and disables FrameworkPathOverride so the build uses real MS assemblies.
       #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
-      #    • ILRepack.Lib.MSBuild.Task — ILRepacker post-build target
       #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
+      #  DrakesWorkshopLibs (project reference) provides merged ServerSync via ILRepack.
       - name: Restore NuGet packages
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
@@ -106,7 +106,7 @@ jobs:
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
             /p:Version="${{ steps.ver.outputs.version }}" \
-            /t:"Build;ILRepacker" \
+            /t:Build \
             /v:minimal
 
       # ── Assemble Thunderstore zip (mirrors PackageMod target) ────────────────
@@ -124,24 +124,11 @@ jobs:
           cp icon.png                       "$PKG_DIR/"
           cp CHANGELOG.md                   "$PKG_DIR/"
 
-          python3 - <<'PYEOF'
-          import json, os
-          manifest = {
-              "name": "DrakesRenameit",
-              "version_number": os.environ["VERSION"],
-              "author": "DrakeMods",
-              "description": "Rename and change description any item in your inventory. You can even recolor them too! This is an early beta there may be bugs!",
-              "website_url": "https://github.com/drakethos/DrakesRenameIt",
-              "dependencies": [
-                  "denikson-BepInExPack_Valheim-5.4.2333",
-                  "ValheimModding-Jotunn-2.27.1"
-              ]
-          }
-          pkg_dir = os.environ["PKG_DIR"]
-          with open(f"{pkg_dir}/manifest.json", "w") as f:
-              json.dump(manifest, f, indent=4)
-          print("manifest.json written")
-          PYEOF
+          dotnet msbuild DrakeRenameit.csproj \
+            /p:Version="$VERSION" \
+            /p:ThunderstoreManifestDir="$PKG_DIR" \
+            /t:WriteThunderstoreManifest \
+            /v:minimal
 
           cd "$PKG_DIR" && zip -r "../$ZIP_NAME" . && cd ..
 

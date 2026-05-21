@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using Jotunn.Managers;
-using ServerSync;
+using DrakesWorkshopLibs.Sync;
 
 namespace DrakeRenameit.API;
 
@@ -55,7 +55,7 @@ public static class RenameitPermission
     public static bool IsValheimAdmin(Player? player) => IsAdminSafe(player);
 
     /// <summary>Subscribe to ServerSync config updates; call once from <see cref="RenameitConfig.Bind"/>.</summary>
-    internal static void WireVipListSync(ConfigEntry<string> vipListEntry, ConfigSync configSync)
+    internal static void WireVipListSync(ConfigEntry<string> vipListEntry, DrakeConfigSync configSync)
     {
         vipListEntry.SettingChanged += (_, _) => ReloadVipsFromSyncedConfig();
         configSync.SourceOfTruthChanged += _ => ReloadVipsFromSyncedConfig();
@@ -113,6 +113,28 @@ public static class RenameitPermission
     }
 
     public static IEnumerable<string> GetVIPs() => new List<string>(vipList);
+
+    /// <summary>
+    /// Server/host/offline only: replace VIP entries from an external source (e.g. VRP admin API).
+    /// Updates synced <see cref="RenameitConfig.VipList"/> so connected clients receive the list.
+    /// </summary>
+    public static void ApplyVipListFromExternal(IEnumerable<string> entries)
+    {
+        if (!CanMutateVipListAtRuntime() || entries == null)
+            return;
+
+        var names = new List<string>();
+        foreach (string entry in entries)
+        {
+            if (!string.IsNullOrWhiteSpace(entry))
+                names.Add(entry.Trim());
+        }
+
+        if (names.Count == 0)
+            return;
+
+        RenameitConfig.SetSyncedVipList(string.Join(", ", names));
+    }
 
     /// <summary>
     /// True when the player is a Valheim server admin (adminlist entries are socket/Steam IDs, not character names).

@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
-using DrakeRenameit.Patches;
+using DrakeRenameit.Integration;
+using DrakesWorkshopLibs;
+using DrakesWorkshopLibs.API;
+using DrakesWorkshopLibs.Data;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;
@@ -20,20 +23,17 @@ namespace DrakeRenameit
 {
     [BepInPlugin(GUID, ModName, Version)]
     [BepInDependency(Main.ModGuid)]
+    [BepInDependency(CustomizeLibsPlugin.GUID)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
-    public class DrakeRenameit : BaseUnityPlugin
+    public partial class DrakeRenameit : BaseUnityPlugin
     {
-        public const string CompanyName = "DrakeMods";
-        public const string ModName = "DrakesRenameit";
-        public const string Version = "1.0.0";
-        public const string GUID = "com." + CompanyName + "." + ModName;
-        public const string DrakeNewName = "Drake_Rename";
-        public const string DrakeNewDesc = "Drake_Rename_Desc";
-        public const string DrakeCraftedByDisplay = "Drake_CraftedByDisplay";
+        public const string DrakeNewName = DrakeCustomDataKeys.Rename;
+        public const string DrakeNewDesc = DrakeCustomDataKeys.RenameDescription;
+        public const string DrakeCraftedByDisplay = DrakeCustomDataKeys.CraftedByDisplay;
         /// <summary>When set, tooltip line uses this prefix instead of the localized <c>$item_crafter</c> label (text before “: name”).</summary>
-        public const string DrakeCraftedByLineLabel = "Drake_CraftedByLineLabel";
+        public const string DrakeCraftedByLineLabel = DrakeCustomDataKeys.CraftedByLineLabel;
         /// <summary>When set on a stack, <see cref="RenameitConfig.UnlockCost"/> has been paid and rename/description/crafted-by edits are allowed (if other rules pass).</summary>
-        public const string DrakeRenameUnlocked = "Drake_RenameUnlocked";
+        public const string DrakeRenameUnlocked = DrakeCustomDataKeys.RenameUnlocked;
 
         /// <summary>Inventory tooltip suffix when unlock cost applies but this item is not paid yet.</summary>
         public const string TooltipUnlockCostLockedEmoji = "\uD83D\uDD12";
@@ -65,65 +65,28 @@ namespace DrakeRenameit
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             RenamePermissionManager.Init(Logger);
             RenameUnlockCost.Init(Logger);
-            InventoryStackPatches.Apply(harmony, Logger);
-            ItemTooltipPatches.Apply(harmony, Logger);
-            DropHudMessagePatches.ApplyDropItemPendingCapture(harmony, Logger);
+            RenameItLibsBridge.Register();
             harmony.PatchAll();
-            DropHudMessagePatches.ApplyMessageHudShowMessage(harmony, Logger);
         }
 
-        public static string GetPropperName(ItemDrop.ItemData? item)
-        {
-            if (item?.m_shared == null)
-                return "";
-            return getPropperName(item, item.m_shared.m_name);
-        }
+        public static string GetPropperName(ItemDrop.ItemData? item) => CustomizeLibsAPI.GetProperName(item);
 
         /// <summary>
         /// Returns the item name for UI display, applying Drake custom name (if any) and ensuring rich-text tags are closed.
         /// Optionally localizes the result (useful for HUD messages).
         /// </summary>
-        public static string GetDisplayNameForUi(ItemDrop.ItemData? item, bool localize)
-        {
-            if (item?.m_shared == null)
-                return "";
+        public static string GetDisplayNameForUi(ItemDrop.ItemData? item, bool localize) =>
+            CustomizeLibsAPI.GetDisplayNameForUi(item, localize);
 
-            string raw = GetPropperName(item) ?? item.m_shared.m_name;
-            string prefix = DurabilityNameModifier.GetPrefixRaw(item);
-            string combined = string.IsNullOrEmpty(prefix) ? raw : prefix + " " + raw;
-            string safe = UI.TooltipRichText.EnsureRichTextTagsClosedForTooltip(combined);
-            if (!localize || Localization.instance == null)
-                return safe;
-            return Localization.instance.Localize(safe);
-        }
+        public static bool hasNewDesc(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.HasCustomDescription(item);
 
-        public static bool hasNewDesc(ItemDrop.ItemData? item)
-        {
-            if (item?.m_customData == null)
-                return false;
-            return item.m_customData.TryGetValue(DrakeNewDesc, out _);
-        }
-
-        public static bool hasNewName(ItemDrop.ItemData? item)
-        {
-            if (item == null || item.m_customData == null)
-                return false;
-            return item.m_customData.TryGetValue(DrakeNewName, out _);
-        }
+        public static bool hasNewName(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.HasCustomName(item);
 
         /// <summary>True when the stack has any Drake rename / description / crafted-by customization (keys present with content where applicable).</summary>
-        public static bool HasAnyDrakeRenameCustomization(ItemDrop.ItemData? item)
-        {
-            if (item?.m_customData == null)
-                return false;
-            if (hasNewName(item))
-                return true;
-            if (hasNewDesc(item))
-                return true;
-            if (HasCraftedByDisplayOverride(item))
-                return true;
-            return HasCraftedByLineLabelOverride(item);
-        }
+        public static bool HasAnyDrakeRenameCustomization(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.HasAnyCustomization(item);
 
         static bool ReadRenameUnlockedFlag(ItemDrop.ItemData item)
         {
@@ -239,19 +202,11 @@ namespace DrakeRenameit
         }
 
         /// <summary>True when <see cref="DrakeCraftedByDisplay"/> overrides the visible crafted-by line.</summary>
-        public static bool HasCraftedByDisplayOverride(ItemDrop.ItemData? item)
-        {
-            if (item?.m_customData == null)
-                return false;
-            return item.m_customData.TryGetValue(DrakeCraftedByDisplay, out var s) && !string.IsNullOrEmpty(s);
-        }
+        public static bool HasCraftedByDisplayOverride(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.HasCraftedByDisplayOverride(item);
 
-        public static bool HasCraftedByLineLabelOverride(ItemDrop.ItemData? item)
-        {
-            if (item?.m_customData == null)
-                return false;
-            return item.m_customData.TryGetValue(DrakeCraftedByLineLabel, out var s) && !string.IsNullOrEmpty(s);
-        }
+        public static bool HasCraftedByLineLabelOverride(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.HasCraftedByLineLabelOverride(item);
 
         /// <summary>True if the player may clear at least one Drake customization that is currently set on the item.</summary>
         public static bool CanResetAnyCustomization(ItemDrop.ItemData? item)
@@ -290,8 +245,7 @@ namespace DrakeRenameit
             if (item.m_customData == null)
                 return;
             string oldDisplay = getCraftedByDisplay(item);
-            item.m_customData.Remove(DrakeCraftedByDisplay);
-            item.m_customData.Remove(DrakeCraftedByLineLabel);
+            CustomizeLibsAPI.ClearCraftedByOverrides(item);
             string newDisplay = item.m_crafterName ?? "";
             RenameEvents.RaiseCraftedByDisplayChanged(
                 Player.m_localPlayer,
@@ -305,7 +259,7 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return "";
-            item.m_customData.Remove(DrakeNewName);
+            CustomizeLibsAPI.SetCustomName(item, null);
             return item.m_shared.m_name;
         }
 
@@ -313,8 +267,7 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return "";
-
-            item.m_customData.Remove(DrakeNewDesc);
+            CustomizeLibsAPI.SetCustomDescription(item, null);
             return item.m_shared.m_name;
         }
 
@@ -325,19 +278,8 @@ namespace DrakeRenameit
             return getPropperName(item, item.m_shared.m_name);
         }
 
-        public static string getPropperName(ItemDrop.ItemData? item, String defaultName)
-        {
-            if (item == null)
-                return defaultName;
-            string name;
-            if (item.m_customData == null)
-                item.m_customData = new Dictionary<string, string>();
-
-            name = item.m_customData.TryGetValue(DrakeNewName, out var existing)
-                ? existing
-                : defaultName;
-            return name;
-        }
+        public static string getPropperName(ItemDrop.ItemData? item, String defaultName) =>
+            CustomizeLibsAPI.GetProperName(item, defaultName);
 
         public static string getPropperDesc(ItemDrop.ItemData? item)
         {
@@ -346,19 +288,8 @@ namespace DrakeRenameit
             return getPropperDesc(item, item.m_shared.m_description);
         }
 
-        public static string getPropperDesc(ItemDrop.ItemData? item, String defaultDesc)
-        {
-            if (item == null)
-                return defaultDesc;
-            string name;
-            if (item.m_customData == null)
-                item.m_customData = new Dictionary<string, string>();
-
-            name = item.m_customData.TryGetValue(DrakeNewDesc, out var existing)
-                ? existing
-                : defaultDesc;
-            return name;
-        }
+        public static string getPropperDesc(ItemDrop.ItemData? item, String defaultDesc) =>
+            CustomizeLibsAPI.GetProperDescription(item, defaultDesc);
 
         public static void OpenRename(ItemDrop.ItemData? item)
         {
@@ -398,14 +329,11 @@ namespace DrakeRenameit
         {
             if (CurrentItem == null) return;
 
-            if (CurrentItem.m_customData == null)
-                CurrentItem.m_customData = new Dictionary<string, string>();
-
             if (string.IsNullOrEmpty(name))
-                CurrentItem.m_customData.Remove(DrakeNewName);
+                CustomizeLibsAPI.SetCustomName(CurrentItem, null);
             else
             {
-                CurrentItem.m_customData[DrakeNewName] = name;
+                CustomizeLibsAPI.SetCustomName(CurrentItem, name);
                 RenameEvents.RaiseNameChanged(
                     Player.m_localPlayer,
                     CurrentItem,
@@ -429,19 +357,16 @@ namespace DrakeRenameit
         {
             if (CurrentItem == null) return;
 
-            if (CurrentItem.m_customData == null)
-                CurrentItem.m_customData = new Dictionary<string, string>();
-
             if (string.IsNullOrEmpty(name))
-                CurrentItem.m_customData.Remove(DrakeNewDesc);
+                CustomizeLibsAPI.SetCustomDescription(CurrentItem, null);
             else
             {
-                CurrentItem.m_customData[DrakeNewDesc] = name;
+                CustomizeLibsAPI.SetCustomDescription(CurrentItem, name);
                 RenameEvents.RaiseDescriptionChanged(
-               Player.m_localPlayer,
-               CurrentItem,
-               CurrentItem.m_shared.m_name,
-               name);
+                    Player.m_localPlayer,
+                    CurrentItem,
+                    CurrentItem.m_shared.m_name,
+                    name);
             }
             
 
@@ -494,22 +419,37 @@ namespace DrakeRenameit
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)
         {
-            return RenamePermissionManager
-                .Evaluate(RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer, showError).Allowed;
+            if (!CustomizeLibsAPI.CanPerform(CustomizeOperation.RenameName, item, Player.m_localPlayer))
+            {
+                if (showError)
+                    RenamePermissionManager.Evaluate(RenamePermissionOperation.RenameItemName, item, Player.m_localPlayer, true);
+                return false;
+            }
+            return true;
         }
 
         public static bool CanChangeDesc(ItemDrop.ItemData item, bool showError = false)
         {
-            return RenamePermissionManager
-                .Evaluate(RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer, showError).Allowed;
+            if (!CustomizeLibsAPI.CanPerform(CustomizeOperation.RenameDescription, item, Player.m_localPlayer))
+            {
+                if (showError)
+                    RenamePermissionManager.Evaluate(RenamePermissionOperation.RewriteDescription, item, Player.m_localPlayer, true);
+                return false;
+            }
+            return true;
         }
 
         public static bool CanChangeCraftedByLabel(ItemDrop.ItemData? item, bool showError = false)
         {
             if (item == null)
                 return false;
-            return RenamePermissionManager
-                .Evaluate(RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer, showError).Allowed;
+            if (!CustomizeLibsAPI.CanPerform(CustomizeOperation.EditCraftedBy, item, Player.m_localPlayer))
+            {
+                if (showError)
+                    RenamePermissionManager.Evaluate(RenamePermissionOperation.EditCraftedByLabel, item, Player.m_localPlayer, true);
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -536,7 +476,9 @@ namespace DrakeRenameit
         }
 
         public static bool IsMenuOpenModifierHeld() =>
-            MenuKeyBinding.IsHeld(MenuOpenModifier);
+            DrakesWorkshopLibs.Input.MenuBindingRegistry.IsHeld(
+                DrakesWorkshopLibs.Input.MenuBindingRegistry.InventoryContextScope,
+                Integration.RenameItLibsBridge.InventoryMenuBindingId);
 
         /// <summary>Suffix for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies: 🔒 until paid, then 🖊️ (open-lock glyphs are easy to confuse with locked in Valheim fonts).</summary>
         public static string GetMenuTooltipLockSuffix(ItemDrop.ItemData? item)
@@ -595,14 +537,8 @@ namespace DrakeRenameit
             return string.Join(" | ", deduped);
         }
 
-        public static string getCraftedByDisplay(ItemDrop.ItemData? item)
-        {
-            if (item?.m_customData == null)
-                return item?.m_crafterName ?? "";
-            if (item.m_customData.TryGetValue(DrakeCraftedByDisplay, out var s) && !string.IsNullOrEmpty(s))
-                return s;
-            return item.m_crafterName ?? "";
-        }
+        public static string getCraftedByDisplay(ItemDrop.ItemData? item) =>
+            CustomizeLibsAPI.GetCraftedByDisplay(item);
 
         /// <summary>
         /// Stacks with no crafter yet cannot show a crafted-by line until someone is assigned — claim for the local
@@ -646,14 +582,8 @@ namespace DrakeRenameit
 
             EnsureLocalPlayerCrafterIfAbsent(CurrentItem);
 
-            if (CurrentItem.m_customData == null)
-                CurrentItem.m_customData = new Dictionary<string, string>();
-
             string oldDisplay = getCraftedByDisplay(CurrentItem);
-            if (string.IsNullOrEmpty(display))
-                CurrentItem.m_customData.Remove(DrakeCraftedByDisplay);
-            else
-                CurrentItem.m_customData[DrakeCraftedByDisplay] = display;
+            CustomizeLibsAPI.SetCraftedByDisplay(CurrentItem, display);
 
             bool mayEditLineLabel = CraftedByLabelCustomizable ||
                                     RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
@@ -661,9 +591,9 @@ namespace DrakeRenameit
             {
                 var pending = UIPanels.CraftedByLineLabelPendingToken;
                 if (string.IsNullOrEmpty(pending))
-                    CurrentItem.m_customData.Remove(DrakeCraftedByLineLabel);
+                    CustomizeLibsAPI.SetCraftedByLineLabel(CurrentItem, null);
                 else if (IsAllowedCustomCraftedByLineLabel(pending!))
-                    CurrentItem.m_customData[DrakeCraftedByLineLabel] = pending;
+                    CustomizeLibsAPI.SetCraftedByLineLabel(CurrentItem, pending);
             }
 
             string newDisplay = string.IsNullOrEmpty(display) ? (CurrentItem.m_crafterName ?? "") : display;

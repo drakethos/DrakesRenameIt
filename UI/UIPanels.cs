@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
 using DrakeRenameit.ModText;
+using DrakesWorkshopLibs.Data;
 using static DrakeRenameit.ModText.RenameItLocalization;
 using Jotunn.Managers;
 using UnityEngine;
@@ -62,7 +63,7 @@ public static class UIPanels
     const float CraftedByInputAnchorY = -56f;
     const float CraftedByFooterButtonY = 32f;
 
-    /// <summary>Line label applied on crafted-by OK when allowed; null clears <see cref="DrakeRenameit.DrakeCraftedByLineLabel"/>.</summary>
+    /// <summary>Line label applied on crafted-by OK when allowed; null clears <see cref="DrakeCustomDataKeys.CraftedByLineLabel"/>.</summary>
     internal static string? CraftedByLineLabelPendingToken => _craftedByLineLabelPendingToken;
 
     // Unlock confirmation sub-panel
@@ -1106,7 +1107,7 @@ public static class UIPanels
         var options = RenameitConfig.GetCraftedByAllowedLabelsList();
 
         string? stored = item.m_customData != null &&
-                         item.m_customData.TryGetValue(DrakeRenameit.DrakeCraftedByLineLabel, out var ls) &&
+                         item.m_customData.TryGetValue(DrakeCustomDataKeys.CraftedByLineLabel, out var ls) &&
                          !string.IsNullOrEmpty(ls)
             ? ls
             : null;

@@ -1,7 +1,8 @@
-
-<img width="256" height="256" alt="icon" src="https://github.com/user-attachments/assets/47b41d4d-e109-480c-9d26-2ad4dadf377e" />
+<img width="256" height="256" alt="DrakesRenameit icon" src="icon.png" />
 
 # DrakesRenameIt V1.0
+
+**DrakesWorkshop** — rename, descriptions, and crafted-by display for Valheim items.
 
 A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 
@@ -73,7 +74,7 @@ localization with an additional name, simply leave the $string intact and add ar
   - let you down!</s>
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is never registered with ServerSync — per-client only. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** (via **DrakesWorkshopLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakesWorkshopLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
@@ -91,7 +92,7 @@ Settings live in `BepInEx/config/` (e.g. `com.DrakeMods.DrakesRenameit.cfg`). Se
 #### Exclusions (server-synced)
 
 - **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions/crafted-by changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
-- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. Reference file: **`BepInEx/config/com.DrakeMods.DrakesRenameit/ExcludedCategoryReference.txt`** on first run or version change.
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
 - **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require the relevant **Features** toggles to be on and still obey **LockToOwner** if another player owns the item.
 
 #### Crafted by (server-synced)

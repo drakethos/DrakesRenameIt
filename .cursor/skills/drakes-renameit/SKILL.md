@@ -10,9 +10,9 @@ description: >-
 ## Mod identity
 
 - **BepInEx** plugin: `DrakeRenameit` in `DrakeRenameit.cs`, Harmony id `drakesmod.DrakeRenameit`.
-- Depends on **Jotunn** (and ServerSync for config). Uses **`RenameitConfig`** (synced entries via ServerSync).
-- **`LockSyncedConfig`** (default true) via **`AddLockingConfigEntry`** — locks **all** sections 01–09 for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) use **`BindClientOnly`** (no ServerSync). **`ServerDefaultMenuOpenModifier`** (General, synced, default `Shift`) applies when local **`MenuOpenModifier`** is empty; non-empty local always overrides.
-- **`BindSynced`** always sets **`SynchronizedConfig = true`**; **`FinalizeServerSync`** audits 31 synced entries + lock registration.
+- Depends on **Jotunn** and **DrakesWorkshopLibs** (`[BepInDependency]` + project reference). Config sync via **`DrakeConfigSync`** from Libs (no direct ServerSync reference).
+- **`RenameitConfig`** uses **`DrakeConfigSync.BindSynced`** / **`BindClientOnly`** / **`AddLockingConfigEntry`** / **`FinalizeBinding`** (31 synced entries in sections 01–09).
+- **`LockSyncedConfig`** (default true) locks **all** sections 01–09 for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) are client-only. **`ServerDefaultMenuOpenModifier`** (General, synced, default `Shift`) applies when local **`MenuOpenModifier`** is empty; non-empty local always overrides.
 - **`RenameitPermission.WireVipListSync`** reloads VIP hash from **`VipList`** on **`SettingChanged`** / **`SourceOfTruthChanged`** (not one-shot at Awake). Other rules read **`RenameitConfig.*`** live at use time.
 
 ## Permissions (`API/RenameItPermision.cs`)
@@ -83,4 +83,4 @@ description: >-
 
 ## Build / deploy
 
-- **`DrakeRenameit.csproj`**: ILRepack merges **ServerSync**; output DLL is the merged plugin. **`environment.props`** sets BepInEx / Valheim paths for local builds.
+- **`DrakeRenameit.csproj`**: references **DrakesWorkshopLibs** (Thunderstore `DrakeMods-DrakesCustomizeLibs-0.3.0+`); no ILRepack or ServerSync in this project. **`environment.props`** sets BepInEx / Valheim paths for local builds.

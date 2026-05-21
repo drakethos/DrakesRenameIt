@@ -90,3 +90,6 @@
   - **Config & docs**
     - Numbered cfg sections **01 Admin** through **10 UI-NotSynced** for Configuration Manager tab order; legacy section names migrate automatically.
     - README overhaul for 1.0 (permissions, config sections, menu keys, denial UI).
+- Version 1.0.1 (suite)
+  - **DrakesWorkshopLibs** dependency (Thunderstore `DrakeMods-DrakesCustomizeLibs-0.3.0+`); server config sync runs through Libs `DrakeConfigSync` (no embedded ServerSync in RenameIt).
+  - Display Harmony patches and name resolution pipeline live in CustomizeLibs; RenameIt keeps inventory UI, permissions, and config binding only.

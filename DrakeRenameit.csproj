@@ -106,12 +106,6 @@
     <Compile Include="UI\UIPanels.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DrakesWorkshopLibs\DrakesWorkshopLibs.csproj">
-      <Project>{A1111111-1111-4111-8111-111111111101}</Project>
-      <Name>DrakesWorkshopLibs</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -127,23 +121,7 @@
   </Target>
   <Target Name="CopyLocalizationToOutput" AfterTargets="Build">
     <MakeDir Directories="$(TargetDir)Assets\Localization" />
-    <Copy SourceFiles="@(LocalizationJson)"
-          DestinationFolder="$(TargetDir)Assets\Localization"
-          SkipUnchangedFiles="true" />
-  </Target>
-  <Target Name="CopyOutput" AfterTargets="CopyLocalizationToOutput" Condition="'$(R2ModPath)' != ''">
-    <PropertyGroup>
-      <TargetFolder>$(CompanyName)-$(AssemblyName)</TargetFolder>
-      <FullDestinationPath>$(R2ModPath)\$(ProfileName)\BepInEx\plugins\$(TargetFolder)</FullDestinationPath>
-    </PropertyGroup>
-    <MakeDir Directories="$(FullDestinationPath)\Assets\Localization" />
-    <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(FullDestinationPath)\" />
-    <Copy SourceFiles="@(LocalizationJson)"
-          DestinationFolder="$(FullDestinationPath)\Assets\Localization"
-          SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(FullDestinationPath)\README.md" />
-    <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(FullDestinationPath)\icon.png" />
-    <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(FullDestinationPath)\CHANGELOG.md" />
+    <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(TargetDir)Assets\Localization" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="PackageMod" AfterTargets="CopyLocalizationToOutput" DependsOnTargets="WriteThunderstoreManifest">
     <MakeDir Directories="$(ThunderstoreFolder)" />
@@ -153,9 +131,7 @@
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(ThunderstoreFolder)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md" />
     <MakeDir Directories="$(ThunderstoreFolder)\Assets\Localization" />
-    <Copy SourceFiles="@(LocalizationJson)"
-          DestinationFolder="$(ThunderstoreFolder)\Assets\Localization"
-          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(ThunderstoreFolder)\Assets\Localization" SkipUnchangedFiles="true" />
     <!-- Zip the Thunderstore folder (skipped in CI; workflow assembles its own zip) -->
     <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force" Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
   </Target>
@@ -167,12 +143,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <AssetFiles Include="Assets\*.*" />
-    <Content Include="Properties\clothes" />
     <Content Include="README.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup />
 </Project>
-
-

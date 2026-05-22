@@ -12,6 +12,7 @@
     <ModInfoClass>DrakeRenameit</ModInfoClass>
     <Description>DrakesWorkshop — Rename, change description, and update the Crafted by line for any item in your inventory. You can even recolor them too with sign color codes! Fully configurable with server sync settings.</Description>
     <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
+    <DeployAfterTargets>CopyLocalizationToOutput</DeployAfterTargets>
   </PropertyGroup>
   <ItemGroup>
     <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2333" />

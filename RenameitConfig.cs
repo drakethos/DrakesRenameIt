@@ -209,7 +209,7 @@ public static class RenameitConfig
             SectionAdmin, DisplayAdmin,
             "VipList",
             "",
-            "Comma- or semicolon-separated character names and/or platform user IDs (Steam ID / GetPlayerID — same as adminlist.txt IDs). Server-synced; edit on the server only when LockSyncedConfig is on. Grants mod bypass only, not Valheim admin.");
+            "Comma- or semicolon-separated character names and/or platform user IDs (Steam ID / GetPlayerID — same as adminlist.txt IDs). Server-synced cfg only. VIP list API results are kept in memory separately and are not written here. Grants mod bypass only, not Valheim admin.");
 
         _vipOnlyOverride = _drakeConfigSync.BindSynced(config, 
             SectionAdmin, DisplayAdmin,

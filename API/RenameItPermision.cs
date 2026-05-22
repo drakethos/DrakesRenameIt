@@ -8,7 +8,11 @@ namespace DrakeRenameit.API;
 
 public static class RenameitPermission
 {
-    private static readonly HashSet<string> vipList = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>From synced <see cref="RenameitConfig.VipList"/> cfg only.</summary>
+    private static readonly HashSet<string> configVipList = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>From VIP list API / runtime <see cref="AddVIP"/> — never written to synced cfg.</summary>
+    private static readonly HashSet<string> apiVipList = new(StringComparer.OrdinalIgnoreCase);
     public static bool IsAdminOrVIP()
     {
         Player? local = Player.m_localPlayer;
@@ -18,7 +22,7 @@ public static class RenameitPermission
     /// <summary>True when the player may bypass ownership, exclusions, and resource rules (subject to <see cref="RenameitConfig.AllowAdminOverride"/>).</summary>
     public static bool IsAdminOrVIP(Player player) => IsElevatedForOverrides(player);
 
-    /// <summary>True when the player is on the server-synced VIP list (or runtime API on server / offline only). Does not include Valheim admin.</summary>
+    /// <summary>True when the player is on cfg <see cref="RenameitConfig.VipList"/> and/or the in-memory VIP API list. Does not include Valheim admin.</summary>
     public static bool IsModVip(Player? player)
     {
         if (player == null)
@@ -26,7 +30,7 @@ public static class RenameitPermission
 
         foreach (string key in GetVipIdentityKeys(player))
         {
-            if (vipList.Contains(key))
+            if (configVipList.Contains(key) || apiVipList.Contains(key))
                 return true;
         }
 
@@ -62,12 +66,12 @@ public static class RenameitPermission
         ReloadVipsFromSyncedConfig();
     }
 
-    /// <summary>Replace in-memory VIP entries from the current synced <see cref="RenameitConfig.VipList"/> value.</summary>
+    /// <summary>Replace cfg-backed VIP entries from the current synced <see cref="RenameitConfig.VipList"/> value.</summary>
     public static void ReloadVipsFromSyncedConfig()
     {
-        vipList.Clear();
+        configVipList.Clear();
         foreach (string entry in ParseVipListEntries(RenameitConfig.VipList))
-            vipList.Add(entry);
+            configVipList.Add(entry);
     }
 
     internal static IEnumerable<string> ParseVipListEntries(string raw)
@@ -89,7 +93,7 @@ public static class RenameitPermission
         if (!CanMutateVipListAtRuntime())
             return;
         if (!string.IsNullOrWhiteSpace(nameOrId))
-            vipList.Add(nameOrId.Trim());
+            apiVipList.Add(nameOrId.Trim());
     }
 
     public static void AddVIP(List<string> list)
@@ -100,7 +104,7 @@ public static class RenameitPermission
         foreach (string s in list)
         {
             if (!string.IsNullOrWhiteSpace(s))
-                vipList.Add(s.Trim());
+                apiVipList.Add(s.Trim());
         }
     }
 
@@ -109,14 +113,21 @@ public static class RenameitPermission
         if (!CanMutateVipListAtRuntime())
             return;
         if (!string.IsNullOrEmpty(nameOrId))
-            vipList.Remove(nameOrId.Trim());
+            apiVipList.Remove(nameOrId.Trim());
     }
 
-    public static IEnumerable<string> GetVIPs() => new List<string>(vipList);
+    public static IEnumerable<string> GetVIPs()
+    {
+        var merged = new HashSet<string>(configVipList, StringComparer.OrdinalIgnoreCase);
+        foreach (string entry in apiVipList)
+            merged.Add(entry);
+        return merged;
+    }
 
     /// <summary>
-    /// Server/host/offline only: replace VIP entries from an external source (e.g. VRP admin API).
-    /// Updates synced <see cref="RenameitConfig.VipList"/> so connected clients receive the list.
+    /// Server/host/offline only: replace VIP entries from an external source and persist to synced
+    /// <see cref="RenameitConfig.VipList"/> (visible in cfg). Prefer
+    /// <see cref="ApplyVipListFromExternalInMemoryOnly"/> when hiding names from config.
     /// </summary>
     public static void ApplyVipListFromExternal(IEnumerable<string> entries)
     {
@@ -134,6 +145,39 @@ public static class RenameitPermission
             return;
 
         RenameitConfig.SetSyncedVipList(string.Join(", ", names));
+    }
+
+    /// <summary>
+    /// Server/host/offline only: replace VIP list API entries in memory (does not update synced <see cref="RenameitConfig.VipList"/> cfg).
+    /// Use <see cref="ReceiveApiVipListFromHost"/> on clients when the server pushes the same list over the network.
+    /// </summary>
+    public static void ApplyVipListFromExternalInMemoryOnly(IEnumerable<string> entries)
+    {
+        if (!CanMutateVipListAtRuntime() || entries == null)
+            return;
+
+        ReplaceApiVipList(entries);
+    }
+
+    /// <summary>
+    /// Apply host-authoritative API VIP names on this machine (clients receive via VRP/RPC; not written to cfg).
+    /// </summary>
+    public static void ReceiveApiVipListFromHost(IEnumerable<string>? entries)
+    {
+        if (entries == null)
+            return;
+
+        ReplaceApiVipList(entries);
+    }
+
+    static void ReplaceApiVipList(IEnumerable<string> entries)
+    {
+        apiVipList.Clear();
+        foreach (string entry in entries)
+        {
+            if (!string.IsNullOrWhiteSpace(entry))
+                apiVipList.Add(entry.Trim());
+        }
     }
 
     /// <summary>

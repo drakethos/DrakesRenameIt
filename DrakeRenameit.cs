@@ -259,16 +259,32 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return "";
+
+            string oldDisplay = GetPropperName(item);
             CustomizeLibsAPI.SetCustomName(item, null);
-            return item.m_shared.m_name;
+            string newDisplay = GetPropperName(item);
+            if (!string.Equals(oldDisplay, newDisplay, StringComparison.Ordinal))
+            {
+                RenameEvents.RaiseNameChanged(Player.m_localPlayer, item, oldDisplay, newDisplay);
+            }
+
+            return newDisplay;
         }
 
         public static string resetDesc(ItemDrop.ItemData? item)
         {
             if (item == null)
                 return "";
+
+            string oldDisplay = getPropperDesc(item);
             CustomizeLibsAPI.SetCustomDescription(item, null);
-            return item.m_shared.m_name;
+            string newDisplay = getPropperDesc(item);
+            if (!string.Equals(oldDisplay, newDisplay, StringComparison.Ordinal))
+            {
+                RenameEvents.RaiseDescriptionChanged(Player.m_localPlayer, item, oldDisplay, newDisplay);
+            }
+
+            return newDisplay;
         }
 
         public static string getPropperName(ItemDrop.ItemData? item)
@@ -329,16 +345,25 @@ namespace DrakeRenameit
         {
             if (CurrentItem == null) return;
 
+            Player? player = Player.m_localPlayer;
+            string oldDisplay = GetPropperName(CurrentItem);
+
             if (string.IsNullOrEmpty(name))
+            {
+                if (!hasNewName(CurrentItem))
+                    return;
+
                 CustomizeLibsAPI.SetCustomName(CurrentItem, null);
-            else
+                string newDisplay = GetPropperName(CurrentItem);
+                if (!string.Equals(oldDisplay, newDisplay, StringComparison.Ordinal))
+                {
+                    RenameEvents.RaiseNameChanged(player, CurrentItem, oldDisplay, newDisplay);
+                }
+            }
+            else if (!string.Equals(oldDisplay, name, StringComparison.Ordinal))
             {
                 CustomizeLibsAPI.SetCustomName(CurrentItem, name);
-                RenameEvents.RaiseNameChanged(
-                    Player.m_localPlayer,
-                    CurrentItem,
-                    CurrentItem.m_shared.m_name,
-                    name);
+                RenameEvents.RaiseNameChanged(player, CurrentItem, oldDisplay, name);
             }
 
             if (NameClaimsOwner && (AllowRenameUnownedItems || RenameExclusionRules.MatchesRenameAllowlist(CurrentItem)) &&
@@ -357,16 +382,25 @@ namespace DrakeRenameit
         {
             if (CurrentItem == null) return;
 
+            Player? player = Player.m_localPlayer;
+            string oldDisplay = getPropperDesc(CurrentItem);
+
             if (string.IsNullOrEmpty(name))
+            {
+                if (!hasNewDesc(CurrentItem))
+                    return;
+
                 CustomizeLibsAPI.SetCustomDescription(CurrentItem, null);
-            else
+                string newDisplay = getPropperDesc(CurrentItem);
+                if (!string.Equals(oldDisplay, newDisplay, StringComparison.Ordinal))
+                {
+                    RenameEvents.RaiseDescriptionChanged(player, CurrentItem, oldDisplay, newDisplay);
+                }
+            }
+            else if (!string.Equals(oldDisplay, name, StringComparison.Ordinal))
             {
                 CustomizeLibsAPI.SetCustomDescription(CurrentItem, name);
-                RenameEvents.RaiseDescriptionChanged(
-                    Player.m_localPlayer,
-                    CurrentItem,
-                    CurrentItem.m_shared.m_name,
-                    name);
+                RenameEvents.RaiseDescriptionChanged(player, CurrentItem, oldDisplay, name);
             }
             
 

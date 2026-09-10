@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using Jotunn.Managers;
-using DrakesWorkshopLibs.Sync;
+using DrakeModsLibs.Sync;
 
 namespace DrakeRenameit.API;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using DrakesWorkshopLibs.Sync;
+using DrakeModsLibs.Sync;
 
 namespace DrakeRenameit;
 
@@ -66,6 +66,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _craftedByLabelCustomizable = default!;
     private static ConfigEntry<string> _craftedByAllowedLabels = default!;
     private static ConfigEntry<string> _menuOpenModifier = default!;
+    private static ConfigEntry<bool> _logSpam = default!;
     private static ConfigEntry<string> _serverDefaultMenuOpenModifier = default!;
     private static ConfigEntry<bool> _unlockCostEnabled = default!;
     private static ConfigEntry<string> _unlockCost = default!;
@@ -136,6 +137,27 @@ public static class RenameitConfig
         string.IsNullOrWhiteSpace(_menuOpenModifier.Value)
             ? _serverDefaultMenuOpenModifier.Value
             : _menuOpenModifier.Value;
+
+    /// <summary>Per-client verbose BepInEx logging (permission traces, localization load details). Not server-synced.</summary>
+    public static bool LogSpam => _logSpam != null && _logSpam.Value;
+
+    internal static void VerboseDebug(string message)
+    {
+        if (LogSpam)
+            Log?.LogDebug(message);
+    }
+
+    internal static void VerboseInfo(string message)
+    {
+        if (LogSpam)
+            Log?.LogInfo(message);
+    }
+
+    internal static void VerboseWarning(string message)
+    {
+        if (LogSpam)
+            Log?.LogWarning(message);
+    }
 
     /// <summary>When true (and <see cref="UnlockCost"/> parses to at least one item), a stack must be unlocked once before rename/description/crafted-by edits. Admins/VIPs still bypass when <see cref="AllowAdminOverride"/> applies.</summary>
     public static bool UnlockCostEnabled => _unlockCostEnabled.Value;
@@ -400,6 +422,12 @@ public static class RenameitConfig
             "",
             "Optional per-client override for menu keys. Leave empty to use ServerDefaultMenuOpenModifier from the server. When set, always wins on this machine. Examples: Shift, Ctrl, Alt, Shift+Alt, F1, None. Combine with + , or &.");
 
+        _logSpam = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "LogSpam",
+            false,
+            "If true, writes verbose BepInEx logs on this client (permission allow/deny traces, localization load details, unlock-cost parse notes). Does not sync to the server. Leave off unless debugging.");
+
         MigrateLegacyConfigSections(config);
 
         global::DrakeRenameit.API.RenameitPermission.WireVipListSync(_vipList, _drakeConfigSync);
@@ -431,7 +459,7 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "Modifiers", SectionModifiers,
             "DurabilityModifierEnabled", "DurabilityUnbrokenLabel", "DurabilityBrokenLabel", "DurabilityTierModifiers");
         MigrateSectionKeys(config, "UI-NotSynced", SectionUI,
-            "MenuHintColor", "MenuOpenModifier");
+            "MenuHintColor", "MenuOpenModifier", "LogSpam");
 
         // Unlock cost keys used to live under Stacks.
         MigrateSectionKeys(config, "Stacks", SectionUnlockCost, "UnlockCostEnabled", "UnlockCost");

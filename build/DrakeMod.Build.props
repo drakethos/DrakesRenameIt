@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildThisFileDirectory)DrakeMod.Platform.props" />
   <PropertyGroup>
     <CompanyName Condition="'$(CompanyName)' == '' and '$(ThunderstoreAuthor)' != ''">$(ThunderstoreAuthor)</CompanyName>
-    <!-- r2modman mods.yml uses Thunderstore package id (e.g. DrakesCustomizeLibs), not always AssemblyName -->
+    <!-- r2modman mods.yml uses Thunderstore package id (e.g. DrakeModsLibs), not always AssemblyName -->
     <R2PluginFolder Condition="'$(R2PluginFolder)' == '' and '$(CompanyName)' != '' and '$(ThunderstoreName)' != ''">$(CompanyName)-$(ThunderstoreName)</R2PluginFolder>
     <R2PluginFolder Condition="'$(R2PluginFolder)' == '' and '$(CompanyName)' != '' and '$(AssemblyName)' != ''">$(CompanyName)-$(AssemblyName)</R2PluginFolder>
     <R2ModDeployPath Condition="'$(R2ModPath)' != '' and '$(ProfileName)' != '' and '$(R2PluginFolder)' != ''">$(R2ModPath)\$(ProfileName)\BepInEx\plugins\$(R2PluginFolder)</R2ModDeployPath>
@@ -13,9 +13,7 @@
     <R2ModProfileModScript Condition="'$(R2ModProfileModScript)' == '' and Exists('$(MSBuildThisFileDirectory)..\scripts\Update-R2ModProfileMod.ps1')">$(MSBuildThisFileDirectory)..\scripts\Update-R2ModProfileMod.ps1</R2ModProfileModScript>
     <DeployAfterTargets Condition="'$(DeployAfterTargets)' == ''">Build</DeployAfterTargets>
     <ThunderstoreBasePath Condition="'$(ThunderstoreBasePath)' == ''">C:\Modding\Thunderstore</ThunderstoreBasePath>
-    <ThunderstoreFolder Condition="'$(ThunderstoreFolder)' == ''">$(ThunderstoreBasePath)\$(CompanyName)-$(ThunderstoreName)-$(Version)</ThunderstoreFolder>
-    <ZipOutput Condition="'$(ZipOutput)' == ''">$(ThunderstoreFolder).zip</ZipOutput>
-    <ManifestPath Condition="'$(ManifestPath)' == ''">$(ThunderstoreFolder)\manifest.json</ManifestPath>
+    <!-- ThunderstoreFolder/ZipOutput resolved in ResolveThunderstorePaths (after mod.package.props Version is known). -->
     <ModInfoGeneratedFile>$(MSBuildProjectDirectory)\obj\$(Configuration)\ModInfo.g.cs</ModInfoGeneratedFile>
     <AfterTargets Condition="'$(AfterTargets)' == ''">Build</AfterTargets>
     <VerifyNoServerSyncScript Condition="'$(VerifyNoServerSyncScript)' == '' and Exists('$(MSBuildThisFileDirectory)scripts\Verify-NoServerSyncInModDll.ps1')">$(MSBuildThisFileDirectory)scripts\Verify-NoServerSyncInModDll.ps1</VerifyNoServerSyncScript>

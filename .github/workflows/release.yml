@@ -18,14 +18,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── Resolve version from the tag (strips leading "v") ──────────────────
-      - name: Set version
+      # ── Version from mod.package.props (must match release tag v{Version}) ───
+      - name: Resolve release version
         id: ver
         run: |
-          TAG="${GITHUB_REF_NAME}"          # e.g. v0.9.0
-          VERSION="${TAG#v}"                # e.g. 0.9.0
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
+          TAG="${GITHUB_REF_NAME}"
+          TAG_VERSION="${TAG#v}"
+          PKG_VERSION=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' mod.package.props | head -1 | xargs)
+          if [ -z "$PKG_VERSION" ]; then
+            echo "::error::Could not read <Version> from mod.package.props" >&2
+            exit 1
+          fi
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag ${TAG} (${TAG_VERSION}) does not match mod.package.props (${PKG_VERSION}). Tag v${PKG_VERSION} or update <Version>." >&2
+            exit 1
+          fi
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Release version: $PKG_VERSION (mod.package.props)"
 
       # ── Install .NET SDK (Roslyn C#10) ──────────────────────────────────────
       - name: Setup .NET SDK
@@ -40,7 +50,7 @@ jobs:
       #      and disables FrameworkPathOverride so the build uses real MS assemblies.
       #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
       #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
-      #  DrakesWorkshopLibs (project reference) provides merged ServerSync via ILRepack.
+      #  DrakeModsLibs (project reference) provides merged ServerSync via ILRepack.
       - name: Restore NuGet packages
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages

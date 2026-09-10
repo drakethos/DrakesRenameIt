@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using BepInEx.Logging;
 using DrakeRenameit.ModText;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 using static DrakeRenameit.ModText.RenameItLocalization;
@@ -48,13 +47,7 @@ public readonly struct RenamePermissionResult
 /// </remarks>
 public static class RenamePermissionManager
 {
-    private static ManualLogSource? _log;
     private static int _ignoreUnlockRequirementDepth;
-
-    internal static void Init(ManualLogSource logSource)
-    {
-        _log = logSource;
-    }
 
     /// <summary>While &gt; 0, unlock-cost gate is skipped (used to test whether any edit would be allowed if the stack were unlocked).</summary>
     internal static void BeginIgnoreUnlockRequirement() => _ignoreUnlockRequirementDepth++;
@@ -233,8 +226,10 @@ public static class RenamePermissionManager
 
     private static void LogAllowed(RenamePermissionOperation op, ItemDrop.ItemData? item, string detail)
     {
+        if (!RenameitConfig.LogSpam)
+            return;
         string id = item?.m_shared?.m_name ?? "?";
-        _log?.LogDebug($"[Permission] ALLOW {op} item={id} — {detail}");
+        RenameitConfig.VerboseDebug($"[Permission] ALLOW {op} item={id} — {detail}");
     }
 
     private static void LogDenied(
@@ -243,8 +238,10 @@ public static class RenamePermissionManager
         RenameDenialReason reasons,
         string detail)
     {
+        if (!RenameitConfig.LogSpam)
+            return;
         string id = item?.m_shared?.m_name ?? "?";
-        _log?.LogInfo($"[Permission] DENY {op} item={id} reasons={reasons} — {detail}");
+        RenameitConfig.VerboseInfo($"[Permission] DENY {op} item={id} reasons={reasons} — {detail}");
     }
 
     /// <summary>Rule-based access denial (owner, exclusions, feature off, etc.). Does not include the unlock-cost gate.</summary>

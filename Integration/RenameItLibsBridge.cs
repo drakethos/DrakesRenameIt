@@ -1,6 +1,8 @@
+using DrakeRenameit.API;
 using DrakeRenameit.Permissions;
-using DrakesWorkshopLibs.API;
-using DrakesWorkshopLibs.Input;
+using DrakeModsLibs.Tags;
+using DrakeModsLibs.API;
+using DrakeModsLibs.Input;
 
 namespace DrakeRenameit.Integration;
 
@@ -39,6 +41,7 @@ internal static class RenameItLibsBridge
             modLabel: "DrakesRenameit");
 
         RegisterPermissionValidators();
+        CustomizationGatekeeper.TagBypass = RenameitPermission.IsElevatedForOverrides;
     }
 
     static void RegisterPermissionValidators()

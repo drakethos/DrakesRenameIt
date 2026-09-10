@@ -58,7 +58,7 @@ public static class RenameItLocalization
         }
         catch (FormatException)
         {
-            _log?.LogWarning($"[ModText] Format error for key '{key}' with {args.Length} argument(s).");
+            RenameitConfig.VerboseWarning($"[ModText] Format error for key '{key}' with {args.Length} argument(s).");
             return text;
         }
     }
@@ -99,7 +99,7 @@ public static class RenameItLocalization
                 fromLang = TryLoadLanguageFile(locDir, language);
 
             _ready = Strings.Count > 0;
-            _log?.LogInfo(
+            RenameitConfig.VerboseInfo(
                 $"[ModText] {Strings.Count} strings ready (language={language}, English overrides={fromEnglish}, {language} overrides={fromLang}).");
         }
         catch (Exception ex)
@@ -118,7 +118,7 @@ public static class RenameItLocalization
         if (!File.Exists(jsonPath))
         {
             if (!string.Equals(language, "English", StringComparison.OrdinalIgnoreCase))
-                _log?.LogDebug($"[ModText] No file for language '{language}' at {jsonPath} (using English/fallback).");
+                RenameitConfig.VerboseDebug($"[ModText] No file for language '{language}' at {jsonPath} (using English/fallback).");
             return 0;
         }
 
@@ -126,7 +126,7 @@ public static class RenameItLocalization
         if (TryLoadJsonFile(jsonPath, Strings))
             return Strings.Count - before;
 
-        _log?.LogWarning($"[ModText] Could not parse {jsonPath}.");
+        RenameitConfig.VerboseWarning($"[ModText] Could not parse {jsonPath}.");
         return 0;
     }
 
@@ -150,7 +150,7 @@ public static class RenameItLocalization
         }
         catch (Exception ex)
         {
-            _log?.LogDebug($"[ModText] GetSelectedLanguage failed: {ex.Message}");
+            RenameitConfig.VerboseDebug($"[ModText] GetSelectedLanguage failed: {ex.Message}");
         }
 
         foreach (var prefKey in new[] { "language", "Language" })
@@ -176,7 +176,7 @@ public static class RenameItLocalization
         if (Strings.TryGetValue(key, out var text) && !string.IsNullOrEmpty(text))
             return text;
 
-        _log?.LogWarning($"[ModText] Missing localization key: {key}");
+        RenameitConfig.VerboseWarning($"[ModText] Missing localization key: {key}");
         return key;
     }
 

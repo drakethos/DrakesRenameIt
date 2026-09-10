@@ -123,7 +123,7 @@
     <MakeDir Directories="$(TargetDir)Assets\Localization" />
     <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(TargetDir)Assets\Localization" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="PackageMod" AfterTargets="CopyLocalizationToOutput" DependsOnTargets="WriteThunderstoreManifest">
+  <Target Name="PackageMod" AfterTargets="CopyLocalizationToOutput" DependsOnTargets="ResolveThunderstorePaths;WriteThunderstoreManifest" Condition="'$(SkipPackageMod)' != 'true'">
     <MakeDir Directories="$(ThunderstoreFolder)" />
     <!-- Copy the DLL to the Thunderstore folder -->
     <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ThunderstoreFolder)" />

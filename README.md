@@ -1,10 +1,10 @@
 <img width="256" height="256" alt="DrakesRenameit icon" src="icon.png" />
 
-# DrakesRenameIt V1.0
+# DrakesRenameIt
 
-**DrakesWorkshop** — rename, descriptions, and crafted-by display for Valheim items.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 
-A Valheim mod that lets you rename items, rewrite descriptions and  now even update the **Crafted by** line (display only). Good for roleplay or labeling gear.
+**Requires [DrakeModsLibs](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** compatible (item-stand / label fixes in Libs).
 
 ### How to use
 
@@ -74,7 +74,7 @@ localization with an additional name, simply leave the $string intact and add ar
   - let you down!</s>
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** (via **DrakesWorkshopLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakesWorkshopLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
@@ -144,14 +144,13 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 **Admin/VIP override** (and unlock-cost skip when elevated) → **Features toggles** (rename, description, crafted-by) → **LockToOwner** (once an owner exists) → **RenameAllowlist** → **excluded names**, **excluded category**, **ExcludeStacks**, and **AllowRenameUnownedItems** for raw resources → **unlock cost** (if enabled) for the stack.
 
 ### Known Issues:
-Known Issues:
-    - None currently but please report if you find any!
+- None currently but please report if you find any!
+
 #### Wishlist for future
-- if there is a high demand for this:
-    - Renamable pieces (that have hover names)
-##### Distant crazy features
-- Someday if it seems doable, I may add customizations like color changes to the icon or item itself, things like that
-- Look out for a full DrakesCustomizationSuite in the works planning on more mods for customizing your items and what not!
+- If there is high demand: renamable pieces that have hover names.
+- **Reskin** (custom item visuals) is something we want to look into when priorities allow — no timeline promised.
+- Other customization ideas may show up later as separate DrakeMods that share **DrakeModsLibs**; we are **not** shipping a full customization suite right now.
+
 #### API Docs:
 Types live in namespace `DrakeRenameit.API`.
 

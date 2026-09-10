@@ -1,5 +1,5 @@
 using System;
-using DrakesWorkshopLibs.API;
+using DrakeModsLibs.API;
 
 namespace DrakeRenameit.API;
 

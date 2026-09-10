@@ -48,7 +48,7 @@
 - Version 0.7.0
   - added new exclusion features.
 - Version 0.9.0
-  - Pre-release candidate for 1.0 — thorough testing requested before Thunderstore publish.
+  - Pre-release candidate for 1.0  -  thorough testing requested before Thunderstore publish.
   - Added configurable unlock cost: pay items from your inventory once per stack before rename/description/crafted-by edits are allowed (admins/VIPs bypass).
   - Added "Crafted by" label override: display-only change to the "Crafted by" line in tooltips (real crafter ownership is unchanged).
   - Added ShowReason config: when on, denied rename/description attempts show the exact reason in the tooltip/center message.
@@ -66,16 +66,16 @@
   - **Modifiers** config: optional durability name prefixes (`DurabilityModifierEnabled`, `DurabilityUnbrokenLabel`, `DurabilityBrokenLabel`, `DurabilityTierModifiers`).
   - Broken label only at 0 durability; wear tiers for in-between; no label in the gap below pristine.
   - Skips modifiers for items with no durability (`m_maxDurability` 0), e.g. wood and coins.
-  - **ExcludeStacks** (Exclusions): when enabled, non-elevated players cannot rename, edit descriptions, or crafted-by labels on vanilla stackable items (`m_maxStackSize > 1`). Overridden when **AllowAdminOverride** applies (admins/VIPs). **RenameAllowlist** bypasses like other exclusions. Independent of **SeparateStacks** / **SeparateStacksHardLock** under General — those merge rules still apply; elevated users can always edit stacks when override is on.
+  - **ExcludeStacks** (Exclusions): when enabled, non-elevated players cannot rename, edit descriptions, or crafted-by labels on vanilla stackable items (`m_maxStackSize > 1`). Overridden when **AllowAdminOverride** applies (admins/VIPs). **RenameAllowlist** bypasses like other exclusions. Independent of **SeparateStacks** / **SeparateStacksHardLock** under General  -  those merge rules still apply; elevated users can always edit stacks when override is on.
   - Build: removed duplicate `environment.props` import (fixes MSB4011 when Jotunn already imports it via `SolutionDir`).
   - Fixed nullable-analysis warnings (`RenameitConfig` config fields, `InventoryStackPatches` Harmony ref signature, menu button null checks, `GetPropperName` / `hasNewDesc`, and related files).
   - API: `RenameDenialReason.ExcludedStackable` renamed to `ExcludedStacks` (flag value unchanged); config key **`ExcludeStacks`** replaces **`ExcludeStackable`** in config files if you used a draft build with the old name.
 - Version 1.0.0
   - **ServerSync hardening**
-    - **LockSyncedConfig** (default on) locks all gameplay sections **01–09** for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, optional **MenuOpenModifier** override) stay per-client.
+    - **LockSyncedConfig** (default on) locks all gameplay sections **01 - 09** for non - Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, optional **MenuOpenModifier** override) stay per-client.
     - Every synced entry uses explicit **BindSynced** registration; startup audit logs if **LockSyncedConfig** was not registered or synced entry count is wrong (31 entries).
     - **VipList** reloads when ServerSync pushes updates (**SettingChanged** / **SourceOfTruthChanged**), not only once at load. VIP matching uses character name, **GetPlayerID()**, and peer host ID. Runtime **AddVIP** / **RemoveVIP** is server-only on remote clients. VIP grants mod bypass only, not Valheim admin.
-  - **ShowDenialUi** (General, server-synced, new in 1.0) — when off, blocked items show **no** red strikethrough menu hint, denial tooltip lines, or center message on failed modifier+right-click (silent denials). Unlock-cost, not-in-inventory, and validation messages are unchanged. Legacy **HideDisabledDenialUi** cfg values migrate automatically (inverted). **ShowReason** default is now **false** (specific denial reasons only when **ShowDenialUi** and **ShowReason** are both on).
+  - **ShowDenialUi** (General, server-synced, new in 1.0)  -  when off, blocked items show **no** red strikethrough menu hint, denial tooltip lines, or center message on failed modifier+right-click (silent denials). Unlock-cost, not-in-inventory, and validation messages are unchanged. Legacy **HideDisabledDenialUi** cfg values migrate automatically (inverted). **ShowReason** default is now **false** (specific denial reasons only when **ShowDenialUi** and **ShowReason** are both on).
   - **Menu key bindings**
     - **MenuOpenModifier** (UI-NotSynced): full support for **Shift**, **Ctrl**, **Alt**, combos (**Shift+Alt**, etc.), **F1** and other **KeyCode** names, and **None** (right-click only). Tooltip hints use the resolved binding.
     - **ServerDefaultMenuOpenModifier** (General, server-synced, default **Shift**): modpack hosts set the server-wide default; players with an **empty** local **MenuOpenModifier** follow the server. Any **non-empty** local value always overrides on that machine (personal preference without editing every client cfg).
@@ -90,6 +90,7 @@
   - **Config & docs**
     - Numbered cfg sections **01 Admin** through **10 UI-NotSynced** for Configuration Manager tab order; legacy section names migrate automatically.
     - README overhaul for 1.0 (permissions, config sections, menu keys, denial UI).
-- Version 1.0.1 (suite)
-  - **DrakesWorkshopLibs** dependency (Thunderstore `DrakeMods-DrakesCustomizeLibs-0.3.0+`); server config sync runs through Libs `DrakeConfigSync` (no embedded ServerSync in RenameIt).
-  - Display Harmony patches and name resolution pipeline live in CustomizeLibs; RenameIt keeps inventory UI, permissions, and config binding only.
+- Version 1.0.9
+  - **Valheim 1.0 compatibility** - depends on **DrakeModsLibs 0.9.0** for updated display / item-stand patches (fixes broken / oversized labels after the 1.0 game update).
+  - Shared display + ServerSync code moved into **DrakeModsLibs**. Install Libs with RenameIt; no separate ServerSync package.
+  - Packaging / docs aligned with **DrakeMods** branding. More customization mods may use Libs later; no full suite release planned right now.

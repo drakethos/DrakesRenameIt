@@ -1,9 +1,9 @@
 <Project>
   <!-- Do not add a custom MSBuild-refs target here: during Rebuild Solution each consumer would
-       invoke a parallel Libs build and VS locks bin\Debug\DrakesWorkshopLibs.dll. ProjectReference
+       invoke a parallel Libs build and VS locks bin\Debug\DrakeModsLibs.dll. ProjectReference
        dependency order is enough for solution and single-.csproj builds. -->
 
-  <Target Name="PrepareModPackageMetadata" BeforeTargets="GenerateModInfo;WriteThunderstoreManifest">
+  <Target Name="PrepareModPackageMetadata" BeforeTargets="GenerateModInfo;ResolveThunderstorePaths;WriteThunderstoreManifest">
     <PropertyGroup>
       <ThunderstoreAuthor Condition="'$(ThunderstoreAuthor)' == ''">$(CompanyName)</ThunderstoreAuthor>
       <CompanyName Condition="'$(CompanyName)' == ''">$(ThunderstoreAuthor)</CompanyName>
@@ -15,6 +15,20 @@
       <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(Version).0</AssemblyVersion>
       <AssemblyFileVersion Condition="'$(AssemblyFileVersion)' == ''">$(AssemblyVersion)</AssemblyFileVersion>
     </PropertyGroup>
+    <Error Condition="'$(Version)' == ''"
+           Text="Set &lt;Version&gt; in mod.package.props (imported from Directory.Build.props)." />
+  </Target>
+
+  <Target Name="ResolveThunderstorePaths"
+          BeforeTargets="WriteThunderstoreManifest"
+          DependsOnTargets="PrepareModPackageMetadata">
+    <PropertyGroup>
+      <ThunderstoreFolder Condition="'$(ThunderstoreManifestDir)' == ''">$(ThunderstoreBasePath)\$(CompanyName)-$(ThunderstoreName)-$(Version)</ThunderstoreFolder>
+      <ThunderstoreFolder Condition="'$(ThunderstoreManifestDir)' != ''">$(ThunderstoreManifestDir)</ThunderstoreFolder>
+      <ZipOutput>$(ThunderstoreBasePath)\$(CompanyName)-$(ThunderstoreName)-$(Version).zip</ZipOutput>
+      <ManifestPath>$(ThunderstoreFolder)\manifest.json</ManifestPath>
+    </PropertyGroup>
+    <Message Importance="high" Text="Thunderstore package: $(ThunderstoreFolder) (version $(Version))" />
   </Target>
 
   <Target Name="ComposeThunderstoreDependencies" BeforeTargets="WriteThunderstoreManifest" DependsOnTargets="PrepareModPackageMetadata">
@@ -42,8 +56,8 @@
           AfterTargets="Build"
           Condition="'$(EmbedServerSync)' != 'true'">
     <Delete Files="$(TargetDir)ServerSync.dll" Condition="Exists('$(TargetDir)ServerSync.dll')" />
-    <Delete Files="$(TargetDir)DrakesWorkshopLibs.dll" Condition="Exists('$(TargetDir)DrakesWorkshopLibs.dll')" />
-    <Delete Files="$(TargetDir)DrakesWorkshopLibs.pdb" Condition="Exists('$(TargetDir)DrakesWorkshopLibs.pdb')" />
+    <Delete Files="$(TargetDir)DrakeModsLibs.dll" Condition="Exists('$(TargetDir)DrakeModsLibs.dll')" />
+    <Delete Files="$(TargetDir)DrakeModsLibs.pdb" Condition="Exists('$(TargetDir)DrakeModsLibs.pdb')" />
   </Target>
 
   <!-- Fail the build if ServerSync leaked into a consumer mod output or deploy folder. -->
@@ -52,9 +66,9 @@
           DependsOnTargets="StripLeakedServerSync"
           Condition="'$(EmbedServerSync)' != 'true' and Exists('$(TargetPath)')">
     <Error Condition="Exists('$(TargetDir)ServerSync.dll')"
-           Text="ServerSync.dll was copied to $(TargetDir). Consumer mods must not reference ServerSync directly; use DrakesWorkshopLibs only." />
+           Text="ServerSync.dll was copied to $(TargetDir). Consumer mods must not reference ServerSync directly; use DrakeModsLibs only." />
     <Error Condition="Exists('$(R2ModDeployPath)\ServerSync.dll')"
-           Text="ServerSync.dll was deployed to $(R2ModDeployPath). Only DrakesWorkshopLibs may ship ServerSync." />
+           Text="ServerSync.dll was deployed to $(R2ModDeployPath). Only DrakeModsLibs may ship ServerSync." />
     <Error Condition="'$(VerifyNoServerSyncScript)' == '' or !Exists('$(VerifyNoServerSyncScript)')"
            Text="Verify-NoServerSyncInModDll.ps1 not found. Run scripts\Sync-ModBuild.ps1 or ensure build\scripts\ exists." />
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(VerifyNoServerSyncScript)&quot; -DllPath &quot;$(TargetPath)&quot;"
@@ -97,7 +111,7 @@
     <Message Importance="high" Text="Synced mods.yml: $(ThunderstoreAuthor)-$(ThunderstoreName) ($(Version))" />
   </Target>
 
-  <Target Name="WriteThunderstoreManifest" DependsOnTargets="ComposeThunderstoreDependencies">
+  <Target Name="WriteThunderstoreManifest" DependsOnTargets="ComposeThunderstoreDependencies;ResolveThunderstorePaths">
     <PropertyGroup>
       <_ManifestDir Condition="'$(ThunderstoreManifestDir)' != ''">$(ThunderstoreManifestDir)</_ManifestDir>
       <_ManifestDir Condition="'$(_ManifestDir)' == ''">$(ThunderstoreFolder)</_ManifestDir>

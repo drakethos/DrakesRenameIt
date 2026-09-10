@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using BepInEx.Logging;
 using DrakeRenameit.ModText;
 using UnityEngine;
 using static DrakeRenameit.ModText.RenameItLocalization;
@@ -11,9 +10,11 @@ namespace DrakeRenameit;
 /// <summary>Parses <see cref="RenameitConfig.UnlockCost"/>, checks affordability, and consumes cost for one-time stack unlock.</summary>
 internal static class RenameUnlockCost
 {
-    private static ManualLogSource? _log;
-
-    internal static void Init(ManualLogSource log) => _log = log;
+    private static string? _cachedUnlockCostRaw;
+    private static bool _cacheValid;
+    private static bool _cacheOk;
+    private static List<(string SharedName, int Amount, string ConfigKey)>? _cachedLines;
+    private static string? _cachedError;
 
     internal static bool HasValidCostConfigured()
     {
@@ -139,12 +140,21 @@ internal static class RenameUnlockCost
         out List<(string SharedName, int Amount, string ConfigKey)> lines,
         out string? error)
     {
+        var raw = RenameitConfig.UnlockCost?.Trim() ?? "";
+        if (_cacheValid && string.Equals(_cachedUnlockCostRaw, raw, StringComparison.Ordinal))
+        {
+            lines = _cachedLines ?? new List<(string SharedName, int Amount, string ConfigKey)>();
+            error = _cachedError;
+            return _cacheOk;
+        }
+
         lines = new List<(string SharedName, int Amount, string ConfigKey)>();
         error = null;
-        var raw = RenameitConfig.UnlockCost?.Trim() ?? "";
+
         if (string.IsNullOrEmpty(raw))
         {
             error = "UnlockCost is empty.";
+            StoreParseCache(raw, false, lines, error);
             return false;
         }
 
@@ -157,7 +167,7 @@ internal static class RenameUnlockCost
             var idx = s.LastIndexOf(':');
             if (idx <= 0 || idx >= s.Length - 1)
             {
-                _log?.LogWarning($"[UnlockCost] Ignoring invalid segment (need Name:Amount): \"{s}\"");
+                RenameitConfig.VerboseWarning($"[UnlockCost] Ignoring invalid segment (need Name:Amount): \"{s}\"");
                 continue;
             }
 
@@ -166,14 +176,14 @@ internal static class RenameUnlockCost
             if (!int.TryParse(amtPart, NumberStyles.Integer, CultureInfo.InvariantCulture, out var amount) ||
                 amount <= 0)
             {
-                _log?.LogWarning($"[UnlockCost] Ignoring invalid amount in: \"{s}\"");
+                RenameitConfig.VerboseWarning($"[UnlockCost] Ignoring invalid amount in: \"{s}\"");
                 continue;
             }
 
             var resolved = ResolveItemSharedName(namePart);
             if (string.IsNullOrEmpty(resolved))
             {
-                _log?.LogWarning($"[UnlockCost] Unknown item or token: \"{namePart}\"");
+                RenameitConfig.VerboseWarning($"[UnlockCost] Unknown item or token: \"{namePart}\"");
                 continue;
             }
 
@@ -183,10 +193,25 @@ internal static class RenameUnlockCost
         if (lines.Count == 0)
         {
             error = "No valid UnlockCost entries (use Item prefab name or $item_ token, e.g. Coins:4).";
+            StoreParseCache(raw, false, lines, error);
             return false;
         }
 
+        StoreParseCache(raw, true, lines, null);
         return true;
+    }
+
+    static void StoreParseCache(
+        string raw,
+        bool ok,
+        List<(string SharedName, int Amount, string ConfigKey)> lines,
+        string? error)
+    {
+        _cachedUnlockCostRaw = raw;
+        _cacheValid = true;
+        _cacheOk = ok;
+        _cachedLines = lines;
+        _cachedError = error;
     }
 
     private static string ResolveItemSharedName(string tokenOrPrefab)

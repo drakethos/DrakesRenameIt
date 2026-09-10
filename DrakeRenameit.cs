@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using DrakeRenameit.Integration;
-using DrakesWorkshopLibs;
-using DrakesWorkshopLibs.API;
-using DrakesWorkshopLibs.Data;
+using DrakeModsLibs;
+using DrakeModsLibs.API;
+using DrakeModsLibs.Data;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;
@@ -59,12 +59,10 @@ namespace DrakeRenameit
 
         private void Awake()
         {
-            RenameItLocalization.Init(this, Logger);
             RenameitConfig.Log = Logger;
             Bind(Config);
+            RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
-            RenamePermissionManager.Init(Logger);
-            RenameUnlockCost.Init(Logger);
             RenameItLibsBridge.Register();
             harmony.PatchAll();
         }
@@ -510,8 +508,8 @@ namespace DrakeRenameit
         }
 
         public static bool IsMenuOpenModifierHeld() =>
-            DrakesWorkshopLibs.Input.MenuBindingRegistry.IsHeld(
-                DrakesWorkshopLibs.Input.MenuBindingRegistry.InventoryContextScope,
+            DrakeModsLibs.Input.MenuBindingRegistry.IsHeld(
+                DrakeModsLibs.Input.MenuBindingRegistry.InventoryContextScope,
                 Integration.RenameItLibsBridge.InventoryMenuBindingId);
 
         /// <summary>Suffix for inventory tooltip when <see cref="RenameitConfig.UnlockCost"/> applies: 🔒 until paid, then 🖊️ (open-lock glyphs are easy to confuse with locked in Valheim fonts).</summary>

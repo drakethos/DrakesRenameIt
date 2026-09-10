@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
 using DrakeRenameit.ModText;
-using DrakesWorkshopLibs.Data;
+using DrakeModsLibs.Data;
 using static DrakeRenameit.ModText.RenameItLocalization;
 using Jotunn.Managers;
 using UnityEngine;

@@ -9,7 +9,7 @@ using static DrakeRenameit.ModText.RenameItLocalization;
 using static DrakeRenameit.RenameitConfig;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 using DrakeRenameit.Integration;
-using DrakesWorkshopLibs.Input;
+using DrakeModsLibs.Input;
 
 namespace DrakeRenameit.Patches;
 

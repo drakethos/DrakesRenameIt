@@ -51,5 +51,5 @@ description: >-
 
 ## Server-authoritative config (ServerSync pattern)
 
-- Use **`DrakeConfigSync`** from **DrakesWorkshopLibs** (`CustomizeLibsAPI.CreateConfigSync`): **`BindSynced`**, **`AddLockingConfigEntry`**, **`FinalizeBinding`**. Only Libs embeds ServerSync. Keep client-only keys via **`BindClientOnly`**.
+- Use **`DrakeConfigSync`** from **DrakeModsLibs** (`CustomizeLibsAPI.CreateConfigSync`): **`BindSynced`**, **`AddLockingConfigEntry`**, **`FinalizeBinding`**. Only Libs embeds ServerSync. Keep client-only keys via **`BindClientOnly`**.
 - Helper **`Bind(section, key, default, desc)`** + **`configSync.AddConfigEntry(entry)`** reduces duplication.

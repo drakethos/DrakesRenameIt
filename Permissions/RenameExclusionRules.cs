@@ -147,6 +147,8 @@ internal static class RenameExclusionRules
                 return item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Ammo;
             case "fish":
                 return item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Fish;
+            case "paper":
+                return PaperItem.IsPaperItem(item);
             default:
                 return false;
         }

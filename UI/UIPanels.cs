@@ -23,8 +23,10 @@ public static class UIPanels
     private static Button _buttonOkDesc = default!;
     private static Button _buttonCancelName = default!;
     private static Button _buttonCancelDesc = default!;
-    private static Button _buttonResetName = default!;
-    private static Button _buttonResetDesc = default!;
+    private static Button? _buttonResetName = default!;
+    private static Button? _buttonResetDesc = default!;
+    private static Button? _buttonPublicName;
+    private static Button? _buttonPublicDesc;
 
     public static GameObject? ActionMenuPanel { get; private set; }
     private static Button? _buttonMenuRename;
@@ -233,7 +235,8 @@ public static class UIPanels
         {
             _buttonMenuRename.interactable = DrakeRenameit.CanChangeName(item, false);
             _buttonMenuDesc.interactable = DrakeRenameit.CanChangeDesc(item, false);
-            _buttonMenuCraftedBy.interactable = DrakeRenameit.CanChangeCraftedByLabel(item, false);
+            _buttonMenuCraftedBy.interactable =
+                !PaperItem.IsBlankPaper(item) && DrakeRenameit.CanChangeCraftedByLabel(item, false);
             _buttonMenuResetAll.interactable = DrakeRenameit.CanResetAnyCustomization(item);
         }
 
@@ -1339,6 +1342,9 @@ public static class UIPanels
                 }
             });
         }
+
+        EnsurePublicRewriteToggle(InputNamePanel!, isNamePanel: true);
+        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
     }
 
     public static void CreateRenameDescInput()
@@ -1469,6 +1475,9 @@ public static class UIPanels
             });
         }
 
+        EnsurePublicRewriteToggle(InputDescPanel!, isNamePanel: false);
+        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
+
         void GetPlayerAndSendError(string msg)
         {
             Player local = Player.m_localPlayer;
@@ -1480,5 +1489,81 @@ public static class UIPanels
                 );
             }
         }
+    }
+
+    static void EnsurePublicRewriteToggle(GameObject panel, bool isNamePanel)
+    {
+        if (!RenameitConfig.PublicRewriteEnabled)
+            return;
+
+        if (isNamePanel)
+        {
+            if (_buttonPublicName != null)
+                return;
+            _buttonPublicName = CreatePublicToggleButton(panel);
+            _buttonPublicName.AddUniqueListener(TogglePublicRewrite);
+        }
+        else
+        {
+            if (_buttonPublicDesc != null)
+                return;
+            _buttonPublicDesc = CreatePublicToggleButton(panel);
+            _buttonPublicDesc.AddUniqueListener(TogglePublicRewrite);
+        }
+    }
+
+    static Button CreatePublicToggleButton(GameObject panel) =>
+        GUIManager.Instance.CreateButton(
+            text: "Anyone can rewrite: Off",
+            parent: panel.transform,
+            anchorMin: new Vector2(0.5f, 0f),
+            anchorMax: new Vector2(0.5f, 0f),
+            position: new Vector2(0f, 68f),
+            width: 220f,
+            height: 28f).GetComponent<Button>();
+
+    static void TogglePublicRewrite()
+    {
+        bool next = !(DrakeRenameit.PendingPublicRewrite ??
+                      Permissions.RenamePermissionManager.HasPublicRewriteFlag(DrakeRenameit.CurrentItem));
+        DrakeRenameit.PendingPublicRewrite = next;
+        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
+    }
+
+    internal static void SyncPublicRewriteToggle(ItemDrop.ItemData? item)
+    {
+        bool canEdit = CanShowPublicCheckbox(item);
+        bool on = DrakeRenameit.PendingPublicRewrite ??
+                  Permissions.RenamePermissionManager.HasPublicRewriteFlag(item);
+        string label = on ? "Anyone can rewrite: On" : "Anyone can rewrite: Off";
+
+        if (_buttonPublicName != null)
+        {
+            _buttonPublicName.gameObject.SetActive(canEdit);
+            SetButtonLabel(_buttonPublicName, label);
+        }
+
+        if (_buttonPublicDesc != null)
+        {
+            _buttonPublicDesc.gameObject.SetActive(canEdit);
+            SetButtonLabel(_buttonPublicDesc, label);
+        }
+    }
+
+    static bool CanShowPublicCheckbox(ItemDrop.ItemData? item)
+    {
+        if (!RenameitConfig.PublicRewriteEnabled || item == null || Player.m_localPlayer == null)
+            return false;
+        if (PaperItem.IsBlankPaper(item))
+            return false; // flag is set on Written after peel; blank peels first
+        var local = Player.m_localPlayer;
+        if (API.RenameitPermission.IsElevatedForOverrides(local))
+            return true;
+        // Owner (or unowned claimable) may set the flag
+        if (item.m_crafterID != 0L)
+            return item.m_crafterID == local.GetPlayerID();
+        if (!string.IsNullOrEmpty(item.m_crafterName))
+            return item.m_crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
+        return true;
     }
 }

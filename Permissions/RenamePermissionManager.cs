@@ -84,11 +84,31 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(true, RenameDenialReason.None);
         }
 
+        // 1b. Paper specials (before global feature toggles)
+        if (op is RenamePermissionOperation.RenameItemName or RenamePermissionOperation.RewriteDescription)
+        {
+            if (PaperItem.IsBlankPaper(item))
+            {
+                LogAllowed(op, item, "Blank paper always allows name/desc.");
+                return new RenamePermissionResult(true, RenameDenialReason.None);
+            }
+
+            if (item != null && PaperItem.IsWrittenPaper(item) && IsLocalOwner(item, local))
+            {
+                LogAllowed(op, item, "Written paper owner always allows name/desc.");
+                return new RenamePermissionResult(true, RenameDenialReason.None);
+            }
+        }
+
         // 2. Global feature toggles (allowlist does not bypass)
+        // Written bypass may skip feature-off / later exclusions.
+        bool writtenBypass = PaperItem.IsWrittenPaper(item) && RenameitConfig.WrittenPaperIgnoresRestrictions
+                             && op is RenamePermissionOperation.RenameItemName or RenamePermissionOperation.RewriteDescription;
+
         switch (op)
         {
             case RenamePermissionOperation.RenameItemName:
-                if (!RenameitConfig.RenameEnabled)
+                if (!RenameitConfig.RenameEnabled && !writtenBypass)
                 {
                     var r = RenameDenialReason.GlobalRenameDisabled;
                     if (logDenied)
@@ -97,7 +117,7 @@ public static class RenamePermissionManager
                 }
                 break;
             case RenamePermissionOperation.RewriteDescription:
-                if (!RenameitConfig.RewriteDescriptionsEnabled)
+                if (!RenameitConfig.RewriteDescriptionsEnabled && !writtenBypass)
                 {
                     var r = RenameDenialReason.GlobalDescDisabled;
                     if (logDenied)
@@ -116,7 +136,7 @@ public static class RenamePermissionManager
                 break;
         }
 
-        return EvaluateItemRules(op, item, local, logDenied);
+        return EvaluateItemRules(op, item, local, logDenied, writtenBypass);
     }
 
     public static RenamePermissionResult Evaluate(
@@ -139,7 +159,8 @@ public static class RenamePermissionManager
         RenamePermissionOperation op,
         ItemDrop.ItemData? item,
         Player local,
-        bool logDenied)
+        bool logDenied,
+        bool writtenBypass = false)
     {
         if (item?.m_shared == null)
         {
@@ -149,7 +170,11 @@ public static class RenamePermissionManager
         }
 
         // 3. Lock to owner — only when the stack has an assigned crafter (crafted or claimed via NameClaimsOwner).
-        if (RenameitConfig.LockToOwner && !PassesOwnerLock(item, local))
+        // Public rewrite bypasses owner lock for name/desc only.
+        bool publicOk = op is RenamePermissionOperation.RenameItemName or RenamePermissionOperation.RewriteDescription
+                        && RenameitConfig.PublicRewriteEnabled
+                        && HasPublicRewriteFlag(item);
+        if (RenameitConfig.LockToOwner && !PassesOwnerLock(item, local) && !publicOk)
         {
             var r = RenameDenialReason.NotOwner;
             if (logDenied)
@@ -165,29 +190,36 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(true, RenameDenialReason.None);
         }
 
-        // 5. Same tier: name, category, uncrafted/resource
-        if (RenameExclusionRules.MatchesExcludedName(item))
+        // 5. Same tier: name, category, uncrafted/resource (written bypass skips)
+        if (!writtenBypass)
         {
-            var r = RenameDenialReason.ExcludedByName;
-            if (logDenied)
-                LogDenied(op, item, r, $"Excluded by name. Item={item.m_shared.m_name}");
-            return new RenamePermissionResult(false, r);
-        }
+            if (RenameExclusionRules.MatchesExcludedName(item))
+            {
+                var r = RenameDenialReason.ExcludedByName;
+                if (logDenied)
+                    LogDenied(op, item, r, $"Excluded by name. Item={item.m_shared.m_name}");
+                return new RenamePermissionResult(false, r);
+            }
 
-        if (RenameExclusionRules.MatchesExcludedCategory(item))
-        {
-            var r = RenameDenialReason.ExcludedByCategory;
-            if (logDenied)
-                LogDenied(op, item, r, $"Excluded by category. Item={item.m_shared.m_name}");
-            return new RenamePermissionResult(false, r);
-        }
+            if (RenameExclusionRules.MatchesExcludedCategory(item))
+            {
+                var r = RenameDenialReason.ExcludedByCategory;
+                if (logDenied)
+                    LogDenied(op, item, r, $"Excluded by category. Item={item.m_shared.m_name}");
+                return new RenamePermissionResult(false, r);
+            }
 
-        if (RenameExclusionRules.MatchesExcludeStacks(item))
+            if (RenameExclusionRules.MatchesExcludeStacks(item))
+            {
+                var r = RenameDenialReason.ExcludedStacks;
+                if (logDenied)
+                    LogDenied(op, item, r, $"ExcludeStacks: m_maxStackSize={item.m_shared.m_maxStackSize} Item={item.m_shared.m_name}");
+                return new RenamePermissionResult(false, r);
+            }
+        }
+        else
         {
-            var r = RenameDenialReason.ExcludedStacks;
-            if (logDenied)
-                LogDenied(op, item, r, $"ExcludeStacks: m_maxStackSize={item.m_shared.m_maxStackSize} Item={item.m_shared.m_name}");
-            return new RenamePermissionResult(false, r);
+            LogAllowed(op, item, "WrittenPaperIgnoresRestrictions: skipped exclusions/ExcludeStacks.");
         }
 
         if (!RenameitConfig.AllowRenameUnownedItems && IsUnownedResourceStack(item))
@@ -200,7 +232,9 @@ public static class RenamePermissionManager
 
         if (_ignoreUnlockRequirementDepth == 0 &&
             RenameUnlockCost.UnlockCostApplies() &&
-            !DrakeRenameit.IsRenameUnlocked(item))
+            !DrakeRenameit.IsRenameUnlocked(item) &&
+            !PaperItem.IsWrittenPaper(item) &&
+            !PaperItem.IsBlankPaper(item))
         {
             var r = RenameDenialReason.UnlockCostRequired;
             if (logDenied)
@@ -208,8 +242,35 @@ public static class RenamePermissionManager
             return new RenamePermissionResult(false, r);
         }
 
-        LogAllowed(op, item, "Item rules passed.");
+        LogAllowed(op, item, publicOk ? "Item rules passed (PublicRewrite)." : "Item rules passed.");
         return new RenamePermissionResult(true, RenameDenialReason.None);
+    }
+
+    internal static bool HasPublicRewriteFlag(ItemDrop.ItemData? item)
+    {
+        if (item?.m_customData == null)
+            return false;
+        if (!item.m_customData.TryGetValue(DrakeModsLibs.Data.DrakeCustomDataKeys.PublicRewrite, out var v))
+            return false;
+        return v == "1" || string.Equals(v, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static void SetPublicRewriteFlag(ItemDrop.ItemData item, bool enabled)
+    {
+        item.m_customData ??= new System.Collections.Generic.Dictionary<string, string>();
+        if (enabled)
+            item.m_customData[DrakeModsLibs.Data.DrakeCustomDataKeys.PublicRewrite] = "1";
+        else
+            item.m_customData.Remove(DrakeModsLibs.Data.DrakeCustomDataKeys.PublicRewrite);
+    }
+
+    private static bool IsLocalOwner(ItemDrop.ItemData item, Player local)
+    {
+        if (item.m_crafterID != 0L)
+            return item.m_crafterID == local.GetPlayerID();
+        if (!string.IsNullOrEmpty(item.m_crafterName))
+            return item.m_crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
+        return false;
     }
 
     private static bool IsUnownedResourceStack(ItemDrop.ItemData item) =>

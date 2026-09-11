@@ -13,6 +13,7 @@ public static class ExcludedCategoryAliases
         "melee",
         "shields",
         "ammo",
-        "fish"
+        "fish",
+        "paper"
     };
 }

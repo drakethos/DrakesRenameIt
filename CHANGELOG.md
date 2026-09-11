@@ -1,3 +1,8 @@
+## Unreleased
+- **Paper Blank / Written:** blank Piece of Paper stacks (default 50); writing peels one Written Page.
+- **Public rewrite:** optional "Anyone can rewrite" on name/desc (server `PublicRewriteEnabled`).
+- **Placeable notes:** hotbar use opens place menu; `[E]` reclaims with custom data.
+- Hammer Paper Notice spike retired.
 - Version 0.1.0
   - Initial upload and baseline version.
     - Current Feature List:
@@ -90,6 +95,11 @@
   - **Config & docs**
     - Numbered cfg sections **01 Admin** through **10 UI-NotSynced** for Configuration Manager tab order; legacy section names migrate automatically.
     - README overhaul for 1.0 (permissions, config sections, menu keys, denial UI).
+- Version 1.1.0
+  - **Piece of Paper** craftable rename vessel (`Drakes_PieceOfPaper`): **Paper2** double-sided flat parchment quad (LeatherScraps ItemDrop donor only — no rune-tile mesh). Custom inventory icon, item-stand `attach` + stand patches.
+  - Synced config **11 Paper** (37 total synced entries): `PaperEnabled`, `PaperName`, `PaperDescription`, `PaperCost` (default `LeatherScraps:1,Coal:1`), `PaperCraftingStation`, `PaperItemType` (`Material`/`Misc`).
+  - **ExcludedCategory** alias **`Paper`** targets the vessel.
+  - Non-stackable for now; intended to be renamed via the existing RenameIt menu.
 - Version 1.0.9
   - **Valheim 1.0 compatibility** - depends on **DrakeModsLibs 0.9.0** for updated display / item-stand patches (fixes broken / oversized labels after the 1.0 game update).
   - Shared display + ServerSync code moved into **DrakeModsLibs**. Install Libs with RenameIt; no separate ServerSync package.

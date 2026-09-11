@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using DrakeModsLibs.API;
 using DrakeModsLibs.Sync;
 
 namespace DrakeRenameit;
 
 public static class RenameitConfig
 {
-    /// <summary>Gameplay sections 01–09: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>.</summary>
-    private const int ExpectedSyncedEntryCount = 31;
+    /// <summary>Gameplay sections 01–09 and 11: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>.</summary>
+    private const int ExpectedSyncedEntryCount = 43;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -24,6 +25,7 @@ public static class RenameitConfig
     private const string SectionLimits = "08 Limits";
     private const string SectionModifiers = "09 Modifiers";
     private const string SectionUI = "10 UI-NotSynced";
+    private const string SectionPaper = "11 Paper";
 
     private const string DisplayAdmin = "Admin";
     private const string DisplayFeatures = "Features";
@@ -35,6 +37,7 @@ public static class RenameitConfig
     private const string DisplayLimits = "Limits";
     private const string DisplayModifiers = "Modifiers";
     private const string DisplayUI = "UI-NotSynced";
+    private const string DisplayPaper = "Paper";
 
     private static readonly DrakeConfigSync _drakeConfigSync = DrakeConfigSync.Create(
         DrakeRenameit.ModName,
@@ -75,6 +78,18 @@ public static class RenameitConfig
     private static ConfigEntry<string> _durabilityUnbrokenLabel = default!;
     private static ConfigEntry<string> _durabilityBrokenLabel = default!;
     private static ConfigEntry<string> _durabilityTierModifiers = default!;
+    private static ConfigEntry<bool> _paperEnabled = default!;
+    private static ConfigEntry<string> _paperName = default!;
+    private static ConfigEntry<string> _paperDescription = default!;
+    private static ConfigEntry<string> _paperCost = default!;
+    private static ConfigEntry<string> _paperCraftingStation = default!;
+    private static ConfigEntry<string> _paperItemType = default!;
+    private static ConfigEntry<int> _blankPaperStackSize = default!;
+    private static ConfigEntry<string> _writtenPaperName = default!;
+    private static ConfigEntry<string> _writtenPaperDescription = default!;
+    private static ConfigEntry<bool> _writtenPaperIgnoresRestrictions = default!;
+    private static ConfigEntry<bool> _publicRewriteEnabled = default!;
+    private static ConfigEntry<bool> _paperPlaceEnabled = default!;
 
     public static bool LockToOwner => _lockToOwner.Value;
     public static int DescCharLimit => _descCharLimit.Value;
@@ -186,6 +201,42 @@ public static class RenameitConfig
     /// </summary>
     public static string DurabilityTierModifiers => _durabilityTierModifiers.Value;
 
+    /// <summary>When true, the Piece of Paper recipe is craftable (prefab is always registered for clients).</summary>
+    public static bool PaperEnabled => _paperEnabled.Value;
+
+    /// <summary>Default display name for blank Piece of Paper (server-synced; feeds localization token).</summary>
+    public static string PaperName => _paperName.Value;
+
+    /// <summary>Default description for blank Piece of Paper (server-synced; feeds localization token).</summary>
+    public static string PaperDescription => _paperDescription.Value;
+
+    /// <summary>Comma- or semicolon-separated <c>PrefabName:amount</c> recipe cost for Piece of Paper (same format as <see cref="UnlockCost"/>).</summary>
+    public static string PaperCost => _paperCost.Value;
+
+    /// <summary>Crafting station prefab name for Piece of Paper. Empty = craft anywhere (inventory).</summary>
+    public static string PaperCraftingStation => _paperCraftingStation.Value;
+
+    /// <summary>Vanilla <see cref="ItemDrop.ItemData.ItemType"/> for Piece of Paper (<c>Material</c> or <c>Misc</c>).</summary>
+    public static string PaperItemType => _paperItemType.Value;
+
+    /// <summary>Max stack size for blank Piece of Paper (Written Page is always 1).</summary>
+    public static int BlankPaperStackSize => Math.Max(1, _blankPaperStackSize.Value);
+
+    /// <summary>Default display name for Written Page.</summary>
+    public static string WrittenPaperName => _writtenPaperName.Value;
+
+    /// <summary>Default description for Written Page.</summary>
+    public static string WrittenPaperDescription => _writtenPaperDescription.Value;
+
+    /// <summary>When true, Written Page name/desc ignore feature-off / exclusions / ExcludeStacks (ownership + Public still apply).</summary>
+    public static bool WrittenPaperIgnoresRestrictions => _writtenPaperIgnoresRestrictions.Value;
+
+    /// <summary>When true, items with <c>Drake_PublicRewrite</c> allow non-owners to edit name/description.</summary>
+    public static bool PublicRewriteEnabled => _publicRewriteEnabled.Value;
+
+    /// <summary>When true, Blank/Written paper can open place-mode and pin notes in the world.</summary>
+    public static bool PaperPlaceEnabled => _paperPlaceEnabled.Value;
+
     /// <summary>Parsed <see cref="CraftedByAllowedLabels"/>; first entry is always the “use game default line” option in the UI.</summary>
     public static List<string> GetCraftedByAllowedLabelsList()
     {
@@ -224,7 +275,7 @@ public static class RenameitConfig
             SectionAdmin, DisplayAdmin,
             "LockSyncedConfig",
             true,
-            "When true, only Valheim server admins can change synced gameplay settings (sections 01–09: Admin through Modifiers). Clients cannot push config edits to the server. UI section (10) stays per-client. Strongly recommended for public servers.");
+            "When true, only Valheim server admins can change synced gameplay settings (sections 01–09 and 11 Paper). Clients cannot push config edits to the server. UI section (10) stays per-client. Strongly recommended for public servers.");
         _drakeConfigSync.AddLockingConfigEntry(_configLock);
 
         _vipList = _drakeConfigSync.BindSynced(config, 
@@ -257,6 +308,12 @@ public static class RenameitConfig
             "CraftedByLabelEnabled",
             true,
             "If true, players may set a display-only override for the crafted-by line (real crafter id/name unchanged).");
+
+        _publicRewriteEnabled = _drakeConfigSync.BindSynced(config,
+            SectionFeatures, DisplayFeatures,
+            "PublicRewriteEnabled",
+            false,
+            "If true, items flagged “Anyone can rewrite” (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default off — servers opt in.");
 
         // --- Exclusions ---
         _excludedNames = _drakeConfigSync.BindSynced(config, 
@@ -428,6 +485,86 @@ public static class RenameitConfig
             false,
             "If true, writes verbose BepInEx logs on this client (permission allow/deny traces, localization load details, unlock-cost parse notes). Does not sync to the server. Leave off unless debugging.");
 
+        // --- Paper (craftable rename vessel) ---
+        _paperEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperEnabled",
+            true,
+            "If true, players can craft the Piece of Paper item (blank rename vessel). The prefab is always registered so clients stay in sync; this only toggles craftability.");
+
+        _paperName = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperName",
+            "Piece of Paper",
+            "Default display name for newly crafted / unrenamed Piece of Paper. Server-synced. Updates the localization token used by the item.");
+
+        _paperDescription = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperDescription",
+            "A blank piece of paper you can write on. Renaming or rewriting the description uses one sheet and creates a Written Page.",
+            "Default description for blank Piece of Paper. Server-synced.");
+
+        _paperCost = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperCost",
+            "Wood:1,Coal:1",
+            "Comma or semicolon separated recipe ingredients: PrefabName:amount (e.g. Wood:1,Coal:1). Same format as UnlockCost. Applied when the item is registered (menu/world load).");
+
+        _paperCraftingStation = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperCraftingStation",
+            "",
+            "Crafting station prefab for Piece of Paper (e.g. piece_workbench). Leave empty to craft anywhere from the inventory craft list.");
+
+        _paperItemType = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperItemType",
+            "Material",
+            "Vanilla item category for Piece of Paper / Written Page: Material or Misc. Applied when the item is registered. ExcludedCategory can also use alias 'Paper' to target these items.");
+
+        _blankPaperStackSize = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "BlankPaperStackSize",
+            50,
+            "Max stack size for blank Piece of Paper. Written Page is always stack size 1. Applied when items are registered.");
+
+        _writtenPaperName = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "WrittenPaperName",
+            "Written Page",
+            "Default display name for Written Page (before a custom name). Server-synced.");
+
+        _writtenPaperDescription = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "WrittenPaperDescription",
+            "A page with writing on it.",
+            "Default description for Written Page when no custom description is set. Server-synced.");
+
+        _writtenPaperIgnoresRestrictions = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "WrittenPaperIgnoresRestrictions",
+            false,
+            "If true, Written Page name/description ignore RenameEnabled/RewriteDescriptions off, exclusions, and ExcludeStacks for non-elevated players. Ownership and Public rewrite rules still apply. Owner always may edit written pages regardless.");
+
+        _paperPlaceEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperPlaceEnabled",
+            true,
+            "If true, blank/written paper in the hotbar can open place-mode to pin parchment in the world (vertical/horizontal).");
+
+        _paperName.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+        _paperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+        _writtenPaperName.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+        _writtenPaperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+
+        // Durability labels are applied live; stands used to bake "Pristine …" into ZDO and only updated on enable.
+        void RefreshStandLabelsOnDurabilityConfigChange(object sender, EventArgs e) =>
+            CustomizeLibsAPI.RefreshItemStandDisplayNames();
+        _durabilityModifierEnabled.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+        _durabilityUnbrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+        _durabilityBrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+        _durabilityTierModifiers.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+
         MigrateLegacyConfigSections(config);
 
         global::DrakeRenameit.API.RenameitPermission.WireVipListSync(_vipList, _drakeConfigSync);
@@ -440,7 +577,7 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "Admin", SectionAdmin,
             "AllowAdminOverride", "LockSyncedConfig", "VipList", "VipOnlyOverride");
         MigrateSectionKeys(config, "Features", SectionFeatures,
-            "RenameEnabled", "RewriteDescriptionsEnabled", "CraftedByLabelEnabled");
+            "RenameEnabled", "RewriteDescriptionsEnabled", "CraftedByLabelEnabled", "PublicRewriteEnabled");
         MigrateSectionKeys(config, "Exclusions", SectionExclusions,
             "ExcludedNames", "ExcludedCategory", "RenameAllowlist");
         MigrateSectionKeys(config, "CraftedBy", SectionCraftedBy,

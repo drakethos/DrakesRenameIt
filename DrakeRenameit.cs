@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx;
 using DrakeRenameit.Integration;
@@ -64,6 +65,9 @@ namespace DrakeRenameit
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             RenameItLibsBridge.Register();
+            PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
+            PaperPlace.Register(Logger);
+            PaperWrittenPlace.Register(Logger);
             harmony.PatchAll();
         }
 
@@ -317,6 +321,8 @@ namespace DrakeRenameit
 
             string startName = GetPropperName(item);
             UIPanels.RenameNameInput!.text = startName;
+            PendingPublicRewrite = null;
+            UIPanels.SyncPublicRewriteToggle(item);
 
             UIPanels.InputNamePanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
@@ -334,6 +340,8 @@ namespace DrakeRenameit
 
             string startDesc = getPropperDesc(item);
             UIPanels.RenameDescInput!.text = startDesc;
+            PendingPublicRewrite = null;
+            UIPanels.SyncPublicRewriteToggle(item);
 
             UIPanels.InputDescPanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
@@ -426,7 +434,31 @@ namespace DrakeRenameit
                 return;
             }
 
+            if (PaperItem.IsBlankPaper(CurrentItem))
+            {
+                if (string.IsNullOrWhiteSpace(newDesc))
+                {
+                    UIPanels.InputDescPanel!.SetActive(false);
+                    UIPanels.OpenActionMenu(CurrentItem);
+                    return;
+                }
+
+                var player = Player.m_localPlayer;
+                if (player == null) return;
+                var written = PaperWriteConverter.PeelBlankToWritten(CurrentItem, customName: null, customDesc: newDesc, player);
+                UIPanels.InputDescPanel!.SetActive(false);
+                if (written != null)
+                {
+                    CurrentItem = written;
+                    UIPanels.OpenActionMenu(written);
+                }
+                else
+                    UIPanels.OpenActionMenu(CurrentItem);
+                return;
+            }
+
             RewriteItemDesc(newDesc);
+            ApplyPendingPublicRewriteFlag(CurrentItem);
             var item = CurrentItem;
             UIPanels.InputDescPanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
@@ -443,10 +475,47 @@ namespace DrakeRenameit
                 return;
             }
 
+            if (PaperItem.IsBlankPaper(CurrentItem))
+            {
+                if (string.IsNullOrWhiteSpace(newName))
+                {
+                    UIPanels.InputNamePanel!.SetActive(false);
+                    UIPanels.OpenActionMenu(CurrentItem);
+                    return;
+                }
+
+                var player = Player.m_localPlayer;
+                if (player == null) return;
+                var written = PaperWriteConverter.PeelBlankToWritten(CurrentItem, customName: newName, customDesc: null, player);
+                UIPanels.InputNamePanel!.SetActive(false);
+                if (written != null)
+                {
+                    CurrentItem = written;
+                    UIPanels.OpenActionMenu(written);
+                }
+                else
+                    UIPanels.OpenActionMenu(CurrentItem);
+                return;
+            }
+
             RenameItem(newName);
+            ApplyPendingPublicRewriteFlag(CurrentItem);
             var item = CurrentItem;
             UIPanels.InputNamePanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
+        }
+
+        /// <summary>Pending “Anyone can rewrite” checkbox from name/desc panels (null = leave unchanged).</summary>
+        public static bool? PendingPublicRewrite { get; set; }
+
+        static void ApplyPendingPublicRewriteFlag(ItemDrop.ItemData? item)
+        {
+            if (item == null || PendingPublicRewrite == null)
+                return;
+            if (!RenameitConfig.PublicRewriteEnabled)
+                return;
+            Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, PendingPublicRewrite.Value);
+            PendingPublicRewrite = null;
         }
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)

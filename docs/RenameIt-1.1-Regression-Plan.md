@@ -26,7 +26,8 @@ This plan extends the v1.0 matrix with **port-specific** checks. Anything that p
 
 - [ ] `DrakesRenameit.dll` passes `Verify-NoServerSyncInModDll.ps1` (no ServerSync IL in consumer).
 - [ ] Thunderstore profile loads **DrakeModsLibs** + **DrakesRenameit** (dependency `DrakeMods-DrakeModsLibs-0.3.0+`).
-- [ ] Upgrade from 1.0 cfg: legacy section names migrate; 31 synced entries still audit-clean at startup.
+- [ ] Upgrade from 1.0 cfg: legacy section names migrate; **37** synced entries audit-clean at startup (Paper: Enabled/Name/Description/Cost/Station/ItemType).
+- [ ] **Piece of Paper:** craft with default cost (1 LeatherScraps + 1 Coal) anywhere; rename/desc works; does not stack; drop looks thin parchment tablet; stand mount works; `PaperEnabled=false` hides recipe; station override moves recipe; `ExcludedCategory=Paper` blocks rename for non-elevated.
 
 ---
 

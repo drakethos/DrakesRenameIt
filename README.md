@@ -6,6 +6,10 @@ Rename items, rewrite descriptions, and update the **Crafted by** line (display 
 
 **Requires [DrakeModsLibs](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** compatible (item-stand / label fixes in Libs).
 
+### Piece of Paper
+
+Craft a blank **Piece of Paper** (inventory craft by default) for **1 Leather scrap + 1 Coal**. It is a non-stackable rename vessel — open the Drake menu on it and set name / description like any other item. Synced config **11 Paper** controls enable, default name/description, ingredients, station, and item type (`Material` / `Misc`). **ExcludedCategory** alias **`Paper`** targets this item.
+
 ### How to use
 
 Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
@@ -59,6 +63,7 @@ localization with an additional name, simply leave the $string intact and add ar
 - **Separate stacks** — customized stacks only merge when name, description, and crafted-by data match; optional hard lock blocks manual drag-merges too.
 - **ExcludeStacks** — block non-elevated edits on vanilla stackable items (`m_maxStackSize > 1`), separate from merge rules.
 - **Durability modifiers** — optional wear labels prepended to display names (Pristine / tiers / Broken).
+- **Piece of Paper** — craftable blank rename vessel (Deep North tablet mesh, custom icon); config under **11 Paper**.
 - Exclusions by item name, category, and **RenameAllowlist** bypasses; reference file generated for category tokens.
 - Unified action menu (rename, description, crafted by) with fast reset; **Cancel** and **Reset all** confirmation.
 - Item stands: custom names on hover; **ShowItemStandItemNameWhenNoAccess** shows the stand item name even in warded “no access” areas.
@@ -68,13 +73,13 @@ localization with an additional name, simply leave the $string intact and add ar
 #### What this Mod doesn't do:
   - <s>your taxes
   - change every single item that exists
-  - makes new instances of an item
   - actually change the name of the item behind the scenes
   - give you up
   - let you down!</s>
+  - (It does add one craftable **Piece of Paper** vessel for rename RP.)
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 11 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
@@ -92,7 +97,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 #### Exclusions (server-synced)
 
 - **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions/crafted-by changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
-- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, `Paper` (Piece of Paper vessel), or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee`, `paper` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
 - **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require the relevant **Features** toggles to be on and still obey **LockToOwner** if another player owns the item.
 
 #### Crafted by (server-synced)
@@ -133,6 +138,15 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **DurabilityUnbrokenLabel** — Label at full durability (~100%). Rich-text allowed; empty = no label when pristine.
 - **DurabilityBrokenLabel** — Label only at **0** durability (broken in-game). Not used for merely worn gear.
 - **DurabilityTierModifiers** — In-between wear bands: `{Name,fraction}` or `{Name,percent}` (e.g. `{Rusty,0.4},{Worn,0.6}`). Lowest matching threshold wins; gap above highest tier but below full gets no extra label. Skips items with no durability (`m_maxDurability` 0).
+
+#### Paper (server-synced)
+
+- **PaperEnabled** — When on, players can craft **Piece of Paper**. The prefab is always registered for multiplayer; this only toggles craftability.
+- **PaperName** — Default display name for unrenamed paper (default `Piece of Paper`). Server-synced localization.
+- **PaperDescription** — Default description before a player rewrites it.
+- **PaperCost** — Recipe ingredients as `PrefabName:amount` list (default `LeatherScraps:1,Coal:1`). Same format as **UnlockCost**. Applied at item registration (menu/world load).
+- **PaperCraftingStation** — Station prefab (e.g. `piece_workbench`). Empty = craft anywhere from the inventory craft list.
+- **PaperItemType** — Vanilla category: `Material` (default) or `Misc`. Applied at registration. **ExcludedCategory** also accepts alias **`Paper`** to target this vessel specifically.
 
 #### UI-NotSynced (client only)
 
@@ -196,6 +210,21 @@ Contact me:
 
 - buy me a coffee ☕
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
+
+### Publishing (GitHub Actions)
+
+Pushing a tag `v{Version}` that matches `<Version>` in `mod.package.props` runs [.github/workflows/release.yml](.github/workflows/release.yml):
+
+1. Build the Thunderstore zip and create a GitHub Release with the zip attached  
+2. Publish that zip to **Thunderstore** (`DrakeMods-DrakesRenameit`)  
+3. Publish the same zip to **Hexium** (`valheim.hexium.gg`) after Thunderstore succeeds  
+
+Repo secrets required:
+
+| Secret | Source |
+|--------|--------|
+| `THUNDERSTORE_TOKEN` | Thunderstore team service account for **DrakeMods** |
+| `HEXIUM_TOKEN` | Hexium team API token for **DrakeMods** ([team settings](https://hexium.gg/faq)) |
 
 Credits:
 Used Cursor AI assitance to complete desired features

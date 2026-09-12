@@ -39,6 +39,12 @@ internal static class PaperItem
     /// </summary>
     private const float FlatSurfaceLift = 0.04f;
 
+    /// <summary>
+    /// Vertical sheets sit this far off the aimed wall face (toward the player).
+    /// Placement hits often land in the wall volume; without this the sheet sinks into the planks.
+    /// </summary>
+    internal const float WallFaceGap = 0.05f;
+
     private static readonly Color OffWhite = new Color(0.93f, 0.89f, 0.80f, 1f);
 
     private static ManualLogSource? _log;
@@ -557,6 +563,77 @@ internal static class PaperItem
         {
             _log?.LogWarning($"[Paper] Failed to tag snappoint '{label}': {ex.Message}");
         }
+    }
+
+    internal static bool IsWallSheetPiece(Piece? piece)
+    {
+        if (piece == null)
+            return false;
+        var n = piece.gameObject.name;
+        return n.StartsWith(PaperPlace.BlankUpright, StringComparison.Ordinal)
+               || n.StartsWith(PaperWrittenPlace.NoteVertical, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Move a vertical sheet onto the near face of the aimed wall (toward the camera).
+    /// Idempotent: calling again on an already-seated point keeps it there.
+    /// Keeps the point's position in the wall plane so snaps are not undone — only depth changes.
+    /// </summary>
+    internal static Vector3 SeatWallSheet(Vector3 proposed, Transform ghost)
+    {
+        if (ghost == null)
+            return proposed;
+
+        var cam = Utils.GetMainCamera();
+        if (cam == null)
+            return proposed;
+
+        var origin = cam.transform.position;
+        var delta = proposed - origin;
+        var dist = delta.magnitude;
+        if (dist < 0.2f)
+            return proposed;
+
+        var dir = delta / dist;
+        var hits = Physics.RaycastAll(origin, dir, dist + 1.25f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        var found = false;
+        var facePoint = Vector3.zero;
+        var faceNormal = Vector3.zero;
+        var bestAbs = float.MaxValue;
+        foreach (var hit in hits)
+        {
+            if (hit.collider == null)
+                continue;
+            var t = hit.collider.transform;
+            if (t == ghost || t.IsChildOf(ghost) || ghost.IsChildOf(t))
+                continue;
+
+            // Face toward the camera, or the face we're already sitting on (small positive = already gapped out).
+            var along = Vector3.Dot(hit.point - proposed, dir);
+            if (along > WallFaceGap + 0.03f || along < -1.15f)
+                continue;
+
+            var abs = Mathf.Abs(along);
+            if (abs >= bestAbs)
+                continue;
+            bestAbs = abs;
+            facePoint = hit.point;
+            faceNormal = hit.normal;
+            found = true;
+        }
+
+        if (!found)
+            return proposed;
+
+        if (Vector3.Dot(faceNormal, origin - facePoint) < 0f)
+            faceNormal = -faceNormal;
+        if (faceNormal.sqrMagnitude < 0.0001f)
+            return proposed;
+
+        var seated = facePoint + faceNormal.normalized * WallFaceGap;
+        return proposed + Vector3.Project(seated - proposed, faceNormal);
     }
 
     /// <summary>

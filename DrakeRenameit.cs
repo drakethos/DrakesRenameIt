@@ -321,8 +321,6 @@ namespace DrakeRenameit
 
             string startName = GetPropperName(item);
             UIPanels.RenameNameInput!.text = startName;
-            PendingPublicRewrite = null;
-            UIPanels.SyncPublicRewriteToggle(item);
 
             UIPanels.InputNamePanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
@@ -340,8 +338,6 @@ namespace DrakeRenameit
 
             string startDesc = getPropperDesc(item);
             UIPanels.RenameDescInput!.text = startDesc;
-            PendingPublicRewrite = null;
-            UIPanels.SyncPublicRewriteToggle(item);
 
             UIPanels.InputDescPanel!.SetActive(true);
             UIPanels.EnsureInputBlocked();
@@ -458,7 +454,6 @@ namespace DrakeRenameit
             }
 
             RewriteItemDesc(newDesc);
-            ApplyPendingPublicRewriteFlag(CurrentItem);
             var item = CurrentItem;
             UIPanels.InputDescPanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
@@ -499,23 +494,9 @@ namespace DrakeRenameit
             }
 
             RenameItem(newName);
-            ApplyPendingPublicRewriteFlag(CurrentItem);
             var item = CurrentItem;
             UIPanels.InputNamePanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
-        }
-
-        /// <summary>Pending “Anyone can rewrite” checkbox from name/desc panels (null = leave unchanged).</summary>
-        public static bool? PendingPublicRewrite { get; set; }
-
-        static void ApplyPendingPublicRewriteFlag(ItemDrop.ItemData? item)
-        {
-            if (item == null || PendingPublicRewrite == null)
-                return;
-            if (!RenameitConfig.PublicRewriteEnabled)
-                return;
-            Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, PendingPublicRewrite.Value);
-            PendingPublicRewrite = null;
         }
 
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)

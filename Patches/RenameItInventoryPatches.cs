@@ -97,6 +97,7 @@ public static class RenameItInventoryPatches
 
             var sb = new System.Text.StringBuilder();
             sb.AppendLine("\n");
+            AppendPaperHint(sb, item);
             string menuColor = RenameitConfig.MenuHintColor;
             string menuHint = RenameItLocalization.GetMenuTooltipHint(RenameitConfig.MenuOpenModifier);
             string lockSuffix = DrakeRenameit.GetMenuTooltipLockSuffix(item);
@@ -117,6 +118,26 @@ public static class RenameItInventoryPatches
             }
 
             tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
+        }
+
+        /// <summary>Place / write instructions, above the yellow Shift + Right Click line.</summary>
+        private static void AppendPaperHint(System.Text.StringBuilder sb, ItemDrop.ItemData item)
+        {
+            if (!PaperItem.IsAnyPaper(item))
+                return;
+
+            string hint = PaperItem.IsBlankPaper(item)
+                ? T(LKeys.TooltipPaperBlankWrite)
+                : (RenameitConfig.PaperPlaceEnabled ? T(LKeys.TooltipPaperPlace) : "");
+            if (string.IsNullOrWhiteSpace(hint))
+                return;
+
+            foreach (var line in hint.Split('\n'))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                sb.AppendLine(TooltipRichText.OrangeBold(line.Trim()));
+            }
         }
 
         private static string BuildNoDrakeMenuHint(ItemDrop.ItemData item)

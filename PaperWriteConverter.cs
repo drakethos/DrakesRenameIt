@@ -62,6 +62,8 @@ internal static class PaperWriteConverter
             CustomizeLibsAPI.SetCustomName(written, customName.Trim());
         if (!string.IsNullOrWhiteSpace(customDesc))
             CustomizeLibsAPI.SetCustomDescription(written, customDesc.Trim());
+        if (Permissions.RenamePermissionManager.HasPublicRewriteFlag(blank))
+            Permissions.RenamePermissionManager.SetPublicRewriteFlag(written, true);
 
         // Writer owns the page.
         written.m_crafterID = player.GetPlayerID();

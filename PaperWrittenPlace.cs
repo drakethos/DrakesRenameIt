@@ -32,6 +32,9 @@ internal static class PaperWrittenPlace
     private static ItemDrop.ItemData? _consumeAfterPlacement;
     private static bool _endPlaceAfterPlacement;
 
+    private static readonly FieldInfo? PlacementGhostField =
+        AccessTools.Field(typeof(Player), "m_placementGhost");
+
     private static readonly MethodInfo? SetPlaceModeMethod =
         AccessTools.Method(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) });
 
@@ -569,6 +572,40 @@ internal static class PaperWrittenPlace
             _pendingSnapshot = null;
         }
 
+        /// <summary>
+        /// Seat blank upright + written vertical sheets on the wall face, not in the wall volume.
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacementGhost))]
+        private static void UpdatePlacementGhost_Postfix(Player __instance)
+        {
+            if (__instance != Player.m_localPlayer)
+                return;
+            SeatGhost(__instance);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Player), "PlacePiece", new[]
+        {
+            typeof(Piece), typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(bool)
+        })]
+        private static void PlacePiece_SeatPrefix(Player __instance, Piece piece, ref Vector3 pos)
+        {
+            if (__instance != Player.m_localPlayer || piece == null || !PaperItem.IsWallSheetPiece(piece))
+                return;
+            pos = PaperItem.SeatWallSheet(pos, piece.transform);
+        }
+
+        static void SeatGhost(Player player)
+        {
+            if (PlacementGhostField?.GetValue(player) is not GameObject ghost || ghost == null)
+                return;
+            var piece = ghost.GetComponent<Piece>();
+            if (!PaperItem.IsWallSheetPiece(piece))
+                return;
+            ghost.transform.position = PaperItem.SeatWallSheet(ghost.transform.position, ghost.transform);
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Player), "PlacePiece", new[]
         {
@@ -753,13 +790,6 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
 
     internal string BuildHoverText()
     {
-        // Ward: show no-access only (no Take), matching vanilla pieces.
-        if (!PrivateArea.CheckAccess(transform.position, 0f, flash: false))
-        {
-            var denied = "$piece_noaccess";
-            return Localization.instance != null ? Localization.instance.Localize(denied) : denied;
-        }
-
         var zdo = GetComponent<ZNetView>()?.GetZDO();
         string name = zdo?.GetString(ZdoRename, "") ?? "";
         string desc = zdo?.GetString(ZdoDesc, "") ?? "";
@@ -773,6 +803,14 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         var sb = name;
         if (!string.IsNullOrEmpty(desc))
             sb += "\n" + desc;
+
+        // Ward blocks Take, but the page stays readable (same idea as item-stand "no access" labels).
+        if (!PrivateArea.CheckAccess(transform.position, 0f, flash: false))
+        {
+            var denied = "$piece_noaccess";
+            denied = Localization.instance != null ? Localization.instance.Localize(denied) : denied;
+            return sb + "\n" + denied;
+        }
 
         var use = "[<color=yellow><b>$KEY_Use</b></color>] Take";
         if (Localization.instance != null)

@@ -120,7 +120,11 @@ internal static class TooltipRichText
     static bool IsHex(char c) =>
         c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
 
-    static string GetValheimTooltipStatColorOpenTag()
+    /// <summary>Orange bold line so paper hints sit apart from the yellow Shift + Right Click line.</summary>
+    internal static string OrangeBold(string text) =>
+        GetValheimTooltipStatColorOpenTag() + "<b>" + text + "</b></color>";
+
+    internal static string GetValheimTooltipStatColorOpenTag()
     {
         try
         {

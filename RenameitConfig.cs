@@ -10,7 +10,7 @@ namespace DrakeRenameit;
 
 public static class RenameitConfig
 {
-    /// <summary>Gameplay sections 01–09 and 11: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>.</summary>
+    /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
     private const int ExpectedSyncedEntryCount = 43;
 
     internal static ManualLogSource? Log { get; set; }
@@ -24,8 +24,8 @@ public static class RenameitConfig
     private const string SectionUnlockCost = "07 UnlockCost";
     private const string SectionLimits = "08 Limits";
     private const string SectionModifiers = "09 Modifiers";
-    private const string SectionUI = "10 UI-NotSynced";
-    private const string SectionPaper = "11 Paper";
+    private const string SectionPaper = "10 Paper";
+    private const string SectionUI = "11 UI-NotSynced";
 
     private const string DisplayAdmin = "Admin";
     private const string DisplayFeatures = "Features";
@@ -312,8 +312,8 @@ public static class RenameitConfig
         _publicRewriteEnabled = _drakeConfigSync.BindSynced(config,
             SectionFeatures, DisplayFeatures,
             "PublicRewriteEnabled",
-            false,
-            "If true, items flagged “Anyone can rewrite” (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default off — servers opt in.");
+            true,
+            "If true, items flagged Public (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default on.");
 
         // --- Exclusions ---
         _excludedNames = _drakeConfigSync.BindSynced(config, 
@@ -596,6 +596,13 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "Modifiers", SectionModifiers,
             "DurabilityModifierEnabled", "DurabilityUnbrokenLabel", "DurabilityBrokenLabel", "DurabilityTierModifiers");
         MigrateSectionKeys(config, "UI-NotSynced", SectionUI,
+            "MenuHintColor", "MenuOpenModifier", "LogSpam");
+        // Paper was 11 and client UI was 10 — swap so Paper is the last synced section.
+        MigrateSectionKeys(config, "11 Paper", SectionPaper,
+            "PaperEnabled", "PaperName", "PaperDescription", "PaperCost", "PaperCraftingStation",
+            "PaperItemType", "BlankPaperStackSize", "WrittenPaperName", "WrittenPaperDescription",
+            "WrittenPaperIgnoresRestrictions", "PaperPlaceEnabled");
+        MigrateSectionKeys(config, "10 UI-NotSynced", SectionUI,
             "MenuHintColor", "MenuOpenModifier", "LogSpam");
 
         // Unlock cost keys used to live under Stacks.

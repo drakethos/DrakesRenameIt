@@ -7,6 +7,7 @@ using DrakeModsLibs.Data;
 using static DrakeRenameit.ModText.RenameItLocalization;
 using Jotunn.Managers;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Text = UnityEngine.UI.Text;
 using Image = UnityEngine.UI.Image;
@@ -25,8 +26,9 @@ public static class UIPanels
     private static Button _buttonCancelDesc = default!;
     private static Button? _buttonResetName = default!;
     private static Button? _buttonResetDesc = default!;
-    private static Button? _buttonPublicName;
-    private static Button? _buttonPublicDesc;
+    private static GameObject? _publicRow;
+    private static Toggle? _publicToggle;
+    private static GameObject? _publicHoverTip;
 
     public static GameObject? ActionMenuPanel { get; private set; }
     private static Button? _buttonMenuRename;
@@ -242,6 +244,7 @@ public static class UIPanels
 
         RefreshActionMenuLabels();
         ApplyActionMenuLayout();
+        SyncPublicRewriteToggle(item);
         ActionMenuPanel.SetActive(true);
         ActionMenuPanel.transform.SetAsLastSibling();
         EnsureInputBlocked();
@@ -261,7 +264,7 @@ public static class UIPanels
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 0f),
             width: 320,
-            height: 280,
+            height: 320,
             draggable: false);
 
         _actionMenuTitleText = GUIManager.Instance.CreateText(
@@ -280,14 +283,14 @@ public static class UIPanels
             addContentSizeFitter: false).GetComponent<Text>();
         _actionMenuTitleText.alignment = TextAnchor.MiddleCenter;
 
-        _buttonMenuUnlock = GUIManager.Instance.CreateButton(
+        _buttonMenuUnlock = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuUnlock),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 72f),
             width: 220f,
-            height: 30f).GetComponent<Button>();
+            height: 30f));
         _buttonMenuUnlock.gameObject.SetActive(false);
         _buttonMenuUnlock.AddUniqueListener(() =>
         {
@@ -299,14 +302,14 @@ public static class UIPanels
             OpenUnlockConfirmPanel(item);
         });
 
-        _buttonMenuRename = GUIManager.Instance.CreateButton(
+        _buttonMenuRename = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuRename),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 40f),
             width: ActionMenuButtonWidth,
-            height: 32f).GetComponent<Button>();
+            height: 32f));
         _buttonMenuRename.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -315,14 +318,14 @@ public static class UIPanels
                 DrakeRenameit.OpenRename(item);
         });
 
-        _buttonMenuDesc = GUIManager.Instance.CreateButton(
+        _buttonMenuDesc = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuDescription),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, 0f),
             width: ActionMenuButtonWidth,
-            height: 32f).GetComponent<Button>();
+            height: 32f));
         _buttonMenuDesc.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -331,14 +334,14 @@ public static class UIPanels
                 DrakeRenameit.OpenRewriteDesc(item);
         });
 
-        _buttonMenuCraftedBy = GUIManager.Instance.CreateButton(
+        _buttonMenuCraftedBy = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuCraftedBy),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(0f, -40f),
             width: ActionMenuButtonWidth,
-            height: 32f).GetComponent<Button>();
+            height: 32f));
         _buttonMenuCraftedBy.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -347,14 +350,14 @@ public static class UIPanels
                 DrakeRenameit.OpenCraftedByEditor(item);
         });
 
-        _buttonMenuResetAll = GUIManager.Instance.CreateButton(
+        _buttonMenuResetAll = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuResetAll),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(-40f, -80f),
             width: ActionMenuResetButtonWidth,
-            height: 28f).GetComponent<Button>();
+            height: 28f));
         _buttonMenuResetAll.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -362,17 +365,169 @@ public static class UIPanels
                 OpenResetAllConfirmPanel(item);
         });
 
-        _buttonMenuCancel = GUIManager.Instance.CreateButton(
+        _buttonMenuCancel = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.MenuOk),
             parent: ActionMenuPanel.transform,
             anchorMin: new Vector2(0.5f, 0.5f),
             anchorMax: new Vector2(0.5f, 0.5f),
             position: new Vector2(40f, -80f),
             width: ActionMenuOkButtonWidth,
-            height: 28f).GetComponent<Button>();
+            height: 28f));
         _buttonMenuCancel.AddUniqueListener(CloseActionMenuOnly);
 
+        EnsurePublicCheckRow();
         ApplyActionMenuLayout();
+        SoftenDrakeButtonSfx(ActionMenuPanel);
+    }
+
+    static void EnsurePublicCheckRow()
+    {
+        if (ActionMenuPanel == null || GUIManager.Instance == null || _publicRow != null)
+            return;
+
+        _publicRow = new GameObject("public_rewrite", typeof(RectTransform));
+        _publicRow.transform.SetParent(ActionMenuPanel.transform, false);
+        var hit = _publicRow.AddComponent<Image>();
+        hit.color = new Color(0f, 0f, 0f, 0f);
+        hit.raycastTarget = true;
+        var rowRt = _publicRow.GetComponent<RectTransform>();
+        rowRt.anchorMin = rowRt.anchorMax = new Vector2(0.5f, 0.5f);
+        rowRt.pivot = new Vector2(0.5f, 0.5f);
+        rowRt.anchoredPosition = new Vector2(0f, -72f);
+        rowRt.sizeDelta = new Vector2(ActionMenuButtonWidth, 28f);
+
+        // Jotunn checkbox (checkbox + checkbox_marker). CreateToggle sizes the box to width/height.
+        const float box = 24f;
+        var toggleGo = GUIManager.Instance.CreateToggle(_publicRow.transform, box, box);
+        toggleGo.transform.SetParent(_publicRow.transform, false);
+        _publicToggle = toggleGo.GetComponent<Toggle>();
+        if (_publicToggle != null)
+        {
+            _publicToggle.navigation = new Navigation { mode = Navigation.Mode.None };
+            _publicToggle.onValueChanged.AddListener(on =>
+            {
+                var item = DrakeRenameit.CurrentItem;
+                if (item == null || !CanShowPublicCheckbox(item))
+                    return;
+                Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, on);
+            });
+        }
+
+        var toggleRt = toggleGo.GetComponent<RectTransform>();
+        if (toggleRt != null)
+        {
+            toggleRt.anchorMin = toggleRt.anchorMax = new Vector2(0.5f, 0.5f);
+            toggleRt.pivot = new Vector2(0.5f, 0.5f);
+            toggleRt.anchoredPosition = Vector2.zero;
+            toggleRt.sizeDelta = new Vector2(ActionMenuButtonWidth, 28f);
+        }
+
+        if (toggleGo.transform.Find("Background") is RectTransform bg)
+        {
+            bg.anchorMin = bg.anchorMax = new Vector2(0.5f, 0.5f);
+            bg.pivot = new Vector2(1f, 0.5f);
+            bg.anchoredPosition = new Vector2(-6f, 0f);
+            bg.sizeDelta = new Vector2(box, box);
+            if (bg.Find("Checkmark") is RectTransform mark)
+            {
+                mark.anchorMin = mark.anchorMax = new Vector2(0.5f, 0.5f);
+                mark.pivot = new Vector2(0.5f, 0.5f);
+                mark.anchoredPosition = Vector2.zero;
+                mark.sizeDelta = new Vector2(16f, 16f);
+            }
+        }
+
+        var label = toggleGo.GetComponentInChildren<Text>();
+        if (label != null)
+        {
+            label.text = "Public";
+            label.font = GUIManager.Instance.AveriaSerifBold;
+            label.fontSize = 16;
+            label.color = Color.white;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.raycastTarget = false;
+            var labelRt = label.rectTransform;
+            labelRt.anchorMin = new Vector2(0.5f, 0f);
+            labelRt.anchorMax = new Vector2(0.5f, 1f);
+            labelRt.pivot = new Vector2(0f, 0.5f);
+            labelRt.anchoredPosition = new Vector2(2f, 0f);
+            labelRt.sizeDelta = new Vector2(90f, 28f);
+        }
+
+        // Selectable (the toggle) consumes pointer-enter, so the tip has to live on the
+        // checkbox itself — a parent handler never runs while the box is under the cursor.
+        var tip = EnsurePublicHoverTip();
+        _publicRow.AddComponent<PublicRewriteHover>().Tip = tip;
+        toggleGo.AddComponent<PublicRewriteHover>().Tip = tip;
+    }
+
+    static GameObject EnsurePublicHoverTip()
+    {
+        if (_publicHoverTip != null)
+            return _publicHoverTip;
+
+        _publicHoverTip = new GameObject("public_tip", typeof(RectTransform));
+        _publicHoverTip.transform.SetParent(_publicRow!.transform, false);
+        var tipRt = _publicHoverTip.GetComponent<RectTransform>();
+        tipRt.anchorMin = tipRt.anchorMax = new Vector2(0.5f, 0.5f);
+        tipRt.pivot = new Vector2(0.5f, 0f);
+        tipRt.anchoredPosition = new Vector2(0f, 18f);
+        tipRt.sizeDelta = new Vector2(240f, 44f);
+
+        var bg = _publicHoverTip.AddComponent<Image>();
+        bg.color = new Color(0.06f, 0.05f, 0.04f, 0.94f);
+        bg.raycastTarget = false;
+
+        var tipTextGo = GUIManager.Instance.CreateText(
+            text: "Anyone can rewrite this item's name and description.",
+            parent: _publicHoverTip.transform,
+            anchorMin: new Vector2(0.5f, 0.5f),
+            anchorMax: new Vector2(0.5f, 0.5f),
+            position: Vector2.zero,
+            font: GUIManager.Instance.AveriaSerifBold,
+            fontSize: 13,
+            color: Color.white,
+            outline: true,
+            outlineColor: Color.black,
+            width: 224f,
+            height: 36f,
+            addContentSizeFitter: false);
+        var tipText = tipTextGo.GetComponent<Text>();
+        if (tipText != null)
+        {
+            tipText.alignment = TextAnchor.MiddleCenter;
+            tipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tipText.verticalOverflow = VerticalWrapMode.Overflow;
+            tipText.raycastTarget = false;
+        }
+
+        _publicHoverTip.SetActive(false);
+        return _publicHoverTip;
+    }
+
+    /// <summary>
+    /// Jotunn ApplyButtonStyle adds ButtonSfx with both click (sfx_gui_button) and select
+    /// (sfx_gui_select). A mouse click selects then clicks → two sounds. Keep click only.
+    /// </summary>
+    static void SoftenDrakeButtonSfx(GameObject? root)
+    {
+        if (root == null)
+            return;
+        foreach (var sfx in root.GetComponentsInChildren<ButtonSfx>(true))
+        {
+            if (sfx == null)
+                continue;
+            sfx.m_selectSfxPrefab = null;
+            sfx.m_selectSfxPrefabVibrationOnly = null;
+            sfx.m_enterSfxPrefab = null;
+            sfx.m_enterSfxPrefabVibrationOnly = null;
+        }
+    }
+
+    static Button SoftenButton(GameObject buttonGo)
+    {
+        SoftenDrakeButtonSfx(buttonGo);
+        return buttonGo.GetComponent<Button>();
     }
 
     static void ApplyActionMenuLayout()
@@ -391,12 +546,24 @@ public static class UIPanels
         float resetCenterX = -menuHalf + resetHalf;
         float okCenterX = menuHalf - okHalf;
 
-        SetButtonLayout(_buttonMenuRename, 0f, 40f, ActionMenuButtonWidth, 32f);
-        SetButtonLayout(_buttonMenuDesc, 0f, 0f, ActionMenuButtonWidth, 32f);
-        SetButtonLayout(_buttonMenuCraftedBy, 0f, -40f, ActionMenuButtonWidth, 32f);
-        SetButtonLayout(_buttonMenuResetAll, resetCenterX, -80f, ActionMenuResetButtonWidth, 28f);
-        SetButtonLayout(_buttonMenuCancel, okCenterX, -80f, ActionMenuOkButtonWidth, 28f);
-        SetButtonLayout(_buttonMenuUnlock, 0f, 72f, 220f, 30f);
+        SetButtonLayout(_buttonMenuRename, 0f, 56f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuDesc, 0f, 16f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuCraftedBy, 0f, -24f, ActionMenuButtonWidth, 32f);
+        SetButtonLayout(_buttonMenuResetAll, resetCenterX, -120f, ActionMenuResetButtonWidth, 28f);
+        SetButtonLayout(_buttonMenuCancel, okCenterX, -120f, ActionMenuOkButtonWidth, 28f);
+        SetButtonLayout(_buttonMenuUnlock, 0f, 96f, 220f, 30f);
+
+        if (_publicRow != null)
+        {
+            var rowRt = _publicRow.GetComponent<RectTransform>();
+            if (rowRt != null)
+            {
+                rowRt.anchorMin = rowRt.anchorMax = new Vector2(0.5f, 0.5f);
+                rowRt.pivot = new Vector2(0.5f, 0.5f);
+                rowRt.anchoredPosition = new Vector2(0f, -72f);
+                rowRt.sizeDelta = new Vector2(ActionMenuButtonWidth, 28f);
+            }
+        }
     }
 
     static void SetButtonLayout(Button? button, float x, float y, float width, float height)
@@ -412,6 +579,8 @@ public static class UIPanels
 
     private static void CloseActionMenuOnly()
     {
+        if (_publicHoverTip != null)
+            _publicHoverTip.SetActive(false);
         if (ActionMenuPanel != null)
             ActionMenuPanel.SetActive(false);
         EnsureInputUnblocked();
@@ -492,14 +661,14 @@ public static class UIPanels
             height: 64,
             addContentSizeFitter: false);
 
-        _buttonResetAllConfirmYes = GUIManager.Instance.CreateButton(
+        _buttonResetAllConfirmYes = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.BtnYes),
             parent: _resetAllConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(-55f, 35f),
             width: 110f,
-            height: 30f).GetComponent<Button>();
+            height: 30f));
         _buttonResetAllConfirmYes.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -508,14 +677,14 @@ public static class UIPanels
             CloseResetAllConfirmPanel(reopenActionMenu: false);
         });
 
-        _buttonResetAllConfirmNo = GUIManager.Instance.CreateButton(
+        _buttonResetAllConfirmNo = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.BtnNo),
             parent: _resetAllConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(55f, 35f),
             width: 110f,
-            height: 30f).GetComponent<Button>();
+            height: 30f));
         _buttonResetAllConfirmNo.AddUniqueListener(() => CloseResetAllConfirmPanel(reopenActionMenu: true));
     }
 
@@ -776,14 +945,14 @@ public static class UIPanels
         _unlockAffordWarning.supportRichText = true;
         _unlockAffordWarning.gameObject.SetActive(false);
 
-        _buttonConfirmUnlock = GUIManager.Instance.CreateButton(
+        _buttonConfirmUnlock = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.UnlockPayBtn),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(-62f, 35f),
             width: 120f,
-            height: 30f).GetComponent<Button>();
+            height: 30f));
         _buttonConfirmUnlock.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
@@ -812,14 +981,14 @@ public static class UIPanels
             CloseUnlockConfirmPanel(reopenActionMenu: true);
         });
 
-        _buttonConfirmCancel = GUIManager.Instance.CreateButton(
+        _buttonConfirmCancel = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.BtnCancel),
             parent: _unlockConfirmPanel.transform,
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             position: new Vector2(55f, 35f),
             width: 110f,
-            height: 30f).GetComponent<Button>();
+            height: 30f));
         _buttonConfirmCancel.AddUniqueListener(() => CloseUnlockConfirmPanel(reopenActionMenu: false));
     }
 
@@ -920,27 +1089,27 @@ public static class UIPanels
 
         if (_buttonCancelCraftedBy == null)
         {
-            _buttonCancelCraftedBy = GUIManager.Instance.CreateButton(
+            _buttonCancelCraftedBy = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnCancel),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(-134f, CraftedByFooterButtonY),
                 width: CraftedByFooterButtonWidth,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonCancelCraftedBy.AddUniqueListener(CancelCraftedByEditor);
         }
 
         if (_buttonOkCraftedBy == null)
         {
-            _buttonOkCraftedBy = GUIManager.Instance.CreateButton(
+            _buttonOkCraftedBy = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnOk),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(0f, CraftedByFooterButtonY),
                 width: CraftedByFooterButtonWidth,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonOkCraftedBy.AddUniqueListener(() =>
             {
                 DrakeRenameit.ApplyCraftedByLabel(RenameCraftedByInput.text.Trim());
@@ -949,14 +1118,14 @@ public static class UIPanels
 
         if (_buttonResetCraftedBy == null)
         {
-            _buttonResetCraftedBy = GUIManager.Instance.CreateButton(
+            _buttonResetCraftedBy = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnReset),
                 parent: InputCraftedByPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(134f, CraftedByFooterButtonY),
                 width: CraftedByFooterButtonWidth,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonResetCraftedBy.AddUniqueListener(() =>
             {
                 if (DrakeRenameit.CurrentItem != null)
@@ -1073,14 +1242,14 @@ public static class UIPanels
             addContentSizeFitter: false).GetComponent<Text>();
         _craftedByTooltipLineLabelText.alignment = TextAnchor.MiddleCenter;
 
-        _buttonCraftedByLineLabelPick = GUIManager.Instance.CreateButton(
+        _buttonCraftedByLineLabelPick = SoftenButton(GUIManager.Instance.CreateButton(
             text: T(LKeys.CraftedByLinePick),
             parent: InputCraftedByPanel.transform,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
             position: new Vector2(0f, -98f),
             width: CraftedByDropdownWidth,
-            height: CraftedByDropdownHeight).GetComponent<Button>();
+            height: CraftedByDropdownHeight));
         _buttonCraftedByLineLabelPick.AddUniqueListener(() =>
         {
             if (_buttonCraftedByLineLabelPick == null || !_buttonCraftedByLineLabelPick.interactable)
@@ -1202,14 +1371,14 @@ public static class UIPanels
         {
             int capture = i;
             string rowText = i == 0 ? LocalizedDefaultCraftedByCaption() : options[i];
-            var btn = GUIManager.Instance.CreateButton(
+            var btn = SoftenButton(GUIManager.Instance.CreateButton(
                 text: rowText,
                 parent: _craftedByLineLabelPopover.transform,
                 anchorMin: new Vector2(0.5f, 1f),
                 anchorMax: new Vector2(0.5f, 1f),
                 position: new Vector2(0f, -pad - rowH * (i + 0.5f)),
                 width: rowBtnWidth,
-                height: rowH - 4f).GetComponent<Button>();
+                height: rowH - 4f));
             btn.AddUniqueListener(() =>
             {
                 _craftedByLineLabelPendingToken = capture == 0 ? null : options[capture];
@@ -1292,28 +1461,28 @@ public static class UIPanels
 
         if (_buttonCancelName == null)
         {
-            _buttonCancelName = GUIManager.Instance.CreateButton(
+            _buttonCancelName = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnCancel),
                 parent: InputNamePanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(-100f, 35f),
                 width: 72f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonCancelName.gameObject.SetActive(true);
             _buttonCancelName.AddUniqueListener(CancelNameEditor);
         }
 
         if (_buttonOkName == null)
         {
-            _buttonOkName = GUIManager.Instance.CreateButton(
+            _buttonOkName = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnOk),
                 parent: InputNamePanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(0f, 35f),
                 width: 72f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
 
             _buttonOkName.gameObject.SetActive(true);
             
@@ -1325,14 +1494,14 @@ public static class UIPanels
 
         if (_buttonResetName == null)
         {
-            _buttonResetName = GUIManager.Instance.CreateButton(
+            _buttonResetName = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnReset),
                 parent: InputNamePanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(100f, 35f),
                 width: 72f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonResetName.gameObject.SetActive(true);
             _buttonResetName.GetComponent<Button>().AddUniqueListener(() =>
             {
@@ -1343,8 +1512,6 @@ public static class UIPanels
             });
         }
 
-        EnsurePublicRewriteToggle(InputNamePanel!, isNamePanel: true);
-        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
     }
 
     public static void CreateRenameDescInput()
@@ -1423,28 +1590,28 @@ public static class UIPanels
 
         if (_buttonCancelDesc == null)
         {
-            _buttonCancelDesc = GUIManager.Instance.CreateButton(
+            _buttonCancelDesc = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnCancel),
                 parent: InputDescPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(-80f, 35f),
                 width: 68f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonCancelDesc.gameObject.SetActive(true);
             _buttonCancelDesc.AddUniqueListener(CancelDescEditor);
         }
 
         if (_buttonOkDesc == null)
         {
-            _buttonOkDesc = GUIManager.Instance.CreateButton(
+            _buttonOkDesc = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnOk),
                 parent: InputDescPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(0f, 35f),
                 width: 68f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonOkDesc.gameObject.SetActive(true);
             _buttonOkDesc.AddUniqueListener(() =>
             {
@@ -1460,23 +1627,20 @@ public static class UIPanels
 
         if (_buttonResetDesc == null)
         {
-            _buttonResetDesc = GUIManager.Instance.CreateButton(
+            _buttonResetDesc = SoftenButton(GUIManager.Instance.CreateButton(
                 text: T(LKeys.BtnReset),
                 parent: InputDescPanel.transform,
                 anchorMin: new Vector2(0.5f, 0f),
                 anchorMax: new Vector2(0.5f, 0f),
                 position: new Vector2(80f, 35f),
                 width: 68f,
-                height: 30f).GetComponent<Button>();
+                height: 30f));
             _buttonResetDesc.gameObject.SetActive(true);
             _buttonResetDesc.GetComponent<Button>().AddUniqueListener(() =>
             {
                 RenameDescInput.text = DrakeRenameit.resetDesc(DrakeRenameit.CurrentItem);
             });
         }
-
-        EnsurePublicRewriteToggle(InputDescPanel!, isNamePanel: false);
-        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
 
         void GetPlayerAndSendError(string msg)
         {
@@ -1491,71 +1655,31 @@ public static class UIPanels
         }
     }
 
-    static void EnsurePublicRewriteToggle(GameObject panel, bool isNamePanel)
-    {
-        if (!RenameitConfig.PublicRewriteEnabled)
-            return;
-
-        if (isNamePanel)
-        {
-            if (_buttonPublicName != null)
-                return;
-            _buttonPublicName = CreatePublicToggleButton(panel);
-            _buttonPublicName.AddUniqueListener(TogglePublicRewrite);
-        }
-        else
-        {
-            if (_buttonPublicDesc != null)
-                return;
-            _buttonPublicDesc = CreatePublicToggleButton(panel);
-            _buttonPublicDesc.AddUniqueListener(TogglePublicRewrite);
-        }
-    }
-
-    static Button CreatePublicToggleButton(GameObject panel) =>
-        GUIManager.Instance.CreateButton(
-            text: "Anyone can rewrite: Off",
-            parent: panel.transform,
-            anchorMin: new Vector2(0.5f, 0f),
-            anchorMax: new Vector2(0.5f, 0f),
-            position: new Vector2(0f, 68f),
-            width: 220f,
-            height: 28f).GetComponent<Button>();
-
-    static void TogglePublicRewrite()
-    {
-        bool next = !(DrakeRenameit.PendingPublicRewrite ??
-                      Permissions.RenamePermissionManager.HasPublicRewriteFlag(DrakeRenameit.CurrentItem));
-        DrakeRenameit.PendingPublicRewrite = next;
-        SyncPublicRewriteToggle(DrakeRenameit.CurrentItem);
-    }
-
     internal static void SyncPublicRewriteToggle(ItemDrop.ItemData? item)
     {
-        bool canEdit = CanShowPublicCheckbox(item);
-        bool on = DrakeRenameit.PendingPublicRewrite ??
-                  Permissions.RenamePermissionManager.HasPublicRewriteFlag(item);
-        string label = on ? "Anyone can rewrite: On" : "Anyone can rewrite: Off";
+        if (_publicRow == null)
+            return;
 
-        if (_buttonPublicName != null)
+        bool show = CanShowPublicCheckbox(item);
+        _publicRow.SetActive(show);
+        if (!show)
         {
-            _buttonPublicName.gameObject.SetActive(canEdit);
-            SetButtonLabel(_buttonPublicName, label);
+            if (_publicHoverTip != null)
+                _publicHoverTip.SetActive(false);
+            return;
         }
 
-        if (_buttonPublicDesc != null)
-        {
-            _buttonPublicDesc.gameObject.SetActive(canEdit);
-            SetButtonLabel(_buttonPublicDesc, label);
-        }
+        if (_publicToggle == null || item == null)
+            return;
+
+        bool on = Permissions.RenamePermissionManager.HasPublicRewriteFlag(item);
+        _publicToggle.SetIsOnWithoutNotify(on);
     }
 
     static bool CanShowPublicCheckbox(ItemDrop.ItemData? item)
     {
         if (!RenameitConfig.PublicRewriteEnabled || item == null || Player.m_localPlayer == null)
             return false;
-        if (PaperItem.IsBlankPaper(item))
-            return false; // flag is set on Written after peel; blank peels first
         var local = Player.m_localPlayer;
         if (API.RenameitPermission.IsElevatedForOverrides(local))
             return true;
@@ -1565,5 +1689,25 @@ public static class UIPanels
         if (!string.IsNullOrEmpty(item.m_crafterName))
             return item.m_crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
         return true;
+    }
+}
+
+/// <summary>Hover tip for the main-menu Public checkbox.</summary>
+internal sealed class PublicRewriteHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    internal GameObject? Tip;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (Tip == null)
+            return;
+        Tip.SetActive(true);
+        Tip.transform.SetAsLastSibling();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (Tip != null)
+            Tip.SetActive(false);
     }
 }

@@ -54,6 +54,7 @@ internal static class LocalizationDefaults
         Add(LKeys.TooltipMenuHint, "{0} + Right Click for options");
         Add(LKeys.TooltipMenuHintRightClick, "Right Click for options");
         Add(LKeys.TooltipPaperPlace, "Use item to place.\nPress Use again (1-9) to switch vertical / horizontal.");
+        Add(LKeys.TooltipPaperPlaceOnly, "Use item to place.");
         Add(LKeys.TooltipPaperBlankWrite, "Rename or edit the description to write a new page.\nThat text is copied onto a new piece of paper.");
         Add(LKeys.TooltipElevatedOverride, " Elevated override");
         Add(LKeys.MenuKeyFallback, "Key");

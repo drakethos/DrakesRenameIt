@@ -127,8 +127,8 @@ public static class RenameItInventoryPatches
                 return;
 
             string hint = PaperItem.IsBlankPaper(item)
-                ? T(LKeys.TooltipPaperBlankWrite)
-                : (RenameitConfig.PaperPlaceEnabled ? T(LKeys.TooltipPaperPlace) : "");
+                ? BlankPaperHint()
+                : WrittenPaperPlaceHint();
             if (string.IsNullOrWhiteSpace(hint))
                 return;
 
@@ -139,6 +139,37 @@ public static class RenameItInventoryPatches
                 sb.AppendLine(TooltipRichText.OrangeBold(line.Trim()));
             }
         }
+
+        /// <summary>
+        /// Write hint always. Place hint only when hotbar place is on.
+        /// Toggle line only when orientation is Both.
+        /// </summary>
+        private static string BlankPaperHint()
+        {
+            var write = T(LKeys.TooltipPaperBlankWrite);
+            if (!PaperPlaceEnabled)
+                return write;
+
+            var place = PlaceHint();
+            if (string.IsNullOrWhiteSpace(place))
+                return write;
+            if (string.IsNullOrWhiteSpace(write))
+                return place;
+            return place + "\n" + write;
+        }
+
+        /// <summary>Written pages use the same hotbar orientation flag as blank paper.</summary>
+        private static string WrittenPaperPlaceHint()
+        {
+            if (!PaperPlaceEnabled)
+                return "";
+            return PlaceHint();
+        }
+
+        private static string PlaceHint() =>
+            BlankPaperPlaceCanToggle
+                ? T(LKeys.TooltipPaperPlace)
+                : T(LKeys.TooltipPaperPlaceOnly);
 
         private static string BuildNoDrakeMenuHint(ItemDrop.ItemData item)
         {

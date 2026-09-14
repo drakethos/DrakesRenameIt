@@ -1,4 +1,7 @@
 ## Unreleased
+- Requires **DrakeModsLibs 0.9.1** (item-stand labels load the real attached item, stands refresh when durability labels change, `Drake_PublicRewrite`, config acceptable-value lists).
+- **Paper placeability:** hammer pieces `VerticalPaperPlaceable`, `HorizontalPaperPlaceable`, and `StackPaperPlaceable` (each default on). Blank Piece of Paper hotbar place is `BlankPaperPlaceOrientation`: Vertical Only, Horizontal Only, or Both (default). Only Both shows the switch tooltip and lets Use toggle wall/flat.
+- **Paper take-public:** ward-permitted players can Shift+Use a pinned Written Page so anyone can take it. `PaperTakePublicEnabled` (default on). Placement and hammer-remove stay warded.
 - **Paper Blank / Written:** blank Piece of Paper stacks (default 50); writing peels one Written Page.
 - **Public rewrite:** optional "Anyone can rewrite" on name/desc (server `PublicRewriteEnabled`).
 - **Placeable notes:** hotbar use opens place menu; `[E]` reclaims with custom data.

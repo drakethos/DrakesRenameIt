@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 43;
+    private const int ExpectedSyncedEntryCount = 48;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -90,6 +90,15 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _writtenPaperIgnoresRestrictions = default!;
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
+    private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
+    private static ConfigEntry<bool> _verticalPaperPlaceable = default!;
+    private static ConfigEntry<bool> _horizontalPaperPlaceable = default!;
+    private static ConfigEntry<bool> _stackPaperPlaceable = default!;
+    private static ConfigEntry<string> _blankPaperPlaceOrientation = default!;
+
+    internal const string BlankPlaceVerticalOnly = "Vertical Only";
+    internal const string BlankPlaceHorizontalOnly = "Horizontal Only";
+    internal const string BlankPlaceBoth = "Both";
 
     public static bool LockToOwner => _lockToOwner.Value;
     public static int DescCharLimit => _descCharLimit.Value;
@@ -236,6 +245,57 @@ public static class RenameitConfig
 
     /// <summary>When true, Blank/Written paper can open place-mode and pin notes in the world.</summary>
     public static bool PaperPlaceEnabled => _paperPlaceEnabled.Value;
+
+    /// <summary>
+    /// When true, a ward-permitted player can Shift+Use a pinned Written Page so anyone may take it.
+    /// Placement and hammer-remove still require ward access. Default on.
+    /// </summary>
+    public static bool PaperTakePublicEnabled => _paperTakePublicEnabled.Value;
+
+    /// <summary>Hammer piece: blank sheet upright on a wall. Default on. Prefab still exists for written notes if off.</summary>
+    public static bool VerticalPaperPlaceable => _verticalPaperPlaceable.Value;
+
+    /// <summary>Hammer piece: blank sheet laid flat. Default on.</summary>
+    public static bool HorizontalPaperPlaceable => _horizontalPaperPlaceable.Value;
+
+    /// <summary>Hammer piece: blank paper stack. Default on.</summary>
+    public static bool StackPaperPlaceable => _stackPaperPlaceable.Value;
+
+    /// <summary>Hotbar place for blank Piece of Paper: vertical only, horizontal only, or both (toggle).</summary>
+    public static string BlankPaperPlaceOrientation =>
+        NormalizeBlankPlaceOrientation(_blankPaperPlaceOrientation?.Value);
+
+    public static bool BlankPaperPlaceVertical =>
+        BlankPaperPlaceOrientation is BlankPlaceVerticalOnly or BlankPlaceBoth;
+
+    public static bool BlankPaperPlaceHorizontal =>
+        BlankPaperPlaceOrientation is BlankPlaceHorizontalOnly or BlankPlaceBoth;
+
+    /// <summary>Raised when a hammer paper piece placeable flag changes (including server sync).</summary>
+    internal static event Action? HammerPaperPlaceableChanged;
+
+    /// <summary>Wall/flat toggle (tooltip and Use-again) only when both orientations are allowed.</summary>
+    public static bool BlankPaperPlaceCanToggle =>
+        BlankPaperPlaceOrientation == BlankPlaceBoth;
+
+    internal static string NormalizeBlankPlaceOrientation(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return BlankPlaceBoth;
+
+        var t = raw!.Trim();
+        if (t.Equals(BlankPlaceVerticalOnly, StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("VerticalOnly", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("Vertical", StringComparison.OrdinalIgnoreCase))
+            return BlankPlaceVerticalOnly;
+
+        if (t.Equals(BlankPlaceHorizontalOnly, StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("HorizontalOnly", StringComparison.OrdinalIgnoreCase) ||
+            t.Equals("Horizontal", StringComparison.OrdinalIgnoreCase))
+            return BlankPlaceHorizontalOnly;
+
+        return BlankPlaceBoth;
+    }
 
     /// <summary>Parsed <see cref="CraftedByAllowedLabels"/>; first entry is always the “use game default line” option in the UI.</summary>
     public static List<string> GetCraftedByAllowedLabelsList()
@@ -520,7 +580,8 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "PaperItemType",
             "Material",
-            "Vanilla item category for Piece of Paper / Written Page: Material or Misc. Applied when the item is registered. ExcludedCategory can also use alias 'Paper' to target these items.");
+            "Vanilla item category for Piece of Paper / Written Page: Material or Misc. Applied when the item is registered. ExcludedCategory can also use alias 'Paper' to target these items.",
+            new AcceptableValueList<string>("Material", "Misc"));
 
         _blankPaperStackSize = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
@@ -551,6 +612,43 @@ public static class RenameitConfig
             "PaperPlaceEnabled",
             true,
             "If true, blank/written paper in the hotbar can open place-mode to pin parchment in the world (vertical/horizontal).");
+
+        _paperTakePublicEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperTakePublicEnabled",
+            true,
+            "If true, the page's creator or an admin override (inside a ward that already allows them) can press Shift+Use to let anyone take it off the wall. Shift+Use again makes it private. Other players cannot flip this. Visitors still cannot place a new page or hammer-remove it. Default on.");
+
+        _verticalPaperPlaceable = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "VerticalPaperPlaceable",
+            true,
+            "If true, the hammer furniture piece Blank Paper (upright) can be placed. Default on.");
+
+        _horizontalPaperPlaceable = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "HorizontalPaperPlaceable",
+            true,
+            "If true, the hammer furniture piece Blank Paper (flat) can be placed. Default on.");
+
+        _stackPaperPlaceable = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "StackPaperPlaceable",
+            true,
+            "If true, the hammer furniture piece Paper Stack can be placed. Default on.");
+
+        _blankPaperPlaceOrientation = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "BlankPaperPlaceOrientation",
+            BlankPlaceBoth,
+            "How blank and written paper place from the hotbar (Use). Vertical Only or Horizontal Only: tooltip is just Use to place, and Use does not switch orientation. Both (default): Use again switches wall / flat, and the tooltip says so.",
+            new AcceptableValueList<string>(BlankPlaceVerticalOnly, BlankPlaceHorizontalOnly, BlankPlaceBoth));
+
+        void RaiseHammerPlaceableChanged(object sender, EventArgs e) =>
+            HammerPaperPlaceableChanged?.Invoke();
+        _verticalPaperPlaceable.SettingChanged += RaiseHammerPlaceableChanged;
+        _horizontalPaperPlaceable.SettingChanged += RaiseHammerPlaceableChanged;
+        _stackPaperPlaceable.SettingChanged += RaiseHammerPlaceableChanged;
 
         _paperName.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
         _paperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
@@ -601,7 +699,9 @@ public static class RenameitConfig
         MigrateSectionKeys(config, "11 Paper", SectionPaper,
             "PaperEnabled", "PaperName", "PaperDescription", "PaperCost", "PaperCraftingStation",
             "PaperItemType", "BlankPaperStackSize", "WrittenPaperName", "WrittenPaperDescription",
-            "WrittenPaperIgnoresRestrictions", "PaperPlaceEnabled");
+            "WrittenPaperIgnoresRestrictions", "PaperPlaceEnabled", "PaperTakePublicEnabled",
+            "VerticalPaperPlaceable", "HorizontalPaperPlaceable", "StackPaperPlaceable",
+            "BlankPaperPlaceOrientation");
         MigrateSectionKeys(config, "10 UI-NotSynced", SectionUI,
             "MenuHintColor", "MenuOpenModifier", "LogSpam");
 

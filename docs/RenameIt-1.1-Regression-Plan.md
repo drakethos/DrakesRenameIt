@@ -25,9 +25,9 @@ This plan extends the v1.0 matrix with **port-specific** checks. Anything that p
 **Build regression (CI / local):**
 
 - [ ] `DrakesRenameit.dll` passes `Verify-NoServerSyncInModDll.ps1` (no ServerSync IL in consumer).
-- [ ] Thunderstore profile loads **DrakeModsLibs** + **DrakesRenameit** (dependency `DrakeMods-DrakeModsLibs-0.3.0+`).
-- [ ] Upgrade from 1.0 cfg: legacy section names migrate; **37** synced entries audit-clean at startup (Paper: Enabled/Name/Description/Cost/Station/ItemType).
-- [ ] **Piece of Paper:** craft with default cost (1 LeatherScraps + 1 Coal) anywhere; rename/desc works; does not stack; drop looks thin parchment tablet; stand mount works; `PaperEnabled=false` hides recipe; station override moves recipe; `ExcludedCategory=Paper` blocks rename for non-elevated.
+- [ ] Thunderstore profile loads **DrakeModsLibs** + **DrakesRenameit** (dependency `DrakeMods-DrakeModsLibs-0.9.1+`).
+- [ ] Upgrade from 1.0 cfg: legacy section names migrate; **48** synced entries audit-clean at startup (section **10 Paper**, including place/take flags). Interactive cases: [Valheim-1.0-QA-Checklist.html](../../docs/Valheim-1.0-QA-Checklist.html) groups 11–13.
+- [ ] **Piece of Paper:** craft with default cost (**Wood:1, Coal:1**) anywhere; blanks stack (default 50); rename/desc peels one Written Page (stack 1); `PaperEnabled=false` hides the recipe after reload; station override moves the recipe; `ExcludedCategory=Paper` blocks non-owner written pages, not blanks or the owner.
 
 ---
 
@@ -140,7 +140,7 @@ Run with **minimal** profile: BepInEx + Jotunn + DrakeModsLibs + DrakesRenameit.
 
 ## 6. Changelog blurb (for 1.1 release notes)
 
-> QA: Full v1.0 regression matrix re-run against DrakeModsLibs 0.3.0. Display, tooltip, stack-merge, and ServerSync paths verified in Libs; RenameIt retains UI, permissions, and config. See `docs/RenameIt-1.1-Regression-Plan.md`.
+> QA: Full v1.0 regression matrix re-run against DrakeModsLibs 0.9.1. Display, tooltip, stack-merge, and ServerSync paths verified in Libs; RenameIt retains UI, permissions, and config. See `docs/RenameIt-1.1-Regression-Plan.md`.
 
 ---
 

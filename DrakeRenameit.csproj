@@ -101,6 +101,7 @@
     <Compile Include="PaperWriteConverter.cs" />
     <Compile Include="PaperPlace.cs" />
     <Compile Include="PaperWrittenPlace.cs" />
+    <Compile Include="PaperBlankPlace.cs" />
     <Compile Include="PaperNoticePiece.cs" />
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />

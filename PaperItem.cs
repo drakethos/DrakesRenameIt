@@ -571,7 +571,8 @@ internal static class PaperItem
             return false;
         var n = piece.gameObject.name;
         return n.StartsWith(PaperPlace.BlankUpright, StringComparison.Ordinal)
-               || n.StartsWith(PaperWrittenPlace.NoteVertical, StringComparison.Ordinal);
+               || n.StartsWith(PaperWrittenPlace.NoteVertical, StringComparison.Ordinal)
+               || n.StartsWith(PaperBlankPlace.PlaceVertical, StringComparison.Ordinal);
     }
 
     /// <summary>

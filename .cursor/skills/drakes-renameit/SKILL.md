@@ -83,4 +83,4 @@ description: >-
 
 ## Build / deploy
 
-- **`DrakeRenameit.csproj`**: references **DrakeModsLibs** (Thunderstore `DrakeMods-DrakeModsLibs-0.3.0+`); no ILRepack or ServerSync in this project. **`environment.props`** sets BepInEx / Valheim paths for local builds.
+- **`DrakeRenameit.csproj`**: references **DrakeModsLibs** (Thunderstore `DrakeMods-DrakeModsLibs-0.9.1+`); no ILRepack or ServerSync in this project. **`environment.props`** sets BepInEx / Valheim paths for local builds.

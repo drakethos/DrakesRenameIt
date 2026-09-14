@@ -42,6 +42,9 @@
     { "key": "msg_cannot_edit_item", "value": "Este objeto no se puede editar." },
     { "key": "msg_desc_empty", "value": "¡La descripción no puede estar vacía!" },
 
+    { "key": "tooltip_paper_place", "value": "Usar para colocar.\nPulsa Usar otra vez (1-9) para cambiar vertical / horizontal." },
+    { "key": "tooltip_paper_place_only", "value": "Usar para colocar." },
+    { "key": "tooltip_paper_blank_write", "value": "Renombra o edita la descripción para escribir una página.\nEse texto se copia a una hoja nueva." },
     { "key": "tooltip_menu_hint", "value": "{0} + clic derecho para opciones" },
     { "key": "tooltip_menu_hint_right_click", "value": "Clic derecho para opciones" },
     { "key": "tooltip_elevated_override", "value": " Anulación elevada" },

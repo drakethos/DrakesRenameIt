@@ -62,6 +62,9 @@ internal static class PaperWrittenPlace
     private static readonly MethodInfo? HideHandItemsMethod =
         AccessTools.Method(typeof(Humanoid), "HideHandItems");
 
+    private static readonly HashSet<int> NotesBeforePlace = new();
+    private static Vector3 _placePos;
+
     /// <summary>0 = wall/vertical, 1 = flat. Toggled with Use while placing.</summary>
     private static int _orientIndex;
 
@@ -97,6 +100,15 @@ internal static class PaperWrittenPlace
         var s = _pendingSnapshot;
         _pendingSnapshot = null;
         return s;
+    }
+
+    internal static bool IsPlacementGhost(GameObject? go)
+    {
+        if (go == null || PlacementGhostField == null || Player.m_localPlayer == null)
+            return false;
+        if (PlacementGhostField.GetValue(Player.m_localPlayer) is not GameObject ghost || ghost == null)
+            return false;
+        return go == ghost || go.transform.IsChildOf(ghost.transform);
     }
 
     internal static void MarkVesselApplied() => _vesselAppliedSnapshot = true;
@@ -247,6 +259,7 @@ internal static class PaperWrittenPlace
         }
 
         _triggerPaper = item;
+        _orientIndex = AllowedOrientIndex();
         InventoryGui.instance?.Hide();
 
         if (SetPlaceModeMethod != null)
@@ -255,9 +268,7 @@ internal static class PaperWrittenPlace
             player.SetPlaceMode(table);
 
         SelectOrientation(player, _orientIndex);
-        player.Message(
-            MessageHud.MessageType.TopLeft,
-            $"Place: {OrientLabel(_orientIndex)} — Use again to switch Wall/Flat.");
+        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }
 
     private static ItemDrop.ItemData? InvGetRightItem(Humanoid humanoid)
@@ -343,8 +354,16 @@ internal static class PaperWrittenPlace
         }
     }
 
-    private static string OrientLabel(int orient) =>
-        orient == 0 ? "Wall (vertical)" : "Flat";
+    private static int AllowedOrientIndex() =>
+        RenameitConfig.BlankPaperPlaceHorizontal && !RenameitConfig.BlankPaperPlaceVertical ? 1 : 0;
+
+    private static string PlaceStatus(int orient)
+    {
+        var label = orient == 0 ? "Wall (vertical)" : "Flat";
+        return RenameitConfig.BlankPaperPlaceCanToggle
+            ? $"Place: {label} — Use again to switch Wall/Flat."
+            : $"Place: {label}";
+    }
 
     private static bool InOurPlaceMode(Player player)
     {
@@ -359,9 +378,12 @@ internal static class PaperWrittenPlace
 
     private static void CycleOrientation(Player player)
     {
+        if (!RenameitConfig.BlankPaperPlaceCanToggle)
+            return;
+
         _orientIndex = _orientIndex == 0 ? 1 : 0;
         SelectOrientation(player, _orientIndex);
-        player.Message(MessageHud.MessageType.TopLeft, $"Place: {OrientLabel(_orientIndex)}");
+        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }
 
     private static void SelectOrientation(Player player, int orient)
@@ -466,13 +488,20 @@ internal static class PaperWrittenPlace
         InvUnequipItem(player, source);
 
         var inv = player.GetInventory();
-        if (inv != null && inv.ContainsItem(source))
+        if (inv == null)
+            return;
+
+        var item = inv.ContainsItem(source) ? source : FindMatchingWritten(inv, source);
+        if (item == null)
         {
-            if (source.m_stack > 1)
-                source.m_stack -= 1;
-            else
-                inv.RemoveItem(source);
+            _log?.LogWarning("[Paper] Placed a note but could not find the Written Page to consume.");
+            return;
         }
+
+        if (item.m_stack > 1)
+            item.m_stack -= 1;
+        else
+            inv.RemoveItem(item);
 
         try
         {
@@ -484,6 +513,30 @@ internal static class PaperWrittenPlace
         }
     }
 
+    private static ItemDrop.ItemData? FindMatchingWritten(Inventory inv, ItemDrop.ItemData source)
+    {
+        var snap = PaperSnapshot.From(source);
+        var items = inv.GetAllItems();
+        if (items == null)
+            return null;
+
+        ItemDrop.ItemData? fallback = null;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            if (!PaperItem.IsWrittenPaper(item))
+                continue;
+            fallback ??= item;
+            var other = PaperSnapshot.From(item);
+            if (other.Rename == snap.Rename &&
+                other.Desc == snap.Desc &&
+                other.CrafterId == snap.CrafterId)
+                return item;
+        }
+
+        return fallback;
+    }
+
     private static void AddLocalization()
     {
         var loc = LocalizationManager.Instance.GetLocalization();
@@ -491,6 +544,10 @@ internal static class PaperWrittenPlace
         loc.AddTranslation("English", "piece_drakes_paper_note_v_desc", "Pin your Written Page on a wall.");
         loc.AddTranslation("English", "piece_drakes_paper_note_f", "Written Page (flat)");
         loc.AddTranslation("English", "piece_drakes_paper_note_f_desc", "Lay your Written Page flat.");
+        loc.AddTranslation("English", "piece_drakes_paper_make_public", "Make public");
+        loc.AddTranslation("English", "piece_drakes_paper_make_private", "Make private");
+        loc.AddTranslation("English", "piece_drakes_paper_now_public", "Public — anyone can take this.");
+        loc.AddTranslation("English", "piece_drakes_paper_now_private", "Private.");
     }
 
     [HarmonyPatch]
@@ -512,7 +569,7 @@ internal static class PaperWrittenPlace
             var player = Player.m_localPlayer;
             if (player != null && InOurPlaceMode(player))
             {
-                // Use again while placing: Wall ↔ Flat (no full menu).
+                // Use again switches only when orientation is Both. Vertical/Horizontal Only stays put.
                 CycleOrientation(player);
                 return false;
             }
@@ -530,6 +587,10 @@ internal static class PaperWrittenPlace
         {
             if (__instance != Player.m_localPlayer)
                 return true;
+            if (PaperBlankPlace.IsInPlaceMode(__instance))
+                return true;
+            if (InOurPlaceMode(__instance) && !RenameitConfig.BlankPaperPlaceCanToggle)
+                SelectOrientation(__instance, AllowedOrientIndex());
             if (!__instance.InPlaceMode())
                 return true;
 
@@ -568,8 +629,11 @@ internal static class PaperWrittenPlace
             EndPlaceMode(__instance);
             ConsumeTrigger(__instance, toConsume);
             _triggerPaper = null;
+            // Keep the snapshot until the spawned sheet writes it. Clearing here
+            // was wiping the page when the piece's ZDO was not ready yet.
+            if (_vesselAppliedSnapshot)
+                _pendingSnapshot = null;
             _vesselAppliedSnapshot = false;
-            _pendingSnapshot = null;
         }
 
         /// <summary>
@@ -611,7 +675,7 @@ internal static class PaperWrittenPlace
         {
             typeof(Piece), typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(bool)
         })]
-        private static bool PlacePiece_Prefix(Player __instance, Piece piece)
+        private static bool PlacePiece_Prefix(Player __instance, Piece piece, Vector3 pos)
         {
             _vesselAppliedSnapshot = false;
             _notePlaceArmed = false;
@@ -625,6 +689,8 @@ internal static class PaperWrittenPlace
                 return false;
             }
 
+            _placePos = pos;
+            RememberNotes();
             _pendingSnapshot = PaperSnapshot.From(source);
             _triggerPaper = source;
             _notePlaceArmed = true;
@@ -645,11 +711,61 @@ internal static class PaperWrittenPlace
             if (piece == null || !IsNotePiece(piece))
                 return;
 
-            piece.GetComponent<PaperWrittenVessel>()?.FlushPendingSnapshot();
+            // `piece` is the ghost / table prefab, not the spawned sheet. Vanilla also
+            // does not consume the tool — empty requirements — so stamp and consume here.
+            var spawned = FindSpawnedNote(__instance);
+            // Awake on the spawned sheet already took the snapshot if place succeeded.
+            var takenBySpawn = _pendingSnapshot == null;
+            if (spawned == null && !takenBySpawn)
+            {
+                _log?.LogWarning("[Paper] Place did not spawn a note; kept the Written Page.");
+                _pendingSnapshot = null;
+                return;
+            }
+
+            spawned?.AcceptSnapshot(_pendingSnapshot);
+            if (_vesselAppliedSnapshot)
+                _pendingSnapshot = null;
 
             // Defer exit+consume until UpdatePlacement postfix (same-frame NRE otherwise).
             _consumeAfterPlacement = _triggerPaper;
             _endPlaceAfterPlacement = true;
+        }
+
+        private static void RememberNotes()
+        {
+            NotesBeforePlace.Clear();
+            var found = UnityEngine.Object.FindObjectsOfType<PaperWrittenVessel>();
+            for (var i = 0; i < found.Length; i++)
+            {
+                var v = found[i];
+                if (v != null && !IsPlacementGhost(v.gameObject))
+                    NotesBeforePlace.Add(v.GetInstanceID());
+            }
+        }
+
+        private static PaperWrittenVessel? FindSpawnedNote(Player player)
+        {
+            PaperWrittenVessel? best = null;
+            var bestDist = 2.5f;
+            var found = UnityEngine.Object.FindObjectsOfType<PaperWrittenVessel>();
+            for (var i = 0; i < found.Length; i++)
+            {
+                var v = found[i];
+                if (v == null || IsPlacementGhost(v.gameObject))
+                    continue;
+                if (NotesBeforePlace.Contains(v.GetInstanceID()))
+                    continue;
+                var dist = Vector3.Distance(v.transform.position, _placePos);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    best = v;
+                }
+            }
+
+            _ = player;
+            return best;
         }
 
         /// <summary>
@@ -713,8 +829,12 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
     const string ZdoUnlock = "DrakePaper_Unlock";
     const string ZdoCrafterId = "DrakePaper_CrafterId";
     const string ZdoCrafterName = "DrakePaper_CrafterName";
+    /// <summary>Take-off-wall bypass. Not the rewrite flag (<see cref="ZdoPublic"/>).</summary>
+    const string ZdoTakePublic = "DrakePaper_TakePublic";
+    const string RpcSetTakePublic = "DrakePaper_SetTakePublic";
 
     PaperWrittenPlace.PaperSnapshot? _pending;
+    bool _rpcRegistered;
 
     void Awake()
     {
@@ -722,10 +842,25 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         foreach (var sign in GetComponentsInChildren<Sign>(true))
             DestroyImmediate(sign);
 
+        RegisterTakePublicRpc();
+        // Ghost Awake runs when place mode starts — it must not eat the page snapshot.
+        if (PaperWrittenPlace.IsPlacementGhost(gameObject))
+            return;
         _pending = PaperWrittenPlace.TakePendingSnapshot();
     }
 
-    void Start() => FlushPendingSnapshot();
+    internal void AcceptSnapshot(PaperWrittenPlace.PaperSnapshot? snap)
+    {
+        if (snap != null)
+            _pending = snap;
+        FlushPendingSnapshot();
+    }
+
+    void Start()
+    {
+        RegisterTakePublicRpc();
+        FlushPendingSnapshot();
+    }
 
     void LateUpdate()
     {
@@ -769,7 +904,18 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         return string.IsNullOrEmpty(name) ? "Written Page" : name;
     }
 
-    public string GetHoverText() => BuildHoverText();
+    public string GetHoverText()
+    {
+        // Hover runs every frame from Hud.Update. A throw here aborts interact, so take dies.
+        try
+        {
+            return BuildHoverText();
+        }
+        catch (Exception)
+        {
+            return "Written Page";
+        }
+    }
 
     public float GetHoverOffset() => 0f;
 
@@ -778,8 +924,15 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         if (hold)
             return false;
 
-        // Wards: same gate as Sign / chests — no reclaim without access.
-        if (!PrivateArea.CheckAccess(transform.position, 0f, flash: true))
+        // Shift+Use is the public toggle. Never also take on that press.
+        if (alt && RenameitConfig.PaperTakePublicEnabled)
+        {
+            if (CanOfferTakePublicToggle())
+                RequestToggleTakePublic(character);
+            return true;
+        }
+
+        if (!MayTake(flash: true))
             return true;
 
         TryReclaim(character);
@@ -787,6 +940,127 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
     }
 
     public bool UseItem(Humanoid user, ItemDrop.ItemData item) => false;
+
+    void RegisterTakePublicRpc()
+    {
+        if (_rpcRegistered)
+            return;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null)
+            return;
+        try
+        {
+            nv.Register<int>(RpcSetTakePublic, RPC_SetTakePublic);
+            _rpcRegistered = true;
+        }
+        catch (Exception)
+        {
+            // Placement ghost, or ZNetView not networked yet. Start retries.
+        }
+    }
+
+    void RPC_SetTakePublic(long sender, int value)
+    {
+        _ = sender;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsOwner())
+            return;
+        var zdo = nv.GetZDO();
+        if (zdo == null)
+            return;
+        zdo.Set(ZdoTakePublic, value != 0 ? 1 : 0);
+    }
+
+    void RequestToggleTakePublic(Humanoid character)
+    {
+        if (character != Player.m_localPlayer)
+            return;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid())
+            return;
+
+        if (!LocalMayToggleTakePublic())
+            return;
+
+        var next = ReadTakePublic() ? 0 : 1;
+        nv.InvokeRPC(RpcSetTakePublic, next);
+        var msg = next == 1 ? "$piece_drakes_paper_now_public" : "$piece_drakes_paper_now_private";
+        character.Message(MessageHud.MessageType.Center, Localize(msg));
+    }
+
+    bool ReadTakePublic()
+    {
+        var zdo = GetComponent<ZNetView>()?.GetZDO();
+        return zdo != null && zdo.GetInt(ZdoTakePublic, 0) == 1;
+    }
+
+    /// <summary>Feature on and this page was marked public — strangers may [E] Take.</summary>
+    bool TakeIgnoresWard() => RenameitConfig.PaperTakePublicEnabled && ReadTakePublic();
+
+    bool MayTake(bool flash)
+    {
+        if (TakeIgnoresWard())
+            return true;
+        return PrivateArea.CheckAccess(transform.position, 0f, flash);
+    }
+
+    /// <summary>Ward-permitted player, and the page is actually inside a ward. Otherwise the line is noise.</summary>
+    bool CanOfferTakePublicToggle()
+    {
+        if (!RenameitConfig.PaperTakePublicEnabled)
+            return false;
+        if (!LocalMayToggleTakePublic())
+            return false;
+        if (!InsideEnabledWard(transform.position))
+            return false;
+        return PrivateArea.CheckAccess(transform.position, 0f, flash: false);
+    }
+
+    /// <summary>Original creator, or the admin/VIP override. Public editors cannot flip this.</summary>
+    bool LocalMayToggleTakePublic()
+    {
+        var zdo = GetComponent<ZNetView>()?.GetZDO();
+        if (zdo == null)
+            return false;
+        return Permissions.RenamePermissionManager.CanChangePublicFlag(
+            zdo.GetLong(ZdoCrafterId, 0L),
+            zdo.GetString(ZdoCrafterName, ""),
+            Player.m_localPlayer);
+    }
+
+    static string Localize(string text) =>
+        Localization.instance != null ? Localization.instance.Localize(text) : text;
+
+    // Publicized at compile time, private at runtime. Direct access throws FieldAccessException in the HUD.
+    static readonly FieldInfo? AllAreasField = AccessTools.Field(typeof(PrivateArea), "m_allAreas");
+    static readonly MethodInfo? IsEnabledMethod = AccessTools.Method(typeof(PrivateArea), "IsEnabled");
+    static readonly MethodInfo? IsInsideMethod =
+        AccessTools.Method(typeof(PrivateArea), "IsInside", new[] { typeof(Vector3), typeof(float) });
+
+    static bool InsideEnabledWard(Vector3 point)
+    {
+        try
+        {
+            if (AllAreasField == null || IsEnabledMethod == null || IsInsideMethod == null)
+                return false;
+            if (AllAreasField.GetValue(null) is not System.Collections.IList areas)
+                return false;
+            for (var i = 0; i < areas.Count; i++)
+            {
+                if (areas[i] is not PrivateArea area)
+                    continue;
+                if (IsEnabledMethod.Invoke(area, null) is not true)
+                    continue;
+                if (IsInsideMethod.Invoke(area, new object[] { point, 0f }) is true)
+                    return true;
+            }
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        return false;
+    }
 
     internal string BuildHoverText()
     {
@@ -805,17 +1079,23 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
             sb += "\n" + desc;
 
         // Ward blocks Take, but the page stays readable (same idea as item-stand "no access" labels).
-        if (!PrivateArea.CheckAccess(transform.position, 0f, flash: false))
+        // Public pages skip that gate so a TAKE ONE board works inside the ward.
+        if (!MayTake(flash: false))
         {
             var denied = "$piece_noaccess";
-            denied = Localization.instance != null ? Localization.instance.Localize(denied) : denied;
+            denied = Localize(denied);
             return sb + "\n" + denied;
         }
 
-        var use = "[<color=yellow><b>$KEY_Use</b></color>] Take";
-        if (Localization.instance != null)
-            use = Localization.instance.Localize(use);
-        sb += "\n" + use;
+        sb += "\n" + Localize("[<color=yellow><b>$KEY_Use</b></color>] Take");
+        if (CanOfferTakePublicToggle())
+        {
+            var token = ReadTakePublic()
+                ? "$piece_drakes_paper_make_private"
+                : "$piece_drakes_paper_make_public";
+            sb += "\n" + Localize("[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] " + token);
+        }
+
         return sb;
     }
 
@@ -823,7 +1103,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
     {
         if (character != Player.m_localPlayer)
             return;
-        if (!PrivateArea.CheckAccess(transform.position, 0f, flash: true))
+        if (!MayTake(flash: true))
             return;
 
         var inv = character.GetInventory();

@@ -4,7 +4,7 @@
 
 Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear.
 
-**Requires [DrakeModsLibs](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** compatible (item-stand / label fixes in Libs).
+**Requires [DrakeModsLibs 0.9.1](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) come from Libs 0.9.1 and refresh when those settings change.
 
 ### Piece of Paper
 
@@ -86,6 +86,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **RenameEnabled** — When on, players may edit display names from the action menu (subject to all other rules). Turn off to block new renames while keeping descriptions or crafted-by.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
 - **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the crafted-by line in tooltips (name and optional line prefix). Real crafter id/name used by the game (ownership, locks) is unchanged.
+- **PublicRewriteEnabled** — When on (default), the item menu can flag a stack so non-owners may rewrite its name and description (`Drake_PublicRewrite` in DrakeModsLibs). Crafted-by stays owner-only.
 
 #### Admin (server-synced)
 
@@ -146,7 +147,11 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **PaperDescription** — Default description before a player rewrites it.
 - **PaperCost** — Recipe ingredients as `PrefabName:amount` list (default `LeatherScraps:1,Coal:1`). Same format as **UnlockCost**. Applied at item registration (menu/world load).
 - **PaperCraftingStation** — Station prefab (e.g. `piece_workbench`). Empty = craft anywhere from the inventory craft list.
-- **PaperItemType** — Vanilla category: `Material` (default) or `Misc`. Applied at registration. **ExcludedCategory** also accepts alias **`Paper`** to target this vessel specifically.
+- **PaperItemType** — Vanilla category: `Material` (default) or `Misc`. Shown as a dropdown (DrakeModsLibs config acceptable values). Applied at registration. **ExcludedCategory** also accepts alias **`Paper`** to target this vessel specifically.
+- **BlankPaperStackSize** — Max stack for blank Piece of Paper (default 50). Written Page is always stack size 1.
+- **PaperPlaceEnabled** — When on, hotbar Use can pin parchment (vertical/horizontal). **BlankPaperPlaceOrientation** is Vertical Only, Horizontal Only, or Both (default). Only Both shows the switch tooltip.
+- **PaperTakePublicEnabled** — When on, a ward-permitted owner can Shift+Use a pinned Written Page so anyone can take it. Placement and hammer-remove stay warded.
+- **VerticalPaperPlaceable** / **HorizontalPaperPlaceable** / **StackPaperPlaceable** — Hammer furniture pieces (each default on).
 
 #### UI-NotSynced (client only)
 

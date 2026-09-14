@@ -18,6 +18,9 @@ internal static class PaperPlace
     internal const string PaperStack = "Drakes_PaperStack";
 
     private static ManualLogSource? _log;
+    private static Piece? _uprightPiece;
+    private static Piece? _flatPiece;
+    private static Piece? _stackPiece;
 
     internal static void Register(ManualLogSource log)
     {
@@ -43,14 +46,22 @@ internal static class PaperPlace
 
             // Sign clone for all sheets — wood_stack acts like a terrain floor pile.
             RegisterSheet(BlankUpright, "sign", "$piece_drakes_paper_blank_u", "$piece_drakes_paper_blank_u_desc",
-                wall: true, cost: 1, icon);
+                wall: true, cost: 1, icon, RenameitConfig.VerticalPaperPlaceable);
 
             RegisterSheet(BlankLaying, "sign", "$piece_drakes_paper_blank_l", "$piece_drakes_paper_blank_l_desc",
-                wall: false, cost: 1, icon);
+                wall: false, cost: 1, icon, RenameitConfig.HorizontalPaperPlaceable);
 
-            RegisterStack(icon);
+            RegisterStack(icon, RenameitConfig.StackPaperPlaceable);
 
-            _log?.LogInfo("[Paper] Hammer décor: upright, flat (1 paper), stack (50 paper).");
+            RenameitConfig.HammerPaperPlaceableChanged -= ApplyHammerPlaceableFlags;
+            RenameitConfig.HammerPaperPlaceableChanged += ApplyHammerPlaceableFlags;
+            ApplyHammerPlaceableFlags();
+
+            _log?.LogInfo(
+                "[Paper] Hammer décor: " +
+                $"upright={(RenameitConfig.VerticalPaperPlaceable ? "on" : "off")}, " +
+                $"flat={(RenameitConfig.HorizontalPaperPlaceable ? "on" : "off")}, " +
+                $"stack={(RenameitConfig.StackPaperPlaceable ? "on" : "off")}.");
         }
         catch (Exception ex)
         {
@@ -65,12 +76,14 @@ internal static class PaperPlace
         string descTok,
         bool wall,
         int cost,
-        Sprite? icon)
+        Sprite? icon,
+        bool placeable)
     {
         var config = new PieceConfig
         {
             Name = nameTok,
             Description = descTok,
+            // Always register the prefab (written notes clone it). Hammer visibility is m_enabled.
             Enabled = true,
             PieceTable = "Hammer",
             Category = "Furniture",
@@ -91,9 +104,15 @@ internal static class PaperPlace
 
         PaperItem.BuildDecorSheetVisual(go, wall);
         SanitizeDecorPiece(go, nameTok);
+        var placed = go.GetComponent<Piece>();
+        if (wall)
+            _uprightPiece = placed;
+        else
+            _flatPiece = placed;
+        SetHammerPlaceable(go, placeable);
     }
 
-    private static void RegisterStack(Sprite? icon)
+    private static void RegisterStack(Sprite? icon, bool placeable)
     {
         var stackCost = Math.Max(1, RenameitConfig.BlankPaperStackSize);
         var config = new PieceConfig
@@ -120,6 +139,29 @@ internal static class PaperPlace
 
         PaperItem.BuildPaperStackVisual(go);
         SanitizeDecorPiece(go, "$piece_drakes_paper_stack");
+        _stackPiece = go.GetComponent<Piece>();
+        SetHammerPlaceable(go, placeable);
+    }
+
+    private static void ApplyHammerPlaceableFlags()
+    {
+        SetHammerPlaceablePiece(_uprightPiece, RenameitConfig.VerticalPaperPlaceable);
+        SetHammerPlaceablePiece(_flatPiece, RenameitConfig.HorizontalPaperPlaceable);
+        SetHammerPlaceablePiece(_stackPiece, RenameitConfig.StackPaperPlaceable);
+    }
+
+    private static void SetHammerPlaceablePiece(Piece? piece, bool placeable)
+    {
+        if (piece != null)
+            piece.m_enabled = placeable;
+    }
+
+    /// <summary>Keep the prefab; hide it from the hammer when the placeable flag is off.</summary>
+    private static void SetHammerPlaceable(GameObject go, bool placeable)
+    {
+        var piece = go.GetComponent<Piece>();
+        if (piece != null)
+            piece.m_enabled = placeable;
     }
 
     /// <summary>Remove leftover interactables / containers from donor so it is bric-a-brac only.</summary>

@@ -55,6 +55,7 @@ public static class LKeys
     public const string TooltipMenuHint = "tooltip_menu_hint";
     public const string TooltipMenuHintRightClick = "tooltip_menu_hint_right_click";
     public const string TooltipPaperPlace = "tooltip_paper_place";
+    public const string TooltipPaperPlaceOnly = "tooltip_paper_place_only";
     public const string TooltipPaperBlankWrite = "tooltip_paper_blank_write";
     public const string TooltipElevatedOverride = "tooltip_elevated_override";
     public const string MenuKeyFallback = "menu_key_fallback";

@@ -28,6 +28,7 @@ public static class UIPanels
     private static Button? _buttonResetDesc = default!;
     private static GameObject? _publicRow;
     private static Toggle? _publicToggle;
+    private static Text? _publicTipText;
     private static GameObject? _publicHoverTip;
 
     public static GameObject? ActionMenuPanel { get; private set; }
@@ -407,8 +408,14 @@ public static class UIPanels
             _publicToggle.onValueChanged.AddListener(on =>
             {
                 var item = DrakeRenameit.CurrentItem;
-                if (item == null || !CanShowPublicCheckbox(item))
+                if (item == null ||
+                    !Permissions.RenamePermissionManager.CanChangePublicFlag(item, Player.m_localPlayer))
+                {
+                    if (_publicToggle != null && item != null)
+                        _publicToggle.SetIsOnWithoutNotify(
+                            Permissions.RenamePermissionManager.HasPublicRewriteFlag(item));
                     return;
+                }
                 Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, on);
             });
         }
@@ -472,7 +479,7 @@ public static class UIPanels
         tipRt.anchorMin = tipRt.anchorMax = new Vector2(0.5f, 0.5f);
         tipRt.pivot = new Vector2(0.5f, 0f);
         tipRt.anchoredPosition = new Vector2(0f, 18f);
-        tipRt.sizeDelta = new Vector2(240f, 44f);
+        tipRt.sizeDelta = new Vector2(260f, 52f);
 
         var bg = _publicHoverTip.AddComponent<Image>();
         bg.color = new Color(0.06f, 0.05f, 0.04f, 0.94f);
@@ -489,16 +496,16 @@ public static class UIPanels
             color: Color.white,
             outline: true,
             outlineColor: Color.black,
-            width: 224f,
-            height: 36f,
+            width: 244f,
+            height: 44f,
             addContentSizeFitter: false);
-        var tipText = tipTextGo.GetComponent<Text>();
-        if (tipText != null)
+        _publicTipText = tipTextGo.GetComponent<Text>();
+        if (_publicTipText != null)
         {
-            tipText.alignment = TextAnchor.MiddleCenter;
-            tipText.horizontalOverflow = HorizontalWrapMode.Wrap;
-            tipText.verticalOverflow = VerticalWrapMode.Overflow;
-            tipText.raycastTarget = false;
+            _publicTipText.alignment = TextAnchor.MiddleCenter;
+            _publicTipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            _publicTipText.verticalOverflow = VerticalWrapMode.Overflow;
+            _publicTipText.raycastTarget = false;
         }
 
         _publicHoverTip.SetActive(false);
@@ -1660,7 +1667,7 @@ public static class UIPanels
         if (_publicRow == null)
             return;
 
-        bool show = CanShowPublicCheckbox(item);
+        bool show = RenameitConfig.PublicRewriteEnabled && item != null && Player.m_localPlayer != null;
         _publicRow.SetActive(show);
         if (!show)
         {
@@ -1672,23 +1679,20 @@ public static class UIPanels
         if (_publicToggle == null || item == null)
             return;
 
-        bool on = Permissions.RenamePermissionManager.HasPublicRewriteFlag(item);
-        _publicToggle.SetIsOnWithoutNotify(on);
-    }
+        bool canChange = Permissions.RenamePermissionManager.CanChangePublicFlag(item, Player.m_localPlayer);
+        _publicToggle.interactable = canChange;
+        _publicToggle.SetIsOnWithoutNotify(Permissions.RenamePermissionManager.HasPublicRewriteFlag(item));
 
-    static bool CanShowPublicCheckbox(ItemDrop.ItemData? item)
-    {
-        if (!RenameitConfig.PublicRewriteEnabled || item == null || Player.m_localPlayer == null)
-            return false;
-        var local = Player.m_localPlayer;
-        if (API.RenameitPermission.IsElevatedForOverrides(local))
-            return true;
-        // Owner (or unowned claimable) may set the flag
-        if (item.m_crafterID != 0L)
-            return item.m_crafterID == local.GetPlayerID();
-        if (!string.IsNullOrEmpty(item.m_crafterName))
-            return item.m_crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
-        return true;
+        var label = _publicToggle.GetComponentInChildren<Text>();
+        if (label != null)
+            label.color = canChange ? Color.white : new Color(0.62f, 0.62f, 0.62f, 1f);
+
+        if (_publicTipText != null)
+        {
+            _publicTipText.text = canChange
+                ? "Anyone can rewrite this item's name and description."
+                : "Only the original creator or an admin can change this.";
+        }
     }
 }
 

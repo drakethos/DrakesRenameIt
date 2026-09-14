@@ -151,6 +151,18 @@
     },
 
     {
+      "key": "tooltip_paper_place",
+      "value": "Use item to place.\nPress Use again (1-9) to switch vertical / horizontal."
+    },
+    {
+      "key": "tooltip_paper_place_only",
+      "value": "Use item to place."
+    },
+    {
+      "key": "tooltip_paper_blank_write",
+      "value": "Rename or edit the description to write a new page.\nThat text is copied onto a new piece of paper."
+    },
+    {
       "key": "tooltip_menu_hint",
       "value": "{0} + Right Click for options"
     },

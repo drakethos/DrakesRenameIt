@@ -255,6 +255,31 @@ public static class RenamePermissionManager
         return v == "1" || string.Equals(v, "true", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Only the original creator, or an admin/VIP override, may flip Public.
+    /// A public flag does not grant this — editors can rewrite, not republish.
+    /// </summary>
+    internal static bool CanChangePublicFlag(ItemDrop.ItemData? item, Player? local)
+    {
+        if (item == null)
+            return false;
+        return CanChangePublicFlag(item.m_crafterID, item.m_crafterName, local);
+    }
+
+    /// <summary>Same gate for a placed page, which stores the creator on the piece ZDO.</summary>
+    internal static bool CanChangePublicFlag(long crafterId, string? crafterName, Player? local)
+    {
+        if (local == null)
+            return false;
+        if (RenameitPermission.IsElevatedForOverrides(local))
+            return true;
+        if (crafterId != 0L)
+            return crafterId == local.GetPlayerID();
+        if (!string.IsNullOrEmpty(crafterName))
+            return crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
+        return false;
+    }
+
     internal static void SetPublicRewriteFlag(ItemDrop.ItemData item, bool enabled)
     {
         item.m_customData ??= new System.Collections.Generic.Dictionary<string, string>();

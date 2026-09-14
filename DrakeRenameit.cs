@@ -68,6 +68,7 @@ namespace DrakeRenameit
             PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
             PaperPlace.Register(Logger);
             PaperWrittenPlace.Register(Logger);
+            PaperBlankPlace.Register(Logger);
             harmony.PatchAll();
         }
 

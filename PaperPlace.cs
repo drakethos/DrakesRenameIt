@@ -8,7 +8,7 @@ using UnityEngine;
 namespace DrakeRenameit;
 
 /// <summary>
-/// Hammer décor only: blank sheet upright/flat (1 paper) + paper stack (50 paper).
+/// Hammer décor: bundle blank sheet (flat + coded vertical) + bundle paper stack.
 /// Pure build pieces — no Sign interaction.
 /// </summary>
 internal static class PaperPlace
@@ -38,19 +38,21 @@ internal static class PaperPlace
                 return;
             }
 
+            if (!PaperAssets.TryEnsureLoaded())
+                return;
+
             AddLocalization();
             var icon = PaperItem.GetBlankIconSprite();
 
-            // Sign clone for all sheets — wood_stack acts like a terrain floor pile.
-            RegisterSheet(BlankUpright, "sign", "$piece_drakes_paper_blank_u", "$piece_drakes_paper_blank_u_desc",
-                wall: true, cost: 1, icon);
+            RegisterSheet(BlankUpright, PaperAssets.BlankPiece, "$piece_drakes_paper_blank_u",
+                "$piece_drakes_paper_blank_u_desc", wall: true, cost: 1, icon);
 
-            RegisterSheet(BlankLaying, "sign", "$piece_drakes_paper_blank_l", "$piece_drakes_paper_blank_l_desc",
-                wall: false, cost: 1, icon);
+            RegisterSheet(BlankLaying, PaperAssets.BlankPiece, "$piece_drakes_paper_blank_l",
+                "$piece_drakes_paper_blank_l_desc", wall: false, cost: 1, icon);
 
             RegisterStack(icon);
 
-            _log?.LogInfo("[Paper] Hammer décor: upright, flat (1 paper), stack (50 paper).");
+            _log?.LogInfo("[Paper] Hammer décor from bundle: upright (rotated), flat, stack.");
         }
         catch (Exception ex)
         {
@@ -60,13 +62,17 @@ internal static class PaperPlace
 
     private static void RegisterSheet(
         string prefab,
-        string clone,
+        string assetName,
         string nameTok,
         string descTok,
         bool wall,
         int cost,
         Sprite? icon)
     {
+        var go = PaperAssets.CreatePrefab(assetName, prefab);
+        if (go == null)
+            return;
+
         var config = new PieceConfig
         {
             Name = nameTok,
@@ -83,18 +89,22 @@ internal static class PaperPlace
         if (icon != null)
             config.Icon = icon;
 
-        var piece = new CustomPiece(prefab, clone, config);
+        var piece = new CustomPiece(go, false, config);
         PieceManager.Instance.AddPiece(piece);
-        var go = piece.PiecePrefab;
-        if (go == null)
+        var pieceGo = piece.PiecePrefab;
+        if (pieceGo == null)
             return;
 
-        PaperItem.BuildDecorSheetVisual(go, wall);
-        SanitizeDecorPiece(go, nameTok);
+        PaperItem.PrepareSheetPiece(pieceGo, wall);
+        SanitizeDecorPiece(pieceGo, nameTok);
     }
 
     private static void RegisterStack(Sprite? icon)
     {
+        var go = PaperAssets.CreatePrefab(PaperAssets.BlankStackPiece, PaperStack);
+        if (go == null)
+            return;
+
         var stackCost = Math.Max(1, RenameitConfig.BlankPaperStackSize);
         var config = new PieceConfig
         {
@@ -112,14 +122,14 @@ internal static class PaperPlace
         if (icon != null)
             config.Icon = icon;
 
-        var piece = new CustomPiece(PaperStack, "sign", config);
+        var piece = new CustomPiece(go, false, config);
         PieceManager.Instance.AddPiece(piece);
-        var go = piece.PiecePrefab;
-        if (go == null)
+        var pieceGo = piece.PiecePrefab;
+        if (pieceGo == null)
             return;
 
-        PaperItem.BuildPaperStackVisual(go);
-        SanitizeDecorPiece(go, "$piece_drakes_paper_stack");
+        PaperItem.PrepareStackPiece(pieceGo);
+        SanitizeDecorPiece(pieceGo, "$piece_drakes_paper_stack");
     }
 
     /// <summary>Remove leftover interactables / containers from donor so it is bric-a-brac only.</summary>
@@ -131,7 +141,6 @@ internal static class PaperPlace
         foreach (var c in go.GetComponentsInChildren<Container>(true))
             UnityEngine.Object.DestroyImmediate(c);
 
-        // Hoverable/Interactable on donor (if any) — destroy common components carefully.
         foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
         {
             if (mb == null)

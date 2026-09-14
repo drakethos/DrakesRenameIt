@@ -264,6 +264,18 @@ public static class RenamePermissionManager
             item.m_customData.Remove(DrakeModsLibs.Data.DrakeCustomDataKeys.PublicRewrite);
     }
 
+    /// <summary>
+    /// Public rewrite lets non-owners edit name/description only. It does not let them toggle the flag.
+    /// Admin/VIP override does not apply here — only the recorded owner can swap it.
+    /// Fail closed when no owner is stored (multiplayer clients often see an empty crafter).
+    /// </summary>
+    internal static bool CanTogglePublicRewriteFlag(ItemDrop.ItemData? item, Player? local)
+    {
+        if (!RenameitConfig.PublicRewriteEnabled || item == null || local == null)
+            return false;
+        return IsLocalOwner(item, local);
+    }
+
     private static bool IsLocalOwner(ItemDrop.ItemData item, Player local)
     {
         if (item.m_crafterID != 0L)

@@ -88,6 +88,7 @@
     <MakeDir Directories="$(R2ModDeployPath)" />
     <MakeDir Directories="$(R2ModDeployPath)\Assets\Localization" Condition="'@(LocalizationJson)' != ''" />
     <MakeDir Directories="$(R2ModDeployPath)\Assets\Icons" Condition="'@(PaperIcon)' != ''" />
+    <MakeDir Directories="$(R2ModDeployPath)\Assets" Condition="'@(PaperBundle)' != ''" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(R2ModDeployPath)\" SkipUnchangedFiles="false" />
     <Copy SourceFiles="@(LocalizationJson)"
           DestinationFolder="$(R2ModDeployPath)\Assets\Localization"
@@ -97,6 +98,10 @@
           DestinationFolder="$(R2ModDeployPath)\Assets\Icons"
           SkipUnchangedFiles="true"
           Condition="'@(PaperIcon)' != ''" />
+    <Copy SourceFiles="@(PaperBundle)"
+          DestinationFolder="$(R2ModDeployPath)\Assets"
+          SkipUnchangedFiles="true"
+          Condition="'@(PaperBundle)' != ''" />
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(R2ModDeployPath)\README.md" Condition="Exists('$(TargetDir)README.md')" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(R2ModDeployPath)\icon.png" Condition="Exists('$(TargetDir)icon.png')" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(R2ModDeployPath)\CHANGELOG.md" Condition="Exists('$(TargetDir)CHANGELOG.md')" />
@@ -113,6 +118,7 @@
     <MakeDir Directories="$(GaleModDeployPath)" />
     <MakeDir Directories="$(GaleModDeployPath)\Assets\Localization" Condition="'@(LocalizationJson)' != ''" />
     <MakeDir Directories="$(GaleModDeployPath)\Assets\Icons" Condition="'@(PaperIcon)' != ''" />
+    <MakeDir Directories="$(GaleModDeployPath)\Assets" Condition="'@(PaperBundle)' != ''" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GaleModDeployPath)\" SkipUnchangedFiles="false" />
     <Copy SourceFiles="@(LocalizationJson)"
           DestinationFolder="$(GaleModDeployPath)\Assets\Localization"
@@ -122,6 +128,10 @@
           DestinationFolder="$(GaleModDeployPath)\Assets\Icons"
           SkipUnchangedFiles="true"
           Condition="'@(PaperIcon)' != ''" />
+    <Copy SourceFiles="@(PaperBundle)"
+          DestinationFolder="$(GaleModDeployPath)\Assets"
+          SkipUnchangedFiles="true"
+          Condition="'@(PaperBundle)' != ''" />
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(GaleModDeployPath)\README.md" Condition="Exists('$(TargetDir)README.md')" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(GaleModDeployPath)\icon.png" Condition="Exists('$(TargetDir)icon.png')" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(GaleModDeployPath)\CHANGELOG.md" Condition="Exists('$(TargetDir)CHANGELOG.md')" />

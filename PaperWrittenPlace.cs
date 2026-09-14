@@ -116,6 +116,9 @@ internal static class PaperWrittenPlace
             if (!RenameitConfig.PaperEnabled || !RenameitConfig.PaperPlaceEnabled)
                 return;
 
+            if (!PaperAssets.TryEnsureLoaded())
+                return;
+
             AddLocalization();
 
             var table = new CustomPieceTable(PieceTableName, new PieceTableConfig
@@ -130,7 +133,7 @@ internal static class PaperWrittenPlace
             RegisterNote(NoteFlat, wall: false, icon);
             AttachTableToWrittenItem();
 
-            _log?.LogInfo("[Paper] Written place table ready (vertical + flat).");
+            _log?.LogInfo("[Paper] Written place table ready (bundle mesh; vertical is rotated in code).");
         }
         catch (Exception ex)
         {
@@ -154,27 +157,21 @@ internal static class PaperWrittenPlace
         if (icon != null)
             config.Icon = icon;
 
-        // Clone blank upright/laying so placement flags, snaps, and collider match hammer décor.
-        // (Fallback to sign if blanks are not registered yet.)
-        var clone = wall ? PaperPlace.BlankUpright : PaperPlace.BlankLaying;
-        if (PrefabManager.Instance.GetPrefab(clone) == null)
-            clone = "sign";
-
-        var piece = new CustomPiece(prefab, clone, config);
-        PieceManager.Instance.AddPiece(piece);
-        var go = piece.PiecePrefab;
+        var go = PaperAssets.CreatePrefab(PaperAssets.WrittenPiece, prefab);
         if (go == null)
             return;
 
-        // Jotunn empty Requirements can leave donor recipe — wipe it.
-        // Cost is the triggering Written Page (ConsumeTrigger), not hammer mats.
-        ClearPieceBuildCost(go);
+        var piece = new CustomPiece(go, false, config);
+        PieceManager.Instance.AddPiece(piece);
+        var pieceGo = piece.PiecePrefab;
+        if (pieceGo == null)
+            return;
 
-        // Rebuild mesh as written parchment; same snaps/placement pipeline as blank sheets.
-        PaperItem.BuildDecorSheetVisual(go, wall, written: true);
+        ClearPieceBuildCost(pieceGo);
+        PaperItem.PrepareSheetPiece(pieceGo, wall);
 
-        if (go.GetComponent<PaperWrittenVessel>() == null)
-            go.AddComponent<PaperWrittenVessel>();
+        if (pieceGo.GetComponent<PaperWrittenVessel>() == null)
+            pieceGo.AddComponent<PaperWrittenVessel>();
     }
 
     /// <summary>Strip donor recipe so HUD doesn't show Wood/Coal; placement consumes the Written Page.</summary>
@@ -190,24 +187,100 @@ internal static class PaperWrittenPlace
 
     private static void AttachTableToWrittenItem()
     {
-        var prefab = PrefabManager.Instance.GetPrefab(PaperItem.WrittenPrefabName)
-                     ?? ObjectDB.instance?.GetItemPrefab(PaperItem.WrittenPrefabName);
-        var shared = prefab?.GetComponent<ItemDrop>()?.m_itemData?.m_shared;
-        if (shared == null)
+        var writtenDrop = GetWrittenItemDrop();
+        var shared = writtenDrop?.m_itemData?.m_shared;
+        if (shared == null || writtenDrop?.m_itemData == null)
             return;
 
         var table = PieceManager.Instance.GetPieceTable(PieceTableName);
         if (table == null)
             return;
 
+        // Blank and written are both cloned from the same donor. Mutating m_shared in place
+        // turns blank paper into a place-tool too (Use enters place-mode, attack punches).
+        var blankShared = GetBlankItemDrop()?.m_itemData?.m_shared;
+        if (ReferenceEquals(shared, blankShared))
+        {
+            shared = DetachShared(shared);
+            writtenDrop.m_itemData.m_shared = shared;
+        }
+
         shared.m_buildPieces = table;
         // Materials can't be GetRightItem() for build mode — UpdatePlacement NREs without
-        // right-hand.m_buildPieces. Treat Written Page as a tiny place-tool (Feaster pattern).
+        // right-hand.m_buildPieces. Written Page only; blank stays a material.
         shared.m_itemType = ItemDrop.ItemData.ItemType.Tool;
-        // GetBuildStamina does GetRightItem().m_shared.m_attack with no null check.
+        NeutralizePlaceAttack(shared);
+
+        var blankItem = GetBlankItemDrop()?.m_itemData;
+        PaperItem.ClearBlankPlaceTool(blankItem);
+    }
+
+    /// <summary>Point this stack at the written-only shared data (never the blank paper shared).</summary>
+    private static void BindWrittenShared(ItemDrop.ItemData item)
+    {
+        var proto = GetWrittenItemDrop()?.m_itemData?.m_shared;
+        if (proto == null || item == null)
+            return;
+        if (!ReferenceEquals(item.m_shared, proto))
+            item.m_shared = proto;
+    }
+
+    private static ItemDrop? GetWrittenItemDrop()
+    {
+        var prefab = PrefabManager.Instance.GetPrefab(PaperItem.WrittenPrefabName)
+                     ?? ObjectDB.instance?.GetItemPrefab(PaperItem.WrittenPrefabName);
+        return prefab?.GetComponent<ItemDrop>();
+    }
+
+    private static ItemDrop? GetBlankItemDrop()
+    {
+        var prefab = PrefabManager.Instance.GetPrefab(PaperItem.PrefabName)
+                     ?? ObjectDB.instance?.GetItemPrefab(PaperItem.PrefabName);
+        return prefab?.GetComponent<ItemDrop>();
+    }
+
+    private static ItemDrop.ItemData.SharedData DetachShared(ItemDrop.ItemData.SharedData src)
+    {
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        var clone = (ItemDrop.ItemData.SharedData)typeof(object)
+            .GetMethod("MemberwiseClone", flags)!
+            .Invoke(src, null);
+        if (src.m_attack != null)
+            clone.m_attack = src.m_attack.Clone();
+        else
+            clone.m_attack = new Attack();
+        return clone;
+    }
+
+    /// <summary>Blank paper must not stay in the written place table. Never mutate the written shared instance.</summary>
+    private static void StripBlankPlaceTool(ItemDrop.ItemData? item)
+    {
+        if (!PaperItem.IsBlankPaper(item) || item?.m_shared == null)
+            return;
+
+        var writtenShared = GetWrittenItemDrop()?.m_itemData?.m_shared;
+        if (writtenShared != null && ReferenceEquals(item.m_shared, writtenShared))
+        {
+            var blankShared = GetBlankItemDrop()?.m_itemData?.m_shared;
+            if (blankShared != null && !ReferenceEquals(blankShared, writtenShared))
+                item.m_shared = blankShared;
+            else
+                return;
+        }
+
+        PaperItem.ClearBlankPlaceTool(item);
+    }
+
+    /// <summary>GetBuildStamina requires m_attack, but a live tool attack plays the unarmed punch.</summary>
+    private static void NeutralizePlaceAttack(ItemDrop.ItemData.SharedData shared)
+    {
         if (shared.m_attack == null)
             shared.m_attack = new Attack();
+        shared.m_attack.m_attackType = Attack.AttackType.None;
         shared.m_attack.m_attackStamina = 0f;
+        shared.m_attack.m_attackRange = 0f;
+        shared.m_attack.m_attackAnimation = "";
+        shared.m_attack.m_attackHitNoise = 0f;
     }
 
     internal static bool IsNotePiece(Component? c)
@@ -221,13 +294,14 @@ internal static class PaperWrittenPlace
     /// <summary>Open written place mode. Use again while placing cycles Wall ↔ Flat.</summary>
     internal static void BeginPlace(ItemDrop.ItemData item)
     {
-        if (!PaperItem.IsWrittenPaper(item) || !RenameitConfig.PaperPlaceEnabled)
+        if (!PaperItem.IsWrittenPaper(item) || PaperItem.IsBlankPaper(item) || !RenameitConfig.PaperPlaceEnabled)
             return;
         var player = Player.m_localPlayer;
         if (player == null || !DrakeRenameit.IsItemInLocalPlayerInventory(item))
             return;
 
         AttachTableToWrittenItem();
+        BindWrittenShared(item);
         var table = item.m_shared?.m_buildPieces
                     ?? PieceManager.Instance.GetPieceTable(PieceTableName);
         if (table == null)
@@ -505,6 +579,16 @@ internal static class PaperWrittenPlace
         {
             if (__instance != Player.m_localPlayer || item == null)
                 return true;
+
+            // Blank paper is hammer décor only — Use must not open the written place table.
+            if (PaperItem.IsBlankPaper(item))
+            {
+                StripBlankPlaceTool(item);
+                if (__instance is Player blankPlayer && InOurPlaceMode(blankPlayer))
+                    EndPlaceMode(blankPlayer);
+                return true;
+            }
+
             if (!RenameitConfig.PaperPlaceEnabled || !PaperItem.IsWrittenPaper(item))
                 return true;
 
@@ -519,6 +603,100 @@ internal static class PaperWrittenPlace
 
             BeginPlace(item);
             return false;
+        }
+
+        /// <summary>
+        /// Written Page is a place-tool. Left-click must not play the unarmed punch.
+        /// If place mode isn't open yet, that click opens it instead.
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.StartAttack))]
+        private static bool StartAttack_Prefix(Humanoid __instance, bool secondaryAttack, ref bool __result)
+        {
+            if (__instance != Player.m_localPlayer)
+                return true;
+
+            var right = InvGetRightItem(__instance);
+            if (PaperItem.IsBlankPaper(right))
+            {
+                StripBlankPlaceTool(right);
+                __result = false;
+                return false;
+            }
+
+            if (!PaperItem.IsWrittenPaper(right))
+                return true;
+
+            __result = false;
+            if (!secondaryAttack && __instance is Player player && !InOurPlaceMode(player))
+                BeginPlace(right!);
+            return false;
+        }
+
+        /// <summary>If blank paper still carries the written place table, drop out of place mode.</summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.SetupEquipment))]
+        private static void SetupEquipment_Postfix(Humanoid __instance)
+        {
+            if (__instance != Player.m_localPlayer)
+                return;
+            var right = InvGetRightItem(__instance);
+            if (!PaperItem.IsBlankPaper(right))
+                return;
+
+            StripBlankPlaceTool(right);
+            if (__instance is Player player && InOurPlaceMode(player))
+                EndPlaceMode(player);
+        }
+
+        static readonly HashSet<ZDOID> ClaimedWrittenDrops = new();
+
+        /// <summary>
+        /// A non-owner Instantiate of the written prefab leaves a drop that auto-pickup
+        /// adds to inventory every frame and never destroys. Swallow those ghosts.
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup), new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
+        private static bool Pickup_Prefix(GameObject go, ref bool __result)
+        {
+            var drop = go != null ? go.GetComponent<ItemDrop>() : null;
+            if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
+                return true;
+
+            var nv = drop.m_nview != null ? drop.m_nview : go.GetComponent<ZNetView>();
+            if (nv == null || !nv.IsValid())
+            {
+                UnityEngine.Object.Destroy(go);
+                __result = false;
+                return false;
+            }
+
+            var id = nv.GetZDO().m_uid;
+            if (ClaimedWrittenDrops.Contains(id))
+            {
+                if (ZNetScene.instance != null)
+                    ZNetScene.instance.Destroy(go);
+                else
+                    UnityEngine.Object.Destroy(go);
+                __result = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup), new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
+        private static void Pickup_Postfix(GameObject go, bool __result)
+        {
+            if (!__result || go == null)
+                return;
+            var drop = go.GetComponent<ItemDrop>();
+            if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
+                return;
+            var nv = drop.m_nview != null ? drop.m_nview : go.GetComponent<ZNetView>();
+            if (nv != null && nv.IsValid())
+                ClaimedWrittenDrops.Add(nv.GetZDO().m_uid);
         }
 
         /// <summary>
@@ -699,7 +877,14 @@ internal static class PaperWrittenPlace
         {
             if (__instance == null || !IsNotePiece(__instance))
                 return;
-            __instance.GetComponent<PaperWrittenVessel>()?.DropIntoWorld();
+            try
+            {
+                __instance.GetComponent<PaperWrittenVessel>()?.DropIntoWorld();
+            }
+            catch (Exception ex)
+            {
+                _log?.LogWarning($"[Paper] Break drop skipped so the piece can still be removed: {ex.Message}");
+            }
         }
     }
 }
@@ -713,16 +898,34 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
     const string ZdoUnlock = "DrakePaper_Unlock";
     const string ZdoCrafterId = "DrakePaper_CrafterId";
     const string ZdoCrafterName = "DrakePaper_CrafterName";
+    const string ZdoHandled = "DrakePaper_Handled";
 
     PaperWrittenPlace.PaperSnapshot? _pending;
+    bool _handled;
+    bool _reclaimQueued;
 
     void Awake()
     {
+        // Notes are pieces, not world pickups. A leftover ItemDrop makes nearby players
+        // auto-grab the page (and, if the ZDO isn't owned, copy it forever).
+        StripPickupComponents();
+
         // Donor Sign strips rich text in its GetHoverText — never leave one on notes.
         foreach (var sign in GetComponentsInChildren<Sign>(true))
             DestroyImmediate(sign);
 
         _pending = PaperWrittenPlace.TakePendingSnapshot();
+    }
+
+    void StripPickupComponents()
+    {
+        foreach (var drop in GetComponentsInChildren<ItemDrop>(true))
+        {
+            if (drop == null)
+                continue;
+            drop.m_autoPickup = false;
+            DestroyImmediate(drop);
+        }
     }
 
     void Start() => FlushPendingSnapshot();
@@ -731,6 +934,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
     {
         if (_pending != null)
             FlushPendingSnapshot();
+        if (_reclaimQueued && Player.m_localPlayer != null)
+            TryReclaim(Player.m_localPlayer);
     }
 
     /// <summary>Write pending snapshot to ZDO when available.</summary>
@@ -782,6 +987,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         if (!PrivateArea.CheckAccess(transform.position, 0f, flash: true))
             return true;
 
+        _reclaimQueued = true;
         TryReclaim(character);
         return true;
     }
@@ -824,39 +1030,102 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         if (character != Player.m_localPlayer)
             return;
         if (!PrivateArea.CheckAccess(transform.position, 0f, flash: true))
+        {
+            _reclaimQueued = false;
             return;
+        }
+
+        // Ownership is async. Queue and retry once we own the ZDO so two clients
+        // cannot both AddItem, and a non-owner destroy doesn't spawn a ghost drop.
+        var nv = GetComponent<ZNetView>();
+        if (nv != null && nv.IsValid() && !nv.IsOwner())
+        {
+            nv.ClaimOwnership();
+            _reclaimQueued = true;
+            return;
+        }
+
+        if (!TryClaimHandle())
+        {
+            _reclaimQueued = false;
+            return;
+        }
 
         var inv = character.GetInventory();
         var item = BuildItemFromZdo();
         if (inv == null || item == null)
+        {
+            ReleaseHandle();
+            _reclaimQueued = false;
             return;
+        }
         if (!inv.AddItem(item))
         {
+            ReleaseHandle();
+            _reclaimQueued = false;
             character.Message(MessageHud.MessageType.Center, "Inventory full.");
             return;
         }
 
+        _reclaimQueued = false;
         DestroyPiece();
     }
 
     internal void DropIntoWorld()
     {
-        // Hammer-break outside ward still drops the page into the world (item, not free reclaim).
-        var item = BuildItemFromZdo();
-        if (item == null || ObjectDB.instance == null)
+        // Only the ZDO owner may spawn the page, and only once. Instantiating on every
+        // client that sees WearNTear.Destroy leaves a drop with no owner: nearby players
+        // auto-pickup it every frame (infinite copies) and the piece never finishes breaking.
+        if (!TryClaimHandle())
             return;
 
-        var prefab = ObjectDB.instance.GetItemPrefab(PaperItem.WrittenPrefabName);
-        if (prefab == null)
-            return;
+        try
+        {
+            var item = BuildItemFromZdo();
+            if (item?.m_dropPrefab == null)
+                return;
 
-        var pos = transform.position + Vector3.up * 0.25f;
-        var go = UnityEngine.Object.Instantiate(prefab, pos, Quaternion.identity);
-        var drop = go.GetComponent<ItemDrop>();
-        if (drop == null)
+            var drop = ItemDrop.DropItem(item, 1, transform.position + Vector3.up * 0.35f, Quaternion.identity);
+            if (drop != null)
+                drop.m_autoPickup = false;
+        }
+        catch (Exception ex)
+        {
+            // Never throw out of WearNTear.Destroy — that aborts the break and drops again next hit.
+            UnityEngine.Debug.LogWarning($"[Paper] Written drop failed: {ex.Message}");
+        }
+    }
+
+    bool TryClaimHandle()
+    {
+        if (_handled)
+            return false;
+
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid() || !nv.IsOwner())
+            return false;
+
+        var zdo = nv.GetZDO();
+        if (zdo == null)
+            return false;
+        if (zdo.GetInt(ZdoHandled, 0) == 1)
+        {
+            _handled = true;
+            return false;
+        }
+
+        zdo.Set(ZdoHandled, 1);
+        _handled = true;
+        return true;
+    }
+
+    void ReleaseHandle()
+    {
+        _handled = false;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid() || !nv.IsOwner())
             return;
-        drop.m_itemData = item;
-        drop.Save();
+        nv.GetZDO()?.Set(ZdoHandled, 0);
     }
 
     ItemDrop.ItemData? BuildItemFromZdo()

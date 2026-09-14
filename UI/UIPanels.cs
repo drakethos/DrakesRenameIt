@@ -407,8 +407,12 @@ public static class UIPanels
             _publicToggle.onValueChanged.AddListener(on =>
             {
                 var item = DrakeRenameit.CurrentItem;
-                if (item == null || !CanShowPublicCheckbox(item))
+                if (item == null ||
+                    !Permissions.RenamePermissionManager.CanTogglePublicRewriteFlag(item, Player.m_localPlayer))
+                {
+                    SyncPublicRewriteToggle(item);
                     return;
+                }
                 Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, on);
             });
         }
@@ -1676,20 +1680,8 @@ public static class UIPanels
         _publicToggle.SetIsOnWithoutNotify(on);
     }
 
-    static bool CanShowPublicCheckbox(ItemDrop.ItemData? item)
-    {
-        if (!RenameitConfig.PublicRewriteEnabled || item == null || Player.m_localPlayer == null)
-            return false;
-        var local = Player.m_localPlayer;
-        if (API.RenameitPermission.IsElevatedForOverrides(local))
-            return true;
-        // Owner (or unowned claimable) may set the flag
-        if (item.m_crafterID != 0L)
-            return item.m_crafterID == local.GetPlayerID();
-        if (!string.IsNullOrEmpty(item.m_crafterName))
-            return item.m_crafterName.Equals(local.GetPlayerName(), StringComparison.OrdinalIgnoreCase);
-        return true;
-    }
+    static bool CanShowPublicCheckbox(ItemDrop.ItemData? item) =>
+        Permissions.RenamePermissionManager.CanTogglePublicRewriteFlag(item, Player.m_localPlayer);
 }
 
 /// <summary>Hover tip for the main-menu Public checkbox.</summary>

@@ -411,9 +411,7 @@ public static class UIPanels
                 if (item == null ||
                     !Permissions.RenamePermissionManager.CanChangePublicFlag(item, Player.m_localPlayer))
                 {
-                    if (_publicToggle != null && item != null)
-                        _publicToggle.SetIsOnWithoutNotify(
-                            Permissions.RenamePermissionManager.HasPublicRewriteFlag(item));
+                    SyncPublicRewriteToggle(item);
                     return;
                 }
                 Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, on);

@@ -13,25 +13,18 @@ using Object = UnityEngine.Object;
 namespace DrakeRenameit;
 
 /// <summary>
-/// Blank Piece of Paper (stackable) + Written Page (stack 1). Paper2 parchment visuals.
+/// Blank Piece of Paper (stackable) + Written Page (stack 1), loaded from the paper asset bundle.
+/// Placement variants reuse those meshes; vertical sheets are rotated in code.
 /// </summary>
 internal static class PaperItem
 {
     /// <summary>Blank paper — legacy prefab name kept for existing worlds/recipes.</summary>
     internal const string PrefabName = "Drakes_PieceOfPaper";
     internal const string WrittenPrefabName = "Drakes_Paper_Written";
-    /// <summary>Donor for ItemDrop / physics / networking only — visuals are discarded.</summary>
-    private const string CloneSource = "LeatherScraps";
     private const string TokenName = "$item_drakes_pieceofpaper";
     private const string TokenDesc = "$item_drakes_pieceofpaper_desc";
     private const string TokenWrittenName = "$item_drakes_paper_written";
     private const string TokenWrittenDesc = "$item_drakes_paper_written_desc";
-
-    /// <summary>World size of the paper sheet (meters), X = width, Z = height when laid flat.</summary>
-    internal static readonly Vector2 PaperSize = new Vector2(0.32f, 0.42f);
-
-    /// <summary>Lift above terrain so grass / ground decals do not z-fight through the sheet.</summary>
-    private const float GroundClearance = 0.045f;
 
     /// <summary>
     /// Flat sheets float this far above the placement hit so plank gaps / thick tabletops
@@ -45,15 +38,16 @@ internal static class PaperItem
     /// </summary>
     internal const float WallFaceGap = 0.05f;
 
-    private static readonly Color OffWhite = new Color(0.93f, 0.89f, 0.80f, 1f);
-
     private static ManualLogSource? _log;
     private static string _pluginDir = "";
+    private static Sprite? _blankIconSprite;
+    private static Sprite? _writtenIconSprite;
 
     internal static void Register(ManualLogSource log, string pluginDirectory)
     {
         _log = log;
         _pluginDir = pluginDirectory ?? "";
+        PaperAssets.Init(log, _pluginDir);
         PrefabManager.OnVanillaPrefabsAvailable -= AddPaperItems;
         PrefabManager.OnVanillaPrefabsAvailable += AddPaperItems;
     }
@@ -64,16 +58,12 @@ internal static class PaperItem
 
         try
         {
+            if (!PaperAssets.TryEnsureLoaded())
+                return;
+
             AddLocalization();
-
-            var parchment = LoadParchmentTexture();
-            var meshTex = LoadMeshTexture() ?? (parchment != null ? CreateCutoutMeshTexture(parchment) : null);
-            var writtenParchment = LoadWrittenParchmentTexture() ?? parchment;
-            // Mesh must use blank silhouette as alpha mask so ink never expands the border.
-            var writtenMeshTex = CreateWrittenMeshTexture(writtenParchment, parchment, meshTex);
-
-            RegisterBlank(parchment, meshTex);
-            RegisterWritten(writtenParchment, writtenMeshTex);
+            RegisterBlank();
+            RegisterWritten();
         }
         catch (Exception ex)
         {
@@ -81,16 +71,13 @@ internal static class PaperItem
         }
     }
 
-    private static void RegisterBlank(Texture2D? parchment, Texture2D? meshTex)
+    private static void RegisterBlank()
     {
-        Sprite? icon = null;
-        if (parchment != null)
-        {
-            icon = Sprite.Create(
-                parchment,
-                new Rect(0, 0, parchment.width, parchment.height),
-                new Vector2(0.5f, 0.5f));
-        }
+        var go = PaperAssets.CreatePrefab(PaperAssets.BlankItem, PrefabName);
+        if (go == null)
+            return;
+
+        SanitizeLoadedItem(go);
 
         var itemConfig = new ItemConfig
         {
@@ -99,35 +86,33 @@ internal static class PaperItem
             Enabled = RenameitConfig.PaperEnabled,
             Amount = 1,
         };
+        var icon = ReadPrefabIcon(go);
         if (icon != null)
             itemConfig.Icon = icon;
 
         ApplyRecipeFromConfig(itemConfig);
 
-        var paper = new CustomItem(PrefabName, CloneSource, itemConfig);
+        var paper = new CustomItem(go, false, itemConfig);
         ItemManager.Instance.AddItem(paper);
 
         SanitizeItemDrop(paper, stackable: true);
-        BuildPaper2Visual(paper.ItemPrefab, meshTex);
+        CacheIcon(ref _blankIconSprite, paper, icon);
 
         if (paper.ItemDrop?.m_itemData != null)
             paper.ItemDrop.m_itemData.m_dropPrefab = paper.ItemPrefab;
 
         _log?.LogInfo(
-            $"[Paper] Registered blank {PrefabName} (stack={RenameitConfig.BlankPaperStackSize}, " +
+            $"[Paper] Registered blank {PrefabName} from bundle (stack={RenameitConfig.BlankPaperStackSize}, " +
             $"enabled={RenameitConfig.PaperEnabled}, cost='{RenameitConfig.PaperCost}').");
     }
 
-    private static void RegisterWritten(Texture2D? parchment, Texture2D? meshTex)
+    private static void RegisterWritten()
     {
-        Sprite? icon = null;
-        if (parchment != null)
-        {
-            icon = Sprite.Create(
-                parchment,
-                new Rect(0, 0, parchment.width, parchment.height),
-                new Vector2(0.5f, 0.5f));
-        }
+        var go = PaperAssets.CreatePrefab(PaperAssets.WrittenItem, WrittenPrefabName);
+        if (go == null)
+            return;
+
+        SanitizeLoadedItem(go);
 
         var itemConfig = new ItemConfig
         {
@@ -136,22 +121,20 @@ internal static class PaperItem
             Enabled = RenameitConfig.PaperEnabled,
             Amount = 1,
         };
+        var icon = ReadPrefabIcon(go);
         if (icon != null)
             itemConfig.Icon = icon;
 
-        // Not craftable from stations — created by peel-write only.
-        // Jotunn still needs an item; leave requirements empty and Enabled only controls visibility in some UIs.
-
-        var paper = new CustomItem(WrittenPrefabName, CloneSource, itemConfig);
+        var paper = new CustomItem(go, false, itemConfig);
         ItemManager.Instance.AddItem(paper);
 
         SanitizeItemDrop(paper, stackable: false);
-        BuildPaper2Visual(paper.ItemPrefab, meshTex);
+        CacheIcon(ref _writtenIconSprite, paper, icon);
 
         if (paper.ItemDrop?.m_itemData != null)
             paper.ItemDrop.m_itemData.m_dropPrefab = paper.ItemPrefab;
 
-        _log?.LogInfo($"[Paper] Registered written {WrittenPrefabName} (stack=1).");
+        _log?.LogInfo($"[Paper] Registered written {WrittenPrefabName} from bundle (stack=1).");
     }
 
     internal static void ApplyLocalizationFromConfig()
@@ -190,33 +173,6 @@ internal static class PaperItem
         loc.AddTranslation("English", "item_drakes_paper_written_desc", wDesc);
         loc.AddTranslation("Spanish", "item_drakes_paper_written", wName);
         loc.AddTranslation("Spanish", "item_drakes_paper_written_desc", wDesc);
-    }
-
-    private static Texture2D? LoadParchmentTexture() => LoadTextureFile("paper.png", "icon");
-
-    private static Texture2D? LoadWrittenParchmentTexture() => LoadTextureFile("paper_written.png", "written");
-
-    private static Texture2D? LoadMeshTexture() => LoadTextureFile("paper_mesh.png", "mesh");
-
-
-    private static Texture2D? LoadTextureFile(string fileName, string label)
-    {
-        var path = Path.Combine(_pluginDir, "Assets", "Icons", fileName);
-        if (!File.Exists(path))
-        {
-            _log?.LogWarning($"[Paper] {label} texture not found at {path}.");
-            return null;
-        }
-
-        try
-        {
-            return AssetUtils.LoadTexture(path, relativePath: false);
-        }
-        catch (Exception ex)
-        {
-            _log?.LogWarning($"[Paper] Failed to load {label} texture: {ex.Message}");
-            return null;
-        }
     }
 
     private static void ApplyRecipeFromConfig(ItemConfig itemConfig)
@@ -290,6 +246,25 @@ internal static class PaperItem
         shared.m_food = 0f;
         shared.m_foodStamina = 0f;
         shared.m_foodEitr = 0f;
+        drop.m_itemData.m_stack = 1;
+        drop.m_autoPickup = true;
+        drop.m_autoDestroy = true;
+    }
+
+    /// <summary>
+    /// Blank paper is hammer décor only. Never leave a piece table or tool attack on it
+    /// (that lets Use enter place-mode and play the unarmed punch).
+    /// </summary>
+    internal static void ClearBlankPlaceTool(ItemDrop.ItemData? item)
+    {
+        if (!IsBlankPaper(item) || item!.m_shared == null)
+            return;
+        if (IsWrittenPaper(item))
+            return;
+
+        item.m_shared.m_buildPieces = null;
+        if (item.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Tool)
+            item.m_shared.m_itemType = ResolveItemType();
     }
 
     private static ItemDrop.ItemData.ItemType ResolveItemType()
@@ -312,7 +287,7 @@ internal static class PaperItem
     {
         if (item?.m_shared == null)
             return false;
-        if (PrefabsMatch(item, PrefabName))
+        if (PrefabsMatch(item, PrefabName) || PrefabsMatch(item, PaperAssets.BlankItem))
             return true;
         return item.m_shared.m_name.Equals(TokenName, StringComparison.OrdinalIgnoreCase);
     }
@@ -321,7 +296,7 @@ internal static class PaperItem
     {
         if (item?.m_shared == null)
             return false;
-        if (PrefabsMatch(item, WrittenPrefabName))
+        if (PrefabsMatch(item, WrittenPrefabName) || PrefabsMatch(item, PaperAssets.WrittenItem))
             return true;
         return item.m_shared.m_name.Equals(TokenWrittenName, StringComparison.OrdinalIgnoreCase);
     }
@@ -341,21 +316,12 @@ internal static class PaperItem
                n.StartsWith(prefabName, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static Sprite? _blankIconSprite;
-    private static Sprite? _writtenIconSprite;
-
     /// <summary>Hammer / UI icon for blank parchment (cached).</summary>
     internal static Sprite? GetBlankIconSprite()
     {
         if (_blankIconSprite != null)
             return _blankIconSprite;
-        var parchment = LoadParchmentTexture();
-        if (parchment == null)
-            return null;
-        _blankIconSprite = Sprite.Create(
-            parchment,
-            new Rect(0, 0, parchment.width, parchment.height),
-            new Vector2(0.5f, 0.5f));
+        _blankIconSprite = ReadRegisteredIcon(PrefabName) ?? LoadPngSprite("paper.png");
         return _blankIconSprite;
     }
 
@@ -364,204 +330,79 @@ internal static class PaperItem
     {
         if (_writtenIconSprite != null)
             return _writtenIconSprite;
-        var parchment = LoadWrittenParchmentTexture() ?? LoadParchmentTexture();
-        if (parchment == null)
-            return null;
-        _writtenIconSprite = Sprite.Create(
-            parchment,
-            new Rect(0, 0, parchment.width, parchment.height),
-            new Vector2(0.5f, 0.5f));
+        _writtenIconSprite = ReadRegisteredIcon(WrittenPrefabName) ??
+                             LoadPngSprite("paper_written.png") ??
+                             GetBlankIconSprite();
         return _writtenIconSprite;
     }
 
     /// <summary>
-    /// Strip donor mesh/UI and build a single parchment sheet on a build piece (no Sign / no interact).
-    /// <paramref name="wall"/> true = vertical facing +Z; false = flat on XZ.
-    /// <paramref name="written"/> true = paper_written.png scribbles (same cutout as blank).
+    /// Keep the authored mesh/snaps and fill Piece fields. <paramref name="wall"/> rotates the sheet upright.
     /// </summary>
-    internal static void BuildDecorSheetVisual(GameObject? root, bool wall, bool written = false)
+    internal static void PrepareSheetPiece(GameObject? root, bool wall)
     {
         if (root == null)
             return;
 
         try
         {
-            StripPieceDonorVisuals(root);
-            var mat = CreateDecorPaperMaterial(written);
-            var attachGo = new GameObject("drakes_paper_decor");
-            var attach = attachGo.transform;
-            attach.SetParent(root.transform, false);
-            // Flat: sit above the hit surface (tables with gaps / uneven tops).
-            attach.localPosition = wall ? Vector3.zero : new Vector3(0f, FlatSurfaceLift, 0f);
-            attach.localRotation = wall ? Quaternion.identity : Quaternion.Euler(90f, 0f, 0f);
-            attach.localScale = Vector3.one;
-
-            CreatePaperFace(attach, "paper_front", mat, Quaternion.identity, new Vector3(0f, 0f, 0.001f));
-            CreatePaperFace(attach, "paper_back", mat, Quaternion.Euler(0f, 180f, 0f), new Vector3(0f, 0f, -0.001f));
-
-            EnsureThinBoxCollider(root, wall);
-            EnsurePaperSnapPoints(root, wall ? PaperSnapKind.Wall : PaperSnapKind.Flat);
+            StripItemLeftoversFromPiece(root);
+            ApplySheetOrientation(root, wall);
+            PromoteSnapPointsToRoot(root);
             ConfigurePaperPlacement(root, wall);
             EnsurePieceLayer(root);
             SanitizePaperWearNTear(root);
-            _log?.LogInfo($"[Paper] Decor sheet on '{root.name}' wall={wall} written={written}.");
+            _log?.LogInfo($"[Paper] Prepared sheet '{root.name}' wall={wall} from bundle mesh.");
         }
         catch (Exception ex)
         {
-            _log?.LogWarning($"[Paper] Decor sheet failed: {ex.Message}");
+            _log?.LogWarning($"[Paper] Prepare sheet failed: {ex.Message}");
         }
     }
 
-    /// <summary>Stacked parchment pile (wood-stack style décor).</summary>
-    internal static void BuildPaperStackVisual(GameObject? root, int sheets = 12)
+    /// <summary>Keep the authored paper-stack mesh; only fill placement / snap / WearNTear fields.</summary>
+    internal static void PrepareStackPiece(GameObject? root)
     {
         if (root == null)
             return;
 
         try
         {
-            StripPieceDonorVisuals(root);
-            var mat = CreateDecorPaperMaterial(written: false);
-            var attachGo = new GameObject("drakes_paper_stack");
-            var attach = attachGo.transform;
-            attach.SetParent(root.transform, false);
-            attach.localPosition = new Vector3(0f, FlatSurfaceLift, 0f);
-            attach.localRotation = Quaternion.identity;
-            attach.localScale = Vector3.one;
-
-            sheets = Math.Max(4, Math.Min(sheets, 20));
-            float thickness = 0.008f;
-            for (var i = 0; i < sheets; i++)
-            {
-                // Bottom sheet sits on y=0 of attach (attach already lifted).
-                float y = i * thickness + thickness * 0.5f;
-                float yaw = (i % 3 - 1) * 4f + (i % 5) * 0.5f;
-                float scaleJitter = 1f - (i % 4) * 0.015f;
-                var sheet = new GameObject($"sheet_{i}");
-                var st = sheet.transform;
-                st.SetParent(attach, false);
-                st.localPosition = new Vector3(0f, y, 0f);
-                st.localRotation = Quaternion.Euler(90f, yaw, 0f);
-                st.localScale = new Vector3(scaleJitter, scaleJitter, 1f);
-                CreatePaperFace(st, "front", mat, Quaternion.identity, new Vector3(0f, 0f, 0.0005f));
-                CreatePaperFace(st, "back", mat, Quaternion.Euler(0f, 180f, 0f), new Vector3(0f, 0f, -0.0005f));
-            }
-
-            foreach (var col in root.GetComponentsInChildren<Collider>(true))
-                Object.DestroyImmediate(col);
-            var box = root.AddComponent<BoxCollider>();
-            float stackHeight = sheets * thickness;
-            box.center = new Vector3(0f, FlatSurfaceLift + stackHeight * 0.5f, 0f);
-            box.size = new Vector3(PaperSize.x * 1.05f, Math.Max(0.02f, stackHeight), PaperSize.y * 1.05f);
-
-            EnsurePaperSnapPoints(root, PaperSnapKind.Stack, stackHeight);
+            StripItemLeftoversFromPiece(root);
+            PromoteSnapPointsToRoot(root);
             ConfigurePaperPlacement(root, wall: false);
             EnsurePieceLayer(root);
             SanitizePaperWearNTear(root);
-            _log?.LogInfo($"[Paper] Paper stack visual on '{root.name}' sheets={sheets}.");
+            _log?.LogInfo($"[Paper] Prepared stack '{root.name}' from bundle mesh.");
         }
         catch (Exception ex)
         {
-            _log?.LogWarning($"[Paper] Paper stack visual failed: {ex.Message}");
+            _log?.LogWarning($"[Paper] Prepare stack failed: {ex.Message}");
         }
-    }
-
-    /// <summary>Valheim only recognizes direct children tagged <c>snappoint</c>.</summary>
-    internal enum PaperSnapKind
-    {
-        Wall,
-        Flat,
-        Stack,
     }
 
     /// <summary>
-    /// Replace donor snap points. Direct children with tag <c>snappoint</c>.
-    /// GameObject name is the HUD label (Extra Snap Points / manual snap UI).
+    /// Bundle sheets are authored flat. Vertical variants rotate <c>attach</c> to face +Z.
     /// </summary>
-    internal static void EnsurePaperSnapPoints(GameObject root, PaperSnapKind kind, float stackHeight = 0.12f)
+    internal static void ApplySheetOrientation(GameObject root, bool wall)
     {
-        if (root == null)
+        var attach = FindAttach(root.transform);
+        if (attach == null)
+        {
+            _log?.LogWarning($"[Paper] No 'attach' child on '{root.name}'; cannot rotate sheet.");
             return;
-
-        ClearSnapPointChildren(root.transform);
-
-        float hx = PaperSize.x * 0.5f;
-        float hy = PaperSize.y * 0.5f;
-
-        switch (kind)
-        {
-            case PaperSnapKind.Wall:
-                AddSnap(root, "Top Left", new Vector3(-hx, hy, 0f));
-                AddSnap(root, "Top", new Vector3(0f, hy, 0f));
-                AddSnap(root, "Top Right", new Vector3(hx, hy, 0f));
-                AddSnap(root, "Bottom Left", new Vector3(-hx, -hy, 0f));
-                AddSnap(root, "Bottom", new Vector3(0f, -hy, 0f));
-                AddSnap(root, "Bottom Right", new Vector3(hx, -hy, 0f));
-                break;
-
-            case PaperSnapKind.Flat:
-                // Match flat collider underside (FlatSurfaceLift).
-                float flatY = FlatSurfaceLift;
-                AddSnap(root, "Front Left", new Vector3(-hx, flatY, -hy));
-                AddSnap(root, "Front Right", new Vector3(hx, flatY, -hy));
-                AddSnap(root, "Back Left", new Vector3(-hx, flatY, hy));
-                AddSnap(root, "Back Right", new Vector3(hx, flatY, hy));
-                AddSnap(root, "Center", new Vector3(0f, flatY, 0f));
-                break;
-
-            case PaperSnapKind.Stack:
-                float yBot = FlatSurfaceLift;
-                float yTop = yBot + Math.Max(0.02f, stackHeight);
-                AddSnap(root, "Bottom Front Left", new Vector3(-hx, yBot, -hy));
-                AddSnap(root, "Bottom Front Right", new Vector3(hx, yBot, -hy));
-                AddSnap(root, "Bottom Back Left", new Vector3(-hx, yBot, hy));
-                AddSnap(root, "Bottom Back Right", new Vector3(hx, yBot, hy));
-                AddSnap(root, "Top Front Left", new Vector3(-hx, yTop, -hy));
-                AddSnap(root, "Top Front Right", new Vector3(hx, yTop, -hy));
-                AddSnap(root, "Top Back Left", new Vector3(-hx, yTop, hy));
-                AddSnap(root, "Top Back Right", new Vector3(hx, yTop, hy));
-                AddSnap(root, "Top Center", new Vector3(0f, yTop, 0f));
-                break;
         }
-    }
 
-    private static void ClearSnapPointChildren(Transform root)
-    {
-        for (var i = root.childCount - 1; i >= 0; i--)
+        if (wall)
         {
-            var child = root.GetChild(i);
-            var named = child.name.IndexOf("snap", StringComparison.OrdinalIgnoreCase) >= 0;
-            var tagged = false;
-            try
-            {
-                tagged = child.CompareTag("snappoint");
-            }
-            catch
-            {
-                /* tag may be missing in some contexts */
-            }
-
-            if (tagged || named)
-                Object.DestroyImmediate(child.gameObject);
+            attach.localRotation = Quaternion.identity;
+            attach.localPosition = Vector3.zero;
         }
-    }
-
-    private static void AddSnap(GameObject root, string label, Vector3 localPos)
-    {
-        // Tag drives vanilla snap; name is the "Snapping: …" HUD label.
-        var go = new GameObject(string.IsNullOrWhiteSpace(label) ? "Center" : label);
-        var t = go.transform;
-        t.SetParent(root.transform, false);
-        t.localPosition = localPos;
-        t.localRotation = Quaternion.identity;
-        t.localScale = Vector3.one;
-        try
+        else
         {
-            go.tag = "snappoint";
-        }
-        catch (Exception ex)
-        {
-            _log?.LogWarning($"[Paper] Failed to tag snappoint '{label}': {ex.Message}");
+            attach.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            var pos = attach.localPosition;
+            attach.localPosition = new Vector3(pos.x, FlatSurfaceLift, pos.z);
         }
     }
 
@@ -611,7 +452,6 @@ internal static class PaperItem
             if (t == ghost || t.IsChildOf(ghost) || ghost.IsChildOf(t))
                 continue;
 
-            // Face toward the camera, or the face we're already sitting on (small positive = already gapped out).
             var along = Vector3.Dot(hit.point - proposed, dir);
             if (along > WallFaceGap + 0.03f || along < -1.15f)
                 continue;
@@ -655,18 +495,17 @@ internal static class PaperItem
         piece.m_notOnTiltingSurface = false;
         piece.m_randomInitBuildRotation = false;
         piece.m_canBeRemoved = true;
+        piece.m_canRotate = true;
+        piece.m_allowRotatedOverlap = true;
 
         if (wall)
         {
-            // Vertical: same as working upright — clip to walls/structures.
             piece.m_clipGround = true;
             piece.m_clipEverything = true;
             piece.m_allowAltGroundPlacement = true;
         }
         else
         {
-            // Flat / stack: sit ON TOP of tables/floors/books — not wood_floor heightmap pieces.
-            // clipGround=true makes Valheim prefer terrain like floorboards; keep piece-to-piece only.
             piece.m_clipGround = false;
             piece.m_clipEverything = true;
             piece.m_allowAltGroundPlacement = true;
@@ -694,48 +533,23 @@ internal static class PaperItem
         }
     }
 
-    /// <summary>
-    /// Remove donor wood meshes/colliders but keep Sign + Canvas/TMP for written notes.
-    /// </summary>
-    internal static void StripDonorGeometryKeepSignUi(GameObject root)
+    /// <summary>Valheim only recognizes snappoints as direct children of the piece root.</summary>
+    internal static void PromoteSnapPointsToRoot(GameObject root)
     {
         if (root == null)
             return;
 
-        var doomed = new List<GameObject>();
-        foreach (Transform child in root.transform)
+        var snaps = new List<Transform>();
+        CollectSnapPoints(root.transform, snaps);
+        foreach (var snap in snaps)
         {
-            if (child.name.StartsWith("drakes_paper", StringComparison.OrdinalIgnoreCase))
+            if (snap == null || snap.parent == root.transform)
                 continue;
-            if (child.GetComponentInChildren<Canvas>(true) != null)
-                continue;
-            if (child.GetComponentInChildren<TMPro.TMP_Text>(true) != null)
-                continue;
-            if (child.name.IndexOf("snap", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                doomed.Add(child.gameObject);
-                continue;
-            }
-
-            if (child.GetComponent<MeshFilter>() != null ||
-                child.GetComponentInChildren<MeshFilter>(true) != null)
-                doomed.Add(child.gameObject);
-        }
-
-        foreach (var go in doomed)
-            Object.DestroyImmediate(go);
-
-        foreach (var col in root.GetComponentsInChildren<Collider>(true))
-        {
-            if (col == null)
-                continue;
-            if (col.GetComponentInParent<Canvas>() != null)
-                continue;
-            Object.DestroyImmediate(col);
+            snap.SetParent(root.transform, true);
         }
     }
 
-    /// <summary>Kill wood_stack / sign wood debris so breaks don't spray logs.</summary>
+    /// <summary>Kill leftover item physics / loot so breaks don't spray logs or drop the donor item.</summary>
     internal static void SanitizePaperWearNTear(GameObject? root)
     {
         if (root == null)
@@ -749,8 +563,9 @@ internal static class PaperItem
         wnt.m_fragmentRoots = Array.Empty<GameObject>();
         wnt.m_destroyedEffect = new EffectList();
         wnt.m_hitEffect = new EffectList();
+        wnt.m_noSupportWear = true;
+        wnt.m_noRoofWear = true;
 
-        // Donor fragment mesh roots sometimes live as children.
         for (var i = root.transform.childCount - 1; i >= 0; i--)
         {
             var child = root.transform.GetChild(i);
@@ -761,651 +576,126 @@ internal static class PaperItem
         }
     }
 
-    private static Material CreateDecorPaperMaterial(bool written)
+    private static void SanitizeLoadedItem(GameObject go)
     {
-        var blank = LoadParchmentTexture();
-        var blankMesh = LoadMeshTexture() ?? (blank != null ? CreateCutoutMeshTexture(blank) : null);
-        Texture2D? meshTex;
-        if (written)
-        {
-            var writtenParchment = LoadWrittenParchmentTexture() ?? blank;
-            meshTex = CreateWrittenMeshTexture(writtenParchment, blank, blankMesh);
-        }
-        else
-        {
-            meshTex = blankMesh ?? (blank != null ? CreateCutoutMeshTexture(blank) : null);
-        }
+        foreach (var piece in go.GetComponentsInChildren<Piece>(true))
+            Object.DestroyImmediate(piece);
+        foreach (var wnt in go.GetComponentsInChildren<WearNTear>(true))
+            Object.DestroyImmediate(wnt);
 
-        var donorMat = FindFallbackWorldMaterial() ?? FindCutoutWorldMaterialFromObjectDb();
-        var tex = meshTex != null ? meshTex : CreateBlankParchmentTexture(64);
-        var mat = CreatePaperMaterial(tex, donorMat);
-        if (!MaterialSupportsCutout(mat))
+        foreach (var ps in go.GetComponentsInChildren<ParticleSystem>(true))
         {
-            tex = MakeOpaqueInpainted(tex);
-            if (mat.HasProperty("_MainTex"))
-                mat.SetTexture("_MainTex", tex);
-            mat.mainTexture = tex;
-        }
-
-        return mat;
-    }
-
-    private static void StripPieceDonorVisuals(GameObject root)
-    {
-        // Remove Sign / UI so the piece is bric-a-brac only (no [E] write).
-        foreach (var sign in root.GetComponentsInChildren<Sign>(true))
-            Object.DestroyImmediate(sign);
-        foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
-            Object.DestroyImmediate(canvas.gameObject);
-        foreach (var tmp in root.GetComponentsInChildren<TMPro.TMP_Text>(true))
-        {
-            if (tmp != null)
-                Object.DestroyImmediate(tmp.gameObject);
-        }
-
-        // wood_stack / floor donors force terrain height — strip those.
-        foreach (var tm in root.GetComponentsInChildren<TerrainModifier>(true))
-            Object.DestroyImmediate(tm);
-
-        foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
-        {
-            if (renderer == null)
+            if (ps == null)
                 continue;
-            if (renderer is ParticleSystemRenderer || renderer is TrailRenderer || renderer is LineRenderer)
-            {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            ps.gameObject.SetActive(false);
+        }
+
+        foreach (var renderer in go.GetComponentsInChildren<ParticleSystemRenderer>(true))
+        {
+            if (renderer != null)
                 renderer.enabled = false;
-                continue;
-            }
-
-            renderer.enabled = false;
         }
 
-        // Prefer destroying disabled mesh children that are not our decor.
-        var doomed = new List<GameObject>();
-        foreach (Transform child in root.transform)
-        {
-            if (child.name.StartsWith("drakes_paper", StringComparison.OrdinalIgnoreCase))
-                continue;
-            // Keep structural empty roots; kill obvious mesh holders
-            if (child.GetComponent<MeshFilter>() != null || child.GetComponentInChildren<MeshFilter>(true) != null)
-                doomed.Add(child.gameObject);
-        }
-
-        foreach (var go in doomed)
-            Object.DestroyImmediate(go);
-
-        // Root-level mesh (some donors) — destroy filter/renderer, keep Piece/ZNetView.
-        var rootFilter = root.GetComponent<MeshFilter>();
-        if (rootFilter != null)
-            Object.DestroyImmediate(rootFilter);
-        var rootRenderer = root.GetComponent<MeshRenderer>();
-        if (rootRenderer != null)
-            Object.DestroyImmediate(rootRenderer);
-    }
-
-    internal static void EnsureThinBoxCollider(GameObject root, bool wall)
-    {
-        // Donor Sign leaves a large board collider on children — that skews hover far off the sheet.
-        foreach (var col in root.GetComponentsInChildren<Collider>(true))
-            Object.DestroyImmediate(col);
-
-        var box = root.AddComponent<BoxCollider>();
-        if (wall)
-        {
-            box.center = Vector3.zero;
-            box.size = new Vector3(PaperSize.x, PaperSize.y, 0.03f);
-        }
-        else
-        {
-            // Collider bottom at FlatSurfaceLift so the piece sits on top of uneven tables.
-            const float half = 0.01f;
-            box.center = new Vector3(0f, FlatSurfaceLift + half, 0f);
-            box.size = new Vector3(PaperSize.x, half * 2f, PaperSize.y);
-        }
-    }
-
-    /// <summary>
-    /// SPIKE helper: vertical double-sided parchment on a wall piece (quads face +Z like a sign).
-    /// Does not strip existing children — caller should hide wood meshes first.
-    /// </summary>
-    internal static void ApplySpikeWallPaperVisual(GameObject? root) =>
-        ApplySpikeWallPaperVisual(root, written: false);
-
-    internal static void ApplySpikeWallPaperVisual(GameObject? root, bool written)
-    {
-        if (root == null)
-            return;
-
-        try
-        {
-            var blank = LoadParchmentTexture();
-            var blankMesh = LoadMeshTexture() ?? (blank != null ? CreateCutoutMeshTexture(blank) : null);
-            Texture2D? meshTex;
-            if (written)
-            {
-                var writtenParchment = LoadWrittenParchmentTexture() ?? blank;
-                meshTex = CreateWrittenMeshTexture(writtenParchment, blank, blankMesh);
-            }
-            else
-            {
-                meshTex = blankMesh ?? (blank != null ? CreateCutoutMeshTexture(blank) : null);
-            }
-
-            var donorMat = CaptureDonorMaterial(root) ?? FindFallbackWorldMaterial() ?? FindCutoutWorldMaterialFromObjectDb();
-            var tex = meshTex != null ? meshTex : CreateBlankParchmentTexture(64);
-            var mat = CreatePaperMaterial(tex, donorMat);
-            if (!MaterialSupportsCutout(mat))
-            {
-                tex = MakeOpaqueInpainted(tex);
-                if (mat.HasProperty("_MainTex"))
-                    mat.SetTexture("_MainTex", tex);
-                mat.mainTexture = tex;
-            }
-
-            var attachGo = new GameObject("drakes_paper_spike");
-            var attach = attachGo.transform;
-            attach.SetParent(root.transform, false);
-            attach.localPosition = Vector3.zero;
-            attach.localRotation = Quaternion.identity;
-            attach.localScale = Vector3.one;
-
-            CreatePaperFace(attach, "paper_front", mat, Quaternion.identity, new Vector3(0f, 0f, 0.001f));
-            CreatePaperFace(attach, "paper_back", mat, Quaternion.Euler(0f, 180f, 0f), new Vector3(0f, 0f, -0.001f));
-
-            // Caller may rotate the visual for flat notes; snaps are set by the place registrar.
-            _log?.LogInfo($"[Paper] Wall visual attached on '{root.name}' written={written}.");
-        }
-        catch (Exception ex)
-        {
-            _log?.LogWarning($"[Paper] Wall visual failed: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Strip donor visuals and build a flat double-sided parchment under <c>attach</c>.
-    /// </summary>
-    private static void BuildPaper2Visual(GameObject? prefab, Texture2D? meshTexture)
-    {
-        if (prefab == null)
-            return;
-
-        var znet = prefab.GetComponent<ZNetView>();
+        var znet = go.GetComponent<ZNetView>();
         if (znet != null)
             znet.m_syncInitialScale = true;
-
-        prefab.transform.localScale = Vector3.one;
-
-        // Grab a real Valheim shader BEFORE stripping — Shader.Find often returns null in Valheim.
-        var donorMat = CaptureDonorMaterial(prefab);
-
-        // Remove all children (LeatherScraps mesh / VFX / LOD).
-        var doomed = new List<GameObject>();
-        foreach (Transform child in prefab.transform)
-            doomed.Add(child.gameObject);
-        foreach (var go in doomed)
-            Object.DestroyImmediate(go);
-
-        // Collider matches a thin sheet lifted above grass / terrain.
-        foreach (var col in prefab.GetComponents<Collider>())
-            Object.DestroyImmediate(col);
-        var box = prefab.AddComponent<BoxCollider>();
-        box.center = new Vector3(0f, GroundClearance, 0f);
-        box.size = new Vector3(PaperSize.x, 0.02f, PaperSize.y);
-
-        var attachGo = new GameObject("attach");
-        var attach = attachGo.transform;
-        attach.SetParent(prefab.transform, false);
-        attach.localPosition = new Vector3(0f, GroundClearance, 0f);
-        attach.localRotation = Quaternion.identity;
-        attach.localScale = Vector3.one;
-
-        // World mesh uses hard-cutout paper_mesh.png (icon keeps transparent paper.png).
-        var tex = meshTexture != null ? meshTexture : CreateBlankParchmentTexture(64);
-        var mat = CreatePaperMaterial(tex, donorMat);
-
-        // If the Valheim shader ignores alpha, bake a fringe-free opaque skin (nearest parchment, not white).
-        if (!MaterialSupportsCutout(mat))
-        {
-            tex = MakeOpaqueInpainted(tex);
-            if (mat.HasProperty("_MainTex"))
-                mat.SetTexture("_MainTex", tex);
-            mat.mainTexture = tex;
-            _log?.LogInfo($"[Paper] Donor shader '{mat.shader?.name}' has no cutout; using opaque inpainted mesh skin.");
-        }
-
-        // Quads face +Z by default. Lay flat on XZ (face up) for ground / horizontal stands.
-        // Tiny separation so the two faces never z-fight each other.
-        CreatePaperFace(attach, "paper_front", mat, Quaternion.Euler(90f, 0f, 0f), new Vector3(0f, 0.001f, 0f));
-        CreatePaperFace(attach, "paper_back", mat, Quaternion.Euler(-90f, 0f, 0f), new Vector3(0f, -0.001f, 0f));
-
-        _log?.LogInfo(
-            $"[Paper] Paper2 visual built ({PaperSize.x:0.##}x{PaperSize.y:0.##}m, clearance {GroundClearance:0.###}m, " +
-            $"shader='{mat.shader?.name}', tex={tex.width}x{tex.height}, cutout={MaterialSupportsCutout(mat)}).");
     }
 
-    private static Material? CaptureDonorMaterial(GameObject prefab)
+    private static void StripItemLeftoversFromPiece(GameObject root)
     {
-        // Prefer a cutout-capable mesh material — opaque fills cause white alpha fringes on torn edges.
-        var cutout = FindCutoutWorldMaterial(prefab) ?? FindCutoutWorldMaterialFromObjectDb();
-        if (cutout != null)
-            return cutout;
-
-        // Prefer MeshRenderer — LeatherScraps also has particle renderers; those shaders blow out white on stands.
-        foreach (var renderer in prefab.GetComponentsInChildren<MeshRenderer>(true))
-        {
-            if (IsUsableWorldMaterial(renderer.sharedMaterial))
-                return renderer.sharedMaterial;
-        }
-
-        foreach (var renderer in prefab.GetComponentsInChildren<Renderer>(true))
-        {
-            if (renderer is ParticleSystemRenderer || renderer is TrailRenderer || renderer is LineRenderer)
-                continue;
-            if (IsUsableWorldMaterial(renderer.sharedMaterial))
-                return renderer.sharedMaterial;
-        }
-
-        return FindFallbackWorldMaterial();
+        foreach (var drop in root.GetComponentsInChildren<ItemDrop>(true))
+            Object.DestroyImmediate(drop);
+        foreach (var body in root.GetComponentsInChildren<Rigidbody>(true))
+            Object.DestroyImmediate(body);
+        foreach (var sync in root.GetComponentsInChildren<ZSyncTransform>(true))
+            Object.DestroyImmediate(sync);
+        foreach (var lod in root.GetComponentsInChildren<LODGroup>(true))
+            Object.DestroyImmediate(lod);
+        foreach (var ps in root.GetComponentsInChildren<ParticleSystem>(true))
+            Object.DestroyImmediate(ps);
+        foreach (var psr in root.GetComponentsInChildren<ParticleSystemRenderer>(true))
+            Object.DestroyImmediate(psr);
     }
 
-    private static Material? FindCutoutWorldMaterial(GameObject prefab)
+    private static Transform? FindAttach(Transform root)
     {
-        foreach (var renderer in prefab.GetComponentsInChildren<MeshRenderer>(true))
+        var named = root.Find("attach");
+        if (named != null)
+            return named;
+
+        for (var i = 0; i < root.childCount; i++)
         {
-            var mat = renderer.sharedMaterial;
-            if (IsUsableWorldMaterial(mat) && MaterialSupportsCutout(mat))
-                return mat;
+            var child = root.GetChild(i);
+            if (child.name.StartsWith("attach", StringComparison.OrdinalIgnoreCase))
+                return child;
         }
 
         return null;
     }
 
-    private static Material? FindCutoutWorldMaterialFromObjectDb()
+    private static void CollectSnapPoints(Transform current, List<Transform> dest)
     {
-        if (ObjectDB.instance == null)
-            return null;
-
-        // Plants / trophies often ship with real alpha-cutout materials.
-        string[] donors =
+        for (var i = 0; i < current.childCount; i++)
         {
-            "Dandelion", "Mushroom", "Raspberry", "Blueberries", "Thistle", "Cloudberry",
-            "WitheredBone", "TrophyDeer",
-        };
-        foreach (var name in donors)
-        {
-            var go = ObjectDB.instance.GetItemPrefab(name);
-            if (go == null)
-                continue;
-            var mat = FindCutoutWorldMaterial(go);
-            if (mat != null)
-                return mat;
-        }
-
-        return null;
-    }
-
-    private static bool MaterialSupportsCutout(Material? mat)
-    {
-        if (mat?.shader == null)
-            return false;
-
-        // Only trust shaders that actually alpha-test. Custom/Creature often exposes _Cutoff unused.
-        var n = mat.shader.name;
-        return n.IndexOf("Cutout", StringComparison.OrdinalIgnoreCase) >= 0
-               || n.IndexOf("Vegetation", StringComparison.OrdinalIgnoreCase) >= 0
-               || n.IndexOf("Leaf", StringComparison.OrdinalIgnoreCase) >= 0
-               || n.IndexOf("Grass", StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
-    private static Material? FindFallbackWorldMaterial()
-    {
-        if (ObjectDB.instance == null)
-            return null;
-
-        // Simple opaque item meshes — never particles.
-        string[] donors = { "Wood", "FineWood", "Stone", "Coal", "Resin", "Flint", "LeatherScraps" };
-        foreach (var name in donors)
-        {
-            var go = ObjectDB.instance.GetItemPrefab(name);
-            if (go == null)
-                continue;
-            foreach (var renderer in go.GetComponentsInChildren<MeshRenderer>(true))
-            {
-                if (IsUsableWorldMaterial(renderer.sharedMaterial))
-                    return renderer.sharedMaterial;
-            }
-        }
-
-        return null;
-    }
-
-    private static bool IsUsableWorldMaterial(Material? mat)
-    {
-        var shader = mat?.shader;
-        if (shader == null)
-            return false;
-
-        var n = shader.name;
-        if (n.IndexOf("Particle", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-        if (n.IndexOf("Additive", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-        if (n.IndexOf("UI", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-        if (n.IndexOf("Sprite", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-        if (n.IndexOf("Internal", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-
-        return true;
-    }
-
-    private static void CreatePaperFace(
-        Transform parent,
-        string name,
-        Material mat,
-        Quaternion localRot,
-        Vector3 localPos)
-    {
-        var face = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        face.name = name;
-        Object.DestroyImmediate(face.GetComponent<Collider>());
-
-        var t = face.transform;
-        t.SetParent(parent, false);
-        t.localPosition = localPos;
-        t.localRotation = localRot;
-        t.localScale = new Vector3(PaperSize.x, PaperSize.y, 1f);
-
-        var renderer = face.GetComponent<MeshRenderer>();
-        if (renderer != null)
-        {
-            renderer.sharedMaterial = mat;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            renderer.receiveShadows = true;
-            face.layer = parent.gameObject.layer;
+            var child = current.GetChild(i);
+            if (IsSnapPoint(child))
+                dest.Add(child);
+            CollectSnapPoints(child, dest);
         }
     }
 
-    private static Texture2D CreateBlankParchmentTexture(int size)
+    private static bool IsSnapPoint(Transform child)
     {
-        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
-        {
-            name = "Drakes_PaperBlank",
-            wrapMode = TextureWrapMode.Clamp,
-            filterMode = FilterMode.Bilinear,
-        };
-        var pixels = new Color[size * size];
-        for (var i = 0; i < pixels.Length; i++)
-            pixels[i] = OffWhite;
-        tex.SetPixels(pixels);
-        tex.Apply(false, false);
-        return tex;
-    }
-
-    /// <summary>
-    /// Crops parchment and hardens alpha so cutout materials clip torn edges without white fringe.
-    /// </summary>
-    private static Texture2D CreateCutoutMeshTexture(Texture2D source)
-    {
-        var readable = EnsureReadableTexture(source);
-        var w = readable.width;
-        var h = readable.height;
-        var pixels = readable.GetPixels();
-        const float keep = 0.55f;
-
-        var minX = w;
-        var minY = h;
-        var maxX = -1;
-        var maxY = -1;
-        for (var y = 0; y < h; y++)
-        {
-            for (var x = 0; x < w; x++)
-            {
-                if (pixels[y * w + x].a < keep)
-                    continue;
-                if (x < minX) minX = x;
-                if (y < minY) minY = y;
-                if (x > maxX) maxX = x;
-                if (y > maxY) maxY = y;
-            }
-        }
-
-        if (maxX < minX || maxY < minY)
-            return CreateBlankParchmentTexture(64);
-
-        var cw = maxX - minX + 1;
-        var ch = maxY - minY + 1;
-        var cropped = new Color[cw * ch];
-        for (var y = 0; y < ch; y++)
-        {
-            for (var x = 0; x < cw; x++)
-            {
-                var c = pixels[(minY + y) * w + (minX + x)];
-                // Hard cutout: discard soft fringe (those bright low-alpha rim pixels).
-                cropped[y * cw + x] = c.a < keep
-                    ? new Color(0f, 0f, 0f, 0f)
-                    : new Color(c.r, c.g, c.b, 1f);
-            }
-        }
-
-        var tex = new Texture2D(cw, ch, TextureFormat.RGBA32, false)
-        {
-            name = "Drakes_PaperMesh",
-            wrapMode = TextureWrapMode.Clamp,
-            filterMode = FilterMode.Bilinear,
-        };
-        tex.SetPixels(cropped);
-        tex.Apply(false, false);
-        return tex;
-    }
-
-    /// <summary>
-    /// Written world mesh: same cutout crop/harden as blank, sourced from paper_written.png.
-    /// Do not UV-map the full square (black margins) onto a cropped mask — that paints a solid black border.
-    /// </summary>
-    private static Texture2D? CreateWrittenMeshTexture(
-        Texture2D? writtenParchment,
-        Texture2D? blankParchment,
-        Texture2D? blankMeshTex)
-    {
-        if (writtenParchment == null)
-            return blankMeshTex ?? (blankParchment != null ? CreateCutoutMeshTexture(blankParchment) : null);
-
-        // paper_written.png is paper.png + scribbles — identical layout; crop like blank.
-        return CreateCutoutMeshTexture(writtenParchment);
-    }
-
-    /// <summary>
-    /// Fills transparent texels with the nearest solid parchment color (never bright white OffWhite).
-    /// Used when the world shader cannot alpha-test.
-    /// </summary>
-    private static Texture2D MakeOpaqueInpainted(Texture2D source)
-    {
-        var readable = EnsureReadableTexture(source);
-        var w = readable.width;
-        var h = readable.height;
-        var pixels = readable.GetPixels();
-        const float solid = 0.55f;
-
-        var opaque = new List<Vector2Int>();
-        for (var y = 0; y < h; y++)
-        {
-            for (var x = 0; x < w; x++)
-            {
-                if (pixels[y * w + x].a >= solid)
-                    opaque.Add(new Vector2Int(x, y));
-            }
-        }
-
-        if (opaque.Count == 0)
-            return CreateBlankParchmentTexture(64);
-
-        // Average solid parchment as a coarse fill when a hole is huge.
-        var avg = Color.black;
-        foreach (var p in opaque)
-            avg += pixels[p.y * w + p.x];
-        avg /= opaque.Count;
-        avg.a = 1f;
-
-        var outPixels = new Color[pixels.Length];
-        for (var y = 0; y < h; y++)
-        {
-            for (var x = 0; x < w; x++)
-            {
-                var i = y * w + x;
-                var c = pixels[i];
-                if (c.a >= solid)
-                {
-                    outPixels[i] = new Color(c.r, c.g, c.b, 1f);
-                    continue;
-                }
-
-                // Local search for nearest solid pixel (small radius first).
-                Color? found = null;
-                for (var r = 1; r <= 12 && found == null; r++)
-                {
-                    for (var dy = -r; dy <= r && found == null; dy++)
-                    {
-                        for (var dx = -r; dx <= r; dx++)
-                        {
-                            if (Math.Abs(dx) != r && Math.Abs(dy) != r)
-                                continue;
-                            var nx = x + dx;
-                            var ny = y + dy;
-                            if (nx < 0 || ny < 0 || nx >= w || ny >= h)
-                                continue;
-                            var n = pixels[ny * w + nx];
-                            if (n.a < solid)
-                                continue;
-                            found = new Color(n.r, n.g, n.b, 1f);
-                            break;
-                        }
-                    }
-                }
-
-                outPixels[i] = found ?? avg;
-            }
-        }
-
-        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false)
-        {
-            name = "Drakes_PaperMeshOpaque",
-            wrapMode = TextureWrapMode.Clamp,
-            filterMode = FilterMode.Bilinear,
-        };
-        tex.SetPixels(outPixels);
-        tex.Apply(false, false);
-        return tex;
-    }
-
-    private static Texture2D EnsureReadableTexture(Texture2D source)
-    {
+        if (child.name.IndexOf("snap", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
         try
         {
-            _ = source.GetPixels(0, 0, 1, 1);
-            return source;
+            return child.CompareTag("snappoint");
         }
         catch
         {
-            // Non-readable GPU texture.
+            return false;
         }
-
-        var rt = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32);
-        var prev = RenderTexture.active;
-        Graphics.Blit(source, rt);
-        RenderTexture.active = rt;
-        var copy = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
-        copy.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
-        copy.Apply(false, false);
-        RenderTexture.active = prev;
-        RenderTexture.ReleaseTemporary(rt);
-        return copy;
     }
 
-    private static Material CreatePaperMaterial(Texture2D tex, Material? donorMat)
+    private static void CacheIcon(ref Sprite? cache, CustomItem paper, Sprite? fallback)
     {
-        Material mat;
-        if (donorMat?.shader != null)
-        {
-            mat = new Material(donorMat)
-            {
-                name = "Drakes_Paper2Mat",
-            };
-        }
-        else
-        {
-            var shader = ResolveWorldShader();
-            if (shader == null)
-                throw new InvalidOperationException(
-                    "No usable Valheim shader found for paper mesh (Shader.Find and donor both failed).");
-
-            mat = new Material(shader)
-            {
-                name = "Drakes_Paper2Mat",
-            };
-        }
-
-        mat.color = Color.white;
-        mat.mainTexture = tex;
-        if (mat.HasProperty("_MainTex"))
-            mat.SetTexture("_MainTex", tex);
-        if (mat.HasProperty("_Color"))
-            mat.SetColor("_Color", Color.white);
-        if (mat.HasProperty("_TintColor"))
-            mat.SetColor("_TintColor", Color.white);
-        if (mat.HasProperty("_EmissionMap"))
-            mat.SetTexture("_EmissionMap", null);
-        if (mat.HasProperty("_EmissionColor"))
-            mat.SetColor("_EmissionColor", Color.black);
-        if (mat.HasProperty("_BumpMap"))
-            mat.SetTexture("_BumpMap", null);
-        if (mat.HasProperty("_Glossiness"))
-            mat.SetFloat("_Glossiness", 0f);
-        if (mat.HasProperty("_Metallic"))
-            mat.SetFloat("_Metallic", 0f);
-        if (mat.HasProperty("_Cull"))
-            mat.SetInt("_Cull", 0);
-
-        // Clip transparent mesh texels — stops white fringe from soft AA edges.
-        if (mat.HasProperty("_Cutoff"))
-            mat.SetFloat("_Cutoff", 0.5f);
-        mat.EnableKeyword("_ALPHATEST_ON");
-        mat.DisableKeyword("_ALPHABLEND_ON");
-        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-        mat.DisableKeyword("_EMISSION");
-        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-
-        return mat;
+        cache = ReadPrefabIcon(paper.ItemPrefab) ?? fallback ?? cache;
     }
 
-    private static Shader? ResolveWorldShader()
+    private static Sprite? ReadRegisteredIcon(string prefabName)
     {
-        string[] candidates =
-        {
-            "Legacy Shaders/Transparent/Cutout/Diffuse",
-            "Transparent/Cutout/Diffuse",
-            "Legacy Shaders/Diffuse",
-            "Diffuse",
-            "Custom/Creature",
-            "Standard",
-            "Unlit/Texture",
-        };
+        var go = PrefabManager.Instance.GetPrefab(prefabName)
+                 ?? ObjectDB.instance?.GetItemPrefab(prefabName);
+        return ReadPrefabIcon(go);
+    }
 
-        foreach (var name in candidates)
+    private static Sprite? ReadPrefabIcon(GameObject? go)
+    {
+        var icons = go?.GetComponent<ItemDrop>()?.m_itemData?.m_shared?.m_icons;
+        if (icons == null || icons.Length == 0)
+            return null;
+        return icons[0];
+    }
+
+    private static Sprite? LoadPngSprite(string fileName)
+    {
+        var path = Path.Combine(_pluginDir, "Assets", "Icons", fileName);
+        if (!File.Exists(path))
+            return null;
+
+        try
         {
-            var shader = Shader.Find(name);
-            if (shader != null)
-                return shader;
+            var tex = AssetUtils.LoadTexture(path, relativePath: false);
+            if (tex == null)
+                return null;
+            return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         }
-
-        // Last resort: any loaded non-particle material shader already in memory.
-        foreach (var mat in Resources.FindObjectsOfTypeAll<Material>())
+        catch (Exception ex)
         {
-            if (IsUsableWorldMaterial(mat))
-                return mat.shader;
+            _log?.LogWarning($"[Paper] Failed to load fallback icon '{fileName}': {ex.Message}");
+            return null;
         }
-
-        return null;
     }
 }

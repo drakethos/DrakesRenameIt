@@ -113,38 +113,18 @@ internal static class PaperItemStandPatches
 
     private static ItemDrop.ItemData? TryLoadAttached(ItemStand stand)
     {
-        int hash = 0;
-        try
+        // Valheim 1.0 / Pfhoenix: GetAttachedItem() returns prefab name (string).
+        // Older publicized refs: returns prefab hash (int). Resolve via reflection so both CI and local builds compile.
+        GameObject? prefab = ResolveAttachedPrefab(stand);
+        if (prefab != null)
         {
-            hash = stand.GetAttachedItem();
-        }
-        catch
-        {
-            hash = 0;
-        }
-
-        if (hash != 0 && ObjectDB.instance != null)
-        {
-            var prefab = ObjectDB.instance.GetItemPrefab(hash);
-            var proto = prefab?.GetComponent<ItemDrop>()?.m_itemData;
+            var proto = prefab.GetComponent<ItemDrop>()?.m_itemData;
             if (proto != null)
             {
                 var clone = proto.Clone();
                 var zdo = stand.GetComponent<ZNetView>()?.GetZDO();
                 if (zdo != null)
-                {
-                    try
-                    {
-                        var bytes = zdo.GetByteArray(ZDOVars.s_itemData, (byte[]?)null);
-                        if (bytes != null && bytes.Length > 2)
-                            ItemDrop.LoadFromZDO(clone, zdo, -1);
-                    }
-                    catch
-                    {
-                        /* prefab defaults */
-                    }
-                }
-
+                    TryLoadItemDataFromZdo(clone, zdo);
                 return clone;
             }
         }
@@ -154,6 +134,63 @@ internal static class PaperItemStandPatches
         if (items == null || items.Count == 0)
             return null;
         return items[0];
+    }
+
+    private static GameObject? ResolveAttachedPrefab(ItemStand stand)
+    {
+        if (stand == null || ObjectDB.instance == null)
+            return null;
+
+        try
+        {
+            var mi = AccessTools.Method(typeof(ItemStand), "GetAttachedItem");
+            if (mi == null)
+                return null;
+
+            object? result = mi.Invoke(stand, null);
+            switch (result)
+            {
+                case int hash when hash != 0:
+                    return ObjectDB.instance.GetItemPrefab(hash);
+                case string name when !string.IsNullOrEmpty(name):
+                    return ObjectDB.instance.GetItemPrefab(name);
+                default:
+                    return null;
+            }
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Valheim 1.0: <c>LoadFromZDO(ItemData, ZDO)</c>. Older: <c>LoadFromZDO(ItemData, ZDO, int)</c>.
+    /// </summary>
+    private static void TryLoadItemDataFromZdo(ItemDrop.ItemData item, ZDO zdo)
+    {
+        try
+        {
+            var load2 = AccessTools.Method(
+                typeof(ItemDrop),
+                "LoadFromZDO",
+                new[] { typeof(ItemDrop.ItemData), typeof(ZDO) });
+            if (load2 != null)
+            {
+                load2.Invoke(null, new object[] { item, zdo });
+                return;
+            }
+
+            var load3 = AccessTools.Method(
+                typeof(ItemDrop),
+                "LoadFromZDO",
+                new[] { typeof(ItemDrop.ItemData), typeof(ZDO), typeof(int) });
+            load3?.Invoke(null, new object[] { item, zdo, -1 });
+        }
+        catch
+        {
+            /* keep prefab defaults */
+        }
     }
 
     private static bool HoverTextContainsNoAccess(string? hoverText)

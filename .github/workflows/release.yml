@@ -56,10 +56,31 @@ jobs:
       #      and disables FrameworkPathOverride so the build uses real MS assemblies.
       #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
       #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
-      #  DrakeModsLibs (project reference) provides merged ServerSync via ILRepack.
+      #  DrakeModsLibs compile ref: Thunderstore zip (not a ProjectReference in CI).
       - name: Restore NuGet packages
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
+
+      - name: Fetch DrakeModsLibs reference DLL
+        run: |
+          LIBS_DEP=$(grep -oE 'DrakeMods-DrakeModsLibs-[0-9]+\.[0-9]+\.[0-9]+' mod.package.props | head -1)
+          LIBS_VER="${LIBS_DEP#DrakeMods-DrakeModsLibs-}"
+          if [ -z "$LIBS_VER" ]; then
+            echo "::error::Could not parse DrakeMods-DrakeModsLibs version from mod.package.props" >&2
+            exit 1
+          fi
+          echo "Downloading DrakeModsLibs $LIBS_VER for compile reference"
+          curl -fsSL "https://thunderstore.io/package/download/DrakeMods/DrakeModsLibs/${LIBS_VER}/" -o /tmp/drakemodslibs.zip
+          mkdir -p ci_libs /tmp/drakemodslibs
+          unzip -qo /tmp/drakemodslibs.zip -d /tmp/drakemodslibs
+          DLL=$(find /tmp/drakemodslibs -name 'DrakeModsLibs.dll' | head -1)
+          if [ -z "$DLL" ]; then
+            echo "::error::DrakeModsLibs.dll missing from Thunderstore zip" >&2
+            find /tmp/drakemodslibs -type f >&2
+            exit 1
+          fi
+          cp "$DLL" ci_libs/DrakeModsLibs.dll
+          echo "WORKSHOP_LIBS_DLL=$(pwd)/ci_libs/DrakeModsLibs.dll" >> "$GITHUB_ENV"
 
       # ── Stage game / BepInEx DLLs from Pfhoenix ─────────────────────────────
       #
@@ -121,6 +142,7 @@ jobs:
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
+            /p:WorkshopLibsDll="${WORKSHOP_LIBS_DLL}" \
             /p:Version="${{ steps.ver.outputs.version }}" \
             /t:Build \
             /v:minimal
@@ -133,11 +155,14 @@ jobs:
           PKG_DIR="DrakeMods-DrakesRenameit-${VERSION}"
           ZIP_NAME="DrakeMods-DrakesRenameit-${VERSION}.zip"
 
-          mkdir -p "$PKG_DIR/Assets/Localization" "$PKG_DIR/Assets/Icons"
+          mkdir -p "$PKG_DIR/Assets/Localization" "$PKG_DIR/Assets/Icons" "$PKG_DIR/Assets/Items"
           cp bin/Release/DrakesRenameit.dll "$PKG_DIR/"
           cp Assets/Localization/*.json "$PKG_DIR/Assets/Localization/"
           if compgen -G "Assets/Icons/*.png" > /dev/null; then
             cp Assets/Icons/*.png "$PKG_DIR/Assets/Icons/"
+          fi
+          if [ -d Assets/Items ]; then
+            cp -a Assets/Items/. "$PKG_DIR/Assets/Items/"
           fi
           cp README.md                      "$PKG_DIR/"
           cp icon.png                       "$PKG_DIR/"

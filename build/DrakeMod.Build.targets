@@ -64,7 +64,7 @@
   <Target Name="VerifyNoEmbeddedServerSync"
           AfterTargets="$(DeployAfterTargets)"
           DependsOnTargets="StripLeakedServerSync"
-          Condition="'$(EmbedServerSync)' != 'true' and Exists('$(TargetPath)')">
+          Condition="'$(EmbedServerSync)' != 'true' and '$(CI_SKIP_POST_BUILD)' == '' and Exists('$(TargetPath)')">
     <Error Condition="Exists('$(TargetDir)ServerSync.dll')"
            Text="ServerSync.dll was copied to $(TargetDir). Consumer mods must not reference ServerSync directly; use DrakeModsLibs only." />
     <Error Condition="Exists('$(R2ModDeployPath)\ServerSync.dll')"

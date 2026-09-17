@@ -1,0 +1,9 @@
+{
+  "id": "paper_item_blank",
+  "sourceId": "paper_item",
+  "donor": "LeatherScraps",
+  "displayName": "paper_item_blank",
+  "scale": 0.6,
+  "description": "Blank piece of paper",
+  "existingMaterials": []
+}

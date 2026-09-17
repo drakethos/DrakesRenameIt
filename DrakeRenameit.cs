@@ -64,11 +64,27 @@ namespace DrakeRenameit
             Bind(Config);
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
-            RenameItLibsBridge.Register();
-            PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
-            PaperPlace.Register(Logger);
-            PaperWrittenPlace.Register(Logger);
-            PaperBlankPlace.Register(Logger);
+            try
+            {
+                RenameItLibsBridge.Register();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"RenameItLibsBridge.Register failed: {ex}");
+            }
+
+            try
+            {
+                PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
+                PaperPlace.Register(Logger);
+                PaperWrittenPlace.Register(Logger);
+                PaperBlankPlace.Register(Logger);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Paper content register failed: {ex}");
+            }
+
             harmony.PatchAll();
         }
 

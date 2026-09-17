@@ -2,17 +2,23 @@
 
 # DrakesRenameIt
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.0** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**.
 
-**Requires [DrakeModsLibs 0.9.1](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) come from Libs 0.9.1 and refresh when those settings change.
+**Requires [DrakeModsLibs 0.9.4+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
-### Piece of Paper
+### Piece of Paper (1.1)
 
-Craft a blank **Piece of Paper** (inventory craft by default) for **1 Leather scrap + 1 Coal**. It is a non-stackable rename vessel — open the Drake menu on it and set name / description like any other item. Synced config **11 Paper** controls enable, default name/description, ingredients, station, and item type (`Material` / `Misc`). **ExcludedCategory** alias **`Paper`** targets this item.
+Craft blank **Piece of Paper** from the inventory craft list (default recipe **1 Wood + 1 Coal**; override with **PaperCost**). Blanks stack (default **50**). Open the Drake menu and set a **name** and/or **description** — that **uses one sheet** and creates a **Written Page** (always stack size 1) with your text.
+
+**Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). Ward owners can **Shift+Use** a pinned page to let anyone take it (`PaperTakePublicEnabled`). Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
+
+### LockSmith integration
+
+With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.9.4+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
 
 ### How to use
 
-Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open a small menu: **Rename**, **Description**, or **Crafted by**. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
+Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item. With only RenameIt usable you get the rename action menu; with LockSmith (or another tab) also usable you get the shared tab strip first. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
 
 **Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
@@ -63,7 +69,9 @@ localization with an additional name, simply leave the $string intact and add ar
 - **Separate stacks** — customized stacks only merge when name, description, and crafted-by data match; optional hard lock blocks manual drag-merges too.
 - **ExcludeStacks** — block non-elevated edits on vanilla stackable items (`m_maxStackSize > 1`), separate from merge rules.
 - **Durability modifiers** — optional wear labels prepended to display names (Pristine / tiers / Broken).
-- **Piece of Paper** — craftable blank rename vessel (Deep North tablet mesh, custom icon); config under **11 Paper**.
+- **Piece of Paper / Written Page** — craftable blanks that peel into written notes; hotbar place + hammer décor; optional public take; config under **10 Paper**.
+- **Public rewrite** — optional per-stack flag so non-owners may rewrite name/description (`PublicRewriteEnabled`).
+- **LockSmith / DrakeTabHost** — shared inventory tabs and open binding via **DrakeModsLibs** when both mods are installed.
 - Exclusions by item name, category, and **RenameAllowlist** bypasses; reference file generated for category tokens.
 - Unified action menu (rename, description, crafted by) with fast reset; **Cancel** and **Reset all** confirmation.
 - Item stands: custom names on hover; **ShowItemStandItemNameWhenNoAccess** shows the stand item name even in warded “no access” areas.
@@ -76,17 +84,17 @@ localization with an additional name, simply leave the $string intact and add ar
   - actually change the name of the item behind the scenes
   - give you up
   - let you down!</s>
-  - (It does add one craftable **Piece of Paper** vessel for rename RP.)
+  - (It does add craftable **Piece of Paper** / **Written Page** for rename RP and world notes.)
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 11 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 10 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 11 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`, `LogSpam`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
 - **RenameEnabled** — When on, players may edit display names from the action menu (subject to all other rules). Turn off to block new renames while keeping descriptions or crafted-by.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
 - **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the crafted-by line in tooltips (name and optional line prefix). Real crafter id/name used by the game (ownership, locks) is unchanged.
-- **PublicRewriteEnabled** — When on (default), the item menu can flag a stack so non-owners may rewrite its name and description (`Drake_PublicRewrite` in DrakeModsLibs). Crafted-by stays owner-only.
+- **PublicRewriteEnabled** — When on (default), the item menu can flag a stack so non-owners may rewrite its name and description (`Drake_PublicRewrite` in DrakeModsLibs). Crafted-by stays owner-only. Useful for shared notes and shop labels.
 
 #### Admin (server-synced)
 
@@ -114,7 +122,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **ShowDenialUi** — When on, access denials show a red menu hint, tooltip denial lines, and a center message on failed modifier+right-click. When off, those cues are hidden (silent). Unlock-cost, not-in-inventory, and validation errors are unchanged.
 - **ShowReason** — When on (and **ShowDenialUi** is on), denial text explains **why** (ownership, exclusion, etc.). When off, generic messages only. No effect when **ShowDenialUi** is off. Denials are still logged to BepInEx for admins.
 - **ShowItemStandItemNameWhenNoAccess** — When on, item stands in warded/private areas still show “no access” but also append the stand’s current item name on the hover label (display only; permissions unchanged).
-- **ServerDefaultMenuOpenModifier** — Default keys for opening the Drake menu when a player’s local **MenuOpenModifier** is empty. Set on the host for modpack compatibility (e.g. `None` if another mod uses Shift). Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only.
+- **ServerDefaultMenuOpenModifier** — Default keys for opening the Drake / shared tab menu when a player’s local **MenuOpenModifier** is empty. Set on the host for modpack compatibility (e.g. `None` if another mod uses Shift). Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only. When **LockSmith** (or another Drake tab) is installed, Libs may also apply its **Integration** inventory open binding — keep them aligned in modpacks.
 
 #### Stacks (server-synced)
 
@@ -140,23 +148,27 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **DurabilityBrokenLabel** — Label only at **0** durability (broken in-game). Not used for merely worn gear.
 - **DurabilityTierModifiers** — In-between wear bands: `{Name,fraction}` or `{Name,percent}` (e.g. `{Rusty,0.4},{Worn,0.6}`). Lowest matching threshold wins; gap above highest tier but below full gets no extra label. Skips items with no durability (`m_maxDurability` 0).
 
-#### Paper (server-synced)
+#### Paper (server-synced, section 10)
 
-- **PaperEnabled** — When on, players can craft **Piece of Paper**. The prefab is always registered for multiplayer; this only toggles craftability.
-- **PaperName** — Default display name for unrenamed paper (default `Piece of Paper`). Server-synced localization.
-- **PaperDescription** — Default description before a player rewrites it.
-- **PaperCost** — Recipe ingredients as `PrefabName:amount` list (default `LeatherScraps:1,Coal:1`). Same format as **UnlockCost**. Applied at item registration (menu/world load).
+- **PaperEnabled** — When on, players can craft **Piece of Paper**. Prefabs stay registered for multiplayer; this only toggles craftability.
+- **PaperName** / **PaperDescription** — Defaults for blank paper (before writing).
+- **WrittenPaperName** / **WrittenPaperDescription** — Defaults for **Written Page** when no custom text is set.
+- **PaperCost** — Recipe as `PrefabName:amount` list (default `Wood:1,Coal:1`). Same format as **UnlockCost**. Applied at registration.
 - **PaperCraftingStation** — Station prefab (e.g. `piece_workbench`). Empty = craft anywhere from the inventory craft list.
-- **PaperItemType** — Vanilla category: `Material` (default) or `Misc`. Shown as a dropdown (DrakeModsLibs config acceptable values). Applied at registration. **ExcludedCategory** also accepts alias **`Paper`** to target this vessel specifically.
+- **PaperScale** — World size multiplier for sheets and hammer décor (default `1.5`). Restart menu/world to re-apply.
+- **PaperItemType** — Vanilla category: `Material` (default) or `Misc`. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
 - **BlankPaperStackSize** — Max stack for blank Piece of Paper (default 50). Written Page is always stack size 1.
-- **PaperPlaceEnabled** — When on, hotbar Use can pin parchment (vertical/horizontal). **BlankPaperPlaceOrientation** is Vertical Only, Horizontal Only, or Both (default). Only Both shows the switch tooltip.
-- **PaperTakePublicEnabled** — When on, a ward-permitted owner can Shift+Use a pinned Written Page so anyone can take it. Placement and hammer-remove stay warded.
+- **WrittenPaperIgnoresRestrictions** — When on, Written Page name/description ignore feature-off / exclusion / ExcludeStacks for normal players; ownership and public-rewrite rules still apply.
+- **PaperPlaceEnabled** — When on, **Written Page** hotbar **Use** opens place mode (vertical/horizontal). Blank paper **Use** opens rename / write instead.
+- **BlankPaperPlaceOrientation** — Vertical Only, Horizontal Only, or Both (default). Only **Both** shows the switch tooltip and lets **Use** toggle wall/flat.
+- **PaperTakePublicEnabled** — When on, the creator (or elevated override) inside an allowed ward can **Shift+Use** a pinned Written Page so anyone can take it; Shift+Use again makes it private. Placement and hammer-remove stay warded.
 - **VerticalPaperPlaceable** / **HorizontalPaperPlaceable** / **StackPaperPlaceable** — Hammer furniture pieces (each default on).
 
-#### UI-NotSynced (client only)
+#### UI-NotSynced (client only, section 11)
 
 - **MenuOpenModifier** — Optional per-client override for menu keys. Leave empty to use **ServerDefaultMenuOpenModifier** from the server. When set, always applies on this machine. Same key syntax as the server default.
 - **MenuHintColor** — Tooltip hint color for the menu shortcut (Unity color name or `#rrggbb`).
+- **LogSpam** — Verbose BepInEx traces on this client only (leave off unless debugging).
 
 #### Permission order (how rules stack)
 

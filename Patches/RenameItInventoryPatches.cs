@@ -9,7 +9,9 @@ using static DrakeRenameit.ModText.RenameItLocalization;
 using static DrakeRenameit.RenameitConfig;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 using DrakeRenameit.Integration;
+using DrakeModsLibs.API;
 using DrakeModsLibs.Input;
+using DrakeModsLibs.UI;
 
 namespace DrakeRenameit.Patches;
 
@@ -26,8 +28,19 @@ public static class RenameItInventoryPatches
             var original = __instance.m_playerGrid.m_onRightClick;
             __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
             {
+                // Libs tag rules with suppressRenameInventoryUi (e.g. NoRename, QuestItem, or mod-registered).
+                if (item != null && CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+                {
+                    original?.Invoke(grid, item, pos);
+                    return;
+                }
+
                 if (item != null && MenuBindingRegistry.IsHeld(MenuBindingRegistry.InventoryContextScope, RenameItLibsBridge.InventoryMenuBindingId))
                 {
+                    if (DrakeTabHost.OpenForItem(item))
+                        return;
+
+                    // Fallback if tab host has no registration (should not happen after bridge Register).
                     if (DrakeRenameit.ShowUnlockButton(item))
                     {
                         UIPanels.OpenUnlockMenuFromInventory(item);
@@ -87,6 +100,10 @@ public static class RenameItInventoryPatches
             if (item?.m_shared == null || tooltip == null)
                 return;
 
+            // Libs handoff: no yellow/red RenameIt lines when inventory UI is suppressed.
+            if (CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+                return;
+
             var topicField = AccessTools.Field(typeof(UITooltip), "m_topic");
             var textField = AccessTools.Field(typeof(UITooltip), "m_text");
             if (topicField == null || textField == null)
@@ -141,21 +158,18 @@ public static class RenameItInventoryPatches
         }
 
         /// <summary>
-        /// Write hint always. Place hint only when hotbar place is on.
-        /// Toggle line only when orientation is Both.
+        /// Blank paper is not placeable from Use — hint Use → rename menu + write tip.
+        /// Menu modifier + Right Click tip is appended separately below.
         /// </summary>
         private static string BlankPaperHint()
         {
+            var use = T(LKeys.TooltipPaperBlankUse);
             var write = T(LKeys.TooltipPaperBlankWrite);
-            if (!PaperPlaceEnabled)
-                return write;
-
-            var place = PlaceHint();
-            if (string.IsNullOrWhiteSpace(place))
+            if (string.IsNullOrWhiteSpace(use))
                 return write;
             if (string.IsNullOrWhiteSpace(write))
-                return place;
-            return place + "\n" + write;
+                return use;
+            return use + "\n" + write;
         }
 
         /// <summary>Written pages use the same hotbar orientation flag as blank paper.</summary>

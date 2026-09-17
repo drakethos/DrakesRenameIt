@@ -8,8 +8,8 @@ using UnityEngine;
 namespace DrakeRenameit;
 
 /// <summary>
-/// Hammer décor: bundle blank sheet (flat + coded vertical) + bundle paper stack.
-/// Pure build pieces — no Sign interaction.
+/// Hammer d├⌐cor only: blank sheet upright/flat (1 paper) + paper stack (50 paper).
+/// Pure build pieces ΓÇö no Sign interaction.
 /// </summary>
 internal static class PaperPlace
 {
@@ -41,19 +41,15 @@ internal static class PaperPlace
                 return;
             }
 
-            if (!PaperAssets.TryEnsureLoaded())
-                return;
-
             AddLocalization();
             var icon = PaperItem.GetBlankIconSprite();
 
-            RegisterSheet(BlankUpright, PaperAssets.BlankPiece, "$piece_drakes_paper_blank_u",
-                "$piece_drakes_paper_blank_u_desc", wall: true, cost: 1, icon,
-                RenameitConfig.VerticalPaperPlaceable);
+            // Sign clone for all sheets ΓÇö wood_stack acts like a terrain floor pile.
+            RegisterSheet(BlankUpright, "sign", "$piece_drakes_paper_blank_u", "$piece_drakes_paper_blank_u_desc",
+                wall: true, cost: 1, icon, RenameitConfig.VerticalPaperPlaceable);
 
-            RegisterSheet(BlankLaying, PaperAssets.BlankPiece, "$piece_drakes_paper_blank_l",
-                "$piece_drakes_paper_blank_l_desc", wall: false, cost: 1, icon,
-                RenameitConfig.HorizontalPaperPlaceable);
+            RegisterSheet(BlankLaying, "sign", "$piece_drakes_paper_blank_l", "$piece_drakes_paper_blank_l_desc",
+                wall: false, cost: 1, icon, RenameitConfig.HorizontalPaperPlaceable);
 
             RegisterStack(icon, RenameitConfig.StackPaperPlaceable);
 
@@ -62,7 +58,7 @@ internal static class PaperPlace
             ApplyHammerPlaceableFlags();
 
             _log?.LogInfo(
-                "[Paper] Hammer décor from bundle: " +
+                "[Paper] Hammer d├⌐cor: " +
                 $"upright={(RenameitConfig.VerticalPaperPlaceable ? "on" : "off")}, " +
                 $"flat={(RenameitConfig.HorizontalPaperPlaceable ? "on" : "off")}, " +
                 $"stack={(RenameitConfig.StackPaperPlaceable ? "on" : "off")}.");
@@ -75,7 +71,7 @@ internal static class PaperPlace
 
     private static void RegisterSheet(
         string prefab,
-        string assetName,
+        string clone,
         string nameTok,
         string descTok,
         bool wall,
@@ -83,10 +79,6 @@ internal static class PaperPlace
         Sprite? icon,
         bool placeable)
     {
-        var go = PaperAssets.CreatePrefab(assetName, prefab);
-        if (go == null)
-            return;
-
         var config = new PieceConfig
         {
             Name = nameTok,
@@ -95,7 +87,8 @@ internal static class PaperPlace
             Enabled = true,
             PieceTable = "Hammer",
             Category = "Furniture",
-            CraftingStation = "piece_workbench",
+            // No crafting station — place with hammer anywhere (paper cost still applies).
+            CraftingStation = "",
             Requirements = new[]
             {
                 new RequirementConfig(PaperItem.PrefabName, cost, 0, true),
@@ -104,28 +97,25 @@ internal static class PaperPlace
         if (icon != null)
             config.Icon = icon;
 
-        var piece = new CustomPiece(go, false, config);
+        var piece = new CustomPiece(prefab, clone, config);
         PieceManager.Instance.AddPiece(piece);
-        var pieceGo = piece.PiecePrefab;
-        if (pieceGo == null)
+        var go = piece.PiecePrefab;
+        if (go == null)
             return;
 
-        PaperItem.PrepareSheetPiece(pieceGo, wall);
-        SanitizeDecorPiece(pieceGo, nameTok);
-        var placed = pieceGo.GetComponent<Piece>();
+        PaperItem.BuildDecorSheetVisual(go, wall);
+        SanitizeDecorPiece(go, nameTok);
+        ClearPieceCraftingStation(go);
+        var placed = go.GetComponent<Piece>();
         if (wall)
             _uprightPiece = placed;
         else
             _flatPiece = placed;
-        SetHammerPlaceable(pieceGo, placeable);
+        SetHammerPlaceable(go, placeable);
     }
 
     private static void RegisterStack(Sprite? icon, bool placeable)
     {
-        var go = PaperAssets.CreatePrefab(PaperAssets.BlankStackPiece, PaperStack);
-        if (go == null)
-            return;
-
         var stackCost = Math.Max(1, RenameitConfig.BlankPaperStackSize);
         var config = new PieceConfig
         {
@@ -134,7 +124,8 @@ internal static class PaperPlace
             Enabled = true,
             PieceTable = "Hammer",
             Category = "Furniture",
-            CraftingStation = "piece_workbench",
+            // No crafting station — place with hammer anywhere (paper cost still applies).
+            CraftingStation = "",
             Requirements = new[]
             {
                 new RequirementConfig(PaperItem.PrefabName, stackCost, 0, true),
@@ -143,16 +134,25 @@ internal static class PaperPlace
         if (icon != null)
             config.Icon = icon;
 
-        var piece = new CustomPiece(go, false, config);
+        var piece = new CustomPiece(PaperStack, "sign", config);
         PieceManager.Instance.AddPiece(piece);
-        var pieceGo = piece.PiecePrefab;
-        if (pieceGo == null)
+        var go = piece.PiecePrefab;
+        if (go == null)
             return;
 
-        PaperItem.PrepareStackPiece(pieceGo);
-        SanitizeDecorPiece(pieceGo, "$piece_drakes_paper_stack");
-        _stackPiece = pieceGo.GetComponent<Piece>();
-        SetHammerPlaceable(pieceGo, placeable);
+        PaperItem.BuildPaperStackVisual(go);
+        SanitizeDecorPiece(go, "$piece_drakes_paper_stack");
+        ClearPieceCraftingStation(go);
+        _stackPiece = go.GetComponent<Piece>();
+        SetHammerPlaceable(go, placeable);
+    }
+
+    /// <summary>Sign donor can keep a workbench link; blank paper décor must not require one.</summary>
+    private static void ClearPieceCraftingStation(GameObject go)
+    {
+        var piece = go != null ? go.GetComponent<Piece>() : null;
+        if (piece != null)
+            piece.m_craftingStation = null;
     }
 
     private static void ApplyHammerPlaceableFlags()
@@ -185,6 +185,7 @@ internal static class PaperPlace
         foreach (var c in go.GetComponentsInChildren<Container>(true))
             UnityEngine.Object.DestroyImmediate(c);
 
+        // Hoverable/Interactable on donor (if any) ΓÇö destroy common components carefully.
         foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
         {
             if (mb == null)
@@ -204,10 +205,10 @@ internal static class PaperPlace
         var loc = LocalizationManager.Instance.GetLocalization();
         var stack = Math.Max(1, RenameitConfig.BlankPaperStackSize);
 
-        loc.AddTranslation("English", "piece_drakes_paper_blank_u", "Blank Paper (upright)");
-        loc.AddTranslation("English", "piece_drakes_paper_blank_u_desc", "Decorative blank sheet for a wall. Costs 1 Piece of Paper.");
+        loc.AddTranslation("English", "piece_drakes_paper_blank_u", "Blank Paper (wall)");
+        loc.AddTranslation("English", "piece_drakes_paper_blank_u_desc", "Hang a blank sheet on a wall. Costs 1 Piece of Paper.");
         loc.AddTranslation("English", "piece_drakes_paper_blank_l", "Blank Paper (flat)");
-        loc.AddTranslation("English", "piece_drakes_paper_blank_l_desc", "Decorative blank sheet laid flat. Costs 1 Piece of Paper.");
+        loc.AddTranslation("English", "piece_drakes_paper_blank_l_desc", "Lay a blank sheet flat on a table or floor. Costs 1 Piece of Paper.");
         loc.AddTranslation("English", "piece_drakes_paper_stack", "Paper Stack");
         loc.AddTranslation("English", "piece_drakes_paper_stack_desc",
             $"A tidy pile of blank paper. Costs {stack} Piece of Paper.");

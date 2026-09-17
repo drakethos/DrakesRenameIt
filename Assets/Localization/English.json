@@ -159,6 +159,10 @@
       "value": "Use item to place."
     },
     {
+      "key": "tooltip_paper_blank_use",
+      "value": "Use to open the rename menu."
+    },
+    {
       "key": "tooltip_paper_blank_write",
       "value": "Rename or edit the description to write a new page.\nThat text is copied onto a new piece of paper."
     },

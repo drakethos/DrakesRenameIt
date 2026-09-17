@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 48;
+    private const int ExpectedSyncedEntryCount = 49;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -83,6 +83,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _paperDescription = default!;
     private static ConfigEntry<string> _paperCost = default!;
     private static ConfigEntry<string> _paperCraftingStation = default!;
+    private static ConfigEntry<float> _paperScale = default!;
     private static ConfigEntry<string> _paperItemType = default!;
     private static ConfigEntry<int> _blankPaperStackSize = default!;
     private static ConfigEntry<string> _writtenPaperName = default!;
@@ -224,6 +225,11 @@ public static class RenameitConfig
 
     /// <summary>Crafting station prefab name for Piece of Paper. Empty = craft anywhere (inventory).</summary>
     public static string PaperCraftingStation => _paperCraftingStation.Value;
+
+    /// <summary>
+    /// World/visual size multiplier for paper sheets (1 = US Letter meters). Applied when items/pieces register.
+    /// </summary>
+    public static float PaperScale => Math.Max(0.25f, Math.Min(5f, _paperScale.Value));
 
     /// <summary>Vanilla <see cref="ItemDrop.ItemData.ItemType"/> for Piece of Paper (<c>Material</c> or <c>Misc</c>).</summary>
     public static string PaperItemType => _paperItemType.Value;
@@ -448,7 +454,7 @@ public static class RenameitConfig
             SectionGeneral, DisplayGeneral,
             "ServerDefaultMenuOpenModifier",
             "Shift",
-            "Default keys for opening the Renameit menu when a player's local MenuOpenModifier (section 10) is empty. Set on the server/modpack for compatibility (e.g. None if another mod uses Shift). Non-empty local MenuOpenModifier always overrides on that client.");
+            "Default keys for opening the Renameit menu when a player's local MenuOpenModifier (section 11 UI-NotSynced) is empty. Set on the server/modpack for compatibility (e.g. None if another mod uses Shift). Non-empty local MenuOpenModifier always overrides on that client.");
 
         // --- Stacks (merge rules, stackable edit block) ---
         _separateStacks = _drakeConfigSync.BindSynced(config, 
@@ -576,6 +582,12 @@ public static class RenameitConfig
             "",
             "Crafting station prefab for Piece of Paper (e.g. piece_workbench). Leave empty to craft anywhere from the inventory craft list.");
 
+        _paperScale = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperScale",
+            1.5f,
+            "World size multiplier for blank/written paper sheets and hammer décor (1 = US Letter ~8.5×11 inches in meters). Default 1.5 (50% larger). Applied when items/pieces register; restart world/menu to re-apply.");
+
         _paperItemType = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
             "PaperItemType",
@@ -611,7 +623,7 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "PaperPlaceEnabled",
             true,
-            "If true, blank/written paper in the hotbar can open place-mode to pin parchment in the world (vertical/horizontal).");
+            "If true, Written Page in the hotbar can open place-mode to pin parchment in the world (vertical/horizontal). Blank paper Use opens rename instead.");
 
         _paperTakePublicEnabled = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
@@ -623,13 +635,13 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "VerticalPaperPlaceable",
             true,
-            "If true, the hammer furniture piece Blank Paper (upright) can be placed. Default on.");
+            "If true, the hammer furniture piece Blank Paper (wall) can be placed. Default on.");
 
         _horizontalPaperPlaceable = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
             "HorizontalPaperPlaceable",
             true,
-            "If true, the hammer furniture piece Blank Paper (flat) can be placed. Default on.");
+            "If true, the hammer furniture piece Blank Paper (flat / table) can be placed. Default on.");
 
         _stackPaperPlaceable = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
@@ -641,7 +653,7 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "BlankPaperPlaceOrientation",
             BlankPlaceBoth,
-            "How blank and written paper place from the hotbar (Use). Vertical Only or Horizontal Only: tooltip is just Use to place, and Use does not switch orientation. Both (default): Use again switches wall / flat, and the tooltip says so.",
+            "How Written Page places from the hotbar (Use). Vertical Only or Horizontal Only: tooltip is just Use to place, and Use does not switch orientation. Both (default): Use again switches wall / flat, and the tooltip says so. Blank paper is not placeable from Use.",
             new AcceptableValueList<string>(BlankPlaceVerticalOnly, BlankPlaceHorizontalOnly, BlankPlaceBoth));
 
         void RaiseHammerPlaceableChanged(object sender, EventArgs e) =>
@@ -698,7 +710,7 @@ public static class RenameitConfig
         // Paper was 11 and client UI was 10 — swap so Paper is the last synced section.
         MigrateSectionKeys(config, "11 Paper", SectionPaper,
             "PaperEnabled", "PaperName", "PaperDescription", "PaperCost", "PaperCraftingStation",
-            "PaperItemType", "BlankPaperStackSize", "WrittenPaperName", "WrittenPaperDescription",
+            "PaperScale", "PaperItemType", "BlankPaperStackSize", "WrittenPaperName", "WrittenPaperDescription",
             "WrittenPaperIgnoresRestrictions", "PaperPlaceEnabled", "PaperTakePublicEnabled",
             "VerticalPaperPlaceable", "HorizontalPaperPlaceable", "StackPaperPlaceable",
             "BlankPaperPlaceOrientation");

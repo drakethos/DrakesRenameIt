@@ -1,8 +1,11 @@
+using System;
 using DrakeRenameit.API;
 using DrakeRenameit.Permissions;
+using DrakeRenameit.UI;
 using DrakeModsLibs.Tags;
 using DrakeModsLibs.API;
 using DrakeModsLibs.Input;
+using DrakeModsLibs.UI;
 
 namespace DrakeRenameit.Integration;
 
@@ -21,6 +24,7 @@ internal sealed class RenameItStackMergePolicy : IStackMergePolicy
 internal static class RenameItLibsBridge
 {
     public const string InventoryMenuBindingId = "renameit.inventory";
+    public const string TabId = DrakeTabRegistration.RenameItTabId;
     static bool _registered;
 
     internal static void Register()
@@ -33,16 +37,61 @@ internal static class RenameItLibsBridge
         CustomizeLibsAPI.RegisterStackMergePolicy(new RenameItStackMergePolicy());
         CustomizeLibsAPI.SetShowItemStandItemNameWhenNoAccess(RenameitConfig.ShowItemStandItemNameWhenNoAccess);
 
+        // Binding + validators must succeed even if tab-host API drifts — otherwise Awake aborts before PatchAll.
         MenuBindingRegistry.Register(
             InventoryMenuBindingId,
             MenuBindingRegistry.InventoryContextScope,
-            priority: 100,
+            priority: DrakeTabRegistration.DefaultRenamePriority,
             getBindingString: () => RenameitConfig.MenuOpenModifier,
             modLabel: "DrakesRenameit");
 
         RegisterPermissionValidators();
         CustomizationGatekeeper.TagBypass = RenameitPermission.IsElevatedForOverrides;
+
+        try
+        {
+            DrakeTabHost.Register(
+                id: TabId,
+                title: "Rename",
+                priority: DrakeTabRegistration.DefaultRenamePriority,
+                isAvailable: IsRenameTabAvailable,
+                show: ShowRenameTab,
+                claimDefault: _ => false,
+                hide: HideRenameTab,
+                getHintPhrase: () => "open rename options",
+                getTitle: () => "Rename");
+        }
+        catch (Exception ex)
+        {
+            RenameitConfig.Log?.LogError(
+                $"[DrakesRenameit] DrakeTabHost.Register failed (libs API mismatch?). Inventory menu still uses fallback. {ex.GetType().Name}: {ex.Message}");
+        }
     }
+
+    static bool IsRenameTabAvailable(ItemDrop.ItemData item)
+    {
+        if (item == null)
+            return false;
+        if (CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+            return false;
+        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+            return false;
+        return DrakeRenameit.ShowUnlockButton(item) || DrakeRenameit.AnyInventoryActionAvailable(item);
+    }
+
+    static void ShowRenameTab(DrakeTabPageContext ctx)
+    {
+        var item = ctx.Item;
+        if (DrakeRenameit.ShowUnlockButton(item))
+        {
+            UIPanels.OpenUnlockMenuFromInventory(item);
+            return;
+        }
+
+        UIPanels.OpenActionMenu(item);
+    }
+
+    static void HideRenameTab() => UIPanels.HideForTabHost();
 
     static void RegisterPermissionValidators()
     {

@@ -1,0 +1,9 @@
+{
+  "id": "paper_blank_piece",
+  "sourceId": "paper_piece",
+  "donor": "sign",
+  "displayName": "paper_blank_piece",
+  "scale": 0.6,
+  "description": "Blank sheet of paper",
+  "existingMaterials": []
+}

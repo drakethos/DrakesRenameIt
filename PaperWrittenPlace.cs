@@ -128,9 +128,6 @@ internal static class PaperWrittenPlace
             if (!RenameitConfig.PaperEnabled || !RenameitConfig.PaperPlaceEnabled)
                 return;
 
-            if (!PaperAssets.TryEnsureLoaded())
-                return;
-
             AddLocalization();
 
             var table = new CustomPieceTable(PieceTableName, new PieceTableConfig
@@ -145,7 +142,7 @@ internal static class PaperWrittenPlace
             RegisterNote(NoteFlat, wall: false, icon);
             AttachTableToWrittenItem();
 
-            _log?.LogInfo("[Paper] Written place table ready (bundle mesh; vertical is rotated in code).");
+            _log?.LogInfo("[Paper] Written place table ready (forge art on sign donors).");
         }
         catch (Exception ex)
         {
@@ -169,21 +166,17 @@ internal static class PaperWrittenPlace
         if (icon != null)
             config.Icon = icon;
 
-        var go = PaperAssets.CreatePrefab(PaperAssets.WrittenPiece, prefab);
+        var piece = new CustomPiece(prefab, "sign", config);
+        PieceManager.Instance.AddPiece(piece);
+        var go = piece.PiecePrefab;
         if (go == null)
             return;
 
-        var piece = new CustomPiece(go, false, config);
-        PieceManager.Instance.AddPiece(piece);
-        var pieceGo = piece.PiecePrefab;
-        if (pieceGo == null)
-            return;
+        ClearPieceBuildCost(go);
+        PaperItem.BuildDecorSheetVisual(go, wall, written: true);
 
-        ClearPieceBuildCost(pieceGo);
-        PaperItem.PrepareSheetPiece(pieceGo, wall);
-
-        if (pieceGo.GetComponent<PaperWrittenVessel>() == null)
-            pieceGo.AddComponent<PaperWrittenVessel>();
+        if (go.GetComponent<PaperWrittenVessel>() == null)
+            go.AddComponent<PaperWrittenVessel>();
     }
 
     /// <summary>Strip donor recipe so HUD doesn't show Wood/Coal; placement consumes the Written Page.</summary>
@@ -434,9 +427,7 @@ internal static class PaperWrittenPlace
     private static string PlaceStatus(int orient)
     {
         var label = orient == 0 ? "Wall (vertical)" : "Flat";
-        return RenameitConfig.BlankPaperPlaceCanToggle
-            ? $"Place: {label} — Use again to switch Wall/Flat."
-            : $"Place: {label}";
+        return $"Place: {label} — Use again to switch Wall/Flat.";
     }
 
     private static bool InOurPlaceMode(Player player)
@@ -452,9 +443,6 @@ internal static class PaperWrittenPlace
 
     private static void CycleOrientation(Player player)
     {
-        if (!RenameitConfig.BlankPaperPlaceCanToggle)
-            return;
-
         _orientIndex = _orientIndex == 0 ? 1 : 0;
         SelectOrientation(player, _orientIndex);
         player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
@@ -720,16 +708,17 @@ internal static class PaperWrittenPlace
             if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
                 return true;
 
-            var nv = drop.m_nview != null ? drop.m_nview : go.GetComponent<ZNetView>();
-            if (nv == null || !nv.IsValid())
+            // m_nview is publicized at compile time but private at runtime.
+            var nv = go.GetComponent<ZNetView>();
+            var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
+            if (zdo == null)
             {
                 UnityEngine.Object.Destroy(go);
                 __result = false;
                 return false;
             }
 
-            var id = nv.GetZDO().m_uid;
-            if (ClaimedWrittenDrops.Contains(id))
+            if (ClaimedWrittenDrops.Contains(zdo.m_uid))
             {
                 if (ZNetScene.instance != null)
                     ZNetScene.instance.Destroy(go);
@@ -751,9 +740,11 @@ internal static class PaperWrittenPlace
             var drop = go.GetComponent<ItemDrop>();
             if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
                 return;
-            var nv = drop.m_nview != null ? drop.m_nview : go.GetComponent<ZNetView>();
-            if (nv != null && nv.IsValid())
-                ClaimedWrittenDrops.Add(nv.GetZDO().m_uid);
+            // m_nview is publicized at compile time but private at runtime.
+            var nv = go.GetComponent<ZNetView>();
+            var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
+            if (zdo != null)
+                ClaimedWrittenDrops.Add(zdo.m_uid);
         }
 
         /// <summary>
@@ -767,8 +758,6 @@ internal static class PaperWrittenPlace
                 return true;
             if (PaperBlankPlace.IsInPlaceMode(__instance))
                 return true;
-            if (InOurPlaceMode(__instance) && !RenameitConfig.BlankPaperPlaceCanToggle)
-                SelectOrientation(__instance, AllowedOrientIndex());
             if (!__instance.InPlaceMode())
                 return true;
 

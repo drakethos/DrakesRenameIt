@@ -4,6 +4,7 @@ using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
 using DrakeRenameit.ModText;
 using DrakeModsLibs.Data;
+using DrakeModsLibs.UI;
 using static DrakeRenameit.ModText.RenameItLocalization;
 using Jotunn.Managers;
 using UnityEngine;
@@ -80,26 +81,13 @@ public static class UIPanels
     private static Text? _unlockPanelTitleText;
     private static Text? _unlockCostLabelText;
 
-    private static GameObject? _resetAllConfirmPanel;
-    private static Button? _buttonResetAllConfirmYes;
-    private static Button? _buttonResetAllConfirmNo;
+    static readonly DrakeConfirmPanel ResetAllConfirm = new DrakeConfirmPanel("renameit_reset_all_confirm");
 
-    // Track whether we currently hold a BlockInput(true) so we never double-block or double-unblock
-    private static bool _inputBlocked;
+    /// <summary>Forwards to <see cref="DrakeGuiInput"/> (shared with LockSmith wood panels).</summary>
+    internal static void EnsureInputBlocked() => DrakeGuiInput.EnsureBlocked();
 
-    internal static void EnsureInputBlocked()
-    {
-        if (_inputBlocked) return;
-        GUIManager.BlockInput(true);
-        _inputBlocked = true;
-    }
-
-    internal static void EnsureInputUnblocked()
-    {
-        if (!_inputBlocked) return;
-        GUIManager.BlockInput(false);
-        _inputBlocked = false;
-    }
+    /// <summary>Forwards to <see cref="DrakeGuiInput"/>.</summary>
+    internal static void EnsureInputUnblocked() => DrakeGuiInput.EnsureUnblocked();
 
     static void SetButtonLabel(Button? button, string label)
     {
@@ -145,8 +133,27 @@ public static class UIPanels
             ActionMenuPanel.SetActive(false);
         if (_unlockConfirmPanel != null)
             _unlockConfirmPanel.SetActive(false);
-        if (_resetAllConfirmPanel != null)
-            _resetAllConfirmPanel.SetActive(false);
+        ResetAllConfirm.Close();
+        DrakeRenameit.CurrentItem = null;
+        EnsureInputUnblocked();
+        DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
+    }
+
+    /// <summary>Tab host switching away from Rename — hide chrome without clearing host session twice.</summary>
+    internal static void HideForTabHost()
+    {
+        if (InputNamePanel != null)
+            InputNamePanel.SetActive(false);
+        if (InputDescPanel != null)
+            InputDescPanel.SetActive(false);
+        if (InputCraftedByPanel != null)
+            InputCraftedByPanel.SetActive(false);
+        CloseCraftedByLineLabelPopover();
+        if (ActionMenuPanel != null)
+            ActionMenuPanel.SetActive(false);
+        if (_unlockConfirmPanel != null)
+            _unlockConfirmPanel.SetActive(false);
+        ResetAllConfirm.Close();
         DrakeRenameit.CurrentItem = null;
         EnsureInputUnblocked();
     }
@@ -314,7 +321,7 @@ public static class UIPanels
         _buttonMenuRename.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
-            CloseActionMenuOnly();
+            HideActionMenuForSubmenu();
             if (item != null)
                 DrakeRenameit.OpenRename(item);
         });
@@ -330,7 +337,7 @@ public static class UIPanels
         _buttonMenuDesc.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
-            CloseActionMenuOnly();
+            HideActionMenuForSubmenu();
             if (item != null)
                 DrakeRenameit.OpenRewriteDesc(item);
         });
@@ -346,7 +353,7 @@ public static class UIPanels
         _buttonMenuCraftedBy.AddUniqueListener(() =>
         {
             var item = DrakeRenameit.CurrentItem;
-            CloseActionMenuOnly();
+            HideActionMenuForSubmenu();
             if (item != null)
                 DrakeRenameit.OpenCraftedByEditor(item);
         });
@@ -511,29 +518,11 @@ public static class UIPanels
     }
 
     /// <summary>
-    /// Jotunn ApplyButtonStyle adds ButtonSfx with both click (sfx_gui_button) and select
-    /// (sfx_gui_select). A mouse click selects then clicks → two sounds. Keep click only.
+    /// Soften helpers forward to <see cref="DrakeButtonSfx"/> (kept as local names for call sites).
     /// </summary>
-    static void SoftenDrakeButtonSfx(GameObject? root)
-    {
-        if (root == null)
-            return;
-        foreach (var sfx in root.GetComponentsInChildren<ButtonSfx>(true))
-        {
-            if (sfx == null)
-                continue;
-            sfx.m_selectSfxPrefab = null;
-            sfx.m_selectSfxPrefabVibrationOnly = null;
-            sfx.m_enterSfxPrefab = null;
-            sfx.m_enterSfxPrefabVibrationOnly = null;
-        }
-    }
+    static void SoftenDrakeButtonSfx(GameObject? root) => DrakeButtonSfx.Soften(root);
 
-    static Button SoftenButton(GameObject buttonGo)
-    {
-        SoftenDrakeButtonSfx(buttonGo);
-        return buttonGo.GetComponent<Button>();
-    }
+    static Button SoftenButton(GameObject buttonGo) => DrakeButtonSfx.SoftenButton(buttonGo);
 
     static void ApplyActionMenuLayout()
     {
@@ -582,6 +571,20 @@ public static class UIPanels
         rt.sizeDelta = new Vector2(width, height);
     }
 
+    /// <summary>
+    /// Hide the action menu while opening a submenu (rename / desc / crafted-by).
+    /// Does not end the DrakeTabHost session — otherwise Lock|Rename tabs vanish until reopen.
+    /// </summary>
+    private static void HideActionMenuForSubmenu()
+    {
+        if (_publicHoverTip != null)
+            _publicHoverTip.SetActive(false);
+        if (ActionMenuPanel != null)
+            ActionMenuPanel.SetActive(false);
+        // Leave input blocked; the editor panel takes over.
+    }
+
+    /// <summary>User dismissed the action menu (OK) — end tab-host session.</summary>
     private static void CloseActionMenuOnly()
     {
         if (_publicHoverTip != null)
@@ -589,15 +592,12 @@ public static class UIPanels
         if (ActionMenuPanel != null)
             ActionMenuPanel.SetActive(false);
         EnsureInputUnblocked();
+        DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
     }
 
     // -------------------------------------------------------------------------
-    // Reset all confirmation
+    // Reset all confirmation (DrakeConfirmPanel — RenameIt-standard chrome)
     // -------------------------------------------------------------------------
-
-    const float ResetAllConfirmPanelWidth = 300f;
-    const float ResetAllConfirmPanelHeight = 178f;
-    const float ResetAllConfirmTextWidth = 272f;
 
     private static void OpenResetAllConfirmPanel(ItemDrop.ItemData item)
     {
@@ -612,105 +612,32 @@ public static class UIPanels
             return;
         }
 
-        EnsureResetAllConfirmPanel();
-        if (_resetAllConfirmPanel == null || _buttonResetAllConfirmYes == null)
-            return;
-
         DrakeRenameit.CurrentItem = item;
-        _resetAllConfirmPanel.SetActive(true);
-        _resetAllConfirmPanel.transform.SetAsLastSibling();
-        EnsureInputBlocked();
-    }
-
-    private static void EnsureResetAllConfirmPanel()
-    {
-        if (_resetAllConfirmPanel != null || GUIManager.Instance == null || !GUIManager.CustomGUIFront)
-            return;
-
-        _resetAllConfirmPanel = GUIManager.Instance.CreateWoodpanel(
-            parent: GUIManager.CustomGUIFront.transform,
-            anchorMin: new Vector2(0.5f, 0.5f),
-            anchorMax: new Vector2(0.5f, 0.5f),
-            position: new Vector2(0f, 0f),
-            width: ResetAllConfirmPanelWidth,
-            height: ResetAllConfirmPanelHeight,
-            draggable: false);
-
-        GUIManager.Instance.CreateText(
-            text: T(LKeys.ResetAllTitle),
-            parent: _resetAllConfirmPanel.transform,
-            anchorMin: new Vector2(0.5f, 1f),
-            anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(0f, -40f),
-            font: GUIManager.Instance.AveriaSerifBold,
-            fontSize: 20,
-            color: GUIManager.Instance.ValheimOrange,
-            outline: true,
-            outlineColor: Color.black,
-            width: ResetAllConfirmTextWidth,
-            height: 44,
-            addContentSizeFitter: false);
-
-        GUIManager.Instance.CreateText(
-            text: T(LKeys.ResetAllBody),
-            parent: _resetAllConfirmPanel.transform,
-            anchorMin: new Vector2(0.5f, 1f),
-            anchorMax: new Vector2(0.5f, 1f),
-            position: new Vector2(0f, -108f),
-            font: GUIManager.Instance.AveriaSerifBold,
-            fontSize: 14,
-            color: Color.white,
-            outline: true,
-            outlineColor: Color.black,
-            width: ResetAllConfirmTextWidth,
-            height: 64,
-            addContentSizeFitter: false);
-
-        _buttonResetAllConfirmYes = SoftenButton(GUIManager.Instance.CreateButton(
-            text: T(LKeys.BtnYes),
-            parent: _resetAllConfirmPanel.transform,
-            anchorMin: new Vector2(0.5f, 0f),
-            anchorMax: new Vector2(0.5f, 0f),
-            position: new Vector2(-55f, 35f),
-            width: 110f,
-            height: 30f));
-        _buttonResetAllConfirmYes.AddUniqueListener(() =>
-        {
-            var item = DrakeRenameit.CurrentItem;
-            if (item != null)
-                DrakeRenameit.ResetAllCustomizations(item);
-            CloseResetAllConfirmPanel(reopenActionMenu: false);
-        });
-
-        _buttonResetAllConfirmNo = SoftenButton(GUIManager.Instance.CreateButton(
-            text: T(LKeys.BtnNo),
-            parent: _resetAllConfirmPanel.transform,
-            anchorMin: new Vector2(0.5f, 0f),
-            anchorMax: new Vector2(0.5f, 0f),
-            position: new Vector2(55f, 35f),
-            width: 110f,
-            height: 30f));
-        _buttonResetAllConfirmNo.AddUniqueListener(() => CloseResetAllConfirmPanel(reopenActionMenu: true));
-    }
-
-    private static void CloseResetAllConfirmPanel(bool reopenActionMenu)
-    {
-        if (_resetAllConfirmPanel != null)
-            _resetAllConfirmPanel.SetActive(false);
-
-        if (reopenActionMenu && DrakeRenameit.CurrentItem != null)
-        {
-            var item = DrakeRenameit.CurrentItem;
-            ActionMenuPanel?.SetActive(false);
-            OpenActionMenu(item);
-        }
-        else
-        {
-            if (ActionMenuPanel != null)
-                ActionMenuPanel.SetActive(false);
-            DrakeRenameit.CurrentItem = null;
-            EnsureInputUnblocked();
-        }
+        ResetAllConfirm.Show(
+            T(LKeys.ResetAllTitle),
+            T(LKeys.ResetAllBody),
+            onYes: () =>
+            {
+                var current = DrakeRenameit.CurrentItem;
+                if (current != null)
+                    DrakeRenameit.ResetAllCustomizations(current);
+                if (ActionMenuPanel != null)
+                    ActionMenuPanel.SetActive(false);
+                DrakeRenameit.CurrentItem = null;
+                DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
+                // DrakeConfirmPanel.Close already unblocked.
+            },
+            onNo: () =>
+            {
+                var current = DrakeRenameit.CurrentItem;
+                if (current != null)
+                {
+                    ActionMenuPanel?.SetActive(false);
+                    OpenActionMenu(current);
+                }
+            },
+            yesLabel: T(LKeys.BtnYes),
+            noLabel: T(LKeys.BtnNo));
     }
 
     // -------------------------------------------------------------------------
@@ -1016,6 +943,7 @@ public static class UIPanels
                 ActionMenuPanel.SetActive(false);
             DrakeRenameit.CurrentItem = null;
             EnsureInputUnblocked();
+            DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
         }
     }
 

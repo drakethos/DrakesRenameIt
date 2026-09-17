@@ -1,11 +1,11 @@
-## Unreleased
-- Requires **DrakeModsLibs 0.9.1** (item-stand labels load the real attached item, stands refresh when durability labels change, `Drake_PublicRewrite`, config acceptable-value lists).
-- **Paper placeability:** hammer pieces `VerticalPaperPlaceable`, `HorizontalPaperPlaceable`, and `StackPaperPlaceable` (each default on). Blank Piece of Paper hotbar place is `BlankPaperPlaceOrientation`: Vertical Only, Horizontal Only, or Both (default). Only Both shows the switch tooltip and lets Use toggle wall/flat.
-- **Paper take-public:** ward-permitted players can Shift+Use a pinned Written Page so anyone can take it. `PaperTakePublicEnabled` (default on). Placement and hammer-remove stay warded.
-- **Paper Blank / Written:** blank Piece of Paper stacks (default 50); writing peels one Written Page.
-- **Public rewrite:** optional "Anyone can rewrite" on name/desc (server `PublicRewriteEnabled`).
-- **Placeable notes:** hotbar use opens place menu; `[E]` reclaims with custom data.
-- Hammer Paper Notice spike retired.
+- Version 1.1.0
+  - Requires **DrakeModsLibs 0.9.4+** (shared wood UI, `DrakeTabHost`, soft rename suppress + TagBypass, `Drake_PublicRewrite`, item-stand / durability label refresh).
+  - **LockSmith integration:** registers Rename on `DrakeTabHost` so inventory modifier+right-click can show **Lock | Rename** when both tabs are usable. Opening Rename / Description / Crafted-by no longer calls `NotifyFeatureClosed`, so the tab strip stays after OK. Shared Integration open keys / tab priorities live in Libs.
+  - **Piece of Paper / Written Page:** craftable blanks (default `Wood:1,Coal:1`, stack default 50); renaming or rewriting description peels one **Written Page** (stack 1). Forge art packs under `Assets/Items/paper_*`. Config section **10 Paper** (UI moves to **11 UI-NotSynced**).
+  - **Placeable notes:** Written Page hotbar Use pins parchment; `BlankPaperPlaceOrientation` Vertical / Horizontal / Both; `[E]` reclaims with custom data. Hammer pieces `VerticalPaperPlaceable`, `HorizontalPaperPlaceable`, `StackPaperPlaceable` (each default on). Hammer Paper Notice spike retired.
+  - **Paper take-public:** creator or elevated override can Shift+Use a pinned Written Page so anyone can take it (`PaperTakePublicEnabled`, default on). Placement and hammer-remove stay warded.
+  - **Public rewrite:** optional per-stack "Anyone can rewrite" for name/description (`PublicRewriteEnabled`).
+  - **ExcludedCategory** alias **`Paper`** targets blank and written paper. Optional `WrittenPaperIgnoresRestrictions`, `PaperScale`, written default name/description.
 - Version 0.1.0
   - Initial upload and baseline version.
     - Current Feature List:
@@ -98,11 +98,6 @@
   - **Config & docs**
     - Numbered cfg sections **01 Admin** through **10 UI-NotSynced** for Configuration Manager tab order; legacy section names migrate automatically.
     - README overhaul for 1.0 (permissions, config sections, menu keys, denial UI).
-- Version 1.1.0
-  - **Piece of Paper** craftable rename vessel (`Drakes_PieceOfPaper`): **Paper2** double-sided flat parchment quad (LeatherScraps ItemDrop donor only — no rune-tile mesh). Custom inventory icon, item-stand `attach` + stand patches.
-  - Synced config **11 Paper** (37 total synced entries): `PaperEnabled`, `PaperName`, `PaperDescription`, `PaperCost` (default `LeatherScraps:1,Coal:1`), `PaperCraftingStation`, `PaperItemType` (`Material`/`Misc`).
-  - **ExcludedCategory** alias **`Paper`** targets the vessel.
-  - Non-stackable for now; intended to be renamed via the existing RenameIt menu.
 - Version 1.0.9
   - **Valheim 1.0 compatibility** - depends on **DrakeModsLibs 0.9.0** for updated display / item-stand patches (fixes broken / oversized labels after the 1.0 game update).
   - Shared display + ServerSync code moved into **DrakeModsLibs**. Install Libs with RenameIt; no separate ServerSync package.

@@ -7,13 +7,14 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
+using DrakeRenameit.UI;
 
 namespace DrakeRenameit;
 
 /// <summary>
-/// Blank Piece of Paper → hotbar place (vertical / flat). Orientation comes from
-/// <see cref="RenameitConfig.BlankPaperPlaceOrientation"/>. Use-again toggles only on Both.
-/// Cost is one sheet from the triggering stack; hammer-remove refunds it.
+/// Legacy blank hotbar-place pieces (world refund / old ZDOs). Blank <b>Use</b> no longer
+/// places — it opens the rename menu. Vertical/flat blank décor is hammer-only via
+/// <see cref="PaperPlace"/>.
 /// </summary>
 internal static class PaperBlankPlace
 {
@@ -86,7 +87,13 @@ internal static class PaperBlankPlace
         PrefabManager.OnVanillaPrefabsAvailable -= Add;
         try
         {
-            if (!RenameitConfig.PaperEnabled || !RenameitConfig.PaperPlaceEnabled)
+            if (!RenameitConfig.PaperEnabled)
+                return;
+
+            // Always strip place-tool wiring from blank (Use opens rename).
+            DetachBlankItem();
+
+            if (!RenameitConfig.PaperPlaceEnabled)
                 return;
 
             _refund = BuildRefund();
@@ -104,9 +111,7 @@ internal static class PaperBlankPlace
             RegisterSheet(PlaceVertical, wall: true, icon);
             RegisterSheet(PlaceFlat, wall: false, icon);
 
-            AttachTableToBlankItem();
-            _log?.LogInfo(
-                $"[Paper] Blank hotbar place ready ({RenameitConfig.BlankPaperPlaceOrientation}).");
+            _log?.LogInfo("[Paper] Blank Use opens rename; hotbar place table kept for world refund only.");
         }
         catch (Exception ex)
         {
@@ -130,19 +135,24 @@ internal static class PaperBlankPlace
         if (icon != null)
             config.Icon = icon;
 
-        var clone = wall ? PaperPlace.BlankUpright : PaperPlace.BlankLaying;
-        if (PrefabManager.Instance.GetPrefab(clone) == null)
-            clone = "sign";
-
-        var piece = new CustomPiece(prefab, clone, config);
+        // Always clone sign so wall vs flat visuals are applied explicitly (cloning hammer
+        // upright/flat can lose the vertical variant if that prefab is not ready yet).
+        var piece = new CustomPiece(prefab, "sign", config);
         PieceManager.Instance.AddPiece(piece);
         var go = piece.PiecePrefab;
         if (go == null)
             return;
 
+        PaperItem.BuildDecorSheetVisual(go, wall);
+        PaperAssets.EnsurePersistentZNetView(go);
+
         var p = go.GetComponent<Piece>();
         if (p != null)
+        {
+            p.m_name = nameTok;
             p.m_resources = _refund;
+            p.m_enabled = true;
+        }
 
         if (go.GetComponent<PaperBlankRefund>() == null)
             go.AddComponent<PaperBlankRefund>();
@@ -171,62 +181,54 @@ internal static class PaperBlankPlace
         };
     }
 
-    private static void AttachTableToBlankItem()
+    private static void DetachBlankItem()
     {
         var prefab = PrefabManager.Instance.GetPrefab(PaperItem.PrefabName)
                      ?? ObjectDB.instance?.GetItemPrefab(PaperItem.PrefabName);
-        var shared = prefab?.GetComponent<ItemDrop>()?.m_itemData?.m_shared;
-        if (shared == null)
-            return;
-
-        var table = PieceManager.Instance.GetPieceTable(PieceTableName);
-        if (table == null)
-            return;
-
-        shared.m_buildPieces = table;
-        // Same as Written Page: UpdatePlacement NREs if the right-hand item has no build table.
-        shared.m_itemType = ItemDrop.ItemData.ItemType.Tool;
-        if (shared.m_attack == null)
-            shared.m_attack = new Attack();
-        shared.m_attack.m_attackStamina = 0f;
+        var drop = prefab?.GetComponent<ItemDrop>();
+        if (drop?.m_itemData != null)
+            PaperItem.ClearBlankPlaceTool(drop.m_itemData);
     }
 
-    private static void BeginPlace(ItemDrop.ItemData item)
+    /// <summary>Blank Use / inventory Use → rename menu (not place-mode).</summary>
+    private static void OpenBlankRename(ItemDrop.ItemData item)
     {
-        if (!PaperItem.IsBlankPaper(item) || !RenameitConfig.PaperPlaceEnabled)
+        if (!PaperItem.IsBlankPaper(item))
             return;
+
+        PaperItem.ClearBlankPlaceTool(item);
         var player = Player.m_localPlayer;
-        if (player == null || !DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        if (player != null && IsInPlaceMode(player))
+            EndPlaceMode(player);
+
+        if (!RenameitConfig.PaperEnabled)
             return;
 
-        AttachTableToBlankItem();
-        var table = item.m_shared?.m_buildPieces
-                    ?? PieceManager.Instance.GetPieceTable(PieceTableName);
-        if (table == null)
+        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
         {
-            _log?.LogWarning("[Paper] Blank place table missing.");
+            player?.Message(MessageHud.MessageType.Center, "That item is no longer in your inventory.");
             return;
         }
 
-        if (!EnsurePaperIsBuildTool(player, item))
+        if (DrakeRenameit.ShowUnlockButton(item))
         {
-            player.Message(
-                MessageHud.MessageType.Center,
-                "Put the Piece of Paper on your hotbar, then Use it to place.");
+            UIPanels.OpenUnlockMenuFromInventory(item);
             return;
         }
 
-        _triggerPaper = item;
-        _orientIndex = AllowedOrientIndex();
-        InventoryGui.instance?.Hide();
+        if (!DrakeRenameit.AnyInventoryActionAvailable(item))
+        {
+            if (RenameitConfig.ShowDenialUi)
+            {
+                var reason = DrakeRenameit.GetMenuBlockedReason(item);
+                if (!string.IsNullOrEmpty(reason))
+                    player?.Message(MessageHud.MessageType.Center, reason);
+            }
+            return;
+        }
 
-        if (SetPlaceModeMethod != null)
-            SetPlaceModeMethod.Invoke(player, new object[] { table });
-        else
-            player.SetPlaceMode(table);
-
-        SelectOrientation(player, _orientIndex);
-        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
+        // Action menu is the rename/write hub for blank paper.
+        UIPanels.OpenActionMenu(item);
     }
 
     private static int AllowedOrientIndex() =>
@@ -235,16 +237,11 @@ internal static class PaperBlankPlace
     private static string PlaceStatus(int orient)
     {
         var label = orient == 0 ? "Wall (vertical)" : "Flat";
-        return RenameitConfig.BlankPaperPlaceCanToggle
-            ? $"Place: {label} — Use again to switch Wall/Flat."
-            : $"Place: {label}";
+        return $"Place: {label} — Use again to switch Wall/Flat.";
     }
 
     private static void CycleOrientation(Player player)
     {
-        if (!RenameitConfig.BlankPaperPlaceCanToggle)
-            return;
-
         _orientIndex = _orientIndex == 0 ? 1 : 0;
         SelectOrientation(player, _orientIndex);
         player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
@@ -490,18 +487,11 @@ internal static class PaperBlankPlace
         {
             if (__instance != Player.m_localPlayer || item == null)
                 return true;
-            if (!RenameitConfig.PaperPlaceEnabled || !PaperItem.IsBlankPaper(item))
+            if (!PaperItem.IsBlankPaper(item))
                 return true;
 
-            var player = Player.m_localPlayer;
-            if (player != null && IsInPlaceMode(player))
-            {
-                // Toggle only when both orientations are allowed. One-or-the-other: Use does nothing.
-                CycleOrientation(player);
-                return false;
-            }
-
-            BeginPlace(item);
+            // Blank paper is for renaming/writing — never hotbar-place.
+            OpenBlankRename(item);
             return false;
         }
 
@@ -512,9 +502,6 @@ internal static class PaperBlankPlace
         {
             if (__instance != Player.m_localPlayer || !IsInPlaceMode(__instance))
                 return true;
-
-            if (!RenameitConfig.BlankPaperPlaceCanToggle)
-                SelectOrientation(__instance, AllowedOrientIndex());
 
             var right = InvGetRightItem(__instance);
             if (right?.m_shared?.m_buildPieces != null)
@@ -620,5 +607,68 @@ internal static class PaperBlankPlace
             RestoreRequirements();
             return __exception;
         }
+
+        /// <summary>
+        /// Inactive piece prefabs skip ZNetView.Awake on Instantiate, leaving m_initZDO set
+        /// and causing a "ZDO not used" create/retry hang. Activate + ensure netview first;
+        /// if create still fails, drop the ZDO so load can finish.
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ZNetScene), "CreateObject", new[] { typeof(ZDO) })]
+        private static bool CreateObject_Prefix(ZDO zdo, ref GameObject __result)
+        {
+            if (zdo == null || ZNetScene.instance == null)
+                return true;
+
+            GameObject? prefab;
+            try
+            {
+                prefab = ZNetScene.instance.GetPrefab(zdo.GetPrefab());
+            }
+            catch
+            {
+                return true;
+            }
+
+            if (prefab == null || !IsPaperWorldPieceName(prefab.name))
+                return true;
+
+            PaperAssets.EnsurePersistentZNetView(prefab);
+            return true;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ZNetScene), "CreateObject", new[] { typeof(ZDO) })]
+        private static void CreateObject_Postfix(ZDO zdo, GameObject __result)
+        {
+            if (__result != null || zdo == null || ZNetScene.instance == null)
+                return;
+
+            GameObject? prefab;
+            try
+            {
+                prefab = ZNetScene.instance.GetPrefab(zdo.GetPrefab());
+            }
+            catch
+            {
+                return;
+            }
+
+            if (prefab == null || !IsPaperWorldPieceName(prefab.name))
+                return;
+
+            // Prefab was repaired but this create still failed — remove the ZDO or load hangs.
+            ZDOMan.instance?.DestroyZDO(zdo);
+            _log?.LogWarning($"[Paper] Destroyed unloadable paper ZDO for '{prefab.name}'.");
+        }
+
+        private static bool IsPaperWorldPieceName(string name) =>
+            name.StartsWith(PlaceVertical, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PlaceFlat, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PaperPlace.BlankUpright, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PaperPlace.BlankLaying, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PaperPlace.PaperStack, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PaperWrittenPlace.NoteVertical, StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith(PaperWrittenPlace.NoteFlat, StringComparison.OrdinalIgnoreCase);
     }
 }

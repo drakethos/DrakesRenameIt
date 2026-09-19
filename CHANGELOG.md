@@ -1,3 +1,5 @@
+- Version 1.1.1
+  - **Hotfix:** Valheim 1.0 build HUD `ArgumentOutOfRangeException` in `PieceTable.GetAvailablePiecesInCategory` when custom paper place tables had an empty `m_availablePiecesByCategory` (common online / after scene load). Harden paper tables, force Misc category buckets, and guard the HUD index path.
 - Version 1.1.0
   - Requires **DrakeModsLibs 0.9.4+** (shared wood UI, `DrakeTabHost`, soft rename suppress + TagBypass, `Drake_PublicRewrite`, item-stand / durability label refresh).
   - **LockSmith integration:** registers Rename on `DrakeTabHost` so inventory modifier+right-click can show **Lock | Rename** when both tabs are usable. Opening Rename / Description / Crafted-by no longer calls `NotifyFeatureClosed`, so the tab strip stays after OK. Shared Integration open keys / tab priorities live in Libs.

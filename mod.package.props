@@ -5,7 +5,7 @@
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <!-- BepIn plugin display name — do not change (existing installs / docs) -->
     <BepInPluginName>DrakesRenameit</BepInPluginName>
     <BepInGuid>com.drakesworkshop.renameit</BepInGuid>

@@ -106,6 +106,7 @@
     <Compile Include="PaperPlace.cs" />
     <Compile Include="PaperWrittenPlace.cs" />
     <Compile Include="PaperBlankPlace.cs" />
+    <Compile Include="PaperPieceTables.cs" />
     <Compile Include="PaperNoticePiece.cs" />
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />

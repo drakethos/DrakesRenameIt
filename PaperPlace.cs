@@ -197,7 +197,11 @@ internal static class PaperPlace
 
         var piece = go.GetComponent<Piece>();
         if (piece != null)
+        {
             piece.m_name = nameTok;
+            // Valheim 1.0 hammer buckets are indexed by PieceCategory (Furniture = 4).
+            piece.m_category = Piece.PieceCategory.Furniture;
+        }
     }
 
     private static void AddLocalization()

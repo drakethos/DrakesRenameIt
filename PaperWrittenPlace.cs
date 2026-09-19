@@ -36,7 +36,8 @@ internal static class PaperWrittenPlace
         AccessTools.Field(typeof(Player), "m_placementGhost");
 
     private static readonly MethodInfo? SetPlaceModeMethod =
-        AccessTools.Method(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) });
+        AccessTools.DeclaredMethod(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) })
+        ?? AccessTools.Method(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) });
 
     private static readonly FieldInfo? BuildPiecesField =
         AccessTools.Field(typeof(Player), "m_buildPieces");
@@ -132,10 +133,11 @@ internal static class PaperWrittenPlace
 
             var table = new CustomPieceTable(PieceTableName, new PieceTableConfig
             {
-                UseCategories = false,
+                // Valheim 1.0: categories live on pieces; UseCategories is obsolete in Jotunn.
                 CanRemovePieces = true,
             });
             PieceManager.Instance.AddPieceTable(table);
+            PaperPieceTables.Harden(table.PieceTable);
 
             var icon = PaperItem.GetWrittenIconSprite() ?? PaperItem.GetBlankIconSprite();
             RegisterNote(NoteVertical, wall: true, icon);
@@ -174,6 +176,8 @@ internal static class PaperWrittenPlace
 
         ClearPieceBuildCost(go);
         PaperItem.BuildDecorSheetVisual(go, wall, written: true);
+        PaperPieceTables.ForceMiscCategory(go);
+        PaperAssets.EnsurePersistentZNetView(go);
 
         if (go.GetComponent<PaperWrittenVessel>() == null)
             go.AddComponent<PaperWrittenVessel>();
@@ -210,6 +214,7 @@ internal static class PaperWrittenPlace
             writtenDrop.m_itemData.m_shared = shared;
         }
 
+        PaperPieceTables.Harden(table);
         shared.m_buildPieces = table;
         // Materials can't be GetRightItem() for build mode — UpdatePlacement NREs without
         // right-hand.m_buildPieces. Written Page only; blank stays a material.
@@ -329,11 +334,14 @@ internal static class PaperWrittenPlace
         _orientIndex = AllowedOrientIndex();
         InventoryGui.instance?.Hide();
 
+        PaperPieceTables.Harden(table);
+
         if (SetPlaceModeMethod != null)
             SetPlaceModeMethod.Invoke(player, new object[] { table });
         else
             player.SetPlaceMode(table);
 
+        PaperPieceTables.RefreshPlayerAvailable(player);
         SelectOrientation(player, _orientIndex);
         player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }

@@ -36,7 +36,8 @@ internal static class PaperBlankPlace
         AccessTools.Field(typeof(Player), "m_buildPieces");
 
     private static readonly MethodInfo? SetPlaceModeMethod =
-        AccessTools.Method(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) });
+        AccessTools.DeclaredMethod(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) })
+        ?? AccessTools.Method(typeof(Player), "SetPlaceMode", new[] { typeof(PieceTable) });
 
     private static readonly MethodInfo? GetRightItemMethod =
         AccessTools.Method(typeof(Humanoid), "GetRightItem");
@@ -100,10 +101,10 @@ internal static class PaperBlankPlace
 
             var table = new CustomPieceTable(PieceTableName, new PieceTableConfig
             {
-                UseCategories = false,
                 CanRemovePieces = true,
             });
             PieceManager.Instance.AddPieceTable(table);
+            PaperPieceTables.Harden(table.PieceTable);
 
             // Both sheets always exist. The dropdown filters selection at place time so a
             // server sync of Vertical Only / Horizontal Only / Both applies without a restart.
@@ -145,6 +146,7 @@ internal static class PaperBlankPlace
 
         PaperItem.BuildDecorSheetVisual(go, wall);
         PaperAssets.EnsurePersistentZNetView(go);
+        PaperPieceTables.ForceMiscCategory(go);
 
         var p = go.GetComponent<Piece>();
         if (p != null)
@@ -152,6 +154,7 @@ internal static class PaperBlankPlace
             p.m_name = nameTok;
             p.m_resources = _refund;
             p.m_enabled = true;
+            p.m_category = Piece.PieceCategory.Misc;
         }
 
         if (go.GetComponent<PaperBlankRefund>() == null)

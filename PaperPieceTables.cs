@@ -12,12 +12,26 @@ namespace DrakeRenameit;
 /// <c>buckets[Min(Count - 1, cat)]</c> — when Count is 0 that index is -1 and Hud.UpdateBuild
 /// spams ArgumentOutOfRangeException every frame (common with custom paper place tables
 /// before the first UpdateAvailable, especially after multiplayer scene loads).
+/// <para>
+/// Field access is via <see cref="AccessTools"/> so CI (Pfhoenix stubs) can compile without
+/// the Valheim 1.0 field names while the live game still hardens correctly.
+/// </para>
 /// </summary>
 internal static class PaperPieceTables
 {
+    private const int VanillaCategoryBucketCount = 9;
+
     private static readonly MethodInfo? UpdateAvailablePiecesListMethod =
         AccessTools.DeclaredMethod(typeof(Player), "UpdateAvailablePiecesList")
         ?? AccessTools.Method(typeof(Player), "UpdateAvailablePiecesList");
+
+    /// <summary>Valheim 1.0 name; older stubs had <c>m_availablePieces</c> as List&lt;List&lt;Piece&gt;&gt;.</summary>
+    private static readonly FieldInfo? AvailableByCategoryField =
+        AccessTools.Field(typeof(PieceTable), "m_availablePiecesByCategory")
+        ?? AccessTools.Field(typeof(PieceTable), "m_availablePieces");
+
+    private static readonly FieldInfo? HideAdvancedMenuField =
+        AccessTools.Field(typeof(PieceTable), "m_hideAdvancedMenu");
 
     /// <summary>Prepare a custom paper place table for Valheim 1.0 build HUD.</summary>
     internal static void Harden(PieceTable? table)
@@ -27,8 +41,19 @@ internal static class PaperPieceTables
 
         EnsureCategoryBuckets(table);
 
-        // Simplified menu: paper tables only have wall/flat sheets.
-        table.m_hideAdvancedMenu = true;
+        // Simplified menu: paper tables only have wall/flat sheets (1.0 field; no-op on older stubs).
+        if (HideAdvancedMenuField != null)
+        {
+            try
+            {
+                HideAdvancedMenuField.SetValue(table, true);
+            }
+            catch
+            {
+                /* ignore */
+            }
+        }
+
         table.m_canRemovePieces = true;
 
         ClampSelectedCategory(table);
@@ -40,19 +65,18 @@ internal static class PaperPieceTables
     }
 
     /// <summary>
-    /// Grow <see cref="PieceTable.m_availablePiecesByCategory"/> to at least
-    /// <see cref="Piece.PieceCategory.Max"/> empty lists so category indexing never uses -1.
+    /// Grow the per-category bucket list to at least the vanilla Max count so indexing never uses -1.
     /// </summary>
     internal static void EnsureCategoryBuckets(PieceTable table)
     {
         if (table == null)
             return;
 
-        var buckets = table.m_availablePiecesByCategory;
+        var buckets = GetAvailableByCategory(table);
         if (buckets == null)
             return;
 
-        var need = Math.Max((int)Piece.PieceCategory.Max, 9);
+        var need = Math.Max(VanillaCategoryBucketCount, (int)Piece.PieceCategory.Max);
         while (buckets.Count < need)
             buckets.Add(new List<Piece>());
     }
@@ -62,7 +86,7 @@ internal static class PaperPieceTables
         if (table == null)
             return;
 
-        var buckets = table.m_availablePiecesByCategory;
+        var buckets = GetAvailableByCategory(table);
         var cat = table.m_selectedCategory;
         var idx = (int)cat;
         if (cat == Piece.PieceCategory.Max ||
@@ -76,16 +100,32 @@ internal static class PaperPieceTables
 
     private static void EnsureSelectionArrays(PieceTable table)
     {
-        var n = Math.Max(
-            table.m_availablePiecesByCategory?.Count ?? 0,
-            (int)Piece.PieceCategory.Max);
+        var buckets = GetAvailableByCategory(table);
+        var n = Math.Max(buckets?.Count ?? 0, VanillaCategoryBucketCount);
         if (n <= 0)
-            n = 9;
+            n = VanillaCategoryBucketCount;
 
         if (table.m_selectedPiece == null || table.m_selectedPiece.Length < n)
             Array.Resize(ref table.m_selectedPiece, n);
         if (table.m_lastSelectedPiece == null || table.m_lastSelectedPiece.Length < n)
             Array.Resize(ref table.m_lastSelectedPiece, n);
+    }
+
+    private static List<List<Piece>>? GetAvailableByCategory(PieceTable table)
+    {
+        if (AvailableByCategoryField == null || table == null)
+            return null;
+
+        try
+        {
+            // Valheim 1.0: List<List<Piece>>. Pre-1.0 ComfyGizmo-era: also List<List<Piece>> under old name.
+            // If the live field is HashSet&lt;Piece&gt; (1.0 m_availablePieces), skip — wrong shape.
+            return AvailableByCategoryField.GetValue(table) as List<List<Piece>>;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>Force vanilla Misc so indexing stays inside the default 0..Max-1 buckets.</summary>
@@ -125,8 +165,9 @@ internal static class PaperPieceTables
         {
             if (__instance == null)
                 return;
-            if (__instance.m_availablePiecesByCategory == null ||
-                __instance.m_availablePiecesByCategory.Count == 0)
+
+            var buckets = GetAvailableByCategory(__instance);
+            if (buckets == null || buckets.Count == 0)
             {
                 EnsureCategoryBuckets(__instance);
                 ClampSelectedCategory(__instance);
@@ -152,11 +193,11 @@ internal static class PaperPieceTables
             EnsureCategoryBuckets(__instance);
             ClampSelectedCategory(__instance);
 
-            var buckets = __instance.m_availablePiecesByCategory;
+            var buckets = GetAvailableByCategory(__instance);
             if (buckets == null || buckets.Count == 0)
             {
-                __result = new List<Piece>();
-                return false;
+                // Field missing or wrong shape (stub / unexpected build) — let vanilla run.
+                return true;
             }
 
             var idx = (int)__instance.GetSelectedCategory();

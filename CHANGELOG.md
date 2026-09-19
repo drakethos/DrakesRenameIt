@@ -1,3 +1,5 @@
+- Version 1.1.3
+  - **Hotfix:** Build HUD corruption / `FieldAccessException` spam — 1.1.2 Harmony guards still touched private `PieceTable` fields via publicized compile refs. Switch to Harmony `FieldRefAccess` and never let the prefix throw (exceptions abort `Hud.UpdateBuild` mid-frame and scramble tooltips/keybinds).
 - Version 1.1.2
   - **Hotfix:** Valheim 1.0 build HUD `ArgumentOutOfRangeException` in `PieceTable.GetAvailablePiecesInCategory` when custom paper place tables had an empty `m_availablePiecesByCategory` (common online / after scene load). Harden paper tables via AccessTools (CI-safe) and guard the HUD index path.
 - Version 1.1.1

@@ -209,7 +209,7 @@ public static class UIPanels
         if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
         {
             CloseAllRenameEditingUi();
-            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                 T(LKeys.MsgItemNotInInventory));
             return;
         }
@@ -607,7 +607,7 @@ public static class UIPanels
         if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
         {
             CloseAllRenameEditingUi();
-            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                 T(LKeys.MsgItemNotInInventory));
             return;
         }
@@ -660,7 +660,7 @@ public static class UIPanels
         if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
         {
             CloseAllRenameEditingUi();
-            Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                 T(LKeys.MsgItemNotInInventory));
             return;
         }
@@ -1580,7 +1580,7 @@ public static class UIPanels
             Player local = Player.m_localPlayer;
             if (local != null)
             {
-                local.Message(
+                ValheimHudMessage.Show(local, 
                     MessageHud.MessageType.Center, // or TopLeft, depending where you want it
                     msg
                 );

@@ -149,7 +149,7 @@ public static class RenamePermissionManager
 
         if (!result.Allowed && showErrorToPlayer && local != null &&
             ShouldShowDenialMessageToPlayer(result.Reasons))
-            local.Message(MessageHud.MessageType.Center, FormatDenialForPlayer(op, result.Reasons));
+            ValheimHudMessage.Show(local, MessageHud.MessageType.Center, FormatDenialForPlayer(op, result.Reasons));
 
         return result;
     }

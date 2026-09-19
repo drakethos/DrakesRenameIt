@@ -190,7 +190,7 @@ namespace DrakeRenameit
                 return false;
             if (!IsItemInLocalPlayerInventory(item))
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center,
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryUnlock));
                 return false;
             }
@@ -203,7 +203,7 @@ namespace DrakeRenameit
                 {
                     string why = GetMenuBlockedReason(item);
                     if (!string.IsNullOrEmpty(why))
-                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, why);
+                        ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, why);
                 }
 
                 return false;
@@ -211,12 +211,12 @@ namespace DrakeRenameit
 
             if (!RenameUnlockCost.TryConsumeUnlockCost(Player.m_localPlayer, out var err))
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, err);
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, err);
                 return false;
             }
 
             SetRenameUnlocked(item);
-            Player.m_localPlayer.Message(MessageHud.MessageType.Center, T(LKeys.MsgItemUnlocked));
+            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, T(LKeys.MsgItemUnlocked));
             return true;
         }
 
@@ -249,7 +249,7 @@ namespace DrakeRenameit
                 return;
             if (!IsItemInLocalPlayerInventory(item))
             {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventory));
                 return;
             }
@@ -441,7 +441,7 @@ namespace DrakeRenameit
             if (CurrentItem == null) return;
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;
@@ -481,7 +481,7 @@ namespace DrakeRenameit
             if (CurrentItem == null) return;
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;
@@ -673,7 +673,7 @@ namespace DrakeRenameit
             if (CurrentItem == null) return;
             if (!IsItemInLocalPlayerInventory(CurrentItem))
             {
-                Player.m_localPlayer?.Message(MessageHud.MessageType.Center,
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
                 UIPanels.CloseAllRenameEditingUi();
                 return;

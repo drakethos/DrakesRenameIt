@@ -1,3 +1,5 @@
+- Version 1.1.5
+  - **Hotfix:** Store/CI builds compiled `Character.Message` against Pfhoenix's old 4-arg signature. Valheim 1.0 only has the 5-arg overload, so Mono threw `MissingMethodException` on JIT of permission/inventory tooltip code every frame (HUD scrambled). Local `drakeTest` worked because it compiles against live 1.0 publicized refs. All HUD messages now bind at runtime. Also load paper art if a mod manager flattens zip folders into the plugin root.
 - Version 1.1.4
   - **Hotfix:** Same as 1.1.3 (FieldRefAccess HUD guards). CI-safe: do not touch `m_hideAdvancedMenu` via publicized direct access (Pfhoenix stubs lack the field).
 - Version 1.1.3

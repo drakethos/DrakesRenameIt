@@ -57,7 +57,7 @@ public static class RenameItInventoryPatches
                     {
                         string reason = DrakeRenameit.GetMenuBlockedReason(item);
                         if (!string.IsNullOrEmpty(reason))
-                            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, reason);
+                            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, reason);
                     }
                     return;
                 }

@@ -28,7 +28,7 @@ internal static class PaperWriteConverter
 
         if (!inv.ContainsItem(blank))
         {
-            player.Message(MessageHud.MessageType.Center, T(LKeys.MsgItemNotInInventoryApply));
+            ValheimHudMessage.Show(player, MessageHud.MessageType.Center, T(LKeys.MsgItemNotInInventoryApply));
             return null;
         }
 
@@ -37,7 +37,7 @@ internal static class PaperWriteConverter
         if (!blankWillVanish && !inv.HaveEmptySlot())
         {
             // May still stack into empty? Written is stack 1 and unique custom data — need empty slot.
-            player.Message(MessageHud.MessageType.Center, "Inventory full — cannot create a Written Page.");
+            ValheimHudMessage.Show(player, MessageHud.MessageType.Center, "Inventory full — cannot create a Written Page.");
             return null;
         }
 
@@ -45,7 +45,7 @@ internal static class PaperWriteConverter
         if (writtenPrefab == null)
         {
             RenameitConfig.Log?.LogError("[Paper] Written prefab missing; cannot peel blank.");
-            player.Message(MessageHud.MessageType.Center, "Written Page is not available.");
+            ValheimHudMessage.Show(player, MessageHud.MessageType.Center, "Written Page is not available.");
             return null;
         }
 
@@ -95,7 +95,7 @@ internal static class PaperWriteConverter
             else
                 blank.m_stack += 1;
 
-            player.Message(MessageHud.MessageType.Center, "Inventory full — cannot create a Written Page.");
+            ValheimHudMessage.Show(player, MessageHud.MessageType.Center, "Inventory full — cannot create a Written Page.");
             return null;
         }
 

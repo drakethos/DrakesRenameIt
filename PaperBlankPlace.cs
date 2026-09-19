@@ -209,7 +209,7 @@ internal static class PaperBlankPlace
 
         if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
         {
-            player?.Message(MessageHud.MessageType.Center, "That item is no longer in your inventory.");
+            ValheimHudMessage.Show(player, MessageHud.MessageType.Center, "That item is no longer in your inventory.");
             return;
         }
 
@@ -225,7 +225,7 @@ internal static class PaperBlankPlace
             {
                 var reason = DrakeRenameit.GetMenuBlockedReason(item);
                 if (!string.IsNullOrEmpty(reason))
-                    player?.Message(MessageHud.MessageType.Center, reason);
+                    ValheimHudMessage.Show(player, MessageHud.MessageType.Center, reason);
             }
             return;
         }
@@ -247,7 +247,7 @@ internal static class PaperBlankPlace
     {
         _orientIndex = _orientIndex == 0 ? 1 : 0;
         SelectOrientation(player, _orientIndex);
-        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
+        ValheimHudMessage.Show(player, MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }
 
     private static void SelectOrientation(Player player, int orient)
@@ -565,7 +565,7 @@ internal static class PaperBlankPlace
                 return true;
             if (_triggerPaper == null || !DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper))
             {
-                __instance.Message(MessageHud.MessageType.Center, "Use a Piece of Paper to place this.");
+                ValheimHudMessage.Show(__instance, MessageHud.MessageType.Center, "Use a Piece of Paper to place this.");
                 return false;
             }
 

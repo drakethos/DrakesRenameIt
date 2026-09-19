@@ -116,6 +116,8 @@ public static class RenameItLocalization
         string fileName = SanitizeLanguageFileName(language) + ".json";
         string jsonPath = Path.Combine(locDir, fileName);
         if (!File.Exists(jsonPath))
+            jsonPath = Path.Combine(_pluginDir, fileName);
+        if (!File.Exists(jsonPath))
         {
             if (!string.Equals(language, "English", StringComparison.OrdinalIgnoreCase))
                 RenameitConfig.VerboseDebug($"[ModText] No file for language '{language}' at {jsonPath} (using English/fallback).");

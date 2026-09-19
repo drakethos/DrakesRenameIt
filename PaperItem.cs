@@ -213,6 +213,10 @@ internal static class PaperItem
             fileName.IndexOf(Path.AltDirectorySeparatorChar) < 0)
             path = Path.Combine(_pluginDir, "Assets", "Icons", fileName);
 
+        // Gale sometimes extracts zip folders into the plugin root.
+        if (!File.Exists(path))
+            path = Path.Combine(_pluginDir, Path.GetFileName(fileName));
+
         if (!File.Exists(path))
         {
             _log?.LogWarning($"[Paper] {label} texture not found at {path}.");

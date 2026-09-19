@@ -200,6 +200,7 @@ internal static class PaperAssets
 
         var itemPath = Path.Combine(_pluginDir, "Assets", "Items", "paper_item", "art.bundle");
         var piecePath = Path.Combine(_pluginDir, "Assets", "Items", "paper_piece", "art.bundle");
+        var flatPath = Path.Combine(_pluginDir, "art.bundle");
 
         _itemBundle = LoadBundle(itemPath);
         if (_itemBundle != null)
@@ -210,8 +211,20 @@ internal static class PaperAssets
 
         _pieceBundle = LoadBundle(piecePath);
         if (_pieceBundle != null)
+        {
             _itemBundle = _pieceBundle;
-        return _pieceBundle;
+            return _pieceBundle;
+        }
+
+        var flat = LoadBundle(flatPath);
+        if (flat != null)
+        {
+            _itemBundle = flat;
+            _pieceBundle = flat;
+            return flat;
+        }
+
+        return null;
     }
 
     private static AssetBundle? EnsurePieceBundle() => EnsureArtBundle();

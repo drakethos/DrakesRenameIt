@@ -324,7 +324,7 @@ internal static class PaperWrittenPlace
         // If the Written Page isn't the right-hand item, it NREs every frame (can't rotate/place).
         if (!EnsurePaperIsBuildTool(player, item))
         {
-            player.Message(
+            ValheimHudMessage.Show(player, 
                 MessageHud.MessageType.Center,
                 "Put the Written Page on your hotbar, then Use it to place.");
             return;
@@ -343,7 +343,7 @@ internal static class PaperWrittenPlace
 
         PaperPieceTables.RefreshPlayerAvailable(player);
         SelectOrientation(player, _orientIndex);
-        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
+        ValheimHudMessage.Show(player, MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }
 
     private static ItemDrop.ItemData? InvGetRightItem(Humanoid humanoid)
@@ -453,7 +453,7 @@ internal static class PaperWrittenPlace
     {
         _orientIndex = _orientIndex == 0 ? 1 : 0;
         SelectOrientation(player, _orientIndex);
-        player.Message(MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
+        ValheimHudMessage.Show(player, MessageHud.MessageType.TopLeft, PlaceStatus(_orientIndex));
     }
 
     private static void SelectOrientation(Player player, int orient)
@@ -860,7 +860,7 @@ internal static class PaperWrittenPlace
             var source = ResolveTrigger(__instance);
             if (source == null)
             {
-                __instance.Message(MessageHud.MessageType.Center, "Use a Written Page to place this.");
+                ValheimHudMessage.Show(__instance, MessageHud.MessageType.Center, "Use a Written Page to place this.");
                 return false;
             }
 
@@ -1188,7 +1188,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         var next = ReadTakePublic() ? 0 : 1;
         nv.InvokeRPC(RpcSetTakePublic, next);
         var msg = next == 1 ? "$piece_drakes_paper_now_public" : "$piece_drakes_paper_now_private";
-        character.Message(MessageHud.MessageType.Center, Localize(msg));
+        ValheimHudMessage.Show(character, MessageHud.MessageType.Center, Localize(msg));
     }
 
     bool ReadTakePublic()
@@ -1340,7 +1340,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactabl
         {
             ReleaseHandle();
             _reclaimQueued = false;
-            character.Message(MessageHud.MessageType.Center, "Inventory full.");
+            ValheimHudMessage.Show(character, MessageHud.MessageType.Center, "Inventory full.");
             return;
         }
 

@@ -78,7 +78,11 @@ internal static class PaperPieceTables
 
             var go = table.gameObject;
             if (go != null)
+            {
+                if (go.transform.parent != null)
+                    go = go.transform.root.gameObject;
                 UnityEngine.Object.DontDestroyOnLoad(go);
+            }
         }
         catch (Exception)
         {

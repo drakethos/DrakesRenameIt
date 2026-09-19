@@ -1,3 +1,5 @@
+- Version 1.1.6
+  - **Fix:** Store builds could not instantiate `PaperWrittenVessel` (`TypeLoadException: VTable setup`) because Pfhoenix `Hoverable` lacks Valheim 1.0 `GetHoverOffset`. Vessel is a plain MonoBehaviour; hover text and [E] reclaim are Harmony-routed.
 - Version 1.1.5
   - **Hotfix:** Store/CI builds compiled `Character.Message` against Pfhoenix's old 4-arg signature. Valheim 1.0 only has the 5-arg overload, so Mono threw `MissingMethodException` on JIT of permission/inventory tooltip code every frame (HUD scrambled). Local `drakeTest` worked because it compiles against live 1.0 publicized refs. All HUD messages now bind at runtime. Also load paper art if a mod manager flattens zip folders into the plugin root.
 - Version 1.1.4

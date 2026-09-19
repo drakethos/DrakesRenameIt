@@ -2,7 +2,7 @@
 
 # DrakesRenameIt
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.5** hotfixes store/CI builds: Valheim 1.0 `Character.Message` is resolved at runtime so inventory HUD no longer throws `MissingMethodException`.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.6** hotfixes store/CI builds: paper notes no longer implement `Hoverable` (Pfhoenix vtable crash) and `Character.Message` is resolved at runtime.
 
 **Requires [DrakeModsLibs 0.9.4+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
@@ -227,21 +227,6 @@ Contact me:
 
 - buy me a coffee ☕
 https://paypal.me/Drakethos?country.x=US&locale.x=en_US
-
-### Publishing (GitHub Actions)
-
-Pushing a tag `v{Version}` that matches `<Version>` in `mod.package.props` runs [.github/workflows/release.yml](.github/workflows/release.yml):
-
-1. Build the Thunderstore zip and create a GitHub Release with the zip attached  
-2. Publish that zip to **Thunderstore** (`DrakeMods-DrakesRenameit`)  
-3. Publish the same zip to **Hexium** (`valheim.hexium.gg`) after Thunderstore succeeds  
-
-Repo secrets required:
-
-| Secret | Source |
-|--------|--------|
-| `THUNDERSTORE_TOKEN` | Thunderstore team service account for **DrakeMods** |
-| `HEXIUM_TOKEN` | Hexium team API token for **DrakeMods** ([team settings](https://hexium.gg/faq)) |
 
 Credits:
 Used Cursor AI assitance to complete desired features

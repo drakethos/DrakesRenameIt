@@ -999,11 +999,75 @@ internal static class PaperWrittenPlace
                 _log?.LogWarning($"[Paper] Break drop skipped so the piece can still be removed: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Store/CI builds cannot put <see cref="Hoverable"/> on the vessel (vtable). Fill hover
+        /// text when vanilla found no Hoverable.
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Hud), "UpdateCrosshair")]
+        private static void UpdateCrosshair_Postfix(Hud __instance, Player player)
+        {
+            try
+            {
+                if (__instance == null || player == null)
+                    return;
+                if (TextViewer.instance != null && TextViewer.instance.IsVisible())
+                    return;
+                var hoverName = __instance.m_hoverName;
+                if (hoverName == null || !string.IsNullOrEmpty(hoverName.text))
+                    return;
+
+                var hover = player.GetHoverObject();
+                if (hover == null)
+                    return;
+                var vessel = hover.GetComponentInParent<PaperWrittenVessel>();
+                if (vessel == null)
+                    return;
+
+                hoverName.text = vessel.GetHoverText();
+                if (__instance.m_crosshair != null && hoverName.text.Length > 0)
+                    __instance.m_crosshair.color = Color.yellow;
+            }
+            catch
+            {
+                /* never break HUD */
+            }
+        }
+
+        /// <summary>Route [E] to the vessel without requiring <see cref="Interactable"/> on the type.</summary>
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Player), "Interact", new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
+        private static bool Interact_Prefix(Player __instance, GameObject go, bool hold, bool alt)
+        {
+            try
+            {
+                if (go == null || __instance == null)
+                    return true;
+                var vessel = go.GetComponentInParent<PaperWrittenVessel>();
+                if (vessel == null)
+                    return true;
+                if (__instance.InAttack() || __instance.InDodge())
+                    return false;
+                vessel.Interact(__instance, hold, alt);
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
+        }
     }
 }
 
-/// <summary>ZDO vessel for a placed Written Page — hover/reclaim; mesh is parchment only.</summary>
-internal sealed class PaperWrittenVessel : MonoBehaviour, Hoverable, Interactable
+/// <summary>
+/// ZDO vessel for a placed Written Page — hover/reclaim; mesh is parchment only.
+/// Does <b>not</b> implement <c>Hoverable</c>/<c>Interactable</c>: Pfhoenix CI stubs lack
+/// <c>Hoverable.GetHoverOffset</c> that Valheim 1.0 added, so a store build throws
+/// <c>TypeLoadException: VTable setup of type PaperWrittenVessel failed</c> and the
+/// script never instantiates. Hover/Use are Harmony-routed from <see cref="PaperWrittenPlace"/>.
+/// </summary>
+internal sealed class PaperWrittenVessel : MonoBehaviour
 {
     const string ZdoRename = "DrakePaper_Rename";
     const string ZdoDesc = "DrakePaper_Desc";

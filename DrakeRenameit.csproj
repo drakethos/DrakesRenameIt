@@ -163,8 +163,8 @@
           DestinationFiles="@(PaperForgeAssets->'$(ThunderstoreFolder)\Assets\Items\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"
           Condition="'@(PaperForgeAssets)' != ''" />
-    <!-- Zip the Thunderstore folder (skipped in CI; workflow assembles its own zip) -->
-    <Exec Command="powershell -Command Compress-Archive -Path '$(ThunderstoreFolder)\*' -DestinationPath '$(ZipOutput)' -Force" Condition="'$(CI_SKIP_POST_BUILD)' == ''" />
+    <!-- Zip with forward slashes (Thunderstore / unix). Compress-Archive uses backslashes and Gale flattens folders. -->
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(PosixZipScript)&quot; -SourceDir &quot;$(ThunderstoreFolder)&quot; -ZipPath &quot;$(ZipOutput)&quot;" Condition="'$(CI_SKIP_POST_BUILD)' == '' and '$(PosixZipScript)' != '' and Exists('$(PosixZipScript)')" />
   </Target>
   <ItemGroup>
     <Content Include="CHANGELOG.md">

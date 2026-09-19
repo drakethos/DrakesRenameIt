@@ -57,7 +57,21 @@ internal static class PaperPieceTables
         try
         {
             EnsureCategoryBuckets(table);
-            table.m_hideAdvancedMenu = true;
+
+            // 1.0 field — missing on Pfhoenix CI stubs; AccessTools no-ops safely.
+            var hideAdvanced = AccessTools.Field(typeof(PieceTable), "m_hideAdvancedMenu");
+            if (hideAdvanced != null)
+            {
+                try
+                {
+                    hideAdvanced.SetValue(table, true);
+                }
+                catch
+                {
+                    /* ignore */
+                }
+            }
+
             table.m_canRemovePieces = true;
             ClampSelectedCategory(table);
             EnsureSelectionArrays(table);

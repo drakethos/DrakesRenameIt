@@ -1,3 +1,8 @@
+- Version 1.1.7
+  - **Fix:** Placing a Written Page played the unarmed punch — vanilla `PlacePiece` always `SetTrigger`s the held tool's attack animation. Notes now place with `doAttack` off.
+  - **Fix:** Hovering a pinned page could spam HUD/log errors every frame (`Hud.m_hoverName` direct field access, leftover donor `Sign.GetHoverText` / MuteList). Hover is FieldInfo + Sign-skip.
+  - **Fix:** Gale flattening can collide Thunderstore `icon.png` with forge `paper_item/icon.png`. Package icon stays branded; item icons prefer `paper.png` / `paper_written.png`.
+  - **Fix:** Shift+E public-toggle hover used a stale join-key (`$KEY_AltPlace` only). Match vanilla 1.0: `$KEY_AltKeys + $KEY_Use` on non-classic gamepad, `$KEY_AltPlace + $KEY_Use` on keyboard.
 - Version 1.1.6
   - **Fix:** Store builds could not instantiate `PaperWrittenVessel` (`TypeLoadException: VTable setup`) because Pfhoenix `Hoverable` lacks Valheim 1.0 `GetHoverOffset`. Vessel is a plain MonoBehaviour; hover text and [E] reclaim are Harmony-routed.
 - Version 1.1.5

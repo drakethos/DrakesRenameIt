@@ -2,7 +2,7 @@
 
 # DrakesRenameIt
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.6** hotfixes store/CI builds: paper notes no longer implement `Hoverable` (Pfhoenix vtable crash) and `Character.Message` is resolved at runtime.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.7** stops the unarmed punch when pinning a Written Page, quiets hover-HUD log spam, and keeps the Thunderstore icon from being replaced by parchment when Gale flattens the zip.
 
 **Requires [DrakeModsLibs 0.9.4+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 

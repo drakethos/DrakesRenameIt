@@ -161,9 +161,6 @@ internal static class PaperAssets
         // Authored pivot is often on the table face — recenter so wall rotation does not float the sheet.
         var center = (min + max) * 0.5f;
         visual.transform.localPosition = -center * scale;
-        _log?.LogInfo(
-            $"[Paper] Forge art fitted to letter {target.x:0.###}x{target.y:0.###}m " +
-            $"(mesh footprint {meshW:0.###}x{meshH:0.###} → scale {scale:0.###}).");
     }
 
     private static GameObject? LoadArtPrefab(bool forItem)
@@ -224,6 +221,7 @@ internal static class PaperAssets
             return flat;
         }
 
+        _log?.LogWarning("[Paper] Forge art.bundle not found under Assets/Items/paper_* or plugin root.");
         return null;
     }
 
@@ -234,10 +232,7 @@ internal static class PaperAssets
     private static AssetBundle? LoadBundle(string path)
     {
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
-        {
-            _log?.LogWarning($"[Paper] Forge bundle missing: {path}");
             return null;
-        }
 
         try
         {

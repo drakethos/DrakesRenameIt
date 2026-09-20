@@ -76,6 +76,12 @@
     <Reference Include="UnityEngine.JSONSerializeModule">
       <HintPath>$(CorlibPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(CorlibPath)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule" Condition="Exists('$(CorlibPath)\UnityEngine.TextRenderingModule.dll')">
+      <HintPath>$(CorlibPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(CorlibPath)\Unity.TextMeshPro.dll</HintPath>
     </Reference>
@@ -125,7 +131,7 @@
   <ItemGroup>
     <LocalizationJson Include="Assets\Localization\*.json" />
     <PaperIcon Include="Assets\Icons\*.png" />
-    <PaperForgeAssets Include="Assets\Items\**\*" />
+    <PaperForgeAssets Include="Assets\Items\**\*" Exclude="Assets\Items\**\icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

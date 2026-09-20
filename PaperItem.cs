@@ -213,9 +213,11 @@ internal static class PaperItem
             fileName.IndexOf(Path.AltDirectorySeparatorChar) < 0)
             path = Path.Combine(_pluginDir, "Assets", "Icons", fileName);
 
-        // Gale sometimes extracts zip folders into the plugin root.
-        if (!File.Exists(path))
-            path = Path.Combine(_pluginDir, Path.GetFileName(fileName));
+        var leaf = Path.GetFileName(fileName);
+        // Gale flattens zip folders. Never treat Thunderstore's package icon.png as item art.
+        if (!File.Exists(path) &&
+            !leaf.Equals("icon.png", StringComparison.OrdinalIgnoreCase))
+            path = Path.Combine(_pluginDir, leaf);
 
         if (!File.Exists(path))
         {
@@ -379,9 +381,9 @@ internal static class PaperItem
     {
         if (_blankIconSprite != null)
             return _blankIconSprite;
-        var parchment = LoadTextureFile(Path.Combine("Items", "paper_item", "icon.png"), "forge-item-icon")
-                        ?? LoadTextureFile(Path.Combine("Items", "paper_piece", "icon.png"), "forge-piece-icon")
-                        ?? LoadParchmentTexture();
+        var parchment = LoadParchmentTexture()
+                        ?? LoadTextureFile(Path.Combine("Items", "paper_item", "icon.png"), "forge-item-icon")
+                        ?? LoadTextureFile(Path.Combine("Items", "paper_piece", "icon.png"), "forge-piece-icon");
         if (parchment == null)
             return null;
         _blankIconSprite = Sprite.Create(

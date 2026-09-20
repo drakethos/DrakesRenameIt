@@ -192,6 +192,9 @@ internal static class PaperWrittenPlace
 
         p.m_resources = Array.Empty<Piece.Requirement>();
         p.m_craftingStation = null;
+        // Vanilla PlacePiece calls m_placeEffect.Create with no null check.
+        if (p.m_placeEffect == null)
+            p.m_placeEffect = new EffectList();
     }
 
     private static void AttachTableToWrittenItem()
@@ -828,11 +831,20 @@ internal static class PaperWrittenPlace
         {
             typeof(Piece), typeof(Vector3), typeof(Quaternion), typeof(bool), typeof(bool)
         })]
-        private static void PlacePiece_SeatPrefix(Player __instance, Piece piece, ref Vector3 pos)
+        private static void PlacePiece_SeatPrefix(
+            Player __instance,
+            Piece piece,
+            ref Vector3 pos,
+            ref bool doAttack)
         {
-            if (__instance != Player.m_localPlayer || piece == null || !PaperItem.IsWallSheetPiece(piece))
+            if (__instance != Player.m_localPlayer || piece == null)
                 return;
-            pos = PaperItem.SeatWallSheet(pos, piece.transform);
+            if (PaperItem.IsWallSheetPiece(piece))
+                pos = PaperItem.SeatWallSheet(pos, piece.transform);
+            // Vanilla always SetTrigger(rightItem.m_attack.m_attackAnimation) on place.
+            // Written Page is a Tool cloned from LeatherScraps — that trigger is the unarmed punch.
+            if (IsNotePiece(piece) || PaperBlankPlace.IsBlankPlacePiece(piece))
+                doAttack = false;
         }
 
         static void SeatGhost(Player player)
@@ -973,15 +985,21 @@ internal static class PaperWrittenPlace
             return false;
         }
 
-        [HarmonyPostfix]
+        /// <summary>
+        /// Skip vanilla Sign hover on notes. Sign.GetHoverText hits MuteList/UGC and
+        /// spams errors every frame if a donor Sign survived the strip.
+        /// </summary>
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(Sign), nameof(Sign.GetHoverText))]
-        private static void Sign_Hover_Postfix(Sign __instance, ref string __result)
+        private static bool Sign_Hover_Prefix(Sign __instance, ref string __result)
         {
-            if (!IsNotePiece(__instance))
-                return;
+            if (__instance == null || !IsNotePiece(__instance))
+                return true;
             var vessel = __instance.GetComponent<PaperWrittenVessel>();
-            if (vessel != null)
-                __result = vessel.BuildHoverText();
+            if (vessel == null)
+                return true;
+            __result = vessel.GetHoverText();
+            return false;
         }
 
         [HarmonyPrefix]
@@ -1000,9 +1018,14 @@ internal static class PaperWrittenPlace
             }
         }
 
+        // Never ldfld Hud.m_hoverName / m_crosshair — JIT FieldAccessException spams the HUD
+        // every frame while hovering if the compile ref disagrees with the live game.
+        static readonly FieldInfo? HoverNameField = AccessTools.Field(typeof(Hud), "m_hoverName");
+        static readonly FieldInfo? CrosshairField = AccessTools.Field(typeof(Hud), "m_crosshair");
+
         /// <summary>
         /// Store/CI builds cannot put <see cref="Hoverable"/> on the vessel (vtable). Fill hover
-        /// text when vanilla found no Hoverable.
+        /// text when vanilla found no Hoverable. Always overwrite leftover Sign text.
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Hud), "UpdateCrosshair")]
@@ -1014,9 +1037,6 @@ internal static class PaperWrittenPlace
                     return;
                 if (TextViewer.instance != null && TextViewer.instance.IsVisible())
                     return;
-                var hoverName = __instance.m_hoverName;
-                if (hoverName == null || !string.IsNullOrEmpty(hoverName.text))
-                    return;
 
                 var hover = player.GetHoverObject();
                 if (hover == null)
@@ -1025,13 +1045,18 @@ internal static class PaperWrittenPlace
                 if (vessel == null)
                     return;
 
+                if (HoverNameField?.GetValue(__instance) is not TMPro.TextMeshProUGUI hoverName || hoverName == null)
+                    return;
+
                 hoverName.text = vessel.GetHoverText();
-                if (__instance.m_crosshair != null && hoverName.text.Length > 0)
-                    __instance.m_crosshair.color = Color.yellow;
+                if (hoverName.text.Length == 0 || CrosshairField == null)
+                    return;
+                if (CrosshairField.GetValue(__instance) is UnityEngine.UI.Image cross && cross != null)
+                    cross.color = Color.yellow;
             }
             catch
             {
-                /* never break HUD */
+                /* never break HUD, never log per-frame */
             }
         }
 
@@ -1298,6 +1323,41 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     static string Localize(string text) =>
         Localization.instance != null ? Localization.instance.Localize(text) : text;
 
+    /// <summary>
+    /// Valheim 1.0 join-key hover: non-classic gamepad uses <c>$KEY_AltKeys</c> (same
+    /// modifier as <c>Player.Interact</c> alt). Keyboard / classic pad keeps Shift
+    /// <c>$KEY_AltPlace + $KEY_Use</c>. Direct <c>IsNonClassicFunctionality</c> is
+    /// missing from Pfhoenix CI stubs — bind at runtime.
+    /// </summary>
+    static readonly MethodInfo? NonClassicFunctionalityMethod =
+        AccessTools.DeclaredMethod(typeof(ZInput), "IsNonClassicFunctionality")
+        ?? AccessTools.Method(typeof(ZInput), "IsNonClassicFunctionality");
+
+    static bool UseGamepadAltKeysPrompt()
+    {
+        try
+        {
+            if (!ZInput.IsGamepadActive())
+                return false;
+            return NonClassicFunctionalityMethod?.Invoke(null, null) is true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    static string HoverUseLine(string action) =>
+        Localize("\n[<color=yellow><b>$KEY_Use</b></color>] " + action);
+
+    static string HoverAltUseLine(string actionToken)
+    {
+        var keys = UseGamepadAltKeysPrompt()
+            ? "$KEY_AltKeys + $KEY_Use"
+            : "$KEY_AltPlace + $KEY_Use";
+        return Localize("\n[<color=yellow><b>" + keys + "</b></color>] " + actionToken);
+    }
+
     // Publicized at compile time, private at runtime. Direct access throws FieldAccessException in the HUD.
     static readonly FieldInfo? AllAreasField = AccessTools.Field(typeof(PrivateArea), "m_allAreas");
     static readonly MethodInfo? IsEnabledMethod = AccessTools.Method(typeof(PrivateArea), "IsEnabled");
@@ -1354,13 +1414,13 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             return sb + "\n" + denied;
         }
 
-        sb += "\n" + Localize("[<color=yellow><b>$KEY_Use</b></color>] Take");
+        sb += HoverUseLine("Take");
         if (CanOfferTakePublicToggle())
         {
             var token = ReadTakePublic()
                 ? "$piece_drakes_paper_make_private"
                 : "$piece_drakes_paper_make_public";
-            sb += "\n" + Localize("[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] " + token);
+            sb += HoverAltUseLine(token);
         }
 
         return sb;

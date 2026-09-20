@@ -155,6 +155,8 @@ internal static class PaperBlankPlace
             p.m_resources = _refund;
             p.m_enabled = true;
             p.m_category = Piece.PieceCategory.Misc;
+            if (p.m_placeEffect == null)
+                p.m_placeEffect = new EffectList();
         }
 
         if (go.GetComponent<PaperBlankRefund>() == null)

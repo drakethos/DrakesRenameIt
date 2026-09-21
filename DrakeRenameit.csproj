@@ -116,6 +116,8 @@
     <Compile Include="ValheimHudMessage.cs" />
     <Compile Include="PaperNoticePiece.cs" />
     <Compile Include="PaperNotePageText.cs" />
+    <Compile Include="PaperFontScale.cs" />
+    <Compile Include="PaperWallSession.cs" />
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="Integration\RenameItLibsBridge.cs" />
@@ -124,6 +126,7 @@
     <Compile Include="UI\TooltipRichText.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\UIPanels.cs" />
+    <Compile Include="UI\PaperTabPanel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

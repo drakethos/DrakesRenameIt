@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 50;
+    private const int ExpectedSyncedEntryCount = 53;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -93,6 +93,9 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
     private static ConfigEntry<bool> _paperShowPageText = default!;
+    private static ConfigEntry<bool> _paperWallRenameEnabled = default!;
+    private static ConfigEntry<float> _paperDefaultFontSize = default!;
+    private static ConfigEntry<bool> _paperDefaultLandscape = default!;
     private static ConfigEntry<bool> _verticalPaperPlaceable = default!;
     private static ConfigEntry<bool> _horizontalPaperPlaceable = default!;
     private static ConfigEntry<bool> _stackPaperPlaceable = default!;
@@ -264,6 +267,27 @@ public static class RenameitConfig
     /// ink on blank parchment. Inventory / floor drops keep scribbles. Default on this branch.
     /// </summary>
     public static bool PaperShowPageText => _paperShowPageText != null && _paperShowPageText.Value;
+
+    /// <summary>
+    /// When true, Shift+Use on a pinned Written Page opens Rename|Paper tabs instead of
+    /// Make public. Make public lives on the Paper tab. Default on this branch.
+    /// </summary>
+    public static bool PaperWallRenameEnabled =>
+        _paperWallRenameEnabled != null && _paperWallRenameEnabled.Value;
+
+    /// <summary>Default on-page ink size as a page-height fraction (levels 1–7). Legacy absolute values migrate.</summary>
+    public static float PaperDefaultFontSize
+    {
+        get
+        {
+            var v = _paperDefaultFontSize != null ? _paperDefaultFontSize.Value : PaperFontScale.LevelToSize(3);
+            return PaperFontScale.NormalizeStored(v);
+        }
+    }
+
+    /// <summary>Default landscape text layout when a note has no ZDO override.</summary>
+    public static bool PaperDefaultLandscape =>
+        _paperDefaultLandscape != null && _paperDefaultLandscape.Value;
 
     /// <summary>Hammer piece: blank sheet upright on a wall. Default on. Prefab still exists for written notes if off.</summary>
     public static bool VerticalPaperPlaceable => _verticalPaperPlaceable.Value;
@@ -643,6 +667,24 @@ public static class RenameitConfig
             "PaperShowPageText",
             true,
             "Spike: if true, placed Written Page pieces show the custom description as readable wrapping text on blank parchment (no sign textbox; [E] still takes). Written items on the floor keep the scribble texture. Toggle may need a menu/world reload for prefab albedo. Default on.");
+
+        _paperWallRenameEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperWallRenameEnabled",
+            true,
+            "If true, Shift+Use on a pinned Written Page opens the Rename|Paper menu (edit name/desc and page options without picking up). Make public moves to the Paper tab. If false, Shift+Use stays the Make public toggle. Default on.");
+
+        _paperDefaultFontSize = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperDefaultFontSize",
+            PaperFontScale.LevelToSize(3),
+            "Default on-page ink size (TMP canvas units) when a note has no per-page override. UI levels 1–7 map ~0.055–0.28. Level 7 is the practical maximum.");
+
+        _paperDefaultLandscape = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperDefaultLandscape",
+            false,
+            "Default text layout for notes with no per-page override. False = portrait (like wall pages); true = landscape lines.");
 
         _verticalPaperPlaceable = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

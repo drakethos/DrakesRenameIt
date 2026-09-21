@@ -19,7 +19,8 @@ internal static class PaperNotePageText
 {
     /// <summary>Name must start with <c>drakes_paper</c> so donor stripping keeps it.</summary>
     const string HolderName = "drakes_paper_signtext";
-    const float Margin = 0.88f;
+    /// <summary>Inset from parchment edge — leave room so ink does not kiss the torn rim.</summary>
+    const float Margin = 0.78f;
     const float FaceClearance = 0.004f;
     static readonly Color Ink = new Color(0.12f, 0.07f, 0.03f, 1f);
 
@@ -103,14 +104,14 @@ internal static class PaperNotePageText
             if (holder.parent != decor)
                 holder.SetParent(decor, false);
 
-            OrientOnParchment(holder, decor, wall);
+            OrientOnParchment(holder, decor, wall, landscape: false);
 
             var widget = holder.GetComponentInChildren<TMP_Text>(true);
             if (widget == null)
                 return;
 
             WakeChain(holder, widget.transform);
-            StyleAsPage(widget, holder);
+            StyleAsPage(widget, holder, RenameitConfig.PaperDefaultFontSize, landscape: false);
         }
         catch (Exception ex)
         {
@@ -152,13 +153,15 @@ internal static class PaperNotePageText
     }
 
     /// <summary>
-    /// Ink on a letter sheet: small type, wrap, shrink, then truncate.
-    /// Sign billboard size is useless here — drive from the page rect so a long
-    /// description (hundreds of chars) can shrink to fit before truncating.
+    /// Ink on a letter sheet: wrap, shrink-to-fit, truncate.
+    /// Canvas units here are ~parchment meters (world scale ≈ 1) — never pad with
+    /// UI-pixel constants or the text rect goes negative and TMP emits 0 verts.
     /// </summary>
-    static void StyleAsPage(TMP_Text widget, Transform? holder)
+    static void StyleAsPage(TMP_Text widget, Transform? holder, float fontStored, bool landscape)
     {
-        var page = new Vector2(PaperItem.PaperSize.x * Margin, PaperItem.PaperSize.y * Margin);
+        var page = landscape
+            ? new Vector2(PaperItem.PaperSize.y * Margin, PaperItem.PaperSize.x * Margin)
+            : new Vector2(PaperItem.PaperSize.x * Margin, PaperItem.PaperSize.y * Margin);
 
         var canvas = widget.GetComponentInParent<Canvas>();
         var canvasRt = canvas != null ? canvas.GetComponent<RectTransform>() : null;
@@ -178,19 +181,18 @@ internal static class PaperNotePageText
         var rt = widget.rectTransform;
         rt.anchorMin = Vector2.zero;
         rt.anchorMax = Vector2.one;
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
+        // Proportional inset only (units are ~0.2–0.4, not HUD pixels).
+        var padX = units.x * 0.05f;
+        var padY = units.y * 0.05f;
+        rt.offsetMin = new Vector2(padX, padY);
+        rt.offsetMax = new Vector2(-padX, -padY);
         rt.pivot = new Vector2(0.5f, 0.5f);
         rt.localRotation = Quaternion.identity;
         rt.localScale = Vector3.one;
 
-        // Portrait page: enough room for a short letter without billboard-size glyphs.
-        float max = Mathf.Clamp(units.y * 0.010f, 0.08f, 0.30f);
-        float min = Mathf.Max(0.05f, max * 0.35f);
-        widget.enableAutoSizing = true;
-        widget.fontSize = max;
-        widget.fontSizeMax = max;
-        widget.fontSizeMin = min;
+        float max = PaperFontScale.ResolveCanvasSize(fontStored);
+        float min = Mathf.Max(PaperFontScale.SizeMin * 0.45f, max * 0.30f);
+
         widget.richText = true;
         widget.alignment = TextAlignmentOptions.TopLeft;
         widget.color = Ink;
@@ -199,6 +201,12 @@ internal static class PaperNotePageText
         widget.raycastTarget = false;
         widget.maskable = false;
         widget.enabled = true;
+
+        widget.enableAutoSizing = true;
+        widget.fontSize = max;
+        widget.fontSizeMax = max;
+        widget.fontSizeMin = min;
+        widget.ForceMeshUpdate(ignoreActiveState: true);
         _ = holder;
     }
 
@@ -229,16 +237,20 @@ internal static class PaperNotePageText
                 widget = FindPageWidget(root);
             }
 
+            ReadStyle(root, out var fontSize, out var landscape);
+
             if (widget != null)
             {
                 var holder = FindHolder(root);
                 if (holder != null)
                 {
-                    OrientOnParchment(holder, FindDecor(root), IsWallPiece(root));
+                    OrientOnParchment(holder, FindDecor(root), IsWallPiece(root), landscape);
                     WakeChain(holder, widget.transform);
-                    StyleAsPage(widget, holder);
                 }
+
+                // Body first so size snap/shrink sees the real letter.
                 SetBody(widget, description);
+                StyleAsPage(widget, holder, fontSize, landscape);
             }
 
             var bind = root.GetComponent<PaperPageTextBind>();
@@ -252,6 +264,29 @@ internal static class PaperNotePageText
         {
             Debug.LogWarning($"[DrakesRenameit] Paper page text failed: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    static void ReadStyle(GameObject root, out float fontSize, out bool landscape)
+    {
+        fontSize = PaperFontScale.NormalizeStored(RenameitConfig.PaperDefaultFontSize);
+        landscape = RenameitConfig.PaperDefaultLandscape;
+
+        var vessel = root.GetComponent<PaperWrittenVessel>();
+        if (vessel != null)
+        {
+            fontSize = vessel.ReadFontSize();
+            landscape = vessel.ReadLandscape();
+            return;
+        }
+
+        var zdo = root.GetComponent<ZNetView>()?.GetZDO();
+        if (zdo == null)
+            return;
+        fontSize = PaperFontScale.NormalizeStored(
+            zdo.GetFloat(PaperWrittenVessel.ZdoFontSize, RenameitConfig.PaperDefaultFontSize));
+        landscape = zdo.GetInt(
+            PaperWrittenVessel.ZdoLandscape,
+            RenameitConfig.PaperDefaultLandscape ? 1 : 0) == 1;
     }
 
     internal static void SetBody(TMP_Text? body, string? description)
@@ -305,11 +340,11 @@ internal static class PaperNotePageText
     static Vector3 WorldScale(Transform t) => t.localToWorldMatrix.lossyScale;
 
     /// <summary>
-    /// Forge parchment faces local +Y. Wall and flat share the same portrait page-up
-    /// (LTR along paper width) so a table sheet reads like the wall sheet, just lying
-    /// down. Negative X undoes the mirror both showed on the front face.
+    /// Forge parchment faces local +Y. Portrait (default): shared wall/flat LTR frame.
+    /// Landscape: prior flat landscape page-up (text along the long edge).
+    /// Negative X undoes the mirror both showed on the front face.
     /// </summary>
-    static void OrientOnParchment(Transform holder, Transform decor, bool wall)
+    static void OrientOnParchment(Transform holder, Transform decor, bool wall, bool landscape)
     {
         var forgeFace = decor.Find("paper_front") == null;
         var lift = FaceClearance + MaxExtent(decor, forgeFace ? 1 : 2);
@@ -318,13 +353,23 @@ internal static class PaperNotePageText
         if (forgeFace)
         {
             holder.localPosition = new Vector3(0f, lift, 0f);
-            // Same local frame for wall + flat: canvas up = paper height (−Z), LTR = width (+X).
-            holder.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.back);
+            if (landscape)
+            {
+                // Prior flat landscape frame — lines run along paper width as page-up.
+                holder.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.right);
+            }
+            else
+            {
+                // Portrait: canvas up = paper height (−Z), LTR = width (+X).
+                holder.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.back);
+            }
         }
         else
         {
             holder.localPosition = new Vector3(0f, 0f, lift);
-            holder.localRotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+            holder.localRotation = landscape
+                ? Quaternion.identity
+                : Quaternion.LookRotation(Vector3.forward, Vector3.up);
         }
 
         holder.localScale = new Vector3(-1f, 1f, 1f);

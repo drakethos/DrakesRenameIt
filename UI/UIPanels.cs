@@ -195,7 +195,7 @@ public static class UIPanels
         revertFields();
         hidePanel();
         var item = DrakeRenameit.CurrentItem;
-        if (item != null && DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        if (item != null && DrakeRenameit.IsEditableItemContext(item))
             OpenActionMenu(item);
         else
             CloseAllRenameEditingUi();
@@ -206,7 +206,7 @@ public static class UIPanels
         if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
             return;
 
-        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        if (!DrakeRenameit.IsEditableItemContext(item))
         {
             CloseAllRenameEditingUi();
             ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
@@ -422,6 +422,8 @@ public static class UIPanels
                     return;
                 }
                 Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, on);
+                if (PaperWallSession.Matches(item))
+                    PaperWallSession.FlushCurrentItemToVessel();
             });
         }
 
@@ -604,7 +606,7 @@ public static class UIPanels
         if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
             return;
 
-        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        if (!DrakeRenameit.IsEditableItemContext(item))
         {
             CloseAllRenameEditingUi();
             ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,

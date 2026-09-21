@@ -25,6 +25,9 @@ internal static class RenameItLibsBridge
 {
     public const string InventoryMenuBindingId = "renameit.inventory";
     public const string TabId = DrakeTabRegistration.RenameItTabId;
+    public const string PaperTabId = PaperTabPanel.TabId;
+    /// <summary>Just after Rename so Paper sits beside it on the strip.</summary>
+    const int PaperTabPriority = DrakeTabRegistration.DefaultRenamePriority + 1;
     static bool _registered;
 
     internal static void Register()
@@ -60,6 +63,17 @@ internal static class RenameItLibsBridge
                 hide: HideRenameTab,
                 getHintPhrase: () => "open rename options",
                 getTitle: () => "Rename");
+
+            DrakeTabHost.Register(
+                id: PaperTabId,
+                title: "Paper",
+                priority: PaperTabPriority,
+                isAvailable: IsPaperTabAvailable,
+                show: PaperTabPanel.Show,
+                claimDefault: _ => false,
+                hide: PaperTabPanel.Hide,
+                getHintPhrase: () => "open paper options",
+                getTitle: () => "Paper");
         }
         catch (Exception ex)
         {
@@ -74,9 +88,18 @@ internal static class RenameItLibsBridge
             return false;
         if (CustomizeLibsAPI.IsRenameInventorySuppressed(item))
             return false;
-        if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
+        if (!DrakeRenameit.IsEditableItemContext(item))
             return false;
         return DrakeRenameit.ShowUnlockButton(item) || DrakeRenameit.AnyInventoryActionAvailable(item);
+    }
+
+    static bool IsPaperTabAvailable(ItemDrop.ItemData item)
+    {
+        if (item == null || !RenameitConfig.PaperWallRenameEnabled)
+            return false;
+        if (!PaperItem.IsWrittenPaper(item))
+            return false;
+        return DrakeRenameit.IsEditableItemContext(item);
     }
 
     static void ShowRenameTab(DrakeTabPageContext ctx)

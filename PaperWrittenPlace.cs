@@ -623,6 +623,8 @@ internal static class PaperWrittenPlace
         loc.AddTranslation("English", "piece_drakes_paper_make_private", "Make private");
         loc.AddTranslation("English", "piece_drakes_paper_now_public", "Public — anyone can take this.");
         loc.AddTranslation("English", "piece_drakes_paper_now_private", "Private.");
+        loc.AddTranslation("English", "piece_drakes_paper_edit", "Edit");
+        loc.AddTranslation("English", "piece_drakes_paper_edit_options", "Edit page");
     }
 
     [HarmonyPatch]
@@ -1106,6 +1108,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     const string ZdoTakePublic = "DrakePaper_TakePublic";
     const string RpcSetTakePublic = "DrakePaper_SetTakePublic";
     const string ZdoHandled = "DrakePaper_Handled";
+    internal const string ZdoFontSize = "DrakePaper_FontSize";
+    internal const string ZdoLandscape = "DrakePaper_Landscape";
 
     PaperWrittenPlace.PaperSnapshot? _pending;
     bool _rpcRegistered;
@@ -1178,16 +1182,16 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         RefreshPageVisual();
     }
 
-    /// <summary>
-    /// Phase 2 (not this spike): Shift+E could open the RenameIt name+desc flow in place
-    /// without picking the page up. [E] stays Take.
-    /// </summary>
     void RefreshPageVisual()
     {
         if (PaperWrittenPlace.IsPlacementGhost(gameObject))
             return;
         PaperNotePageText.Sync(gameObject, ReadPageDescription());
     }
+
+    /// <summary>Ward permit, or original creator / elevated (public-take guests stay out).</summary>
+    bool LocalMayEditWallPaper() =>
+        PrivateArea.CheckAccess(transform.position, 0f, flash: false) || LocalMayToggleTakePublic();
 
     string ReadPageDescription()
     {
@@ -1239,12 +1243,22 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         if (hold)
             return false;
 
-        // Shift+Use is the public toggle. Never also take on that press.
-        if (alt && RenameitConfig.PaperTakePublicEnabled)
+        if (alt)
         {
-            if (CanOfferTakePublicToggle())
-                RequestToggleTakePublic(character);
-            return true;
+            if (RenameitConfig.PaperWallRenameEnabled)
+            {
+                if (character == Player.m_localPlayer && LocalMayEditWallPaper())
+                    PaperWallSession.TryOpen(this);
+                return true;
+            }
+
+            // Flag off: Shift+Use stays Make public.
+            if (RenameitConfig.PaperTakePublicEnabled)
+            {
+                if (CanOfferTakePublicToggle())
+                    RequestToggleTakePublic(character);
+                return true;
+            }
         }
 
         if (!MayTake(flash: true))
@@ -1427,7 +1441,13 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
 
         var sb = name;
         if (!string.IsNullOrEmpty(desc))
+        {
+            // Keep hover short so wrapped desc does not sit on top of [E] Take.
+            // Full letter lives on the parchment when PaperShowPageText is on.
+            if (RenameitConfig.PaperShowPageText && desc.Length > 72)
+                desc = desc.Substring(0, 69).TrimEnd() + "...";
             sb += "\n" + desc;
+        }
 
         // Ward blocks Take, but the page stays readable (same idea as item-stand "no access" labels).
         // Public pages skip that gate so a TAKE ONE board works inside the ward.
@@ -1435,11 +1455,17 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         {
             var denied = "$piece_noaccess";
             denied = Localize(denied);
-            return sb + "\n" + denied;
+            return sb + "\n\n" + denied;
         }
 
+        // Blank line before prompts — Valheim HUD stacks lines tightly otherwise.
+        sb += "\n";
         sb += HoverUseLine("Take");
-        if (CanOfferTakePublicToggle())
+        if (RenameitConfig.PaperWallRenameEnabled && LocalMayEditWallPaper())
+        {
+            sb += HoverAltUseLine("$piece_drakes_paper_edit");
+        }
+        else if (CanOfferTakePublicToggle())
         {
             var token = ReadTakePublic()
                 ? "$piece_drakes_paper_make_private"
@@ -1579,6 +1605,91 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         item.m_crafterID = zdo.GetLong(ZdoCrafterId, 0L);
         item.m_crafterName = zdo.GetString(ZdoCrafterName, "");
         return item;
+    }
+
+    /// <summary>Wall-session synthetic item from this piece's ZDO.</summary>
+    internal ItemDrop.ItemData? BuildItemFromZdoPublic() => BuildItemFromZdo();
+
+    /// <summary>Push rename/desc/crafter/flags from a session item back onto the piece ZDO.</summary>
+    internal void ApplyCustomizationFromItem(ItemDrop.ItemData item)
+    {
+        if (item == null)
+            return;
+        var zdo = EnsureOwnedZdo();
+        if (zdo == null)
+            return;
+
+        var rename = DrakeRenameit.hasNewName(item) ? DrakeRenameit.GetPropperName(item) : "";
+        var desc = DrakeRenameit.hasNewDesc(item) ? DrakeRenameit.getPropperDesc(item) : "";
+        zdo.Set(ZdoRename, rename ?? "");
+        zdo.Set(ZdoDesc, desc ?? "");
+        zdo.Set(ZdoPublic, Permissions.RenamePermissionManager.HasPublicRewriteFlag(item) ? 1 : 0);
+        zdo.Set(ZdoUnlock, DrakeRenameit.IsRenameUnlocked(item) ? 1 : 0);
+        zdo.Set(ZdoCrafterId, item.m_crafterID);
+        zdo.Set(ZdoCrafterName, item.m_crafterName ?? "");
+        RefreshPageVisual();
+    }
+
+    internal void ApplyPaperStyle(float fontSize, bool landscape)
+    {
+        var zdo = EnsureOwnedZdo();
+        if (zdo == null)
+            return;
+
+        var size = PaperFontScale.NormalizeStored(fontSize);
+        zdo.Set(ZdoFontSize, size);
+        zdo.Set(ZdoLandscape, landscape ? 1 : 0);
+        RefreshPageVisual();
+    }
+
+    internal float ReadFontSize()
+    {
+        var zdo = GetComponent<ZNetView>()?.GetZDO();
+        if (zdo == null)
+            return PaperFontScale.NormalizeStored(RenameitConfig.PaperDefaultFontSize);
+        return PaperFontScale.NormalizeStored(
+            zdo.GetFloat(ZdoFontSize, RenameitConfig.PaperDefaultFontSize));
+    }
+
+    internal bool ReadLandscape()
+    {
+        var zdo = GetComponent<ZNetView>()?.GetZDO();
+        if (zdo == null)
+            return RenameitConfig.PaperDefaultLandscape;
+        return zdo.GetInt(ZdoLandscape, RenameitConfig.PaperDefaultLandscape ? 1 : 0) == 1;
+    }
+
+    /// <summary>Set take-public to an absolute value (Paper tab), with HUD feedback.</summary>
+    internal void RequestSetTakePublic(bool on)
+    {
+        if (Player.m_localPlayer == null)
+            return;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid())
+            return;
+        if (!LocalMayToggleTakePublic())
+            return;
+
+        var next = on ? 1 : 0;
+        if (ReadTakePublic() == on)
+            return;
+        nv.InvokeRPC(RpcSetTakePublic, next);
+        var msg = next == 1 ? "$piece_drakes_paper_now_public" : "$piece_drakes_paper_now_private";
+        ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, Localize(msg));
+    }
+
+    internal bool CanOfferTakePublicTogglePublic() => CanOfferTakePublicToggle();
+    internal bool LocalMayToggleTakePublicPublic() => LocalMayToggleTakePublic();
+    internal bool ReadTakePublicPublic() => ReadTakePublic();
+
+    ZDO? EnsureOwnedZdo()
+    {
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid())
+            return null;
+        if (!nv.IsOwner())
+            nv.ClaimOwnership();
+        return nv.GetZDO();
     }
 
     void DestroyPiece()

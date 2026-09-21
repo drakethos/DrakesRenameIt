@@ -56,7 +56,15 @@ namespace DrakeRenameit
             return inv != null && inv.ContainsItem(item);
         }
 
+        /// <summary>Inventory item, or synthetic wall-session Written Page.</summary>
+        public static bool IsEditableItemContext(ItemDrop.ItemData? item) =>
+            IsItemInLocalPlayerInventory(item) || PaperWallSession.Matches(item);
 
+        static void FlushWallSessionIfNeeded()
+        {
+            if (PaperWallSession.IsActive)
+                PaperWallSession.FlushCurrentItemToVessel();
+        }
 
         private void Awake()
         {
@@ -247,7 +255,7 @@ namespace DrakeRenameit
         {
             if (item == null)
                 return;
-            if (!IsItemInLocalPlayerInventory(item))
+            if (!IsEditableItemContext(item))
             {
                 ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventory));
@@ -258,20 +266,22 @@ namespace DrakeRenameit
                 resetName(item);
             if (CanChangeDesc(item, false) && hasNewDesc(item))
                 resetDesc(item);
-            if (!CanChangeCraftedByLabel(item, false) ||
-                (!HasCraftedByDisplayOverride(item) && !HasCraftedByLineLabelOverride(item)))
-                return;
-            if (item.m_customData == null)
-                return;
-            string oldDisplay = getCraftedByDisplay(item);
-            CustomizeLibsAPI.ClearCraftedByOverrides(item);
-            string newDisplay = item.m_crafterName ?? "";
-            RenameEvents.RaiseCraftedByDisplayChanged(
-                Player.m_localPlayer,
-                item,
-                item.m_shared.m_name,
-                oldDisplay,
-                newDisplay);
+            if (CanChangeCraftedByLabel(item, false) &&
+                (HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item)) &&
+                item.m_customData != null)
+            {
+                string oldDisplay = getCraftedByDisplay(item);
+                CustomizeLibsAPI.ClearCraftedByOverrides(item);
+                string newDisplay = item.m_crafterName ?? "";
+                RenameEvents.RaiseCraftedByDisplayChanged(
+                    Player.m_localPlayer,
+                    item,
+                    item.m_shared.m_name,
+                    oldDisplay,
+                    newDisplay);
+            }
+
+            FlushWallSessionIfNeeded();
         }
 
         public static string resetName(ItemDrop.ItemData? item)
@@ -439,7 +449,7 @@ namespace DrakeRenameit
         public static void ApplyRewriteDesc(string newDesc)
         {
             if (CurrentItem == null) return;
-            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            if (!IsEditableItemContext(CurrentItem))
             {
                 ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
@@ -471,6 +481,7 @@ namespace DrakeRenameit
             }
 
             RewriteItemDesc(newDesc);
+            FlushWallSessionIfNeeded();
             var item = CurrentItem;
             UIPanels.InputDescPanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
@@ -479,7 +490,7 @@ namespace DrakeRenameit
         public static void ApplyRename(string newName)
         {
             if (CurrentItem == null) return;
-            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            if (!IsEditableItemContext(CurrentItem))
             {
                 ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
@@ -511,6 +522,7 @@ namespace DrakeRenameit
             }
 
             RenameItem(newName);
+            FlushWallSessionIfNeeded();
             var item = CurrentItem;
             UIPanels.InputNamePanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);
@@ -671,7 +683,7 @@ namespace DrakeRenameit
         public static void ApplyCraftedByLabel(string display)
         {
             if (CurrentItem == null) return;
-            if (!IsItemInLocalPlayerInventory(CurrentItem))
+            if (!IsEditableItemContext(CurrentItem))
             {
                 ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
                     T(LKeys.MsgItemNotInInventoryApply));
@@ -703,6 +715,7 @@ namespace DrakeRenameit
                 oldDisplay,
                 newDisplay);
 
+            FlushWallSessionIfNeeded();
             var item = CurrentItem;
             UIPanels.InputCraftedByPanel!.SetActive(false);
             UIPanels.OpenActionMenu(item);

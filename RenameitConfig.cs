@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 53;
+    private const int ExpectedSyncedEntryCount = 54;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -92,6 +92,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
+    private static ConfigEntry<bool> _paperHoldToTake = default!;
     private static ConfigEntry<bool> _paperShowPageText = default!;
     private static ConfigEntry<bool> _paperWallRenameEnabled = default!;
     private static ConfigEntry<float> _paperDefaultFontSize = default!;
@@ -261,6 +262,13 @@ public static class RenameitConfig
     /// Placement and hammer-remove still require ward access. Default on.
     /// </summary>
     public static bool PaperTakePublicEnabled => _paperTakePublicEnabled.Value;
+
+    /// <summary>
+    /// When true, pinned Written Pages require hold-Use to take (same as vanilla item stands).
+    /// Tap does nothing; Shift+Use edit / Make public unchanged. Default on.
+    /// </summary>
+    public static bool PaperHoldToTake =>
+        _paperHoldToTake == null || _paperHoldToTake.Value;
 
     /// <summary>
     /// Spike: when true, pinned Written Page pieces show the custom description as wrapping
@@ -660,7 +668,13 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "PaperTakePublicEnabled",
             true,
-            "If true, the page's creator or an admin override (inside a ward that already allows them) can press Shift+Use to let anyone take it off the wall. Shift+Use again makes it private. Other players cannot flip this. Visitors still cannot place a new page or hammer-remove it. Default on.");
+            "If true, the page's creator or an admin override (inside a ward that already allows them) can use Make public (Paper tab, or Shift+Use when wall-rename is off) so anyone may take it off the wall. Other players cannot flip this. Visitors still cannot place a new page or hammer-remove it. Default on.");
+
+        _paperHoldToTake = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperHoldToTake",
+            true,
+            "If true, pinned Written Pages require hold-Use to take — same as vanilla item stands ($ui_hold). Prevents accidental grabs. Shift+Use edit / Make public unchanged. If false, a tap takes immediately. Default on.");
 
         _paperShowPageText = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

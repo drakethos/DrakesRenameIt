@@ -1240,11 +1240,12 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
 
     public bool Interact(Humanoid character, bool hold, bool alt)
     {
-        if (hold)
-            return false;
-
         if (alt)
         {
+            // Shift+Use is press-only (same as before) — ignore hold repeats.
+            if (hold)
+                return false;
+
             if (RenameitConfig.PaperWallRenameEnabled)
             {
                 if (character == Player.m_localPlayer && LocalMayEditWallPaper())
@@ -1259,10 +1260,24 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
                     RequestToggleTakePublic(character);
                 return true;
             }
+
+            return false;
         }
 
-        if (!MayTake(flash: true))
+        if (!MayTake(flash: !hold))
             return true;
+
+        // Match vanilla ItemStand: take only while Use is held (Player fires hold=true
+        // after the initial ButtonDown). Tap does not reclaim.
+        if (RenameitConfig.PaperHoldToTake)
+        {
+            if (!hold)
+                return false;
+        }
+        else if (hold)
+        {
+            return false;
+        }
 
         _reclaimQueued = true;
         TryReclaim(character);
@@ -1388,6 +1403,10 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     static string HoverUseLine(string action) =>
         Localize("\n[<color=yellow><b>$KEY_Use</b></color>] " + action);
 
+    /// <summary>Same prompt shape as vanilla item stands: hold Use to take.</summary>
+    static string HoverHoldUseLine() =>
+        Localize("\n[<color=yellow><b>$ui_hold $KEY_Use</b></color>] $piece_itemstand_take");
+
     static string HoverAltUseLine(string actionToken)
     {
         var keys = UseGamepadAltKeysPrompt()
@@ -1460,7 +1479,10 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
 
         // Blank line before prompts — Valheim HUD stacks lines tightly otherwise.
         sb += "\n";
-        sb += HoverUseLine("Take");
+        if (RenameitConfig.PaperHoldToTake)
+            sb += HoverHoldUseLine();
+        else
+            sb += HoverUseLine("Take");
         if (RenameitConfig.PaperWallRenameEnabled && LocalMayEditWallPaper())
         {
             sb += HoverAltUseLine("$piece_drakes_paper_edit");

@@ -1606,37 +1606,87 @@ internal static class PaperItem
             };
         }
 
-        mat.color = Color.white;
         mat.mainTexture = tex;
         if (mat.HasProperty("_MainTex"))
             mat.SetTexture("_MainTex", tex);
-        if (mat.HasProperty("_Color"))
-            mat.SetColor("_Color", Color.white);
-        if (mat.HasProperty("_TintColor"))
-            mat.SetColor("_TintColor", Color.white);
-        if (mat.HasProperty("_EmissionMap"))
-            mat.SetTexture("_EmissionMap", null);
-        if (mat.HasProperty("_EmissionColor"))
-            mat.SetColor("_EmissionColor", Color.black);
-        if (mat.HasProperty("_BumpMap"))
-            mat.SetTexture("_BumpMap", null);
-        if (mat.HasProperty("_Glossiness"))
-            mat.SetFloat("_Glossiness", 0f);
-        if (mat.HasProperty("_Metallic"))
-            mat.SetFloat("_Metallic", 0f);
-        if (mat.HasProperty("_Cull"))
-            mat.SetInt("_Cull", 0);
 
-        // Clip transparent mesh texels ΓÇö stops white fringe from soft AA edges.
+        ApplyMattePaperFinish(mat);
+
+        // Clip transparent mesh texels — stops white fringe from soft AA edges.
         if (mat.HasProperty("_Cutoff"))
             mat.SetFloat("_Cutoff", 0.5f);
         mat.EnableKeyword("_ALPHATEST_ON");
         mat.DisableKeyword("_ALPHABLEND_ON");
         mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-        mat.DisableKeyword("_EMISSION");
-        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+        if (mat.HasProperty("_Cull"))
+            mat.SetInt("_Cull", 0);
 
         return mat;
+    }
+
+    /// <summary>
+    /// Paper should read as dry parchment, not polished wood/leather from the donor
+    /// material clone. Clear gloss maps and force near-zero specular so torch light
+    /// does not bloom the sheet into a white flare.
+    /// </summary>
+    private static void ApplyMattePaperFinish(Material mat)
+    {
+        if (mat == null)
+            return;
+
+        // Soft parchment — pure white albedo + Valheim bloom = blinding.
+        var parchment = new Color(0.88f, 0.84f, 0.74f, 1f);
+        mat.color = parchment;
+        if (mat.HasProperty("_Color"))
+            mat.SetColor("_Color", parchment);
+        if (mat.HasProperty("_TintColor"))
+            mat.SetColor("_TintColor", parchment);
+
+        // Drop shine / metal maps inherited from leather, wood, creature skins, etc.
+        ClearTex(mat, "_BumpMap");
+        ClearTex(mat, "_MetallicGlossMap");
+        ClearTex(mat, "_SpecGlossMap");
+        ClearTex(mat, "_GlossMap");
+        ClearTex(mat, "_OcclusionMap");
+        ClearTex(mat, "_DetailMask");
+        ClearTex(mat, "_DetailAlbedoMap");
+        ClearTex(mat, "_DetailNormalMap");
+        ClearTex(mat, "_EmissionMap");
+        ClearTex(mat, "_ParallaxMap");
+
+        if (mat.HasProperty("_EmissionColor"))
+            mat.SetColor("_EmissionColor", Color.black);
+        if (mat.HasProperty("_SpecColor"))
+            mat.SetColor("_SpecColor", Color.black);
+
+        SetFloatIf(mat, "_Glossiness", 0f);
+        SetFloatIf(mat, "_Smoothness", 0.02f); // tiny residual — fully 0 can look plastic on some shaders
+        SetFloatIf(mat, "_GlossMapScale", 0f);
+        SetFloatIf(mat, "_Metallic", 0f);
+        SetFloatIf(mat, "_Specular", 0f);
+        SetFloatIf(mat, "_SpecularHighlights", 0f);
+        SetFloatIf(mat, "_GlossyReflections", 0f);
+
+        mat.DisableKeyword("_NORMALMAP");
+        mat.DisableKeyword("_METALLICGLOSSMAP");
+        mat.DisableKeyword("_SPECGLOSSMAP");
+        mat.DisableKeyword("_EMISSION");
+        mat.DisableKeyword("_DETAIL_MULX2");
+        mat.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+        mat.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
+        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+    }
+
+    private static void ClearTex(Material mat, string property)
+    {
+        if (mat.HasProperty(property))
+            mat.SetTexture(property, null);
+    }
+
+    private static void SetFloatIf(Material mat, string property, float value)
+    {
+        if (mat.HasProperty(property))
+            mat.SetFloat(property, value);
     }
 
     private static Shader? ResolveWorldShader()

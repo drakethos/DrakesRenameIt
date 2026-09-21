@@ -283,10 +283,18 @@ internal static class PaperAssets
             if (renderer == null || renderer.sharedMaterial == null)
                 continue;
             var mat = new Material(renderer.sharedMaterial);
+            // Keep matte finish after tint — cloning alone can revive donor gloss.
             if (mat.HasProperty("_Color"))
-                mat.SetColor("_Color", new Color(0.92f, 0.88f, 0.78f, 1f));
-            if (mat.HasProperty("_Color"))
-                mat.color = new Color(0.92f, 0.88f, 0.78f, 1f);
+                mat.SetColor("_Color", new Color(0.86f, 0.82f, 0.72f, 1f));
+            mat.color = new Color(0.86f, 0.82f, 0.72f, 1f);
+            if (mat.HasProperty("_Glossiness"))
+                mat.SetFloat("_Glossiness", 0f);
+            if (mat.HasProperty("_Smoothness"))
+                mat.SetFloat("_Smoothness", 0.02f);
+            if (mat.HasProperty("_Metallic"))
+                mat.SetFloat("_Metallic", 0f);
+            if (mat.HasProperty("_SpecColor"))
+                mat.SetColor("_SpecColor", Color.black);
             renderer.sharedMaterial = mat;
         }
     }

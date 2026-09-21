@@ -2,19 +2,19 @@
 
 # DrakesRenameIt
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.7** stops the unarmed punch when pinning a Written Page, quiets hover-HUD log spam, and keeps the Thunderstore icon from being replaced by parchment when Gale flattens the zip.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.8** paints description ink on pinned pages, adds wall Shift+Use **Rename | Paper** (font / landscape / make public that survive take/place), and shows Sign-style **`...`** on the empty writing face.
 
-**Requires [DrakeModsLibs 0.9.4+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 0.9.5+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Piece of Paper (1.1)
 
 Craft blank **Piece of Paper** from the inventory craft list (default recipe **1 Wood + 1 Coal**; override with **PaperCost**). Blanks stack (default **50**). Open the Drake menu and set a **name** and/or **description** — that **uses one sheet** and creates a **Written Page** (always stack size 1) with your text.
 
-**Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). Ward owners can **Shift+Use** a pinned page to let anyone take it (`PaperTakePublicEnabled`). Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
+**Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). With **PaperWallRenameEnabled** (default on), **Shift+Use** opens **Rename | Paper** on the wall — edit text and Paper options without picking the page up; **Make public** lives on the Paper tab. Otherwise Shift+Use still toggles take-public when that feature is on. Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, wall rename, page text, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
 
 ### LockSmith integration
 
-With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.9.4+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.9.5+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
 
 ### How to use
 

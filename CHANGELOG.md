@@ -1,3 +1,9 @@
+- Version 1.1.8
+  - Requires **DrakeModsLibs 0.9.5+** (`DrakeNumericStepper`, toggle layout helpers).
+  - **Written Page on-mesh text:** custom description renders as ink on pinned parchment (`PaperShowPageText`). Empty / placement-ghost pages show Sign-style **`...`** on the writing face.
+  - **Wall rename:** when `PaperWallRenameEnabled`, Shift+Use opens DrakeTabHost (**Rename | Paper**). Edit name/description without picking the page up.
+  - **Paper tab:** Make public, font size (1–7 stepper), landscape — settings **persist on the item** through take and re-place (`DrakePaper_*` customData ↔ ZDO).
+  - Matte parchment materials; hold-Use to take pinned pages (`PaperHoldToTake`).
 - Version 1.1.7
   - **Fix:** Placing a Written Page played the unarmed punch — vanilla `PlacePiece` always `SetTrigger`s the held tool's attack animation. Notes now place with `doAttack` off.
   - **Fix:** Hovering a pinned page could spam HUD/log errors every frame (`Hud.m_hoverName` direct field access, leftover donor `Sign.GetHoverText` / MuteList). Hover is FieldInfo + Sign-skip.

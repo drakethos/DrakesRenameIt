@@ -54,6 +54,76 @@ internal static class PaperWrittenPlace
         AccessTools.Method(typeof(Humanoid), "UnequipItem", new[] { typeof(ItemDrop.ItemData), typeof(bool) })
         ?? AccessTools.Method(typeof(Humanoid), "UnequipItem");
 
+    static readonly FieldInfo? QueuedAttackTimerField =
+        AccessTools.Field(typeof(Player), "m_queuedAttackTimer");
+    static readonly FieldInfo? QueuedSecondAttackTimerField =
+        AccessTools.Field(typeof(Player), "m_queuedSecondAttackTimer");
+    static readonly FieldInfo? AttackFlagField =
+        AccessTools.Field(typeof(Character), "m_attack");
+    static readonly FieldInfo? SecondaryAttackFlagField =
+        AccessTools.Field(typeof(Character), "m_secondaryAttack");
+
+    /// <summary>Block StartAttack until deferred consume finishes (cultivator-break punch).</summary>
+    static float _suppressAttackUntil;
+    /// <summary>Written page removed once Attack is released after a successful place.</summary>
+    static ItemDrop.ItemData? _deferredConsume;
+    static bool _deferConsumeArmed;
+
+    static bool AttackStillHeld()
+    {
+        try
+        {
+            return ZInput.GetButton("Attack") || ZInput.GetButton("JoyPlace");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Place click also queues StartAttack. Unequipping the page while Attack is still held
+    /// is the cultivator-break case → unarmed punch. Clear the queue and suppress until settled.
+    /// </summary>
+    static void ClearPendingAttacksAfterPaperPlace(Player player)
+    {
+        try
+        {
+            QueuedAttackTimerField?.SetValue(player, 0f);
+            QueuedSecondAttackTimerField?.SetValue(player, 0f);
+            AttackFlagField?.SetValue(player, false);
+            SecondaryAttackFlagField?.SetValue(player, false);
+            _suppressAttackUntil = Math.Max(_suppressAttackUntil, Time.time + 0.5f);
+        }
+        catch
+        {
+            /* ignore */
+        }
+    }
+
+    static void ArmDeferredConsume(Player player, ItemDrop.ItemData? source)
+    {
+        _deferredConsume = source;
+        _deferConsumeArmed = source != null;
+        ClearPendingAttacksAfterPaperPlace(player);
+        _suppressAttackUntil = Time.time + 30f;
+    }
+
+    static void TryFinishDeferredConsume(Player player)
+    {
+        if (!_deferConsumeArmed || player == null)
+            return;
+        if (AttackStillHeld())
+            return;
+
+        var toConsume = _deferredConsume;
+        _deferredConsume = null;
+        _deferConsumeArmed = false;
+        ClearPendingAttacksAfterPaperPlace(player);
+        ConsumeTrigger(player, toConsume);
+        _suppressAttackUntil = Time.time + 0.2f;
+    }
+
     private static readonly FieldInfo? PieceTablePiecesField =
         AccessTools.Field(typeof(PieceTable), "m_pieces");
 
@@ -77,23 +147,33 @@ internal static class PaperWrittenPlace
         public bool Unlock;
         public long CrafterId;
         public string CrafterName = "";
+        public float FontSize;
+        public bool Landscape;
+        public bool TakePublic;
         public ItemDrop.ItemData? SourceItem;
 
-        public static PaperSnapshot From(ItemDrop.ItemData item) => new()
+        public static PaperSnapshot From(ItemDrop.ItemData item)
         {
-            // Keep rich-text color tags — Plain() was stripping <color> from name/desc.
-            Rename = CustomizeLibsAPI.HasCustomName(item)
-                ? (CustomizeLibsAPI.GetProperName(item) ?? "")
-                : "",
-            Desc = CustomizeLibsAPI.HasCustomDescription(item)
-                ? (CustomizeLibsAPI.GetProperDescription(item) ?? "")
-                : "",
-            Public = Permissions.RenamePermissionManager.HasPublicRewriteFlag(item),
-            Unlock = DrakeRenameit.IsRenameUnlocked(item),
-            CrafterId = item.m_crafterID,
-            CrafterName = item.m_crafterName ?? "",
-            SourceItem = item,
-        };
+            PaperItemStyle.Read(item, out var fontSize, out var landscape, out var takePublic);
+            return new()
+            {
+                // Keep rich-text color tags — Plain() was stripping <color> from name/desc.
+                Rename = CustomizeLibsAPI.HasCustomName(item)
+                    ? (CustomizeLibsAPI.GetProperName(item) ?? "")
+                    : "",
+                Desc = CustomizeLibsAPI.HasCustomDescription(item)
+                    ? (CustomizeLibsAPI.GetProperDescription(item) ?? "")
+                    : "",
+                Public = Permissions.RenamePermissionManager.HasPublicRewriteFlag(item),
+                Unlock = DrakeRenameit.IsRenameUnlocked(item),
+                CrafterId = item.m_crafterID,
+                CrafterName = item.m_crafterName ?? "",
+                FontSize = fontSize,
+                Landscape = landscape,
+                TakePublic = takePublic,
+                SourceItem = item,
+            };
+        }
     }
 
     internal static PaperSnapshot? TakePendingSnapshot()
@@ -224,7 +304,10 @@ internal static class PaperWrittenPlace
         // Materials can't be GetRightItem() for build mode — UpdatePlacement NREs without
         // right-hand.m_buildPieces. Written Page only; blank stays a material.
         shared.m_itemType = ItemDrop.ItemData.ItemType.Tool;
-        NeutralizePlaceAttack(shared);
+        // Root cause of place-punch: CustomItem clones LeatherScraps, whose Attack is the
+        // unarmed punch. PlacePiece always SetTriggers that string. Install a place-tool
+        // Attack instead of scrubbing the donor punch after the fact.
+        InstallPlaceToolAttack(shared);
 
         var blankItem = GetBlankItemDrop()?.m_itemData;
         PaperItem.ClearBlankPlaceTool(blankItem);
@@ -260,10 +343,8 @@ internal static class PaperWrittenPlace
         var clone = (ItemDrop.ItemData.SharedData)typeof(object)
             .GetMethod("MemberwiseClone", flags)!
             .Invoke(src, null);
-        if (src.m_attack != null)
-            clone.m_attack = src.m_attack.Clone();
-        else
-            clone.m_attack = new Attack();
+        // Do not copy LeatherScraps' unarmed Attack — written place-tool gets its own.
+        InstallPlaceToolAttack(clone);
         return clone;
     }
 
@@ -286,16 +367,31 @@ internal static class PaperWrittenPlace
         PaperItem.ClearBlankPlaceTool(item);
     }
 
-    /// <summary>GetBuildStamina requires m_attack, but a live tool attack plays the unarmed punch.</summary>
-    private static void NeutralizePlaceAttack(ItemDrop.ItemData.SharedData shared)
+    /// <summary>
+    /// Written Page must be a Tool for <see cref="Player.UpdatePlacement"/>, and
+    /// <see cref="Player.GetBuildStamina"/> always reads <c>m_attack.m_attackStamina</c>.
+    /// Attack anim does not matter for notes: <c>PlacePiece</c> is called with
+    /// <c>doAttack=false</c> so <c>SetTrigger</c> is skipped (LeatherScraps punch / hammer swing).
+    /// </summary>
+    private static void InstallPlaceToolAttack(ItemDrop.ItemData.SharedData shared)
     {
-        if (shared.m_attack == null)
-            shared.m_attack = new Attack();
-        shared.m_attack.m_attackType = Attack.AttackType.None;
-        shared.m_attack.m_attackStamina = 0f;
-        shared.m_attack.m_attackRange = 0f;
-        shared.m_attack.m_attackAnimation = "";
-        shared.m_attack.m_attackHitNoise = 0f;
+        if (shared == null)
+            return;
+        shared.m_attack = NewInertAttack();
+        shared.m_secondaryAttack = NewInertAttack();
+    }
+
+    /// <summary>Non-null Attack for GetBuildStamina; empty anim as belt-and-suspenders.</summary>
+    private static Attack NewInertAttack()
+    {
+        return new Attack
+        {
+            m_attackType = Attack.AttackType.None,
+            m_attackStamina = 0f,
+            m_attackRange = 0f,
+            m_attackAnimation = "",
+            m_attackHitNoise = 0f,
+        };
     }
 
     internal static bool IsNotePiece(Component? c)
@@ -317,6 +413,8 @@ internal static class PaperWrittenPlace
 
         AttachTableToWrittenItem();
         BindWrittenShared(item);
+        if (item.m_shared != null)
+            InstallPlaceToolAttack(item.m_shared);
         var table = item.m_shared?.m_buildPieces
                     ?? PieceManager.Instance.GetPieceTable(PieceTableName);
         if (table == null)
@@ -560,6 +658,7 @@ internal static class PaperWrittenPlace
             return;
 
         // Unequip first — RemoveItem alone can leave the paper mesh in-hand.
+        // triggerEquipEffects=false (InvUnequipItem already passes false).
         InvUnequipItem(player, source);
 
         var inv = player.GetInventory();
@@ -578,9 +677,19 @@ internal static class PaperWrittenPlace
         else
             inv.RemoveItem(item);
 
+        // HideHandItems defaults animation=true → SetTrigger("equip_hip"). Silent hide.
         try
         {
-            HideHandItemsMethod?.Invoke(player, null);
+            var ps = HideHandItemsMethod?.GetParameters();
+            if (HideHandItemsMethod != null && ps != null)
+            {
+                object?[] args = ps.Length >= 2
+                    ? new object[] { false, false } // onlyRightHand, animation
+                    : ps.Length == 1
+                        ? new object[] { false }
+                        : Array.Empty<object>();
+                HideHandItemsMethod.Invoke(player, args);
+            }
         }
         catch
         {
@@ -666,8 +775,7 @@ internal static class PaperWrittenPlace
         }
 
         /// <summary>
-        /// Written Page is a place-tool. Left-click must not play the unarmed punch.
-        /// If place mode isn't open yet, that click opens it instead.
+        /// Written Page is a place-tool. Left-click opens place mode; while placing, Attack is for the ghost.
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.StartAttack))]
@@ -675,6 +783,18 @@ internal static class PaperWrittenPlace
         {
             if (__instance != Player.m_localPlayer)
                 return true;
+
+            if (Time.time < _suppressAttackUntil || _deferConsumeArmed)
+            {
+                __result = false;
+                return false;
+            }
+
+            if (__instance is Player placing && InOurPlaceMode(placing))
+            {
+                __result = false;
+                return false;
+            }
 
             var right = InvGetRightItem(__instance);
             if (PaperItem.IsBlankPaper(right))
@@ -688,7 +808,7 @@ internal static class PaperWrittenPlace
                 return true;
 
             __result = false;
-            if (!secondaryAttack && __instance is Player player && !InOurPlaceMode(player))
+            if (!secondaryAttack && __instance is Player player)
                 BeginPlace(right!);
             return false;
         }
@@ -792,8 +912,9 @@ internal static class PaperWrittenPlace
         }
 
         /// <summary>
-        /// Finish consume/exit here — PlacePiece runs mid-UpdatePlacement; consuming there
-        /// leaves the rest of UpdatePlacement with a dead right-hand ref → NRE every place.
+        /// After a successful note place: exit place mode immediately, but defer consuming the
+        /// Written Page until Attack/JoyPlace is released — unequipping mid-click punches
+        /// (same class of bug as cultivator breaking on last plant).
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Player), "UpdatePlacement", new[] { typeof(bool), typeof(float) })]
@@ -808,14 +929,23 @@ internal static class PaperWrittenPlace
             _consumeAfterPlacement = null;
             _endPlaceAfterPlacement = false;
 
+            ClearPendingAttacksAfterPaperPlace(__instance);
             EndPlaceMode(__instance);
-            ConsumeTrigger(__instance, toConsume);
+            ArmDeferredConsume(__instance, toConsume);
             _triggerPaper = null;
-            // Keep the snapshot until the spawned sheet writes it. Clearing here
-            // was wiping the page when the piece's ZDO was not ready yet.
             if (_vesselAppliedSnapshot)
                 _pendingSnapshot = null;
             _vesselAppliedSnapshot = false;
+        }
+
+        /// <summary>Finish deferred paper consume once the place-click Attack is released.</summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Player), "Update", new Type[] { })]
+        private static void PlayerUpdate_DeferredConsume(Player __instance)
+        {
+            if (__instance != Player.m_localPlayer || !_deferConsumeArmed)
+                return;
+            TryFinishDeferredConsume(__instance);
         }
 
         /// <summary>
@@ -839,16 +969,21 @@ internal static class PaperWrittenPlace
             Player __instance,
             Piece piece,
             ref Vector3 pos,
-            ref bool doAttack)
+            ref bool doAttack,
+            object[] __args)
         {
             if (__instance != Player.m_localPlayer || piece == null)
                 return;
             if (PaperItem.IsWallSheetPiece(piece))
                 pos = PaperItem.SeatWallSheet(pos, piece.transform);
-            // Vanilla always SetTrigger(rightItem.m_attack.m_attackAnimation) on place.
-            // Written Page is a Tool cloned from LeatherScraps — that trigger is the unarmed punch.
+            // TryPlacePiece always passes doAttack=true → PlacePiece SetTriggers the held
+            // tool anim. Skip that for paper notes / blank place pieces.
             if (IsNotePiece(piece) || PaperBlankPlace.IsBlankPlacePiece(piece))
+            {
                 doAttack = false;
+                if (__args != null && __args.Length > 3)
+                    __args[3] = false;
+            }
         }
 
         static void SeatGhost(Player player)
@@ -1026,6 +1161,9 @@ internal static class PaperWrittenPlace
         // every frame while hovering if the compile ref disagrees with the live game.
         static readonly FieldInfo? HoverNameField = AccessTools.Field(typeof(Hud), "m_hoverName");
         static readonly FieldInfo? CrosshairField = AccessTools.Field(typeof(Hud), "m_crosshair");
+        /// <summary>Vanilla hold-Use gate (ItemStand take). Private at runtime.</summary>
+        static readonly FieldInfo? LastHoverInteractTimeField =
+            AccessTools.Field(typeof(Player), "m_lastHoverInteractTime");
 
         /// <summary>
         /// Store/CI builds cannot put <see cref="Hoverable"/> on the vessel (vtable). Fill hover
@@ -1064,7 +1202,11 @@ internal static class PaperWrittenPlace
             }
         }
 
-        /// <summary>Route [E] to the vessel without requiring <see cref="Interactable"/> on the type.</summary>
+        /// <summary>
+        /// Route [E] to the vessel without requiring <see cref="Interactable"/> on the type.
+        /// Must mirror Player.Interact's hold throttle: ButtonDown (hold=false) arms the timer;
+        /// hold=true is ignored until 0.2s later — otherwise tap-E reclaims on the next frame.
+        /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Player), "Interact", new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
         private static bool Interact_Prefix(Player __instance, GameObject go, bool hold, bool alt)
@@ -1078,6 +1220,16 @@ internal static class PaperWrittenPlace
                     return true;
                 if (__instance.InAttack() || __instance.InDodge())
                     return false;
+
+                // Same gate as vanilla Player.Interact before calling Interactable.
+                if (hold && LastHoverInteractTimeField != null)
+                {
+                    var last = (float)LastHoverInteractTimeField.GetValue(__instance)!;
+                    if (Time.time - last < 0.2f)
+                        return false;
+                }
+
+                LastHoverInteractTimeField?.SetValue(__instance, Time.time);
                 vessel.Interact(__instance, hold, alt);
                 return false;
             }
@@ -1105,11 +1257,11 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     const string ZdoCrafterId = "DrakePaper_CrafterId";
     const string ZdoCrafterName = "DrakePaper_CrafterName";
     /// <summary>Take-off-wall bypass. Not the rewrite flag (<see cref="ZdoPublic"/>).</summary>
-    const string ZdoTakePublic = "DrakePaper_TakePublic";
+    internal const string ZdoTakePublic = PaperItemStyle.TakePublicKey;
     const string RpcSetTakePublic = "DrakePaper_SetTakePublic";
     const string ZdoHandled = "DrakePaper_Handled";
-    internal const string ZdoFontSize = "DrakePaper_FontSize";
-    internal const string ZdoLandscape = "DrakePaper_Landscape";
+    internal const string ZdoFontSize = PaperItemStyle.FontSizeKey;
+    internal const string ZdoLandscape = PaperItemStyle.LandscapeKey;
 
     PaperWrittenPlace.PaperSnapshot? _pending;
     bool _rpcRegistered;
@@ -1211,6 +1363,10 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoUnlock, snap.Unlock ? 1 : 0);
         zdo.Set(ZdoCrafterId, snap.CrafterId);
         zdo.Set(ZdoCrafterName, snap.CrafterName ?? "");
+        // Style before Sync so on-mesh ink reads font/landscape on first paint.
+        zdo.Set(ZdoFontSize, PaperFontScale.NormalizeStored(snap.FontSize));
+        zdo.Set(ZdoLandscape, snap.Landscape ? 1 : 0);
+        zdo.Set(ZdoTakePublic, snap.TakePublic ? 1 : 0);
         // Pass desc directly — don't rely on a ZDO round-trip for the first paint.
         if (!PaperWrittenPlace.IsPlacementGhost(gameObject))
             PaperNotePageText.Sync(gameObject, snap.Desc);
@@ -1267,8 +1423,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         if (!MayTake(flash: !hold))
             return true;
 
-        // Match vanilla ItemStand: take only while Use is held (Player fires hold=true
-        // after the initial ButtonDown). Tap does not reclaim.
+        // Match vanilla ItemStand: take only on hold=true. Player (via our Interact prefix)
+        // arms m_lastHoverInteractTime on ButtonDown and suppresses hold=true for 0.2s —
+        // so a tap never reaches reclaim even though GetButton is true the next frame.
         if (RenameitConfig.PaperHoldToTake)
         {
             if (!hold)
@@ -1626,6 +1783,11 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             DrakeRenameit.SetRenameUnlocked(item);
         item.m_crafterID = zdo.GetLong(ZdoCrafterId, 0L);
         item.m_crafterName = zdo.GetString(ZdoCrafterName, "");
+        PaperItemStyle.WriteAll(
+            item,
+            PaperFontScale.NormalizeStored(zdo.GetFloat(ZdoFontSize, RenameitConfig.PaperDefaultFontSize)),
+            zdo.GetInt(ZdoLandscape, RenameitConfig.PaperDefaultLandscape ? 1 : 0) == 1,
+            zdo.GetInt(ZdoTakePublic, 0) == 1);
         return item;
     }
 
@@ -1649,6 +1811,10 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoUnlock, DrakeRenameit.IsRenameUnlocked(item) ? 1 : 0);
         zdo.Set(ZdoCrafterId, item.m_crafterID);
         zdo.Set(ZdoCrafterName, item.m_crafterName ?? "");
+        PaperItemStyle.Read(item, out var fontSize, out var landscape, out var takePublic);
+        zdo.Set(ZdoFontSize, fontSize);
+        zdo.Set(ZdoLandscape, landscape ? 1 : 0);
+        zdo.Set(ZdoTakePublic, takePublic ? 1 : 0);
         RefreshPageVisual();
     }
 
@@ -1661,6 +1827,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         var size = PaperFontScale.NormalizeStored(fontSize);
         zdo.Set(ZdoFontSize, size);
         zdo.Set(ZdoLandscape, landscape ? 1 : 0);
+        // Keep wall-session / inventory item in sync so take/place keeps Paper tab choices.
+        PaperItemStyle.WriteStyle(DrakeRenameit.CurrentItem, size, landscape);
         RefreshPageVisual();
     }
 

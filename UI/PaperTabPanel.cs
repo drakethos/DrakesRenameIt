@@ -70,12 +70,17 @@ internal static class PaperTabPanel
         {
             _fontSize = PaperFontScale.NormalizeStored(vessel.ReadFontSize());
             _landscape = vessel.ReadLandscape();
+            // Keep session item customData aligned with the piece (take/place persistence).
+            PaperItemStyle.WriteAll(
+                item,
+                _fontSize,
+                _landscape,
+                vessel.ReadTakePublicPublic());
             return;
         }
 
-        _fontSize = PaperFontScale.NormalizeStored(RenameitConfig.PaperDefaultFontSize);
-        _landscape = RenameitConfig.PaperDefaultLandscape;
-        _ = item;
+        PaperItemStyle.Read(item, out _fontSize, out _landscape, out _);
+        _fontSize = PaperFontScale.NormalizeStored(_fontSize);
     }
 
     static void RefreshUi()
@@ -302,11 +307,15 @@ internal static class PaperTabPanel
         if (vessel == null)
             return;
         vessel.RequestSetTakePublic(on);
+        PaperItemStyle.WriteTakePublic(DrakeRenameit.CurrentItem, on);
         RefreshUi();
     }
 
     static void ApplyStyle()
     {
+        // Always stamp the item — take/place persistence lives on customData.
+        PaperItemStyle.WriteStyle(DrakeRenameit.CurrentItem, _fontSize, _landscape);
+
         var vessel = PaperWallSession.Vessel;
         if (vessel != null)
             vessel.ApplyPaperStyle(_fontSize, _landscape);

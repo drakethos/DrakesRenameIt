@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 49;
+    private const int ExpectedSyncedEntryCount = 50;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -92,6 +92,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
+    private static ConfigEntry<bool> _paperShowPageText = default!;
     private static ConfigEntry<bool> _verticalPaperPlaceable = default!;
     private static ConfigEntry<bool> _horizontalPaperPlaceable = default!;
     private static ConfigEntry<bool> _stackPaperPlaceable = default!;
@@ -257,6 +258,12 @@ public static class RenameitConfig
     /// Placement and hammer-remove still require ward access. Default on.
     /// </summary>
     public static bool PaperTakePublicEnabled => _paperTakePublicEnabled.Value;
+
+    /// <summary>
+    /// Spike: when true, pinned Written Page pieces show the custom description as wrapping
+    /// ink on blank parchment. Inventory / floor drops keep scribbles. Default on this branch.
+    /// </summary>
+    public static bool PaperShowPageText => _paperShowPageText != null && _paperShowPageText.Value;
 
     /// <summary>Hammer piece: blank sheet upright on a wall. Default on. Prefab still exists for written notes if off.</summary>
     public static bool VerticalPaperPlaceable => _verticalPaperPlaceable.Value;
@@ -630,6 +637,12 @@ public static class RenameitConfig
             "PaperTakePublicEnabled",
             true,
             "If true, the page's creator or an admin override (inside a ward that already allows them) can press Shift+Use to let anyone take it off the wall. Shift+Use again makes it private. Other players cannot flip this. Visitors still cannot place a new page or hammer-remove it. Default on.");
+
+        _paperShowPageText = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperShowPageText",
+            true,
+            "Spike: if true, placed Written Page pieces show the custom description as readable wrapping text on blank parchment (no sign textbox; [E] still takes). Written items on the floor keep the scribble texture. Toggle may need a menu/world reload for prefab albedo. Default on.");
 
         _verticalPaperPlaceable = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

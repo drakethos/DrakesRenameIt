@@ -460,6 +460,41 @@ internal static class PaperItem
         }
     }
 
+    /// <summary>
+    /// Swap a placed note's parchment albedo between blank mesh and scribble texture.
+    /// Does not touch inventory / floor item prefabs.
+    /// </summary>
+    internal static void SetNotePieceScribbles(GameObject? root, bool scribbles)
+    {
+        if (root == null)
+            return;
+        try
+        {
+            var decor = root.transform.Find("drakes_paper_decor");
+            if (decor == null)
+                return;
+            var mat = CreateDecorPaperMaterial(scribbles);
+            if (mat == null)
+                return;
+            var renderers = decor.GetComponentsInChildren<Renderer>(true);
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer)
+                    continue;
+                // Never stomp the on-page text mesh with parchment albedo.
+                if (r.GetComponent<TMPro.TMP_Text>() != null || r.GetComponentInParent<TMPro.TMP_Text>() != null)
+                    continue;
+                r.sharedMaterial = mat;
+                r.enabled = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _log?.LogWarning($"[Paper] Note albedo swap skipped: {ex.Message}");
+        }
+    }
+
     /// <summary>Stacked parchment pile (wood-stack style d├⌐cor).</summary>
     internal static void BuildPaperStackVisual(GameObject? root, int sheets = 12)
     {
@@ -916,16 +951,38 @@ internal static class PaperItem
         return mat;
     }
 
+    /// <summary>
+    /// True when the transform lives under a <c>drakes_paper*</c> holder we added.
+    /// Stops below <paramref name="root"/>: the piece prefab itself is named
+    /// <c>Drakes_PaperNote_*</c>, so walking past it would spare every donor visual.
+    /// </summary>
+    private static bool IsOurs(Transform? t, Transform root)
+    {
+        while (t != null && t != root)
+        {
+            if (t.name.StartsWith("drakes_paper", StringComparison.OrdinalIgnoreCase))
+                return true;
+            t = t.parent;
+        }
+
+        return false;
+    }
+
     private static void StripPieceDonorVisuals(GameObject root)
     {
+        var rootT = root.transform;
         // Remove Sign / UI so the piece is bric-a-brac only (no [E] write).
+        // The note's preserved Sign text widget lives under drakes_paper_signtext — keep it.
         foreach (var sign in root.GetComponentsInChildren<Sign>(true))
             Object.DestroyImmediate(sign);
         foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
-            Object.DestroyImmediate(canvas.gameObject);
+        {
+            if (canvas != null && !IsOurs(canvas.transform, rootT))
+                Object.DestroyImmediate(canvas.gameObject);
+        }
         foreach (var tmp in root.GetComponentsInChildren<TMPro.TMP_Text>(true))
         {
-            if (tmp != null)
+            if (tmp != null && !IsOurs(tmp.transform, rootT))
                 Object.DestroyImmediate(tmp.gameObject);
         }
 
@@ -936,6 +993,9 @@ internal static class PaperItem
         foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
         {
             if (renderer == null)
+                continue;
+            // Preserved on-page text renders through its own mesh — leave it on.
+            if (IsOurs(renderer.transform, rootT))
                 continue;
             if (renderer is ParticleSystemRenderer || renderer is TrailRenderer || renderer is LineRenderer)
             {
@@ -950,7 +1010,7 @@ internal static class PaperItem
         var doomed = new List<GameObject>();
         foreach (Transform child in root.transform)
         {
-            if (child.name.StartsWith("drakes_paper", StringComparison.OrdinalIgnoreCase))
+            if (IsOurs(child, rootT))
                 continue;
             // Keep structural empty roots; kill obvious mesh holders
             if (child.GetComponent<MeshFilter>() != null || child.GetComponentInChildren<MeshFilter>(true) != null)

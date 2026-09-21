@@ -175,7 +175,9 @@ internal static class PaperWrittenPlace
             return;
 
         ClearPieceBuildCost(go);
-        PaperItem.BuildDecorSheetVisual(go, wall, written: true);
+        PaperNotePageText.PreserveSignText(go);
+        PaperItem.BuildDecorSheetVisual(go, wall, written: !RenameitConfig.PaperShowPageText);
+        PaperNotePageText.AttachToPrefab(go, wall);
         PaperPieceTables.ForceMiscCategory(go);
         PaperAssets.EnsurePersistentZNetView(go);
 
@@ -1149,6 +1151,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     {
         RegisterTakePublicRpc();
         FlushPendingSnapshot();
+        RefreshPageVisual();
     }
 
     void LateUpdate()
@@ -1172,6 +1175,24 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         ApplySnapshot(_pending);
         PaperWrittenPlace.MarkVesselApplied();
         _pending = null;
+        RefreshPageVisual();
+    }
+
+    /// <summary>
+    /// Phase 2 (not this spike): Shift+E could open the RenameIt name+desc flow in place
+    /// without picking the page up. [E] stays Take.
+    /// </summary>
+    void RefreshPageVisual()
+    {
+        if (PaperWrittenPlace.IsPlacementGhost(gameObject))
+            return;
+        PaperNotePageText.Sync(gameObject, ReadPageDescription());
+    }
+
+    string ReadPageDescription()
+    {
+        var zdo = GetComponent<ZNetView>()?.GetZDO();
+        return zdo?.GetString(ZdoDesc, "") ?? "";
     }
 
     void ApplySnapshot(PaperWrittenPlace.PaperSnapshot snap)
@@ -1186,6 +1207,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoUnlock, snap.Unlock ? 1 : 0);
         zdo.Set(ZdoCrafterId, snap.CrafterId);
         zdo.Set(ZdoCrafterName, snap.CrafterName ?? "");
+        // Pass desc directly — don't rely on a ZDO round-trip for the first paint.
+        if (!PaperWrittenPlace.IsPlacementGhost(gameObject))
+            PaperNotePageText.Sync(gameObject, snap.Desc);
     }
 
     public string GetHoverName()

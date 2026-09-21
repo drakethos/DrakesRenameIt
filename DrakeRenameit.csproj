@@ -120,6 +120,8 @@
     <Compile Include="PaperItemStyle.cs" />
     <Compile Include="InventoryCost.cs" />
     <Compile Include="PaperCopyService.cs" />
+    <Compile Include="PaperCopyMark.cs" />
+    <Compile Include="PaperRecycleService.cs" />
     <Compile Include="PaperWallSession.cs" />
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />

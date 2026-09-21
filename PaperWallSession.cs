@@ -1,5 +1,6 @@
 using DrakeModsLibs.API;
 using DrakeModsLibs.UI;
+using DrakeRenameit.API;
 using DrakeRenameit.Integration;
 using DrakeRenameit.UI;
 using UnityEngine;
@@ -58,12 +59,28 @@ internal static class PaperWallSession
 
         try
         {
-            if (DrakeTabHost.OpenForItem(item, RenameItLibsBridge.TabId, onClosed: End))
+            // Copies claim Paper; prefer Paper when Rename is hidden (non-override).
+            var preferred = PaperCopyMark.IsCopy(item)
+                ? RenameItLibsBridge.PaperTabId
+                : RenameItLibsBridge.TabId;
+            if (DrakeTabHost.OpenForItem(item, preferred, onClosed: End))
                 return true;
 
-            // Tab host empty / libs mismatch — still open Rename action menu.
-            UIPanels.OpenActionMenu(item);
-            return true;
+            // Retry with Paper if Rename preferred failed (libs mismatch / empty strip).
+            if (preferred != RenameItLibsBridge.PaperTabId &&
+                DrakeTabHost.OpenForItem(item, RenameItLibsBridge.PaperTabId, onClosed: End))
+                return true;
+
+            // Tab host empty — Rename action menu for templates / elevated only.
+            if (!PaperCopyMark.IsCopy(item) ||
+                RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
+            {
+                UIPanels.OpenActionMenu(item);
+                return true;
+            }
+
+            End();
+            return false;
         }
         catch (System.Exception ex)
         {

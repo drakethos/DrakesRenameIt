@@ -112,6 +112,17 @@ public static class RenameItInventoryPatches
             string topic = topicField.GetValue(tooltip) as string ?? "";
             string currentText = textField.GetValue(tooltip) as string ?? "";
 
+            // Legacy prints may still have [Copy] baked into description — scrub tooltip body.
+            if (PaperCopyMark.IsCopy(item))
+            {
+                PaperCopyMark.StripCopyFromDescription(item);
+                currentText = PaperCopyMark.StripCopyLine(currentText);
+                if (topic.IndexOf(PaperCopyMark.TooltipLabel, System.StringComparison.OrdinalIgnoreCase) < 0)
+                    topic = string.IsNullOrEmpty(topic)
+                        ? PaperCopyMark.TooltipLabel
+                        : topic.TrimEnd() + " " + PaperCopyMark.TooltipLabel;
+            }
+
             var sb = new System.Text.StringBuilder();
             sb.AppendLine("\n");
             AppendPaperHint(sb, item);
@@ -142,6 +153,8 @@ public static class RenameItInventoryPatches
         {
             if (!PaperItem.IsAnyPaper(item))
                 return;
+
+            // [Copy] goes on the inventory tooltip title (topic), not here — and never on world hover.
 
             string hint = PaperItem.IsBlankPaper(item)
                 ? BlankPaperHint()

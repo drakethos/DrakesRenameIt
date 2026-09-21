@@ -31,7 +31,9 @@ internal static class PaperItemStandPatches
         var isPaper = item.name.Equals(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
                       item.name.StartsWith(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
                       item.name.Equals(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.StartsWith(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase);
+                      item.name.StartsWith(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
+                      item.name.Equals(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase) ||
+                      item.name.StartsWith(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase);
         if (!isPaper)
             return;
 
@@ -105,6 +107,7 @@ internal static class PaperItemStandPatches
             return "";
 
         string desc = CustomizeLibsAPI.GetProperDescription(item) ?? "";
+        desc = PaperCopyMark.StripCopyLine(desc);
         desc = TooltipRichText.EnsureRichTextTagsClosedForTooltip(desc);
         if (Localization.instance != null && !string.IsNullOrEmpty(desc))
             desc = Localization.instance.Localize(desc);

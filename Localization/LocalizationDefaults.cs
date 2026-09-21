@@ -44,14 +44,27 @@ internal static class LocalizationDefaults
         Add(LKeys.UnlockCostAffordWarning, "<color=red>You don't have enough items to unlock.</color>");
         Add(LKeys.UnlockCostLine, "{0}x {1}  <color={2}>({3} in inv)</color>");
 
-        Add(LKeys.CopyPageBtn, "Copy page");
+        Add(LKeys.CopyPageBtn, "📄 Make Copy");
+        Add(LKeys.CopyPageBtnTip, "Spend blank paper to copy or print this page.");
         Add(LKeys.CopyPageAffordWarning, "<color=red>Not enough blank paper.</color>");
         Add(LKeys.CopyPageDone, "Copied {0} page(s).");
-        Add(LKeys.CopyPageErrNotWritten, "Only a Written Page can be copied.");
+        Add(LKeys.CopyPageErrNotWritten, "Only a Written or Printed Page can be copied.");
         Add(LKeys.CopyPageErrNoBlank, "Blank paper is not available.");
         Add(LKeys.CopyPageErrNotEnough, "Not enough blank paper to copy.");
-        Add(LKeys.CopyPageErrNoPrefab, "Written Page is not available.");
+        Add(LKeys.CopyPageErrNoPrefab, "Printed Page is not available.");
         Add(LKeys.CopyPageErrInventoryFull, "Inventory full — cannot copy pages.");
+
+        Add(LKeys.RecycleBtn, "♻");
+        Add(LKeys.RecycleBtnTip, "Recycle — wipe all settings and tags. Returns a blank Piece of Paper. Owner, Shared, or admin only.");
+        Add(LKeys.RecycleTitle, "Recycle this page?");
+        Add(LKeys.RecycleBody, "Are you sure? This will wipe all settings and tags and return a blank Piece of Paper.");
+        Add(LKeys.RecycleDone, "Page recycled to blank paper.");
+        Add(LKeys.RecycleErrNotWritten, "Only a Written Page (not a Printed copy) can be recycled.");
+        Add(LKeys.RecycleErrNoBlank, "Blank paper is not available.");
+        Add(LKeys.RecycleErrInventoryFull, "Inventory full — cannot recycle.");
+        Add(LKeys.RecycleErrWall, "Pick the page up before recycling.");
+        Add(LKeys.RecycleErrNoPermission, "Only the owner, Shared editors, or an admin can recycle this page.");
+        Add(LKeys.RecycleErrDisabled, "Paper recycle is disabled.");
 
         Add(LKeys.MsgItemNotInInventory, "That item is no longer in your inventory.");
         Add(LKeys.MsgItemNotInInventoryUnlock, "That item is no longer in your inventory. Put it back, then unlock again.");

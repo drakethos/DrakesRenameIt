@@ -150,6 +150,7 @@ internal static class PaperWrittenPlace
         public float FontSize;
         public bool Landscape;
         public bool TakePublic;
+        public bool IsCopy;
         public ItemDrop.ItemData? SourceItem;
 
         public static PaperSnapshot From(ItemDrop.ItemData item)
@@ -161,9 +162,10 @@ internal static class PaperWrittenPlace
                 Rename = CustomizeLibsAPI.HasCustomName(item)
                     ? (CustomizeLibsAPI.GetProperName(item) ?? "")
                     : "",
-                Desc = CustomizeLibsAPI.HasCustomDescription(item)
-                    ? (CustomizeLibsAPI.GetProperDescription(item) ?? "")
-                    : "",
+                Desc = PaperCopyMark.StripCopyLine(
+                    CustomizeLibsAPI.HasCustomDescription(item)
+                        ? (CustomizeLibsAPI.GetProperDescription(item) ?? "")
+                        : ""),
                 Public = Permissions.RenamePermissionManager.HasPublicRewriteFlag(item),
                 Unlock = DrakeRenameit.IsRenameUnlocked(item),
                 CrafterId = item.m_crafterID,
@@ -171,6 +173,7 @@ internal static class PaperWrittenPlace
                 FontSize = fontSize,
                 Landscape = landscape,
                 TakePublic = takePublic,
+                IsCopy = PaperCopyMark.IsCopy(item),
                 SourceItem = item,
             };
         }
@@ -405,7 +408,7 @@ internal static class PaperWrittenPlace
     /// <summary>Open written place mode. Use again while placing cycles Wall ↔ Flat.</summary>
     internal static void BeginPlace(ItemDrop.ItemData item)
     {
-        if (!PaperItem.IsWrittenPaper(item) || PaperItem.IsBlankPaper(item) || !RenameitConfig.PaperPlaceEnabled)
+        if (!PaperItem.IsWrittenLike(item) || PaperItem.IsBlankPaper(item) || !RenameitConfig.PaperPlaceEnabled)
             return;
         var player = Player.m_localPlayer;
         if (player == null || !DrakeRenameit.IsItemInLocalPlayerInventory(item))
@@ -522,7 +525,7 @@ internal static class PaperWrittenPlace
 
             right = InvGetRightItem(player);
             return right != null &&
-                   PaperItem.IsWrittenPaper(right) &&
+                   PaperItem.IsWrittenLike(right) &&
                    right.m_shared?.m_buildPieces != null;
         }
         catch (Exception ex)
@@ -708,7 +711,7 @@ internal static class PaperWrittenPlace
         for (var i = 0; i < items.Count; i++)
         {
             var item = items[i];
-            if (!PaperItem.IsWrittenPaper(item))
+            if (!PaperItem.IsWrittenLike(item))
                 continue;
             fallback ??= item;
             var other = PaperSnapshot.From(item);
@@ -758,7 +761,7 @@ internal static class PaperWrittenPlace
                 return true;
             }
 
-            if (!RenameitConfig.PaperPlaceEnabled || !PaperItem.IsWrittenPaper(item))
+            if (!RenameitConfig.PaperPlaceEnabled || !PaperItem.IsWrittenLike(item))
                 return true;
 
             _ = fromInventoryGui;
@@ -804,7 +807,7 @@ internal static class PaperWrittenPlace
                 return false;
             }
 
-            if (!PaperItem.IsWrittenPaper(right))
+            if (!PaperItem.IsWrittenLike(right))
                 return true;
 
             __result = false;
@@ -840,7 +843,7 @@ internal static class PaperWrittenPlace
         private static bool Pickup_Prefix(GameObject go, ref bool __result)
         {
             var drop = go != null ? go.GetComponent<ItemDrop>() : null;
-            if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
+            if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
                 return true;
 
             // m_nview is publicized at compile time but private at runtime.
@@ -873,7 +876,7 @@ internal static class PaperWrittenPlace
             if (!__result || go == null)
                 return;
             var drop = go.GetComponent<ItemDrop>();
-            if (drop == null || !PaperItem.IsWrittenPaper(drop.m_itemData))
+            if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
                 return;
             // m_nview is publicized at compile time but private at runtime.
             var nv = go.GetComponent<ZNetView>();
@@ -1280,6 +1283,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     const string ZdoHandled = "DrakePaper_Handled";
     internal const string ZdoFontSize = PaperItemStyle.FontSizeKey;
     internal const string ZdoLandscape = PaperItemStyle.LandscapeKey;
+    const string ZdoIsCopy = PaperCopyMark.IsCopyKey;
 
     PaperWrittenPlace.PaperSnapshot? _pending;
     bool _rpcRegistered;
@@ -1389,6 +1393,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoFontSize, PaperFontScale.NormalizeStored(snap.FontSize));
         zdo.Set(ZdoLandscape, snap.Landscape ? 1 : 0);
         zdo.Set(ZdoTakePublic, snap.TakePublic ? 1 : 0);
+        zdo.Set(ZdoIsCopy, snap.IsCopy ? 1 : 0);
         // Ghosts included — empty desc paints "..." so you see which face gets ink.
         PaperNotePageText.Sync(gameObject, snap.Desc);
     }
@@ -1629,6 +1634,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         var zdo = GetComponent<ZNetView>()?.GetZDO();
         string name = zdo?.GetString(ZdoRename, "") ?? "";
         string desc = zdo?.GetString(ZdoDesc, "") ?? "";
+        desc = PaperCopyMark.StripCopyLine(desc);
         if (string.IsNullOrEmpty(name))
             name = "Written Page";
 
@@ -1782,7 +1788,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     ItemDrop.ItemData? BuildItemFromZdo()
     {
         var zdo = GetComponent<ZNetView>()?.GetZDO();
-        var prefab = ObjectDB.instance?.GetItemPrefab(PaperItem.WrittenPrefabName);
+        var isCopy = zdo != null && zdo.GetInt(ZdoIsCopy, 0) == 1;
+        var prefabName = isCopy ? PaperItem.PrintedPrefabName : PaperItem.WrittenPrefabName;
+        var prefab = ObjectDB.instance?.GetItemPrefab(prefabName);
         var drop = prefab?.GetComponent<ItemDrop>();
         if (zdo == null || drop?.m_itemData == null)
             return null;
@@ -1797,7 +1805,10 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         if (!string.IsNullOrEmpty(rename))
             CustomizeLibsAPI.SetCustomName(item, rename);
         if (!string.IsNullOrEmpty(desc))
+        {
+            desc = PaperCopyMark.StripCopyLine(desc);
             CustomizeLibsAPI.SetCustomDescription(item, desc);
+        }
         if (zdo.GetInt(ZdoPublic, 0) == 1)
             Permissions.RenamePermissionManager.SetPublicRewriteFlag(item, true);
         if (zdo.GetInt(ZdoUnlock, 0) == 1)
@@ -1809,6 +1820,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             PaperFontScale.NormalizeStored(zdo.GetFloat(ZdoFontSize, RenameitConfig.PaperDefaultFontSize)),
             zdo.GetInt(ZdoLandscape, RenameitConfig.PaperDefaultLandscape ? 1 : 0) == 1,
             zdo.GetInt(ZdoTakePublic, 0) == 1);
+        if (isCopy)
+            PaperCopyMark.Stamp(item);
+
         return item;
     }
 
@@ -1836,6 +1850,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoFontSize, fontSize);
         zdo.Set(ZdoLandscape, landscape ? 1 : 0);
         zdo.Set(ZdoTakePublic, takePublic ? 1 : 0);
+        zdo.Set(ZdoIsCopy, PaperCopyMark.IsCopy(item) ? 1 : 0);
         RefreshPageVisual();
     }
 

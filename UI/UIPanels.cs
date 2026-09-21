@@ -454,7 +454,7 @@ public static class UIPanels
         var label = toggleGo.GetComponentInChildren<Text>();
         if (label != null)
         {
-            label.text = "Public";
+            label.text = "Shared";
             label.font = GUIManager.Instance.AveriaSerifBold;
             label.fontSize = 16;
             label.color = Color.white;
@@ -1612,7 +1612,10 @@ public static class UIPanels
 
         var label = _publicToggle.GetComponentInChildren<Text>();
         if (label != null)
+        {
+            label.text = "Shared";
             label.color = canChange ? Color.white : new Color(0.62f, 0.62f, 0.62f, 1f);
+        }
 
         if (_publicTipText != null)
         {
@@ -1623,7 +1626,7 @@ public static class UIPanels
     }
 }
 
-/// <summary>Hover tip for the main-menu Public checkbox.</summary>
+/// <summary>Hover tip for the main-menu Shared rewrite checkbox.</summary>
 internal sealed class PublicRewriteHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     internal GameObject? Tip;

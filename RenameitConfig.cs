@@ -11,7 +11,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 54;
+    private const int ExpectedSyncedEntryCount = 55;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -86,8 +86,11 @@ public static class RenameitConfig
     private static ConfigEntry<float> _paperScale = default!;
     private static ConfigEntry<string> _paperItemType = default!;
     private static ConfigEntry<int> _blankPaperStackSize = default!;
+    private static ConfigEntry<int> _printedPaperStackSize = default!;
     private static ConfigEntry<string> _writtenPaperName = default!;
     private static ConfigEntry<string> _writtenPaperDescription = default!;
+    private static ConfigEntry<string> _printedPaperName = default!;
+    private static ConfigEntry<string> _printedPaperDescription = default!;
     private static ConfigEntry<bool> _writtenPaperIgnoresRestrictions = default!;
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
@@ -95,6 +98,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _paperHoldToTake = default!;
     private static ConfigEntry<bool> _paperShowPageText = default!;
     private static ConfigEntry<bool> _paperWallRenameEnabled = default!;
+    private static ConfigEntry<bool> _paperRecycleEnabled = default!;
     private static ConfigEntry<float> _paperDefaultFontSize = default!;
     private static ConfigEntry<bool> _paperDefaultLandscape = default!;
     private static ConfigEntry<bool> _verticalPaperPlaceable = default!;
@@ -242,13 +246,25 @@ public static class RenameitConfig
     /// <summary>Max stack size for blank Piece of Paper (Written Page is always 1).</summary>
     public static int BlankPaperStackSize => Math.Max(1, _blankPaperStackSize.Value);
 
+    /// <summary>Max stack size for Printed Page copies (default 50).</summary>
+    public static int PrintedPaperStackSize =>
+        Math.Max(1, Math.Min(100, _printedPaperStackSize?.Value ?? 50));
+
     /// <summary>Default display name for Written Page.</summary>
     public static string WrittenPaperName => _writtenPaperName.Value;
 
     /// <summary>Default description for Written Page.</summary>
     public static string WrittenPaperDescription => _writtenPaperDescription.Value;
 
-    /// <summary>When true, Written Page name/desc ignore feature-off / exclusions / ExcludeStacks (ownership + Public still apply).</summary>
+    /// <summary>Default display name for Printed Page.</summary>
+    public static string PrintedPaperName =>
+        _printedPaperName?.Value ?? "Printed Page";
+
+    /// <summary>Default description for Printed Page.</summary>
+    public static string PrintedPaperDescription =>
+        _printedPaperDescription?.Value ?? "A printed copy of a written page.";
+
+        /// <summary>When true, Written Page name/desc ignore feature-off / exclusions / ExcludeStacks (ownership + Shared still apply).</summary>
     public static bool WrittenPaperIgnoresRestrictions => _writtenPaperIgnoresRestrictions.Value;
 
     /// <summary>When true, items with <c>Drake_PublicRewrite</c> allow non-owners to edit name/description.</summary>
@@ -282,6 +298,13 @@ public static class RenameitConfig
     /// </summary>
     public static bool PaperWallRenameEnabled =>
         _paperWallRenameEnabled != null && _paperWallRenameEnabled.Value;
+
+    /// <summary>
+    /// When true, Paper tab can recycle an owned/Shared Written Page back to blank (free, with confirm).
+    /// Printed copies cannot be recycled. Default on.
+    /// </summary>
+    public static bool PaperRecycleEnabled =>
+        _paperRecycleEnabled == null || _paperRecycleEnabled.Value;
 
     /// <summary>Default on-page ink size as a page-height fraction (levels 1–7). Legacy absolute values migrate.</summary>
     public static float PaperDefaultFontSize
@@ -418,7 +441,7 @@ public static class RenameitConfig
             SectionFeatures, DisplayFeatures,
             "PublicRewriteEnabled",
             true,
-            "If true, items flagged Public (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default on.");
+            "If true, items flagged Shared (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default on.");
 
         // --- Exclusions ---
         _excludedNames = _drakeConfigSync.BindSynced(config, 
@@ -640,6 +663,12 @@ public static class RenameitConfig
             50,
             "Max stack size for blank Piece of Paper. Written Page is always stack size 1. Applied when items are registered.");
 
+        _printedPaperStackSize = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PrintedPaperStackSize",
+            50,
+            "Max stack size for Printed Page (immutable copies). Applied when the item is registered. Default 50.");
+
         _writtenPaperName = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
             "WrittenPaperName",
@@ -652,11 +681,23 @@ public static class RenameitConfig
             "A page with writing on it.",
             "Default description for Written Page when no custom description is set. Server-synced.");
 
+        _printedPaperName = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PrintedPaperName",
+            "Printed Page",
+            "Default display name for Printed Page (stackable copies). Server-synced.");
+
+        _printedPaperDescription = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PrintedPaperDescription",
+            "A printed copy of a written page. Stackable; text is locked unless you have override.",
+            "Default description for Printed Page when no custom description is set. Server-synced.");
+
         _writtenPaperIgnoresRestrictions = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
             "WrittenPaperIgnoresRestrictions",
             false,
-            "If true, Written Page name/description ignore RenameEnabled/RewriteDescriptions off, exclusions, and ExcludeStacks for non-elevated players. Ownership and Public rewrite rules still apply. Owner always may edit written pages regardless.");
+            "If true, Written Page name/description ignore RenameEnabled/RewriteDescriptions off, exclusions, and ExcludeStacks for non-elevated players. Ownership and Shared rewrite rules still apply. Owner always may edit written pages regardless.");
 
         _paperPlaceEnabled = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,
@@ -687,6 +728,12 @@ public static class RenameitConfig
             "PaperWallRenameEnabled",
             true,
             "If true, Shift+Use on a pinned Written Page opens the Rename|Paper menu (edit name/desc and page options without picking up). Make public moves to the Paper tab. If false, Shift+Use stays the Make public toggle. Default on.");
+
+        _paperRecycleEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperRecycleEnabled",
+            true,
+            "If true, the Paper tab shows Recycle for Written Pages you own (or Shared / admin). Turns the page back into a blank Piece of Paper for free after confirm — wipes name, description, tags, and style. Printed copies cannot be recycled. Default on.");
 
         _paperDefaultFontSize = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

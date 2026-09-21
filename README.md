@@ -2,19 +2,19 @@
 
 # DrakesRenameIt
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.8** paints description ink on pinned pages, adds wall Shift+Use **Rename | Paper** (font / landscape / make public that survive take/place), and shows Sign-style **`...`** on the empty writing face.
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
 
-**Requires [DrakeModsLibs 0.9.5+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 0.9.6+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, stack-force, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Piece of Paper (1.1)
 
 Craft blank **Piece of Paper** from the inventory craft list (default recipe **1 Wood + 1 Coal**; override with **PaperCost**). Blanks stack (default **50**). Open the Drake menu and set a **name** and/or **description** — that **uses one sheet** and creates a **Written Page** (always stack size 1) with your text.
 
-**Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). With **PaperWallRenameEnabled** (default on), **Shift+Use** opens **Rename | Paper** on the wall — edit text and Paper options without picking the page up; **Make public** lives on the Paper tab. Otherwise Shift+Use still toggles take-public when that feature is on. Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, wall rename, page text, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
+**Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). Description ink shows on the parchment (portrait or **landscape**). With **PaperWallRenameEnabled** (default on), **Shift+Use** opens **Rename | Paper** on the wall — edit text and Paper options without picking the page up; **Make public**, font size, landscape, immutable stacks, and **Make Copy** live on the Paper tab. Otherwise Shift+Use still toggles take-public when that feature is on. Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, wall rename, page text, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
 
 ### LockSmith integration
 
-With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.9.5+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.9.6+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
 
 ### How to use
 
@@ -23,6 +23,24 @@ Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or y
 **Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
+<p>Its placeable. Designed to be renamed. Text shows here!</p>
+<img width="339" height="320" alt="Placeable paper with description ink on the page" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-placed.png" />
+
+<p>Even can be landscape</p>
+<img width="164" height="167" alt="Landscape paper note on a wall" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-landscape.png" />
+
+<p>Make copies easily</p>
+<img width="355" height="338" alt="Copied paper notes pinned side by side" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-copies.png" />
+
+<p>Shift + E on the wall: Rename | Paper. Anyone can rewrite when Shared is on.</p>
+<img width="479" height="465" alt="Rename tab on a pinned paper note" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-rename-tab.png" />
+
+<p>Paper tab: make public, landscape text, font size, immutable stacks, and make copies.</p>
+<img width="446" height="515" alt="Paper tab with public, landscape, font, copies" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-tab.png" />
+
+<p>Hold E to take. Shift + E to edit.</p>
+<img width="422" height="287" alt="Pinned paper hover: take item or edit" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-hover.png" />
+
 <p>Rename anything:</p>
 <img width="262" height="137" alt="image" src="https://github.com/user-attachments/assets/0d1634b0-5fff-4518-9bea-3d72f6c19b7d" />
 
@@ -69,8 +87,8 @@ localization with an additional name, simply leave the $string intact and add ar
 - **Separate stacks** — customized stacks only merge when name, description, and crafted-by data match; optional hard lock blocks manual drag-merges too.
 - **ExcludeStacks** — block non-elevated edits on vanilla stackable items (`m_maxStackSize > 1`), separate from merge rules.
 - **Durability modifiers** — optional wear labels prepended to display names (Pristine / tiers / Broken).
-- **Piece of Paper / Written Page** — craftable blanks that peel into written notes; hotbar place + hammer décor; optional public take; config under **10 Paper**.
-- **Public rewrite** — optional per-stack flag so non-owners may rewrite name/description (`PublicRewriteEnabled`).
+- **Piece of Paper / Written Page** — craftable blanks that peel into written notes; ink on pinned pages (portrait or landscape); hotbar place + hammer décor; wall **Shift+Use** **Rename | Paper**; make copies; optional public take; config under **10 Paper**.
+- **Shared rewrite** — optional per-stack flag so non-owners may rewrite name/description (`PublicRewriteEnabled`). The menu label is **Shared**; Paper **Make public** is a separate take-from-wall setting.
 - **LockSmith / DrakeTabHost** — shared inventory tabs and open binding via **DrakeModsLibs** when both mods are installed.
 - Exclusions by item name, category, and **RenameAllowlist** bypasses; reference file generated for category tokens.
 - Unified action menu (rename, description, crafted by) with fast reset; **Cancel** and **Reset all** confirmation.

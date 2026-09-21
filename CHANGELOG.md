@@ -1,3 +1,9 @@
+- Version 1.1.9
+  - Requires **DrakeModsLibs 0.9.6+** (`DrakeStackForce`, stepper `SetRange` / `SetInteractable`).
+  - **Make Copy / Print:** Paper tab copies Written templates (1–9 writable clones) or prints immutable **Printed Page** stacks (1–50) that spend blank paper; shared `InventoryCost` + vanilla nocost cheat for unlock and copy.
+  - **Immutable stack:** Printed / copy-stamped pages use Libs stack-force (`ByIdentity`); non-owners cannot rewrite name/description/crafted-by (`PaperCopyMark`).
+  - **Recycle:** Written templates (not prints) can return to blank Piece of Paper when `PaperRecycleEnabled` (default on).
+  - README paper advertising screenshots (placeable ink, landscape, copies, Rename|Paper tabs, hover).
 - Version 1.1.8
   - Requires **DrakeModsLibs 0.9.5+** (`DrakeNumericStepper`, toggle layout helpers).
   - **Written Page on-mesh text:** custom description renders as ink on pinned parchment (`PaperShowPageText`). Empty / placement-ghost pages show Sign-style **`...`** on the writing face.

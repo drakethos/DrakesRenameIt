@@ -21,12 +21,16 @@ internal static class PaperItem
     /// <summary>Blank paper ΓÇö legacy prefab name kept for existing worlds/recipes.</summary>
     internal const string PrefabName = "Drakes_PieceOfPaper";
     internal const string WrittenPrefabName = "Drakes_Paper_Written";
+    /// <summary>Immutable stackable print (Manifesto / flyer copies).</summary>
+    internal const string PrintedPrefabName = "Drakes_Paper_Print";
     /// <summary>Donor for ItemDrop / physics / networking only ΓÇö visuals are discarded.</summary>
     private const string CloneSource = "LeatherScraps";
     private const string TokenName = "$item_drakes_pieceofpaper";
     private const string TokenDesc = "$item_drakes_pieceofpaper_desc";
     private const string TokenWrittenName = "$item_drakes_paper_written";
     private const string TokenWrittenDesc = "$item_drakes_paper_written_desc";
+    private const string TokenPrintedName = "$item_drakes_paper_print";
+    private const string TokenPrintedDesc = "$item_drakes_paper_print_desc";
 
     /// <summary>US Letter in Valheim meters (1 unit = 1 m): 8.5" × 11", before <see cref="RenameitConfig.PaperScale"/>.</summary>
     private static readonly Vector2 BasePaperSize = new Vector2(8.5f * 0.0254f, 11f * 0.0254f);
@@ -79,6 +83,7 @@ internal static class PaperItem
 
             RegisterBlank(parchment, meshTex);
             RegisterWritten(writtenParchment, writtenMeshTex);
+            RegisterPrinted(writtenParchment, writtenMeshTex);
         }
         catch (Exception ex)
         {
@@ -110,7 +115,7 @@ internal static class PaperItem
         ApplyRecipeFromConfig(itemConfig);
 
         var paper = new CustomItem(PrefabName, CloneSource, itemConfig);
-        SanitizeItemDrop(paper, stackable: true);
+        SanitizeItemDrop(paper, TokenName, TokenDesc, maxStack: RenameitConfig.BlankPaperStackSize);
         // Attach mesh before AddItem — Jotunn/ObjectDB must register the dressed prefab.
         BuildPaper2Visual(paper.ItemPrefab, meshTex, written: false);
         ItemManager.Instance.AddItem(paper);
@@ -148,7 +153,7 @@ internal static class PaperItem
         // Jotunn still needs an item; leave requirements empty and Enabled only controls visibility in some UIs.
 
         var paper = new CustomItem(WrittenPrefabName, CloneSource, itemConfig);
-        SanitizeItemDrop(paper, stackable: false);
+        SanitizeItemDrop(paper, TokenWrittenName, TokenWrittenDesc, maxStack: 1);
         BuildPaper2Visual(paper.ItemPrefab, meshTex, written: true);
         ItemManager.Instance.AddItem(paper);
 
@@ -156,6 +161,38 @@ internal static class PaperItem
             paper.ItemDrop.m_itemData.m_dropPrefab = paper.ItemPrefab;
 
         _log?.LogInfo($"[Paper] Registered written {WrittenPrefabName} (stack=1).");
+    }
+
+    private static void RegisterPrinted(Texture2D? parchment, Texture2D? meshTex)
+    {
+        Sprite? icon = null;
+        if (parchment != null)
+        {
+            icon = Sprite.Create(
+                parchment,
+                new Rect(0, 0, parchment.width, parchment.height),
+                new Vector2(0.5f, 0.5f));
+        }
+
+        var itemConfig = new ItemConfig
+        {
+            Name = TokenPrintedName,
+            Description = TokenPrintedDesc,
+            Enabled = RenameitConfig.PaperEnabled,
+            Amount = 1,
+        };
+        if (icon != null)
+            itemConfig.Icon = icon;
+
+        var paper = new CustomItem(PrintedPrefabName, CloneSource, itemConfig);
+        SanitizeItemDrop(paper, TokenPrintedName, TokenPrintedDesc, maxStack: RenameitConfig.PrintedPaperStackSize);
+        BuildPaper2Visual(paper.ItemPrefab, meshTex, written: true);
+        ItemManager.Instance.AddItem(paper);
+
+        if (paper.ItemDrop?.m_itemData != null)
+            paper.ItemDrop.m_itemData.m_dropPrefab = paper.ItemPrefab;
+
+        _log?.LogInfo($"[Paper] Registered printed {PrintedPrefabName} (stack={RenameitConfig.PrintedPaperStackSize}).");
     }
 
     internal static void ApplyLocalizationFromConfig()
@@ -184,6 +221,12 @@ internal static class PaperItem
         var wDesc = string.IsNullOrWhiteSpace(RenameitConfig.WrittenPaperDescription)
             ? "A page with writing on it."
             : RenameitConfig.WrittenPaperDescription.Trim();
+        var pName = string.IsNullOrWhiteSpace(RenameitConfig.PrintedPaperName)
+            ? "Printed Page"
+            : RenameitConfig.PrintedPaperName.Trim();
+        var pDesc = string.IsNullOrWhiteSpace(RenameitConfig.PrintedPaperDescription)
+            ? "A printed copy of a written page. Stackable; text is locked unless you have override."
+            : RenameitConfig.PrintedPaperDescription.Trim();
 
         var loc = LocalizationManager.Instance.GetLocalization();
         loc.AddTranslation("English", "item_drakes_pieceofpaper", name);
@@ -194,6 +237,10 @@ internal static class PaperItem
         loc.AddTranslation("English", "item_drakes_paper_written_desc", wDesc);
         loc.AddTranslation("Spanish", "item_drakes_paper_written", wName);
         loc.AddTranslation("Spanish", "item_drakes_paper_written_desc", wDesc);
+        loc.AddTranslation("English", "item_drakes_paper_print", pName);
+        loc.AddTranslation("English", "item_drakes_paper_print_desc", pDesc);
+        loc.AddTranslation("Spanish", "item_drakes_paper_print", pName);
+        loc.AddTranslation("Spanish", "item_drakes_paper_print_desc", pDesc);
     }
 
     private static Texture2D? LoadParchmentTexture() => LoadTextureFile("paper.png", "icon");
@@ -287,16 +334,16 @@ internal static class PaperItem
         return list;
     }
 
-    private static void SanitizeItemDrop(CustomItem paper, bool stackable)
+    private static void SanitizeItemDrop(CustomItem paper, string tokenName, string tokenDesc, int maxStack)
     {
         var drop = paper.ItemDrop;
         if (drop?.m_itemData?.m_shared == null)
             return;
 
         var shared = drop.m_itemData.m_shared;
-        shared.m_name = stackable ? TokenName : TokenWrittenName;
-        shared.m_description = stackable ? TokenDesc : TokenWrittenDesc;
-        shared.m_maxStackSize = stackable ? RenameitConfig.BlankPaperStackSize : 1;
+        shared.m_name = tokenName;
+        shared.m_description = tokenDesc;
+        shared.m_maxStackSize = Math.Max(1, maxStack);
         shared.m_itemType = ResolveItemType();
         shared.m_weight = 0.1f;
         shared.m_value = 0;
@@ -358,8 +405,22 @@ internal static class PaperItem
         return item.m_shared.m_name.Equals(TokenWrittenName, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Blank or Written.</summary>
-    internal static bool IsAnyPaper(ItemDrop.ItemData? item) => IsBlankPaper(item) || IsWrittenPaper(item);
+    internal static bool IsPrintedPaper(ItemDrop.ItemData? item)
+    {
+        if (item?.m_shared == null)
+            return false;
+        if (PrefabsMatch(item, PrintedPrefabName))
+            return true;
+        return item.m_shared.m_name.Equals(TokenPrintedName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Written template or Printed copy — place / ink / Paper tab.</summary>
+    internal static bool IsWrittenLike(ItemDrop.ItemData? item) =>
+        IsWrittenPaper(item) || IsPrintedPaper(item);
+
+    /// <summary>Blank, Written, or Printed.</summary>
+    internal static bool IsAnyPaper(ItemDrop.ItemData? item) =>
+        IsBlankPaper(item) || IsWrittenLike(item);
 
     /// <summary>Alias for <see cref="IsAnyPaper"/> (exclusion alias + stand patches).</summary>
     internal static bool IsPaperItem(ItemDrop.ItemData? item) => IsAnyPaper(item);

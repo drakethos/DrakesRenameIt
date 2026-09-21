@@ -297,12 +297,17 @@ internal static class PaperNotePageText
         if (body == null)
             return;
         var desc = TooltipRichText.EnsureRichTextTagsClosedForTooltip(description);
+        desc = StripCopyMarkerLine(desc);
         // Empty → "..." on the same oriented face (Sign-style cue). Never change orientation here.
         if (string.IsNullOrWhiteSpace(desc))
             desc = EmptyFaceCue;
         body.text = desc;
         body.ForceMeshUpdate(ignoreActiveState: true);
     }
+
+    /// <summary>Inventory tooltip only — never bake into description / world hover.</summary>
+    static string? StripCopyMarkerLine(string? description) =>
+        PaperCopyMark.StripCopyLine(description);
 
     internal static TMP_Text? FindPageWidget(GameObject root)
     {

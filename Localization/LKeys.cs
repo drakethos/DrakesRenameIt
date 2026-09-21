@@ -53,6 +53,20 @@ public static class LKeys
     public const string CopyPageErrNoPrefab = "copy_page_err_no_prefab";
     public const string CopyPageErrInventoryFull = "copy_page_err_inventory_full";
 
+    // Paper tab — Recycle Written → blank
+    public const string RecycleBtn = "recycle_paper_btn";
+    public const string RecycleBtnTip = "recycle_paper_btn_tip";
+    public const string CopyPageBtnTip = "copy_page_btn_tip";
+    public const string RecycleTitle = "recycle_paper_title";
+    public const string RecycleBody = "recycle_paper_body";
+    public const string RecycleDone = "recycle_paper_done";
+    public const string RecycleErrNotWritten = "recycle_paper_err_not_written";
+    public const string RecycleErrNoBlank = "recycle_paper_err_no_blank";
+    public const string RecycleErrInventoryFull = "recycle_paper_err_inventory_full";
+    public const string RecycleErrWall = "recycle_paper_err_wall";
+    public const string RecycleErrNoPermission = "recycle_paper_err_no_permission";
+    public const string RecycleErrDisabled = "recycle_paper_err_disabled";
+
     // HUD / messages
     public const string MsgItemNotInInventory = "msg_item_not_in_inventory";
     public const string MsgItemNotInInventoryUnlock = "msg_item_not_in_inventory_unlock";

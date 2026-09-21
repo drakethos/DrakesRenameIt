@@ -88,6 +88,9 @@ internal static class RenameExclusionRules
             return false;
         if (item?.m_shared == null)
             return false;
+        // Printed copies force their own stack identity — never treat as ExcludeStacks.
+        if (PaperItem.IsPrintedPaper(item))
+            return false;
         return item.m_shared.m_maxStackSize > 1;
     }
 

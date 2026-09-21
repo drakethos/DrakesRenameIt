@@ -986,14 +986,32 @@ internal static class PaperWrittenPlace
             }
         }
 
+        static int _ghostPreviewId;
+        static string _ghostPreviewDesc = "\u0001"; // sentinel ≠ any real desc
+
         static void SeatGhost(Player player)
         {
             if (PlacementGhostField?.GetValue(player) is not GameObject ghost || ghost == null)
                 return;
             var piece = ghost.GetComponent<Piece>();
-            if (!PaperItem.IsWallSheetPiece(piece))
+            if (PaperItem.IsWallSheetPiece(piece))
+                ghost.transform.position = PaperItem.SeatWallSheet(ghost.transform.position, ghost.transform);
+
+            // Written-page ghost: show "..." or real ink on the oriented face (not every frame).
+            if (!IsNotePiece(piece) || !RenameitConfig.PaperShowPageText)
                 return;
-            ghost.transform.position = PaperItem.SeatWallSheet(ghost.transform.position, ghost.transform);
+
+            var source = ResolveTrigger(player);
+            var desc = "";
+            if (source != null && CustomizeLibsAPI.HasCustomDescription(source))
+                desc = CustomizeLibsAPI.GetProperDescription(source) ?? "";
+
+            var id = ghost.GetInstanceID();
+            if (id == _ghostPreviewId && desc == _ghostPreviewDesc)
+                return;
+            _ghostPreviewId = id;
+            _ghostPreviewDesc = desc;
+            PaperNotePageText.Sync(ghost, desc);
         }
 
         [HarmonyPrefix]
@@ -1281,7 +1299,11 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         RegisterTakePublicRpc();
         // Ghost Awake runs when place mode starts — it must not eat the page snapshot.
         if (PaperWrittenPlace.IsPlacementGhost(gameObject))
+        {
+            // Face cue only; real desc/style come from SeatGhost when the held page is known.
+            PaperNotePageText.Sync(gameObject, "");
             return;
+        }
         _pending = PaperWrittenPlace.TakePendingSnapshot();
     }
 
@@ -1367,9 +1389,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoFontSize, PaperFontScale.NormalizeStored(snap.FontSize));
         zdo.Set(ZdoLandscape, snap.Landscape ? 1 : 0);
         zdo.Set(ZdoTakePublic, snap.TakePublic ? 1 : 0);
-        // Pass desc directly — don't rely on a ZDO round-trip for the first paint.
-        if (!PaperWrittenPlace.IsPlacementGhost(gameObject))
-            PaperNotePageText.Sync(gameObject, snap.Desc);
+        // Ghosts included — empty desc paints "..." so you see which face gets ink.
+        PaperNotePageText.Sync(gameObject, snap.Desc);
     }
 
     public string GetHoverName()

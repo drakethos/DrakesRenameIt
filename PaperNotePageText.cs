@@ -24,6 +24,9 @@ internal static class PaperNotePageText
     const float FaceClearance = 0.004f;
     static readonly Color Ink = new Color(0.12f, 0.07f, 0.03f, 1f);
 
+    /// <summary>Vanilla Sign cue — empty pages show this on the ink face so you know which side writes.</summary>
+    const string EmptyFaceCue = "...";
+
     static readonly FieldInfo? SignTextWidgetField = AccessTools.Field(typeof(Sign), "m_textWidget");
 
     static bool _loggedDonor;
@@ -216,8 +219,8 @@ internal static class PaperNotePageText
             return;
         try
         {
-            if (PaperWrittenPlace.IsPlacementGhost(root))
-                return;
+            // Placement ghosts included: empty pages show "..." on the ink face (vanilla Sign cue).
+            // Do not retune OrientOnParchment / StyleAsPage here — content only.
 
             var widget = FindPageWidget(root);
 
@@ -248,7 +251,7 @@ internal static class PaperNotePageText
                     WakeChain(holder, widget.transform);
                 }
 
-                // Body first so size snap/shrink sees the real letter.
+                // Body first so size snap/shrink sees the real letter (or "..." face cue).
                 SetBody(widget, description);
                 StyleAsPage(widget, holder, fontSize, landscape);
             }
@@ -294,7 +297,10 @@ internal static class PaperNotePageText
         if (body == null)
             return;
         var desc = TooltipRichText.EnsureRichTextTagsClosedForTooltip(description);
-        body.text = desc ?? "";
+        // Empty → "..." on the same oriented face (Sign-style cue). Never change orientation here.
+        if (string.IsNullOrWhiteSpace(desc))
+            desc = EmptyFaceCue;
+        body.text = desc;
         body.ForceMeshUpdate(ignoreActiveState: true);
     }
 

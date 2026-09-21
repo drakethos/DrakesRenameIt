@@ -44,6 +44,15 @@ internal static class LocalizationDefaults
         Add(LKeys.UnlockCostAffordWarning, "<color=red>You don't have enough items to unlock.</color>");
         Add(LKeys.UnlockCostLine, "{0}x {1}  <color={2}>({3} in inv)</color>");
 
+        Add(LKeys.CopyPageBtn, "Copy page");
+        Add(LKeys.CopyPageAffordWarning, "<color=red>Not enough blank paper.</color>");
+        Add(LKeys.CopyPageDone, "Copied {0} page(s).");
+        Add(LKeys.CopyPageErrNotWritten, "Only a Written Page can be copied.");
+        Add(LKeys.CopyPageErrNoBlank, "Blank paper is not available.");
+        Add(LKeys.CopyPageErrNotEnough, "Not enough blank paper to copy.");
+        Add(LKeys.CopyPageErrNoPrefab, "Written Page is not available.");
+        Add(LKeys.CopyPageErrInventoryFull, "Inventory full — cannot copy pages.");
+
         Add(LKeys.MsgItemNotInInventory, "That item is no longer in your inventory.");
         Add(LKeys.MsgItemNotInInventoryUnlock, "That item is no longer in your inventory. Put it back, then unlock again.");
         Add(LKeys.MsgItemNotInInventoryApply, "That item is no longer in your inventory. Put it back, then try again.");

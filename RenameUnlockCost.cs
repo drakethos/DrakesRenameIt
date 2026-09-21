@@ -32,16 +32,11 @@ internal static class RenameUnlockCost
             return false;
         if (!TryBuildResolvedCost(out var lines, out _))
             return true;
-        var inv = player.GetInventory();
-        if (inv == null)
-            return false;
-        foreach (var (sharedName, amount, _) in lines)
-        {
-            if (inv.CountItems(sharedName) < amount)
-                return false;
-        }
 
-        return true;
+        var payLines = new List<(string SharedName, int Amount)>(lines.Count);
+        foreach (var (sharedName, amount, _) in lines)
+            payLines.Add((sharedName, amount));
+        return InventoryCost.CanAfford(player, payLines);
     }
 
     internal static bool TryConsumeUnlockCost(Player? player, out string errorMessage)
@@ -65,26 +60,10 @@ internal static class RenameUnlockCost
             return false;
         }
 
-        var inv = player.GetInventory();
-        if (inv == null)
-        {
-            errorMessage = T(LKeys.UnlockErrNoInventory);
-            return false;
-        }
-
+        var payLines = new List<(string SharedName, int Amount)>(lines.Count);
         foreach (var (sharedName, amount, _) in lines)
-        {
-            if (inv.CountItems(sharedName) < amount)
-            {
-                errorMessage = T(LKeys.UnlockErrNotEnough);
-                return false;
-            }
-        }
-
-        foreach (var (sharedName, amount, _) in lines)
-            inv.RemoveItem(sharedName, amount, -1, true);
-
-        return true;
+            payLines.Add((sharedName, amount));
+        return InventoryCost.TryConsume(player, payLines, out errorMessage, T(LKeys.UnlockErrNotEnough));
     }
 
     internal static string GetCostDisplayShort()

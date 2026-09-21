@@ -519,13 +519,13 @@ public static class RenameitConfig
             SectionUnlockCost, DisplayUnlockCost,
             "UnlockCostEnabled",
             false,
-            "If true, each item stack must be unlocked once (pay UnlockCost from your inventory) before rename, description, or crafted-by edits apply. Invalid/empty UnlockCost is ignored. Elevated players skip the cost when AdminOverride applies.");
+            "If true, each item stack must be unlocked once (pay UnlockCost from your inventory) before rename, description, or crafted-by edits apply. Invalid/empty UnlockCost is ignored. Elevated players skip the cost when AdminOverride applies. DevCommands nocost (Player.NoCostCheat) also skips the material cost.");
 
         _unlockCost = _drakeConfigSync.BindSynced(config, 
             SectionUnlockCost, DisplayUnlockCost,
             "UnlockCost",
             "Coins:5",
-            "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu.");
+            "Comma or semicolon separated: PrefabName:amount (e.g. Coins:4, Coal:10) or $item_token:amount. Uses player inventory. Paid once per stack via the Unlock button in the action menu. Skipped when DevCommands nocost is on.");
 
         // --- Limits ---
         _nameCharLimit = _drakeConfigSync.BindSynced(config, 

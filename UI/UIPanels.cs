@@ -709,17 +709,16 @@ public static class UIPanels
         foreach (var (localizedName, amount, prefabName) in costEntries)
         {
             string token = RenameUnlockCost.GetItemTokenPublic(prefabName);
-            int have = Player.m_localPlayer != null
-                ? Player.m_localPlayer.GetInventory()?.CountItems(token) ?? 0
-                : 0;
-            string haveColor = have >= amount ? "lime" : "red";
-            string line = T(LKeys.UnlockCostLine, amount, localizedName, haveColor, have);
+            int have = InventoryCost.CountHave(Player.m_localPlayer, token);
+            bool noCost = InventoryCost.IsNoCostCheat(Player.m_localPlayer);
+            string line = InventoryCost.FormatCostLine(amount, localizedName, have, noCost);
             var sprite = RenameUnlockCost.GetItemIconSprite(prefabName);
             CreateUnlockCostRow(_unlockCostListRoot, sprite, line);
         }
 
         if (_unlockAffordWarning != null)
         {
+            // nocost (DevCommands) → always affordable; hide short warning.
             if (!canAfford)
             {
                 _unlockAffordWarning.text = T(LKeys.UnlockCostAffordWarning);

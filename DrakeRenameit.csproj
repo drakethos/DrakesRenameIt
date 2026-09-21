@@ -118,6 +118,8 @@
     <Compile Include="PaperNotePageText.cs" />
     <Compile Include="PaperFontScale.cs" />
     <Compile Include="PaperItemStyle.cs" />
+    <Compile Include="InventoryCost.cs" />
+    <Compile Include="PaperCopyService.cs" />
     <Compile Include="PaperWallSession.cs" />
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />

@@ -43,6 +43,16 @@ public static class LKeys
     public const string UnlockCostAffordWarning = "unlock_cost_afford_warning";
     public const string UnlockCostLine = "unlock_cost_line";
 
+    // Paper tab — Copy page
+    public const string CopyPageBtn = "copy_page_btn";
+    public const string CopyPageAffordWarning = "copy_page_afford_warning";
+    public const string CopyPageDone = "copy_page_done";
+    public const string CopyPageErrNotWritten = "copy_page_err_not_written";
+    public const string CopyPageErrNoBlank = "copy_page_err_no_blank";
+    public const string CopyPageErrNotEnough = "copy_page_err_not_enough";
+    public const string CopyPageErrNoPrefab = "copy_page_err_no_prefab";
+    public const string CopyPageErrInventoryFull = "copy_page_err_inventory_full";
+
     // HUD / messages
     public const string MsgItemNotInInventory = "msg_item_not_in_inventory";
     public const string MsgItemNotInInventoryUnlock = "msg_item_not_in_inventory_unlock";

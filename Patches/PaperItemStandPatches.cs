@@ -1,5 +1,7 @@
 using System;
+using System.Reflection;
 using DrakeModsLibs.API;
+using DrakeRenameit.Compat;
 using DrakeRenameit.UI;
 using HarmonyLib;
 using UnityEngine;
@@ -61,7 +63,7 @@ internal static class PaperItemStandPatches
         if (string.IsNullOrEmpty(readable))
             return;
 
-        bool blocked = !PrivateArea.CheckAccess(__instance.transform.position, 0f, flash: false);
+        bool blocked = WardHoverAccess.IsLocalDenied(__instance.transform.position);
         if (blocked || HoverTextContainsNoAccess(__result))
         {
             var denied = "$piece_noaccess";
@@ -139,18 +141,22 @@ internal static class PaperItemStandPatches
         return items[0];
     }
 
+    private static MethodInfo? _getAttachedItem;
+    private static MethodInfo? _loadFromZdo;
+    private static bool _attachApisResolved;
+
     private static GameObject? ResolveAttachedPrefab(ItemStand stand)
     {
         if (stand == null || ObjectDB.instance == null)
             return null;
 
+        EnsureAttachApis();
+        if (_getAttachedItem == null)
+            return null;
+
         try
         {
-            var mi = AccessTools.Method(typeof(ItemStand), "GetAttachedItem");
-            if (mi == null)
-                return null;
-
-            object? result = mi.Invoke(stand, null);
+            object? result = _getAttachedItem.Invoke(stand, null);
             switch (result)
             {
                 case int hash when hash != 0:
@@ -169,30 +175,68 @@ internal static class PaperItemStandPatches
 
     /// <summary>
     /// Valheim 1.0: <c>LoadFromZDO(ItemData, ZDO)</c>. Older: <c>LoadFromZDO(ItemData, ZDO, int)</c>.
+    /// Resolved once without AccessTools warnings on missing signatures.
     /// </summary>
     private static void TryLoadItemDataFromZdo(ItemDrop.ItemData item, ZDO zdo)
     {
+        EnsureAttachApis();
+        if (_loadFromZdo == null)
+            return;
+
         try
         {
-            var load2 = AccessTools.Method(
-                typeof(ItemDrop),
-                "LoadFromZDO",
-                new[] { typeof(ItemDrop.ItemData), typeof(ZDO) });
-            if (load2 != null)
-            {
-                load2.Invoke(null, new object[] { item, zdo });
-                return;
-            }
-
-            var load3 = AccessTools.Method(
-                typeof(ItemDrop),
-                "LoadFromZDO",
-                new[] { typeof(ItemDrop.ItemData), typeof(ZDO), typeof(int) });
-            load3?.Invoke(null, new object[] { item, zdo, -1 });
+            var parms = _loadFromZdo.GetParameters();
+            if (parms.Length == 2)
+                _loadFromZdo.Invoke(null, new object[] { item, zdo });
+            else if (parms.Length == 3)
+                _loadFromZdo.Invoke(null, new object[] { item, zdo, -1 });
         }
         catch
         {
             /* keep prefab defaults */
+        }
+    }
+
+    private static void EnsureAttachApis()
+    {
+        if (_attachApisResolved)
+            return;
+
+        _attachApisResolved = true;
+        try
+        {
+            _getAttachedItem = typeof(ItemStand).GetMethod(
+                "GetAttachedItem",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (var method in typeof(ItemDrop).GetMethods(
+                         BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "LoadFromZDO")
+                    continue;
+
+                var parms = method.GetParameters();
+                if (parms.Length == 2
+                    && parms[0].ParameterType == typeof(ItemDrop.ItemData)
+                    && parms[1].ParameterType == typeof(ZDO))
+                {
+                    _loadFromZdo = method;
+                    break;
+                }
+
+                if (parms.Length == 3
+                    && parms[0].ParameterType == typeof(ItemDrop.ItemData)
+                    && parms[1].ParameterType == typeof(ZDO)
+                    && parms[2].ParameterType == typeof(int)
+                    && _loadFromZdo == null)
+                {
+                    _loadFromZdo = method;
+                }
+            }
+        }
+        catch
+        {
+            /* leave null — callers keep prefab defaults */
         }
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx.Logging;
 using DrakeModsLibs.API;
+using DrakeRenameit.Compat;
 using DrakeRenameit.UI;
 using HarmonyLib;
 using Jotunn.Configs;
@@ -1369,7 +1370,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
 
     /// <summary>Ward permit, or original creator / elevated (public-take guests stay out).</summary>
     bool LocalMayEditWallPaper() =>
-        PrivateArea.CheckAccess(transform.position, 0f, flash: false) || LocalMayToggleTakePublic();
+        CompatibilityManager.CheckAccess(transform.position, flash: false) || LocalMayToggleTakePublic();
 
     string ReadPageDescription()
     {
@@ -1529,7 +1530,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     {
         if (TakeIgnoresWard())
             return true;
-        return PrivateArea.CheckAccess(transform.position, 0f, flash);
+        return CompatibilityManager.CheckAccess(transform.position, flash);
     }
 
     /// <summary>Ward-permitted player, and the page is actually inside a ward. Otherwise the line is noise.</summary>
@@ -1541,7 +1542,7 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             return false;
         if (!InsideEnabledWard(transform.position))
             return false;
-        return PrivateArea.CheckAccess(transform.position, 0f, flash: false);
+        return CompatibilityManager.CheckAccess(transform.position, flash: false);
     }
 
     /// <summary>Original creator, or the admin/VIP override. Public editors cannot flip this.</summary>
@@ -1598,36 +1599,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         return Localize("\n[<color=yellow><b>" + keys + "</b></color>] " + actionToken);
     }
 
-    // Publicized at compile time, private at runtime. Direct access throws FieldAccessException in the HUD.
-    static readonly FieldInfo? AllAreasField = AccessTools.Field(typeof(PrivateArea), "m_allAreas");
-    static readonly MethodInfo? IsEnabledMethod = AccessTools.Method(typeof(PrivateArea), "IsEnabled");
-    static readonly MethodInfo? IsInsideMethod =
-        AccessTools.Method(typeof(PrivateArea), "IsInside", new[] { typeof(Vector3), typeof(float) });
-
-    static bool InsideEnabledWard(Vector3 point)
-    {
-        try
-        {
-            if (AllAreasField == null || IsEnabledMethod == null || IsInsideMethod == null)
-                return false;
-            if (AllAreasField.GetValue(null) is not System.Collections.IList areas)
-                return false;
-            for (var i = 0; i < areas.Count; i++)
-            {
-                if (areas[i] is not PrivateArea area)
-                    continue;
-                if (IsEnabledMethod.Invoke(area, null) is not true)
-                    continue;
-                if (IsInsideMethod.Invoke(area, new object[] { point, 0f }) is true)
-                    return true;
-            }
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-        return false;
-    }
+    static bool InsideEnabledWard(Vector3 point) =>
+        CompatibilityManager.IsInsideEnabledWard(point);
 
     internal string BuildHoverText()
     {

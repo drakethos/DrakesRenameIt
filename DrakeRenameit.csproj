@@ -126,6 +126,16 @@
     <Compile Include="DurabilityNameModifier.cs" />
     <Compile Include="DrakeRenameit.cs" />
     <Compile Include="Integration\RenameItLibsBridge.cs" />
+    <Compile Include="Compat\AreaCoverageKind.cs" />
+    <Compile Include="Compat\IAreaCompatModule.cs" />
+    <Compile Include="Compat\CompatibilityManager.cs" />
+    <Compile Include="Compat\Vanilla\VanillaPrivateAreaModule.cs" />
+    <Compile Include="Compat\WardIsLove\WardIsLoveModule.cs" />
+    <Compile Include="Compat\ProtectiveWards\ProtectiveWardsModule.cs" />
+    <Compile Include="Compat\ArcaneWard\ArcaneWardModule.cs" />
+    <Compile Include="Compat\WardHoverAccess.cs" />
+    <Compile Include="Compat\ItemLibs\ItemStandHoverModule.cs" />
+    <Compile Include="Compat\DevCommands\DevCommandsModule.cs" />
     <Compile Include="Patches\RenameItInventoryPatches.cs" />
     <Compile Include="Patches\PaperItemStandPatches.cs" />
     <Compile Include="UI\TooltipRichText.cs" />

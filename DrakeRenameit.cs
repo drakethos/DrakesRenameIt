@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx;
+using DrakeRenameit.Compat;
 using DrakeRenameit.Integration;
 using DrakeModsLibs;
 using DrakeModsLibs.API;
@@ -25,6 +26,11 @@ namespace DrakeRenameit
     [BepInPlugin(GUID, ModName, Version)]
     [BepInDependency(Main.ModGuid)]
     [BepInDependency(CustomizeLibsPlugin.GUID)]
+    [BepInDependency(CompatibilityManager.SoftGuids.WardIsLove, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.ProtectiveWards, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.ArcaneWard, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.LockSmith, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.DevCommands, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public partial class DrakeRenameit : BaseUnityPlugin
     {
@@ -94,6 +100,7 @@ namespace DrakeRenameit
             }
 
             harmony.PatchAll();
+            CompatibilityManager.Initialize(harmony);
         }
 
         public static string GetPropperName(ItemDrop.ItemData? item) => CustomizeLibsAPI.GetProperName(item);

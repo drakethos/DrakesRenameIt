@@ -1,3 +1,10 @@
+- Version 1.1.10
+  - Requires **DrakeModsLibs 0.9.7+** (`CompatHost`, `GetItemStandHoverLabel`).
+  - **WardIsLove soft-compat:** wall paper take / edit and item-stand No-access name display use WIL `WardMonoscript` when present (vanilla `PrivateArea.CheckAccess` is always true under WIL-only empty `m_allAreas`). Modules live on the Libs compat host: vanilla wards, WardIsLove, item-stand hover (`Compat/ItemLibs`), DevCommands.
+  - **ProtectiveWards soft-compat:** coverage via PW helpers; ItemStand Interact gated so **take-public** Written Pages stay removable. Paper stand hover prefers LockSmith `HasLocalWardAccess` when LockSmith is loaded (SoftDependency).
+  - **Arcane Ward soft-compat:** coverage via `ArcaneWardComponent` (Arcane does not patch `CheckAccess`, so hover deny needs this). ItemStand Interact gated for take-public paper. With LockSmith, stand hover uses LockSmith ward access.
+  - **Fix:** WardIsLove's item-stand hover (`ItemStandGetHoverTextPatch`) replaced the label with No access and ignored Show item name when no access. When that option is on, hover keeps the stand name plus No access. Interact stays blocked.
+  - Soft ward bridges are a **courtesy** (not actively monitored); please open an issue if something breaks — PRs and SoftDependency bridges welcome.
 - Version 1.1.9
   - Requires **DrakeModsLibs 0.9.6+** (`DrakeStackForce`, stepper `SetRange` / `SetInteractable`).
   - **Make Copy / Print:** Paper tab copies Written templates (1–9 writable clones) or prints immutable **Printed Page** stacks (1–50) that spend blank paper; shared `InventoryCost` + vanilla nocost cheat for unlock and copy.

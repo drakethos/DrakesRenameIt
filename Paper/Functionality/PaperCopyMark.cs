@@ -1,7 +1,8 @@
 using DrakeModsLibs.API;
 using DrakeModsLibs.Tags;
+using DrakeRenameit.Paper.Items;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
 /// Soft stamp on Printed Page copies: non-owners cannot rewrite name/desc/crafted-by

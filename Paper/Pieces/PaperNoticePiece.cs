@@ -1,6 +1,6 @@
 using BepInEx.Logging;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>Retired hammer spike — real flow is <see cref="PaperPlace"/>.</summary>
 internal static class PaperNoticePiece

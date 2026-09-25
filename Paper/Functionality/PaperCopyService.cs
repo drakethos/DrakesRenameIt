@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using DrakeModsLibs.API;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Items;
 using UnityEngine;
 using static DrakeRenameit.ModText.RenameItLocalization;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
 /// Paper-tab Copy: writable Written clones (1–9) or immutable Printed stack (1–50).

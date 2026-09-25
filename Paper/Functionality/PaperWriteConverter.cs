@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using DrakeModsLibs.API;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Items;
 using static DrakeRenameit.ModText.RenameItLocalization;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>Blank → Written peel-one conversion on rename/desc apply.</summary>
 internal static class PaperWriteConverter

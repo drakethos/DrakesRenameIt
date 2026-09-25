@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
 /// On-page ink size: UI levels 1–7 map to TMP canvas font sizes in the range that

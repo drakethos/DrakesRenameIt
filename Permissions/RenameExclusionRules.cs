@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DrakeRenameit.Paper.Items;
 
 namespace DrakeRenameit.Permissions;
 

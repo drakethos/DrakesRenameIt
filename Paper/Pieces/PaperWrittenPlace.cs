@@ -4,6 +4,8 @@ using System.Reflection;
 using BepInEx.Logging;
 using DrakeModsLibs.API;
 using DrakeRenameit.Compat;
+using DrakeRenameit.Paper.Functionality;
+using DrakeRenameit.Paper.Items;
 using DrakeRenameit.UI;
 using HarmonyLib;
 using Jotunn.Configs;
@@ -11,7 +13,7 @@ using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>
 /// Written Page → Feaster-style piece table (vertical / flat). Consumes the triggering written stack.

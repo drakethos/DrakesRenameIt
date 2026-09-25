@@ -1,11 +1,12 @@
 using System;
 using BepInEx.Logging;
+using DrakeRenameit.Paper.Items;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>
 /// Hammer d├⌐cor only: blank sheet upright/flat (1 paper) + paper stack (50 paper).

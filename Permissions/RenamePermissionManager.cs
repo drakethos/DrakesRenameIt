@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Items;
 using RenameitPermission = global::DrakeRenameit.API.RenameitPermission;
 using static DrakeRenameit.ModText.RenameItLocalization;
 

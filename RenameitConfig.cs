@@ -5,6 +5,8 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using DrakeModsLibs.API;
 using DrakeModsLibs.Sync;
+using DrakeRenameit.Paper.Functionality;
+using DrakeRenameit.Paper.Items;
 
 namespace DrakeRenameit;
 

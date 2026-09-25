@@ -3,6 +3,7 @@
 // Last working sketch lived in PaperWrittenPlace (CaptureSignFont / AttachNoteTextBox / vessel RefreshTextBox).
 
 #if false
+using DrakeRenameit.Paper.Items;
 using TMPro;
 using UnityEngine;
 

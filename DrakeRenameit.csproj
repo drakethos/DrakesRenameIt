@@ -150,6 +150,7 @@
   <ItemGroup>
     <LocalizationJson Include="Assets\Localization\*.json" />
     <PaperIcon Include="Assets\Icons\*.png" />
+    <!-- Nested icon.png under Items collides with store icon.png when Gale flattens; never package those. Use forge_icon.png. -->
     <PaperForgeAssets Include="Assets\Items\**\*" Exclude="Assets\Items\**\icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

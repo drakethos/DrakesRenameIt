@@ -153,7 +153,23 @@ jobs:
             cp Assets/Icons/*.png "$PKG_DIR/Assets/Icons/"
           fi
           if [ -d Assets/Items ]; then
-            cp -a Assets/Items/. "$PKG_DIR/Assets/Items/"
+            # Copy forge assets, but never nested icon.png — Gale flattens zips and that
+            # leaf name overwrites the Thunderstore package icon.png (must stay 256x256).
+            # Prefer forge_icon.png in the repo; rename any leftover icon.png on the way in.
+            (cd Assets/Items && find . -type f ! -name 'icon.png' -print0) | while IFS= read -r -d '' f; do
+              mkdir -p "$PKG_DIR/Assets/Items/$(dirname "$f")"
+              cp -a "Assets/Items/$f" "$PKG_DIR/Assets/Items/$f"
+            done
+            while IFS= read -r -d '' f; do
+              dest="$PKG_DIR/Assets/Items/$(dirname "$f")/forge_icon.png"
+              mkdir -p "$(dirname "$dest")"
+              if [ ! -f "$dest" ]; then
+                cp -a "Assets/Items/$f" "$dest"
+                echo "Packaged nested icon.png as forge_icon.png: $f"
+              else
+                echo "Skipped nested icon.png (forge_icon.png already present): $f"
+              fi
+            done < <(cd Assets/Items && find . -type f -name 'icon.png' -print0)
           fi
           cp README.md                      "$PKG_DIR/"
           cp icon.png                       "$PKG_DIR/"

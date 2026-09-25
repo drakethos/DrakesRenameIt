@@ -263,6 +263,7 @@ internal static class PaperItem
 
         var leaf = Path.GetFileName(fileName);
         // Gale flattens zip folders. Never treat Thunderstore's package icon.png as item art.
+        // Forge item art uses forge_icon.png (not icon.png) so a flatten cannot overwrite the store icon.
         if (!File.Exists(path) &&
             !leaf.Equals("icon.png", StringComparison.OrdinalIgnoreCase))
             path = Path.Combine(_pluginDir, leaf);
@@ -444,8 +445,8 @@ internal static class PaperItem
         if (_blankIconSprite != null)
             return _blankIconSprite;
         var parchment = LoadParchmentTexture()
-                        ?? LoadTextureFile(Path.Combine("Items", "paper_item", "icon.png"), "forge-item-icon")
-                        ?? LoadTextureFile(Path.Combine("Items", "paper_piece", "icon.png"), "forge-piece-icon");
+                        ?? LoadTextureFile(Path.Combine("Items", "paper_item", "forge_icon.png"), "forge-item-icon")
+                        ?? LoadTextureFile(Path.Combine("Items", "paper_piece", "forge_icon.png"), "forge-piece-icon");
         if (parchment == null)
             return null;
         _blankIconSprite = Sprite.Create(

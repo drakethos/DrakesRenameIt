@@ -28,6 +28,7 @@ jobs:
       # ── Version from mod.package.props (must match release tag v{Version}) ───
       #  Stable:  v1.2.0        → Thunderstore + Hexium + GitHub release
       #  Beta:    v1.2.0-beta.1 → Hexium + GitHub prerelease only (skip Thunderstore)
+      #  Hexium accepts -beta.X in version_number; Thunderstore/tcli do not.
       - name: Resolve release version
         id: ver
         run: |
@@ -59,20 +60,11 @@ jobs:
           echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
           echo "Release version: $PKG_VERSION (${CHANNEL}; mod.package.props)"
 
-      # ── Install .NET SDK (Roslyn C#10) ──────────────────────────────────────
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # ── Restore NuGet packages ──────────────────────────────────────────────
-      #  This pulls, among others:
-      #    • Microsoft.NETFramework.ReferenceAssemblies.net48 — official .NET 4.8
-      #      BCL + Facades/netstandard.dll; its .targets sets TargetFrameworkRootPath
-      #      and disables FrameworkPathOverride so the build uses real MS assemblies.
-      #    • JotunnLib — Jotunn.dll + JotunnLib.props (corlib HintPaths)
-      #    • Pfhoenix.Valheim.ModProjectReferences — game DLLs for compile refs
-      #  DrakeModsLibs compile ref: Thunderstore zip (not a ProjectReference in CI).
       - name: Restore NuGet packages
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
@@ -98,15 +90,6 @@ jobs:
           cp "$DLL" ci_libs/DrakeModsLibs.dll
           echo "WORKSHOP_LIBS_DLL=$(pwd)/ci_libs/DrakeModsLibs.dll" >> "$GITHUB_ENV"
 
-      # ── Stage game / BepInEx DLLs from Pfhoenix ─────────────────────────────
-      #
-      #  Fake "Valheim install" tree:
-      #    ci_valheim/valheim_Data/Managed/          ← CorlibPath
-      #      publicized_assemblies/                  ← PublicizedAssembliesPath
-      #    ci_valheim/BepInEx/core/                  ← BepInExPath
-      #
-      #  VALHEIM_INSTALL=ci_valheim satisfies JotunnLib's Paths.props HintPaths.
-      # ────────────────────────────────────────────────────────────────────────
       - name: Stage game DLLs from Pfhoenix package
         run: |
           PFHOENIX_LIB=$(ls -d packages/Pfhoenix.Valheim.ModProjectReferences.*/lib/net46 2>/dev/null | head -1)
@@ -138,13 +121,6 @@ jobs:
 
           echo "VALHEIM_INSTALL=$(pwd)/ci_valheim" >> "$GITHUB_ENV"
 
-      # ── Build (Release) ─────────────────────────────────────────────────────
-      #  dotnet msbuild: Roslyn from .NET 8 → C# 10.
-      #  Directory.Build.props (repo file) reads CI_NET48_FWPATH → sets
-      #    TargetFrameworkRootPath to the net48 ref pack (mscorlib + netstandard).
-      #  Directory.Build.targets (repo file) reads CI_SKIP_POST_BUILD → no-ops
-      #    CopyOutput (Windows path + wrong-case Readme.md) and PackageMod
-      #    (PowerShell Compress-Archive). Zip assembled in the next step.
       - name: Build
         env:
           CI_NET48_FWPATH: ${{ github.workspace }}/packages/Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3/build
@@ -163,7 +139,6 @@ jobs:
             /t:Build \
             /v:minimal
 
-      # ── Assemble Thunderstore zip (mirrors PackageMod target) ────────────────
       - name: Assemble Thunderstore package
         id: pkg
         run: |
@@ -204,7 +179,6 @@ jobs:
           echo "website_url=$WEBSITE_URL" >> "$GITHUB_OUTPUT"
           ls -lh "$ZIP_NAME"
 
-      # ── Create GitHub Release and attach the zip ────────────────────────────
       - name: Create GitHub Release (stable)
         if: steps.ver.outputs.is_prerelease != 'true'
         uses: softprops/action-gh-release@v2
@@ -237,7 +211,7 @@ jobs:
           body: |
             ## DrakesRenameIt v${{ steps.ver.outputs.version }} (beta)
 
-            **Beta / prerelease.** Zip attached. CI publishes to **Hexium only**; Thunderstore is skipped for beta tags.
+            **Beta / prerelease.** Zip attached. CI publishes to **Hexium only** with version `${{ steps.ver.outputs.version }}` (Thunderstore skipped; Hexium accepts `-beta.N`).
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
@@ -286,6 +260,7 @@ jobs:
   publish-hexium:
     needs: [build-and-release, publish-thunderstore]
     # Run after a successful build even when Thunderstore was skipped (beta tags).
+    # Uses publish-hexium.py (not tcli) so Hexium can receive -beta.X versions.
     if: |
       always()
       && needs.build-and-release.result == 'success'
@@ -293,64 +268,28 @@ jobs:
           || needs.publish-thunderstore.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout publish script
+        uses: actions/checkout@v4
+
       - name: Download Thunderstore zip
         uses: actions/download-artifact@v4
         with:
           name: thunderstore-zip
           path: dist
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Install tcli
-        run: dotnet tool install -g tcli
-
       - name: Publish package to Hexium
         env:
-          VERSION: ${{ needs.build-and-release.outputs.version }}
-          DESCRIPTION: ${{ needs.build-and-release.outputs.description }}
-          WEBSITE_URL: ${{ needs.build-and-release.outputs.website_url }}
-          ZIP_NAME: ${{ needs.build-and-release.outputs.zip }}
           HEXIUM_TOKEN: ${{ secrets.HEXIUM_TOKEN }}
+          ZIP_NAME: ${{ needs.build-and-release.outputs.zip }}
         run: |
           set -euo pipefail
           if [ -z "${HEXIUM_TOKEN}" ]; then
             echo "::error::HEXIUM_TOKEN secret is not set" >&2
             exit 1
           fi
-
-          # Escape description for TOML double-quoted string
-          DESC_ESC=$(printf '%s' "$DESCRIPTION" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
-          WEB_ESC=$(printf '%s' "$WEBSITE_URL" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
-
-          cat > thunderstore.toml <<EOF
-          [config]
-          schemaVersion = "0.0.1"
-
-          [package]
-          namespace = "DrakeMods"
-          name = "DrakesRenameit"
-          versionNumber = "${VERSION}"
-          description = "${DESC_ESC}"
-          websiteUrl = "${WEB_ESC}"
-          containsNsfwContent = false
-
-          [publish]
-          repository = "https://valheim.hexium.gg"
-          communities = ["valheim"]
-
-          [publish.categories]
-          valheim = ["Quality of Life", "Valheim 1.0"]
-          EOF
-
-          # Strip leading indentation from heredoc
-          sed -i 's/^          //' thunderstore.toml
-          cat thunderstore.toml
-
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          tcli publish \
-            --config-path thunderstore.toml \
+          python3 .github/scripts/publish-hexium.py \
             --file "dist/${ZIP_NAME}" \
-            --token "${HEXIUM_TOKEN}"
+            --repository "https://valheim.hexium.gg" \
+            --namespace "DrakeMods" \
+            --communities "valheim" \
+            --categories "Quality of Life,Valheim 1.0"

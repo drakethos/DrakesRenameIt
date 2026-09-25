@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Globalization;
+using DrakeRenameit.Paper.Functionality;
 using UnityEngine;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Items;
 
 /// <summary>
 /// Paper-tab style on Written Page <see cref="ItemDrop.ItemData.m_customData"/>.

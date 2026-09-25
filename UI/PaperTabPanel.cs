@@ -1,6 +1,9 @@
 using DrakeModsLibs.UI;
 using DrakeRenameit.API;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Functionality;
+using DrakeRenameit.Paper.Items;
+using DrakeRenameit.Paper.Pieces;
 using Jotunn.Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;

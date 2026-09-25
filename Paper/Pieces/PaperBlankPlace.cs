@@ -7,9 +7,10 @@ using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
+using DrakeRenameit.Paper.Items;
 using DrakeRenameit.UI;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>
 /// Legacy blank hotbar-place pieces (world refund / old ZDOs). Blank <b>Use</b> no longer

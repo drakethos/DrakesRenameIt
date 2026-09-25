@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Items;
 
 /// <summary>
 /// Loads forge-exported paper art (<c>Assets/Items/paper_*/art.bundle</c>, prefab name <c>art</c>).

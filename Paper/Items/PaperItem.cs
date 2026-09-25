@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using BepInEx.Logging;
+using DrakeRenameit.Paper.Pieces;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
@@ -11,7 +12,7 @@ using Jotunn.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Items;
 
 /// <summary>
 /// Blank Piece of Paper (stackable) + Written Page (stack 1). Paper2 parchment visuals.

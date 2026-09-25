@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using DrakeRenameit.API;
 using DrakeRenameit.Ext.UI;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Items;
+using DrakeRenameit.Paper.Pieces;
 using DrakeModsLibs.Data;
 using DrakeModsLibs.UI;
 using static DrakeRenameit.ModText.RenameItLocalization;

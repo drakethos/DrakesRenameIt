@@ -1,12 +1,14 @@
 using System;
 using System.Reflection;
+using DrakeRenameit.Paper.Items;
+using DrakeRenameit.Paper.Pieces;
 using DrakeRenameit.UI;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
 /// Spike: on-page description using the donor Sign's own text widget.

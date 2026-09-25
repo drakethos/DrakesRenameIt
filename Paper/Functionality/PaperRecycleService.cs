@@ -1,9 +1,11 @@
 using DrakeRenameit.API;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Items;
+using DrakeRenameit.Paper.Pieces;
 using DrakeRenameit.Permissions;
 using static DrakeRenameit.ModText.RenameItLocalization;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
 /// Free recycle: Written Page (editable template) → fresh blank Piece of Paper.

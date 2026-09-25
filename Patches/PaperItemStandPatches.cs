@@ -2,6 +2,8 @@ using System;
 using System.Reflection;
 using DrakeModsLibs.API;
 using DrakeRenameit.Compat;
+using DrakeRenameit.Paper.Functionality;
+using DrakeRenameit.Paper.Items;
 using DrakeRenameit.UI;
 using HarmonyLib;
 using UnityEngine;

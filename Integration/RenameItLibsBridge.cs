@@ -2,6 +2,10 @@ using System;
 
 using DrakeRenameit.API;
 
+using DrakeRenameit.Paper.Functionality;
+
+using DrakeRenameit.Paper.Items;
+
 using DrakeRenameit.Permissions;
 
 using DrakeRenameit.UI;

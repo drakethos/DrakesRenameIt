@@ -2,6 +2,8 @@ using System.Linq;
 using System.Reflection;
 using DrakeRenameit;
 using DrakeRenameit.ModText;
+using DrakeRenameit.Paper.Functionality;
+using DrakeRenameit.Paper.Items;
 using DrakeRenameit.Permissions;
 using DrakeRenameit.UI;
 using HarmonyLib;

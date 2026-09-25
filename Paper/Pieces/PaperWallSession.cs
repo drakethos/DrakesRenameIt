@@ -2,10 +2,11 @@ using DrakeModsLibs.API;
 using DrakeModsLibs.UI;
 using DrakeRenameit.API;
 using DrakeRenameit.Integration;
+using DrakeRenameit.Paper.Functionality;
 using DrakeRenameit.UI;
 using UnityEngine;
 
-namespace DrakeRenameit;
+namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>
 /// Short-lived wall-edit session: synthetic <see cref="ItemDrop.ItemData"/> from a pinned

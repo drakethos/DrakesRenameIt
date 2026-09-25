@@ -16,6 +16,7 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.version }}
       tag: ${{ steps.ver.outputs.tag }}
+      is_prerelease: ${{ steps.ver.outputs.is_prerelease }}
       zip: ${{ steps.pkg.outputs.zip }}
       description: ${{ steps.pkg.outputs.description }}
       website_url: ${{ steps.pkg.outputs.website_url }}
@@ -25,11 +26,25 @@ jobs:
         uses: actions/checkout@v4
 
       # ── Version from mod.package.props (must match release tag v{Version}) ───
+      #  Stable:  v1.2.0        → Thunderstore + Hexium + GitHub release
+      #  Beta:    v1.2.0-beta.1 → Hexium + GitHub prerelease only (skip Thunderstore)
       - name: Resolve release version
         id: ver
         run: |
           TAG="${GITHUB_REF_NAME}"
           TAG_VERSION="${TAG#v}"
+
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            IS_PRERELEASE=false
+            CHANNEL=stable
+          elif [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
+            IS_PRERELEASE=true
+            CHANNEL=beta
+          else
+            echo "::error::Tag ${TAG} must be vX.Y.Z (stable) or vX.Y.Z-beta.N (Hexium-only beta)." >&2
+            exit 1
+          fi
+
           PKG_VERSION=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' mod.package.props | head -1 | xargs)
           if [ -z "$PKG_VERSION" ]; then
             echo "::error::Could not read <Version> from mod.package.props" >&2
@@ -41,7 +56,8 @@ jobs:
           fi
           echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Release version: $PKG_VERSION (mod.package.props)"
+          echo "is_prerelease=$IS_PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "Release version: $PKG_VERSION (${CHANNEL}; mod.package.props)"
 
       # ── Install .NET SDK (Roslyn C#10) ──────────────────────────────────────
       - name: Setup .NET SDK
@@ -189,7 +205,8 @@ jobs:
           ls -lh "$ZIP_NAME"
 
       # ── Create GitHub Release and attach the zip ────────────────────────────
-      - name: Create GitHub Release
+      - name: Create GitHub Release (stable)
+        if: steps.ver.outputs.is_prerelease != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
@@ -210,6 +227,28 @@ jobs:
             See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.ver.outputs.tag }}/CHANGELOG.md) for what's new.
           files: ${{ steps.pkg.outputs.zip }}
 
+      - name: Create GitHub Release (beta)
+        if: steps.ver.outputs.is_prerelease == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: "DrakesRenameIt ${{ steps.ver.outputs.version }} (beta)"
+          prerelease: true
+          body: |
+            ## DrakesRenameIt v${{ steps.ver.outputs.version }} (beta)
+
+            **Beta / prerelease.** Zip attached. CI publishes to **Hexium only**; Thunderstore is skipped for beta tags.
+
+            ### Install
+            Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
+            ```
+            BepInEx/plugins/DrakeMods-DrakesRenameit/
+            ```
+
+            ---
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.ver.outputs.tag }}/CHANGELOG.md) for what's new.
+          files: ${{ steps.pkg.outputs.zip }}
+
       - name: Upload Thunderstore zip artifact
         uses: actions/upload-artifact@v4
         with:
@@ -219,6 +258,7 @@ jobs:
 
   publish-thunderstore:
     needs: build-and-release
+    if: needs.build-and-release.outputs.is_prerelease != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Download Thunderstore zip
@@ -245,6 +285,12 @@ jobs:
 
   publish-hexium:
     needs: [build-and-release, publish-thunderstore]
+    # Run after a successful build even when Thunderstore was skipped (beta tags).
+    if: |
+      always()
+      && needs.build-and-release.result == 'success'
+      && (needs.publish-thunderstore.result == 'success'
+          || needs.publish-thunderstore.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Download Thunderstore zip

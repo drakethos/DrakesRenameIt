@@ -1,0 +1,14 @@
+---
+description: WardIsLove / CompatHost handover — point agents at DrakeModsLibs skill before RenameIt WIL work
+alwaysApply: false
+globs: Compat/**/*.cs,Patches/PaperItemStand*.cs,PaperWrittenPlace.cs
+---
+
+# WardIsLove / CompatHost
+
+When touching WardIsLove, soft-compat, or item-stand No-access names in this repo:
+
+1. Read sibling **DrakeModsLibs** skill: `../DrakeModsLibs/.cursor/skills/drakemods-compat-host/SKILL.md`
+2. Read handover: `../DrakeModsLibs/docs/handover-wardislove-renameit.md`
+3. Prefer Libs `CompatHost` (per RenameIt GUID); do not invent a global singleton
+4. Item stands: `ShowItemStandItemNameWhenNoAccess` must show real custom name while ward still blocks Interact

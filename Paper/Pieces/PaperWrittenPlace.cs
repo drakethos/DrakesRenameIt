@@ -319,20 +319,88 @@ internal static class PaperWrittenPlace
         PaperItem.ClearBlankPlaceTool(blankItem);
     }
 
-    /// <summary>Point this stack at the written-only shared data (never the blank paper shared).</summary>
+    /// <summary>
+    /// Printed stacks must place from their own shared (stack size 50). Never rebind them to
+    /// Written shared — that sets <c>m_maxStackSize = 1</c> and kills the inventory counter (ISSUE-015).
+    /// </summary>
+    private static void AttachTableToPrintedItem()
+    {
+        var printedDrop = GetPrintedItemDrop();
+        var shared = printedDrop?.m_itemData?.m_shared;
+        if (shared == null || printedDrop?.m_itemData == null)
+            return;
+
+        var table = PieceManager.Instance.GetPieceTable(PieceTableName);
+        if (table == null)
+            return;
+
+        var blankShared = GetBlankItemDrop()?.m_itemData?.m_shared;
+        var writtenShared = GetWrittenItemDrop()?.m_itemData?.m_shared;
+        if (ReferenceEquals(shared, blankShared) || ReferenceEquals(shared, writtenShared))
+        {
+            // Keep Printed tokens + stack size; only peel off a private shared if merged with blank/written.
+            shared = DetachPrintedShared(shared);
+            printedDrop.m_itemData.m_shared = shared;
+        }
+
+        PaperPieceTables.Harden(table);
+        shared.m_buildPieces = table;
+        shared.m_itemType = ItemDrop.ItemData.ItemType.Tool;
+        InstallPlaceToolAttack(shared);
+        // Preserve configured printed stack size (DetachShared forces 1 for Written only).
+        shared.m_maxStackSize = Math.Max(1, RenameitConfig.PrintedPaperStackSize);
+    }
+
+    /// <summary>Point this stack at the written-only shared data (never Printed or blank).</summary>
     private static void BindWrittenShared(ItemDrop.ItemData item)
     {
+        if (item == null || PaperItem.IsPrintedPaper(item))
+            return;
         var proto = GetWrittenItemDrop()?.m_itemData?.m_shared;
-        if (proto == null || item == null)
+        if (proto == null)
             return;
         if (!ReferenceEquals(item.m_shared, proto))
             item.m_shared = proto;
+    }
+
+    /// <summary>Point this stack at the printed shared (keeps max stack / Printed identity).</summary>
+    private static void BindPrintedShared(ItemDrop.ItemData item)
+    {
+        if (item == null || !PaperItem.IsPrintedPaper(item))
+            return;
+        var proto = GetPrintedItemDrop()?.m_itemData?.m_shared;
+        if (proto == null)
+            return;
+        if (!ReferenceEquals(item.m_shared, proto))
+            item.m_shared = proto;
+    }
+
+    /// <summary>Equip place-table shared for Written or Printed without collapsing Printed stacks.</summary>
+    private static void BindPlaceShared(ItemDrop.ItemData item)
+    {
+        if (PaperItem.IsPrintedPaper(item))
+        {
+            AttachTableToPrintedItem();
+            BindPrintedShared(item);
+        }
+        else
+        {
+            AttachTableToWrittenItem();
+            BindWrittenShared(item);
+        }
     }
 
     private static ItemDrop? GetWrittenItemDrop()
     {
         var prefab = PrefabManager.Instance.GetPrefab(PaperItem.WrittenPrefabName)
                      ?? ObjectDB.instance?.GetItemPrefab(PaperItem.WrittenPrefabName);
+        return prefab?.GetComponent<ItemDrop>();
+    }
+
+    private static ItemDrop? GetPrintedItemDrop()
+    {
+        var prefab = PrefabManager.Instance.GetPrefab(PaperItem.PrintedPrefabName)
+                     ?? ObjectDB.instance?.GetItemPrefab(PaperItem.PrintedPrefabName);
         return prefab?.GetComponent<ItemDrop>();
     }
 
@@ -349,15 +417,52 @@ internal static class PaperWrittenPlace
         var clone = (ItemDrop.ItemData.SharedData)typeof(object)
             .GetMethod("MemberwiseClone", flags)!
             .Invoke(src, null);
+        // Clone may still carry blank-paper tokens when blank+written shared the donor.
+        // Without rewriting these, IsWrittenPaper falls back to m_dropPrefab only — and that
+        // field is often null right after character load until equip refreshes it.
+        clone.m_name = PaperItem.TokenWrittenName;
+        clone.m_description = PaperItem.TokenWrittenDesc;
+        clone.m_maxStackSize = 1;
         // Do not copy LeatherScraps' unarmed Attack — written place-tool gets its own.
         InstallPlaceToolAttack(clone);
         return clone;
     }
 
+    private static ItemDrop.ItemData.SharedData DetachPrintedShared(ItemDrop.ItemData.SharedData src)
+    {
+        var flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        var clone = (ItemDrop.ItemData.SharedData)typeof(object)
+            .GetMethod("MemberwiseClone", flags)!
+            .Invoke(src, null);
+        clone.m_name = PaperItem.TokenPrintedName;
+        clone.m_description = PaperItem.TokenPrintedDesc;
+        clone.m_maxStackSize = Math.Max(1, RenameitConfig.PrintedPaperStackSize);
+        InstallPlaceToolAttack(clone);
+        return clone;
+    }
+
+    /// <summary>True when <paramref name="shared"/> carries the Written Page place table.</summary>
+    internal static bool SharedHasWrittenPlaceTable(ItemDrop.ItemData.SharedData? shared)
+    {
+        if (shared?.m_buildPieces == null)
+            return false;
+        try
+        {
+            var table = PieceManager.Instance?.GetPieceTable(PieceTableName);
+            return table != null && ReferenceEquals(shared.m_buildPieces, table);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     /// <summary>Blank paper must not stay in the written place table. Never mutate the written shared instance.</summary>
     private static void StripBlankPlaceTool(ItemDrop.ItemData? item)
     {
-        if (!PaperItem.IsBlankPaper(item) || item?.m_shared == null)
+        // Never strip a Written/Printed page — IsBlankPaper can false-positive when dropPrefab
+        // is null and shared still has the blank $item token from DetachShared.
+        if (PaperItem.IsWrittenLike(item) || !PaperItem.IsBlankPaper(item) || item?.m_shared == null)
             return;
 
         var writtenShared = GetWrittenItemDrop()?.m_itemData?.m_shared;
@@ -411,14 +516,14 @@ internal static class PaperWrittenPlace
     /// <summary>Open written place mode. Use again while placing cycles Wall ↔ Flat.</summary>
     internal static void BeginPlace(ItemDrop.ItemData item)
     {
-        if (!PaperItem.IsWrittenLike(item) || PaperItem.IsBlankPaper(item) || !RenameitConfig.PaperPlaceEnabled)
+        PaperItem.EnsurePaperIdentity(item);
+        if (!PaperItem.IsWrittenLike(item) || !RenameitConfig.PaperPlaceEnabled)
             return;
         var player = Player.m_localPlayer;
         if (player == null || !DrakeRenameit.IsItemInLocalPlayerInventory(item))
             return;
 
-        AttachTableToWrittenItem();
-        BindWrittenShared(item);
+        BindPlaceShared(item);
         if (item.m_shared != null)
             InstallPlaceToolAttack(item.m_shared);
         var table = item.m_shared?.m_buildPieces
@@ -654,7 +759,17 @@ internal static class PaperWrittenPlace
         if (_triggerPaper != null && DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper))
             return _triggerPaper;
 
-        // Only the stack that opened place mode — never "first written page in bag."
+        // After relog the armed reference can be stale while the same Written Page is still
+        // in the right hand — prefer that stack over aborting with "Use a Written Page".
+        var right = InvGetRightItem(player);
+        if (right != null)
+        {
+            PaperItem.EnsurePaperIdentity(right);
+            if (PaperItem.IsWrittenLike(right) && DrakeRenameit.IsItemInLocalPlayerInventory(right))
+                return right;
+        }
+
+        // Only the stack that opened place mode / right hand — never "first written page in bag."
         return null;
     }
 
@@ -679,7 +794,13 @@ internal static class PaperWrittenPlace
         }
 
         if (item.m_stack > 1)
+        {
             item.m_stack -= 1;
+            // Heal shared after place — Printed must keep its own maxStack (ISSUE-015/016).
+            PaperItem.EnsurePaperIdentity(item);
+            if (PaperItem.IsPrintedPaper(item))
+                BindPrintedShared(item);
+        }
         else
             inv.RemoveItem(item);
 
@@ -755,6 +876,25 @@ internal static class PaperWrittenPlace
             if (__instance != Player.m_localPlayer || item == null)
                 return true;
 
+            PaperItem.EnsurePaperIdentity(item);
+
+            // Written / Printed before blank — blank-token shared + null dropPrefab must not
+            // steal Use and strip the place table after a relog with the page in hand.
+            if (RenameitConfig.PaperPlaceEnabled && PaperItem.IsWrittenLike(item))
+            {
+                _ = fromInventoryGui;
+                var player = Player.m_localPlayer;
+                if (player != null && InOurPlaceMode(player))
+                {
+                    // Use again switches only when orientation is Both. Vertical/Horizontal Only stays put.
+                    CycleOrientation(player);
+                    return false;
+                }
+
+                BeginPlace(item);
+                return false;
+            }
+
             // Blank paper is hammer décor only — Use must not open the written place table.
             if (PaperItem.IsBlankPaper(item))
             {
@@ -764,20 +904,7 @@ internal static class PaperWrittenPlace
                 return true;
             }
 
-            if (!RenameitConfig.PaperPlaceEnabled || !PaperItem.IsWrittenLike(item))
-                return true;
-
-            _ = fromInventoryGui;
-            var player = Player.m_localPlayer;
-            if (player != null && InOurPlaceMode(player))
-            {
-                // Use again switches only when orientation is Both. Vertical/Horizontal Only stays put.
-                CycleOrientation(player);
-                return false;
-            }
-
-            BeginPlace(item);
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -803,6 +930,16 @@ internal static class PaperWrittenPlace
             }
 
             var right = InvGetRightItem(__instance);
+            PaperItem.EnsurePaperIdentity(right);
+
+            if (PaperItem.IsWrittenLike(right))
+            {
+                __result = false;
+                if (!secondaryAttack && __instance is Player player)
+                    BeginPlace(right!);
+                return false;
+            }
+
             if (PaperItem.IsBlankPaper(right))
             {
                 StripBlankPlaceTool(right);
@@ -810,16 +947,13 @@ internal static class PaperWrittenPlace
                 return false;
             }
 
-            if (!PaperItem.IsWrittenLike(right))
-                return true;
-
-            __result = false;
-            if (!secondaryAttack && __instance is Player player)
-                BeginPlace(right!);
-            return false;
+            return true;
         }
 
-        /// <summary>If blank paper still carries the written place table, drop out of place mode.</summary>
+        /// <summary>
+        /// Heal Written Page identity after character load (null dropPrefab), and strip blank
+        /// place-tool wiring if blank still carries the written table.
+        /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.SetupEquipment))]
         private static void SetupEquipment_Postfix(Humanoid __instance)
@@ -827,6 +961,17 @@ internal static class PaperWrittenPlace
             if (__instance != Player.m_localPlayer)
                 return;
             var right = InvGetRightItem(__instance);
+            PaperItem.EnsurePaperIdentity(right);
+            if (PaperItem.IsWrittenLike(right))
+            {
+                // Re-attach Tool + place table so UpdatePlacement works immediately after relog.
+                // Printed keeps its own shared (stack size); never BindWrittenShared on prints.
+                BindPlaceShared(right!);
+                if (right!.m_shared != null)
+                    InstallPlaceToolAttack(right.m_shared);
+                return;
+            }
+
             if (!PaperItem.IsBlankPaper(right))
                 return;
 

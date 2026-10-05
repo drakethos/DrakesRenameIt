@@ -20,9 +20,13 @@ public static class LKeys
     public const string BtnYes = "btn_yes";
     public const string BtnNo = "btn_no";
 
-    // Reset-all confirm
+    // Reset confirms
     public const string ResetAllTitle = "reset_all_title";
     public const string ResetAllBody = "reset_all_body";
+    public const string ResetNameTitle = "reset_name_title";
+    public const string ResetDescTitle = "reset_desc_title";
+    public const string ResetCraftedByTitle = "reset_crafted_by_title";
+    public const string ResetConfirmBody = "reset_confirm_body";
 
     // Editor panels
     public const string PanelRenameTitle = "panel_rename_title";

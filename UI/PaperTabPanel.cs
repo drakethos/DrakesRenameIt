@@ -589,13 +589,15 @@ internal static class PaperTabPanel
                 {
                     if (!string.IsNullOrEmpty(err) && Player.m_localPlayer != null)
                         ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, err);
+                    // Paper tab still open — keep input blocked after nested confirm.
+                    DrakeGuiInput.EnsureBlocked();
                     return;
                 }
 
                 DrakeRenameit.CurrentItem = null;
                 CloseAndEndHost();
             },
-            onNo: null,
+            onNo: () => DrakeGuiInput.EnsureBlocked(),
             yesLabel: T(LKeys.BtnYes),
             noLabel: T(LKeys.BtnNo));
     }

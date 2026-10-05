@@ -106,6 +106,13 @@ namespace DrakeRenameit
             CompatibilityManager.Initialize(harmony);
         }
 
+        private void Update()
+        {
+            if (!UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
+                return;
+            UIPanels.TryHandleEscape();
+        }
+
         public static string GetPropperName(ItemDrop.ItemData? item) => CustomizeLibsAPI.GetProperName(item);
 
         /// <summary>
@@ -254,8 +261,9 @@ namespace DrakeRenameit
                 return true;
             if (CanChangeDesc(item, false) && hasNewDesc(item))
                 return true;
-            if (CanChangeCraftedByLabel(item, false) &&
-                (HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item)))
+            // ISSUE-011: CraftedBy overrides must be clearable via Reset-All even when
+            // CraftedByLabelEnabled is off (VIP/admin may have set them).
+            if (HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item))
                 return true;
             return false;
         }
@@ -276,8 +284,8 @@ namespace DrakeRenameit
                 resetName(item);
             if (CanChangeDesc(item, false) && hasNewDesc(item))
                 resetDesc(item);
-            if (CanChangeCraftedByLabel(item, false) &&
-                (HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item)) &&
+            // Always restore CraftedBy overrides on Reset-All (ISSUE-011) — do not gate on CanChangeCraftedByLabel.
+            if ((HasCraftedByDisplayOverride(item) || HasCraftedByLineLabelOverride(item)) &&
                 item.m_customData != null)
             {
                 string oldDisplay = getCraftedByDisplay(item);
@@ -292,6 +300,24 @@ namespace DrakeRenameit
             }
 
             FlushWallSessionIfNeeded();
+        }
+
+        /// <summary>Localized vanilla item name (ignores Drake custom name) — for pending field Reset preview.</summary>
+        public static string GetVanillaDisplayName(ItemDrop.ItemData? item)
+        {
+            if (item?.m_shared == null)
+                return "";
+            var token = item.m_shared.m_name ?? "";
+            return Localization.instance != null ? Localization.instance.Localize(token) : token;
+        }
+
+        /// <summary>Localized vanilla description (ignores Drake custom desc) — for pending field Reset preview.</summary>
+        public static string GetVanillaDisplayDesc(ItemDrop.ItemData? item)
+        {
+            if (item?.m_shared == null)
+                return "";
+            var token = item.m_shared.m_description ?? "";
+            return Localization.instance != null ? Localization.instance.Localize(token) : token;
         }
 
         public static string resetName(ItemDrop.ItemData? item)
@@ -351,6 +377,7 @@ namespace DrakeRenameit
             if (InventoryGui.instance == null) return;
             if (item == null) return;
             CurrentItem = item;
+            UIPanels.ClearPendingFieldResets();
             if (UIPanels.InputNamePanel == null)
             {
                 UIPanels.CreateRenameInput();
@@ -368,6 +395,7 @@ namespace DrakeRenameit
             if (InventoryGui.instance == null) return;
             if (item == null) return;
             CurrentItem = item;
+            UIPanels.ClearPendingFieldResets();
             if (UIPanels.InputDescPanel == null)
             {
                 UIPanels.CreateRenameDescInput();
@@ -538,6 +566,71 @@ namespace DrakeRenameit
             UIPanels.OpenActionMenu(item);
         }
 
+        /// <summary>Apply name editor OK when the user confirmed field Reset (clears custom name; Cancel can still abort before OK).</summary>
+        public static void ApplyPendingNameReset()
+        {
+            if (CurrentItem == null) return;
+            if (!IsEditableItemContext(CurrentItem))
+            {
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
+                    T(LKeys.MsgItemNotInInventoryApply));
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
+
+            resetName(CurrentItem);
+            FlushWallSessionIfNeeded();
+            var item = CurrentItem;
+            UIPanels.InputNamePanel!.SetActive(false);
+            UIPanels.OpenActionMenu(item);
+        }
+
+        /// <summary>Apply description editor OK when the user confirmed field Reset.</summary>
+        public static void ApplyPendingDescReset()
+        {
+            if (CurrentItem == null) return;
+            if (!IsEditableItemContext(CurrentItem))
+            {
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
+                    T(LKeys.MsgItemNotInInventoryApply));
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
+
+            resetDesc(CurrentItem);
+            FlushWallSessionIfNeeded();
+            var item = CurrentItem;
+            UIPanels.InputDescPanel!.SetActive(false);
+            UIPanels.OpenActionMenu(item);
+        }
+
+        /// <summary>Apply crafted-by editor OK when the user confirmed field Reset (clears overrides).</summary>
+        public static void ApplyPendingCraftedByReset()
+        {
+            if (CurrentItem == null) return;
+            if (!IsEditableItemContext(CurrentItem))
+            {
+                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
+                    T(LKeys.MsgItemNotInInventoryApply));
+                UIPanels.CloseAllRenameEditingUi();
+                return;
+            }
+
+            string oldDisplay = getCraftedByDisplay(CurrentItem);
+            CustomizeLibsAPI.ClearCraftedByOverrides(CurrentItem);
+            string newDisplay = CurrentItem.m_crafterName ?? "";
+            RenameEvents.RaiseCraftedByDisplayChanged(
+                Player.m_localPlayer,
+                CurrentItem,
+                CurrentItem.m_shared.m_name,
+                oldDisplay,
+                newDisplay);
+            FlushWallSessionIfNeeded();
+            var item = CurrentItem;
+            UIPanels.InputCraftedByPanel!.SetActive(false);
+            UIPanels.OpenActionMenu(item);
+        }
+
         public static bool CanChangeName(ItemDrop.ItemData? item, bool showError = false)
         {
             if (!CustomizeLibsAPI.CanPerform(CustomizeOperation.RenameName, item, Player.m_localPlayer))
@@ -585,11 +678,13 @@ namespace DrakeRenameit
 
             // If no unlock gate, or already unlocked, check normal permissions
             if (!RenameUnlockCost.UnlockCostApplies() || IsRenameUnlocked(item))
-                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false)
+                       || CanResetAnyCustomization(item);
 
             // Elevated users skip the gate entirely
             if (RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer))
-                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false);
+                return CanChangeName(item, false) || CanChangeDesc(item, false) || CanChangeCraftedByLabel(item, false)
+                       || CanResetAnyCustomization(item);
 
             // For a locked stack: show the menu only if at least one edit would be allowed after paying unlock
             // (same rule as ShowUnlockButton — never trap players into paying for zero usable actions).
@@ -682,6 +777,7 @@ namespace DrakeRenameit
             if (item == null) return;
             CurrentItem = item;
             EnsureLocalPlayerCrafterIfAbsent(item);
+            UIPanels.ClearPendingFieldResets();
             if (UIPanels.InputCraftedByPanel == null)
                 UIPanels.CreateCraftedByInput();
             UIPanels.RenameCraftedByInput!.text = getCraftedByDisplay(item);

@@ -227,7 +227,14 @@ jobs:
           body: |
             ## DrakesRenameIt v${{ steps.ver.outputs.version }} (beta)
 
-            **Beta / prerelease.** Zip attached. CI publishes to **Hexium only** with version `${{ steps.ver.outputs.version }}` (Thunderstore skipped; Hexium accepts `-beta.N`).
+            **Beta for the 1.2.0 release candidate.** Hexium + GitHub prerelease only (Thunderstore skipped; Hexium accepts `-beta.N`). Not a stable store build — please test and report issues before the 1.2.0 RC/stable cut.
+
+            ### Highlights
+            - Requires **DrakeModsLibs 0.9.8+**
+            - **ISSUE-015 / 016:** Printed / immutable paper stacks keep their stack counter after place; split/merge works again
+            - **ISSUE-017:** Optional `PaperRecycleImmutableEnabled` (default off) to recycle Printed stacks
+            - **ISSUE-005:** Field Reset is confirm → pending → OK; Cancel/Esc discard; nested Yes/No no longer drops the cursor
+            - **ISSUE-011:** Reset-All restores CraftedBy even when CraftedBy editing is disabled
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
@@ -236,7 +243,7 @@ jobs:
             ```
 
             ---
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.ver.outputs.tag }}/CHANGELOG.md) for what's new.
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.ver.outputs.tag }}/CHANGELOG.md) for the full list.
           files: ${{ steps.pkg.outputs.zip }}
 
       - name: Upload Thunderstore zip artifact

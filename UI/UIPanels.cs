@@ -74,6 +74,11 @@ public static class UIPanels
     /// <summary>Line label applied on crafted-by OK when allowed; null clears <see cref="DrakeCustomDataKeys.CraftedByLineLabel"/>.</summary>
     internal static string? CraftedByLineLabelPendingToken => _craftedByLineLabelPendingToken;
 
+    /// <summary>Field Reset confirmed but not yet applied — Cancel discards; OK clears the item field (ISSUE-005).</summary>
+    static bool _pendingClearName;
+    static bool _pendingClearDesc;
+    static bool _pendingClearCraftedBy;
+
     // Unlock confirmation sub-panel
     private static GameObject? _unlockConfirmPanel;
     private static RectTransform? _unlockCostListRoot;
@@ -84,12 +89,21 @@ public static class UIPanels
     private static Text? _unlockCostLabelText;
 
     static readonly DrakeConfirmPanel ResetAllConfirm = new DrakeConfirmPanel("renameit_reset_all_confirm");
+    static readonly DrakeConfirmPanel FieldResetConfirm = new DrakeConfirmPanel("renameit_field_reset_confirm");
 
     /// <summary>Forwards to <see cref="DrakeGuiInput"/> (shared with LockSmith wood panels).</summary>
     internal static void EnsureInputBlocked() => DrakeGuiInput.EnsureBlocked();
 
     /// <summary>Forwards to <see cref="DrakeGuiInput"/>.</summary>
     internal static void EnsureInputUnblocked() => DrakeGuiInput.EnsureUnblocked();
+
+    /// <summary>Clears pending field-Reset flags when opening a fresh editor.</summary>
+    internal static void ClearPendingFieldResets()
+    {
+        _pendingClearName = false;
+        _pendingClearDesc = false;
+        _pendingClearCraftedBy = false;
+    }
 
     static void SetButtonLabel(Button? button, string label)
     {
@@ -136,6 +150,8 @@ public static class UIPanels
         if (_unlockConfirmPanel != null)
             _unlockConfirmPanel.SetActive(false);
         ResetAllConfirm.Close();
+        FieldResetConfirm.Close();
+        ClearPendingFieldResets();
         DrakeRenameit.CurrentItem = null;
         EnsureInputUnblocked();
         DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
@@ -156,6 +172,8 @@ public static class UIPanels
         if (_unlockConfirmPanel != null)
             _unlockConfirmPanel.SetActive(false);
         ResetAllConfirm.Close();
+        FieldResetConfirm.Close();
+        ClearPendingFieldResets();
         DrakeRenameit.CurrentItem = null;
         EnsureInputUnblocked();
     }
@@ -165,6 +183,7 @@ public static class UIPanels
         CancelEditor(
             () =>
             {
+                _pendingClearName = false;
                 if (DrakeRenameit.CurrentItem != null && RenameNameInput != null)
                     RenameNameInput.text = DrakeRenameit.GetPropperName(DrakeRenameit.CurrentItem);
             },
@@ -174,6 +193,7 @@ public static class UIPanels
         CancelEditor(
             () =>
             {
+                _pendingClearDesc = false;
                 if (DrakeRenameit.CurrentItem != null && RenameDescInput != null)
                     RenameDescInput.text = DrakeRenameit.getPropperDesc(DrakeRenameit.CurrentItem);
             },
@@ -183,6 +203,7 @@ public static class UIPanels
         CancelEditor(
             () =>
             {
+                _pendingClearCraftedBy = false;
                 if (DrakeRenameit.CurrentItem == null)
                     return;
                 if (RenameCraftedByInput != null)
@@ -191,6 +212,65 @@ public static class UIPanels
                 CloseCraftedByLineLabelPopover();
             },
             () => InputCraftedByPanel?.SetActive(false));
+
+    /// <summary>
+    /// Escape closes confirm panels, then field editors (Cancel), then the action menu.
+    /// Does not write pending edits (ISSUE-005 / TC-303).
+    /// </summary>
+    public static bool TryHandleEscape()
+    {
+        if (FieldResetConfirm.IsOpen)
+        {
+            FieldResetConfirm.Close();
+            // Field editor still open — keep BlockInput so Esc doesn't drop the cursor.
+            if ((InputNamePanel != null && InputNamePanel.activeSelf) ||
+                (InputDescPanel != null && InputDescPanel.activeSelf) ||
+                (InputCraftedByPanel != null && InputCraftedByPanel.activeSelf) ||
+                (ActionMenuPanel != null && ActionMenuPanel.activeSelf))
+                EnsureInputBlocked();
+            return true;
+        }
+
+        if (ResetAllConfirm.IsOpen)
+        {
+            ResetAllConfirm.Close();
+            if (ActionMenuPanel != null && ActionMenuPanel.activeSelf)
+                EnsureInputBlocked();
+            return true;
+        }
+
+        if (InputNamePanel != null && InputNamePanel.activeSelf)
+        {
+            CancelNameEditor();
+            return true;
+        }
+
+        if (InputDescPanel != null && InputDescPanel.activeSelf)
+        {
+            CancelDescEditor();
+            return true;
+        }
+
+        if (InputCraftedByPanel != null && InputCraftedByPanel.activeSelf)
+        {
+            CancelCraftedByEditor();
+            return true;
+        }
+
+        if (_unlockConfirmPanel != null && _unlockConfirmPanel.activeSelf)
+        {
+            CloseUnlockConfirmPanel(reopenActionMenu: true);
+            return true;
+        }
+
+        if (ActionMenuPanel != null && ActionMenuPanel.activeSelf)
+        {
+            CloseActionMenuOnly();
+            return true;
+        }
+
+        return false;
+    }
 
     private static void CancelEditor(Action revertFields, Action hidePanel)
     {
@@ -629,7 +709,8 @@ public static class UIPanels
                     ActionMenuPanel.SetActive(false);
                 DrakeRenameit.CurrentItem = null;
                 DrakeTabHost.NotifyFeatureClosed(DrakeTabRegistration.RenameItTabId);
-                // DrakeConfirmPanel.Close already unblocked.
+                // Nested confirm keeps the action-menu BlockInput; dismiss fully here.
+                EnsureInputUnblocked();
             },
             onNo: () =>
             {
@@ -639,7 +720,38 @@ public static class UIPanels
                     ActionMenuPanel?.SetActive(false);
                     OpenActionMenu(current);
                 }
+                else
+                    EnsureInputBlocked();
             },
+            yesLabel: T(LKeys.BtnYes),
+            noLabel: T(LKeys.BtnNo));
+    }
+
+    /// <summary>Confirm before clearing a single field (name / description / crafted-by).</summary>
+    private static void OpenFieldResetConfirm(string title, Action onYes)
+    {
+        if (GUIManager.Instance == null || !GUIManager.CustomGUIFront)
+            return;
+
+        var item = DrakeRenameit.CurrentItem;
+        if (item == null || !DrakeRenameit.IsEditableItemContext(item))
+        {
+            CloseAllRenameEditingUi();
+            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center,
+                T(LKeys.MsgItemNotInInventory));
+            return;
+        }
+
+        FieldResetConfirm.Show(
+            title,
+            T(LKeys.ResetConfirmBody),
+            onYes: () =>
+            {
+                onYes();
+                // Confirm Close must not drop the editor's BlockInput (cursor/camera lock).
+                EnsureInputBlocked();
+            },
+            onNo: () => EnsureInputBlocked(),
             yesLabel: T(LKeys.BtnYes),
             noLabel: T(LKeys.BtnNo));
     }
@@ -1048,6 +1160,13 @@ public static class UIPanels
                 height: 30f));
             _buttonOkCraftedBy.AddUniqueListener(() =>
             {
+                if (_pendingClearCraftedBy)
+                {
+                    _pendingClearCraftedBy = false;
+                    DrakeRenameit.ApplyPendingCraftedByReset();
+                    return;
+                }
+
                 DrakeRenameit.ApplyCraftedByLabel(RenameCraftedByInput.text.Trim());
             });
         }
@@ -1064,12 +1183,16 @@ public static class UIPanels
                 height: 30f));
             _buttonResetCraftedBy.AddUniqueListener(() =>
             {
-                if (DrakeRenameit.CurrentItem != null)
-                    RenameCraftedByInput.text = DrakeRenameit.CurrentItem.m_crafterName ?? "";
-                var opts = RenameitConfig.GetCraftedByAllowedLabelsList();
-                _craftedByLineLabelPendingToken = null;
-                SetCraftedByLineLabelPickButtonText(opts, 0);
-                CloseCraftedByLineLabelPopover();
+                OpenFieldResetConfirm(T(LKeys.ResetCraftedByTitle), () =>
+                {
+                    if (DrakeRenameit.CurrentItem != null)
+                        RenameCraftedByInput.text = DrakeRenameit.CurrentItem.m_crafterName ?? "";
+                    var opts = RenameitConfig.GetCraftedByAllowedLabelsList();
+                    _craftedByLineLabelPendingToken = null;
+                    SetCraftedByLineLabelPickButtonText(opts, 0);
+                    CloseCraftedByLineLabelPopover();
+                    _pendingClearCraftedBy = true;
+                });
             });
         }
     }
@@ -1424,6 +1547,13 @@ public static class UIPanels
             
             _buttonOkName.GetComponent<Button>().AddUniqueListener(() =>
             {
+                if (_pendingClearName)
+                {
+                    _pendingClearName = false;
+                    DrakeRenameit.ApplyPendingNameReset();
+                    return;
+                }
+
                 DrakeRenameit.ApplyRename(RenameNameInput.text.Trim());
             });
         }
@@ -1441,10 +1571,13 @@ public static class UIPanels
             _buttonResetName.gameObject.SetActive(true);
             _buttonResetName.GetComponent<Button>().AddUniqueListener(() =>
             {
-                if (DrakeRenameit.CurrentItem != null)
+                OpenFieldResetConfirm(T(LKeys.ResetNameTitle), () =>
                 {
-                    RenameNameInput.text = DrakeRenameit.resetName(DrakeRenameit.CurrentItem);
-                }
+                    // Pending only — do not write the item until OK (ISSUE-005). Cancel restores.
+                    if (DrakeRenameit.CurrentItem != null && RenameNameInput != null)
+                        RenameNameInput.text = DrakeRenameit.GetVanillaDisplayName(DrakeRenameit.CurrentItem);
+                    _pendingClearName = true;
+                });
             });
         }
 
@@ -1551,6 +1684,13 @@ public static class UIPanels
             _buttonOkDesc.gameObject.SetActive(true);
             _buttonOkDesc.AddUniqueListener(() =>
             {
+                if (_pendingClearDesc)
+                {
+                    _pendingClearDesc = false;
+                    DrakeRenameit.ApplyPendingDescReset();
+                    return;
+                }
+
                 if (String.IsNullOrEmpty(RenameDescInput.text))
                 {
                     GetPlayerAndSendError(T(LKeys.MsgDescEmpty));
@@ -1574,7 +1714,12 @@ public static class UIPanels
             _buttonResetDesc.gameObject.SetActive(true);
             _buttonResetDesc.GetComponent<Button>().AddUniqueListener(() =>
             {
-                RenameDescInput.text = DrakeRenameit.resetDesc(DrakeRenameit.CurrentItem);
+                OpenFieldResetConfirm(T(LKeys.ResetDescTitle), () =>
+                {
+                    if (RenameDescInput != null && DrakeRenameit.CurrentItem != null)
+                        RenameDescInput.text = DrakeRenameit.GetVanillaDisplayDesc(DrakeRenameit.CurrentItem);
+                    _pendingClearDesc = true;
+                });
             });
         }
 

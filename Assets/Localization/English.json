@@ -60,7 +60,23 @@
     },
     {
       "key": "reset_all_body",
-      "value": "Clear the custom name, description, and crafted-by text for this item."
+      "value": "Clear the custom name, description, and crafted-by text for this item. Are you sure? This cannot be recovered."
+    },
+    {
+      "key": "reset_name_title",
+      "value": "Reset custom name?"
+    },
+    {
+      "key": "reset_desc_title",
+      "value": "Reset custom description?"
+    },
+    {
+      "key": "reset_crafted_by_title",
+      "value": "Reset crafted-by?"
+    },
+    {
+      "key": "reset_confirm_body",
+      "value": "Are you sure? This cannot be recovered."
     },
 
     {

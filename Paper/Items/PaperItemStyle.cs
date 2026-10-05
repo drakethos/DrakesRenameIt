@@ -72,6 +72,16 @@ internal static class PaperItemStyle
         WriteTakePublic(item, takePublic);
     }
 
+    /// <summary>True when any Paper-tab style key is present (helps heal identity after relog).</summary>
+    public static bool HasAny(ItemDrop.ItemData? item)
+    {
+        if (item?.m_customData == null)
+            return false;
+        return item.m_customData.ContainsKey(FontSizeKey) ||
+               item.m_customData.ContainsKey(LandscapeKey) ||
+               item.m_customData.ContainsKey(TakePublicKey);
+    }
+
     static void EnsureCustomData(ItemDrop.ItemData item)
     {
         item.m_customData ??= new Dictionary<string, string>();

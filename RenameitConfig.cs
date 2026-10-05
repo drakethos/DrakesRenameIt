@@ -13,7 +13,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 55;
+    private const int ExpectedSyncedEntryCount = 56;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -101,6 +101,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _paperShowPageText = default!;
     private static ConfigEntry<bool> _paperWallRenameEnabled = default!;
     private static ConfigEntry<bool> _paperRecycleEnabled = default!;
+    private static ConfigEntry<bool> _paperRecycleImmutableEnabled = default!;
     private static ConfigEntry<float> _paperDefaultFontSize = default!;
     private static ConfigEntry<bool> _paperDefaultLandscape = default!;
     private static ConfigEntry<bool> _verticalPaperPlaceable = default!;
@@ -303,10 +304,17 @@ public static class RenameitConfig
 
     /// <summary>
     /// When true, Paper tab can recycle an owned/Shared Written Page back to blank (free, with confirm).
-    /// Printed copies cannot be recycled. Default on.
+    /// Printed / immutable copies need <see cref="PaperRecycleImmutableEnabled"/>. Default on.
     /// </summary>
     public static bool PaperRecycleEnabled =>
         _paperRecycleEnabled == null || _paperRecycleEnabled.Value;
+
+    /// <summary>
+    /// When true (and <see cref="PaperRecycleEnabled"/>), Printed / immutable copy stacks can be recycled.
+    /// Default false — recycling prints was deliberately off.
+    /// </summary>
+    public static bool PaperRecycleImmutableEnabled =>
+        _paperRecycleImmutableEnabled != null && _paperRecycleImmutableEnabled.Value;
 
     /// <summary>Default on-page ink size as a page-height fraction (levels 1–7). Legacy absolute values migrate.</summary>
     public static float PaperDefaultFontSize
@@ -735,7 +743,13 @@ public static class RenameitConfig
             SectionPaper, DisplayPaper,
             "PaperRecycleEnabled",
             true,
-            "If true, the Paper tab shows Recycle for Written Pages you own (or Shared / admin). Turns the page back into a blank Piece of Paper for free after confirm — wipes name, description, tags, and style. Printed copies cannot be recycled. Default on.");
+            "If true, the Paper tab shows Recycle for Written Pages you own (or Shared / admin). Turns the page back into a blank Piece of Paper for free after confirm — wipes name, description, tags, and style. Printed / immutable copies also need PaperRecycleImmutableEnabled. Default on.");
+
+        _paperRecycleImmutableEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPaper, DisplayPaper,
+            "PaperRecycleImmutableEnabled",
+            false,
+            "If true (and PaperRecycleEnabled), Recycle is also available on Printed / immutable copy stacks (returns one blank per sheet). Default off — prints were deliberately non-recyclable.");
 
         _paperDefaultFontSize = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

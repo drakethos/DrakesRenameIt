@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using BepInEx.Logging;
+using DrakeModsLibs.API;
 using DrakeRenameit.Paper.Pieces;
 using Jotunn.Configs;
 using Jotunn.Entities;
@@ -26,12 +27,12 @@ internal static class PaperItem
     internal const string PrintedPrefabName = "Drakes_Paper_Print";
     /// <summary>Donor for ItemDrop / physics / networking only ΓÇö visuals are discarded.</summary>
     private const string CloneSource = "LeatherScraps";
-    private const string TokenName = "$item_drakes_pieceofpaper";
+    internal const string TokenName = "$item_drakes_pieceofpaper";
     private const string TokenDesc = "$item_drakes_pieceofpaper_desc";
-    private const string TokenWrittenName = "$item_drakes_paper_written";
-    private const string TokenWrittenDesc = "$item_drakes_paper_written_desc";
-    private const string TokenPrintedName = "$item_drakes_paper_print";
-    private const string TokenPrintedDesc = "$item_drakes_paper_print_desc";
+    internal const string TokenWrittenName = "$item_drakes_paper_written";
+    internal const string TokenWrittenDesc = "$item_drakes_paper_written_desc";
+    internal const string TokenPrintedName = "$item_drakes_paper_print";
+    internal const string TokenPrintedDesc = "$item_drakes_paper_print_desc";
 
     /// <summary>US Letter in Valheim meters (1 unit = 1 m): 8.5" × 11", before <see cref="RenameitConfig.PaperScale"/>.</summary>
     private static readonly Vector2 BasePaperSize = new Vector2(8.5f * 0.0254f, 11f * 0.0254f);
@@ -393,9 +394,18 @@ internal static class PaperItem
     {
         if (item?.m_shared == null)
             return false;
+        // Written / printed win over blank-token fallback. After relog, m_dropPrefab is often
+        // null and DetachShared may leave the written proto with the blank $item token — without
+        // this order, Use treats a Written Page as blank and place loses its trigger.
+        if (PrefabsMatch(item, WrittenPrefabName) || PrefabsMatch(item, PrintedPrefabName))
+            return false;
+        if (NameIs(item, TokenWrittenName) || NameIs(item, TokenPrintedName))
+            return false;
+        if (PaperWrittenPlace.SharedHasWrittenPlaceTable(item.m_shared))
+            return false;
         if (PrefabsMatch(item, PrefabName))
             return true;
-        return item.m_shared.m_name.Equals(TokenName, StringComparison.OrdinalIgnoreCase);
+        return NameIs(item, TokenName);
     }
 
     internal static bool IsWrittenPaper(ItemDrop.ItemData? item)
@@ -404,7 +414,12 @@ internal static class PaperItem
             return false;
         if (PrefabsMatch(item, WrittenPrefabName))
             return true;
-        return item.m_shared.m_name.Equals(TokenWrittenName, StringComparison.OrdinalIgnoreCase);
+        if (PrefabsMatch(item, PrefabName) || PrefabsMatch(item, PrintedPrefabName))
+            return false;
+        if (NameIs(item, TokenWrittenName))
+            return true;
+        // DetachShared from blank kept the blank token on the written place-tool shared data.
+        return PaperWrittenPlace.SharedHasWrittenPlaceTable(item.m_shared);
     }
 
     internal static bool IsPrintedPaper(ItemDrop.ItemData? item)
@@ -413,7 +428,9 @@ internal static class PaperItem
             return false;
         if (PrefabsMatch(item, PrintedPrefabName))
             return true;
-        return item.m_shared.m_name.Equals(TokenPrintedName, StringComparison.OrdinalIgnoreCase);
+        if (PrefabsMatch(item, PrefabName) || PrefabsMatch(item, WrittenPrefabName))
+            return false;
+        return NameIs(item, TokenPrintedName);
     }
 
     /// <summary>Written template or Printed copy — place / ink / Paper tab.</summary>
@@ -426,6 +443,72 @@ internal static class PaperItem
 
     /// <summary>Alias for <see cref="IsAnyPaper"/> (exclusion alias + stand patches).</summary>
     internal static bool IsPaperItem(ItemDrop.ItemData? item) => IsAnyPaper(item);
+
+    /// <summary>
+    /// After character load, equipped stacks often have a null <c>m_dropPrefab</c> until
+    /// equip/unequip refreshes them. Re-link prefab + canonical shared so place/Use identity
+    /// matches the parchment the player already sees (custom name/desc).
+    /// </summary>
+    internal static void EnsurePaperIdentity(ItemDrop.ItemData? item)
+    {
+        if (item?.m_shared == null || ObjectDB.instance == null)
+            return;
+
+        try
+        {
+            if (item.m_dropPrefab == null)
+            {
+                var prefabName = InferPaperPrefabName(item);
+                if (prefabName != null)
+                    item.m_dropPrefab = ObjectDB.instance.GetItemPrefab(prefabName);
+            }
+
+            if (item.m_dropPrefab == null || !IsOurPaperPrefab(item.m_dropPrefab.name))
+                return;
+
+            var proto = item.m_dropPrefab.GetComponent<ItemDrop>()?.m_itemData?.m_shared;
+            if (proto != null && !ReferenceEquals(item.m_shared, proto))
+                item.m_shared = proto;
+        }
+        catch (Exception ex)
+        {
+            _log?.LogWarning($"[Paper] EnsurePaperIdentity skipped: {ex.Message}");
+        }
+    }
+
+    private static string? InferPaperPrefabName(ItemDrop.ItemData item)
+    {
+        if (PaperWrittenPlace.SharedHasWrittenPlaceTable(item.m_shared))
+            return WrittenPrefabName;
+        if (NameIs(item, TokenWrittenName))
+            return WrittenPrefabName;
+        if (NameIs(item, TokenPrintedName))
+            return PrintedPrefabName;
+        if (NameIs(item, TokenName))
+            return PrefabName;
+        // Written pages always carry Drake custom data after peel-write; blanks do not.
+        if (item.m_customData != null && item.m_customData.Count > 0 &&
+            (CustomizeLibsAPI.HasCustomName(item) || CustomizeLibsAPI.HasCustomDescription(item) ||
+             PaperItemStyle.HasAny(item)))
+            return WrittenPrefabName;
+        return null;
+    }
+
+    private static bool IsOurPaperPrefab(string? name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return false;
+        return name!.Equals(PrefabName, StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith(PrefabName, StringComparison.OrdinalIgnoreCase) ||
+               name.Equals(WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith(WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
+               name.Equals(PrintedPrefabName, StringComparison.OrdinalIgnoreCase) ||
+               name.StartsWith(PrintedPrefabName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool NameIs(ItemDrop.ItemData item, string token) =>
+        item.m_shared != null &&
+        item.m_shared.m_name.Equals(token, StringComparison.OrdinalIgnoreCase);
 
     private static bool PrefabsMatch(ItemDrop.ItemData item, string prefabName)
     {

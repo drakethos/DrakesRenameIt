@@ -8,15 +8,18 @@ using static DrakeRenameit.ModText.RenameItLocalization;
 namespace DrakeRenameit.Paper.Functionality;
 
 /// <summary>
-/// Free recycle: Written Page (editable template) → fresh blank Piece of Paper.
-/// Printed / immutable copies cannot be recycled.
+/// Free recycle: Written Page (editable template) → blank Piece of Paper.
+/// Printed / immutable copies only when <see cref="RenameitConfig.PaperRecycleImmutableEnabled"/>.
 /// Requires owner, Shared rewrite, or admin/VIP — not a random holder.
 /// </summary>
 internal static class PaperRecycleService
 {
+    static bool IsImmutableCopy(ItemDrop.ItemData? item) =>
+        PaperItem.IsPrintedPaper(item) || PaperCopyMark.IsCopy(item);
+
     /// <summary>
-    /// True when the Paper tab may offer Recycle: config on, inventory Written template,
-    /// and local player is owner / Shared / elevated.
+    /// True when the Paper tab may offer Recycle: config on, inventory Written template
+    /// (or Printed when immutable recycle is enabled), and local player is owner / Shared / elevated.
     /// </summary>
     internal static bool CanRecycle(ItemDrop.ItemData? item, Player? player)
     {
@@ -26,7 +29,9 @@ internal static class PaperRecycleService
             return false;
         if (PaperWallSession.IsActive)
             return false;
-        if (!PaperItem.IsWrittenPaper(item) || PaperItem.IsPrintedPaper(item) || PaperCopyMark.IsCopy(item))
+        if (!PaperItem.IsWrittenLike(item))
+            return false;
+        if (IsImmutableCopy(item) && !RenameitConfig.PaperRecycleImmutableEnabled)
             return false;
         if (!DrakeRenameit.IsItemInLocalPlayerInventory(item))
             return false;
@@ -61,9 +66,10 @@ internal static class PaperRecycleService
     }
 
     /// <summary>
-    /// Remove the Written page and add one clean blank (no cost). Wipes name/desc/tags/style by replacement.
+    /// Remove the page stack and add the same count of clean blanks (no cost).
+    /// Wipes name/desc/tags/style by replacement.
     /// </summary>
-    internal static bool TryRecycleToBlank(ItemDrop.ItemData? written, Player? player, out string errorMessage)
+    internal static bool TryRecycleToBlank(ItemDrop.ItemData? page, Player? player, out string errorMessage)
     {
         errorMessage = "";
         if (player == null)
@@ -78,14 +84,19 @@ internal static class PaperRecycleService
             return false;
         }
 
-        if (written == null || !PaperItem.IsWrittenPaper(written) ||
-            PaperItem.IsPrintedPaper(written) || PaperCopyMark.IsCopy(written))
+        if (page == null || !PaperItem.IsWrittenLike(page))
         {
             errorMessage = T(LKeys.RecycleErrNotWritten);
             return false;
         }
 
-        if (!MayRecycle(written, player))
+        if (IsImmutableCopy(page) && !RenameitConfig.PaperRecycleImmutableEnabled)
+        {
+            errorMessage = T(LKeys.RecycleErrNotWritten);
+            return false;
+        }
+
+        if (!MayRecycle(page, player))
         {
             errorMessage = T(LKeys.RecycleErrNoPermission);
             return false;
@@ -104,7 +115,7 @@ internal static class PaperRecycleService
             return false;
         }
 
-        if (!inv.ContainsItem(written))
+        if (!inv.ContainsItem(page))
         {
             errorMessage = T(LKeys.MsgItemNotInInventory);
             return false;
@@ -118,26 +129,41 @@ internal static class PaperRecycleService
             return false;
         }
 
-        var blank = blankDrop.m_itemData.Clone();
-        blank.m_stack = 1;
-        blank.m_dropPrefab = blankPrefab;
-        blank.m_customData = new System.Collections.Generic.Dictionary<string, string>();
-        blank.m_crafterID = 0L;
-        blank.m_crafterName = "";
-        PaperItem.ClearBlankPlaceTool(blank);
-
-        inv.RemoveItem(written);
-
-        if (!inv.AddItem(blank))
+        var count = System.Math.Max(1, page.m_stack);
+        var blanks = new System.Collections.Generic.List<ItemDrop.ItemData>(count);
+        for (var i = 0; i < count; i++)
         {
-            if (!inv.AddItem(written))
-                RenameitConfig.Log?.LogError("[Paper] Recycle rollback failed: could not restore Written Page.");
-            errorMessage = T(LKeys.RecycleErrInventoryFull);
-            return false;
+            var blank = blankDrop.m_itemData.Clone();
+            blank.m_stack = 1;
+            blank.m_dropPrefab = blankPrefab;
+            blank.m_customData = new System.Collections.Generic.Dictionary<string, string>();
+            blank.m_crafterID = 0L;
+            blank.m_crafterName = "";
+            PaperItem.ClearBlankPlaceTool(blank);
+            blanks.Add(blank);
+        }
+
+        // Remove first so freed slots can hold blanks (important for full bags recycling 1→1).
+        inv.RemoveItem(page);
+
+        var added = new System.Collections.Generic.List<ItemDrop.ItemData>();
+        foreach (var blank in blanks)
+        {
+            if (!inv.AddItem(blank))
+            {
+                foreach (var a in added)
+                    inv.RemoveItem(a);
+                if (!inv.AddItem(page))
+                    RenameitConfig.Log?.LogError("[Paper] Recycle rollback failed: could not restore page stack.");
+                errorMessage = T(LKeys.RecycleErrInventoryFull);
+                return false;
+            }
+
+            added.Add(blank);
         }
 
         ValheimHudMessage.Show(player, MessageHud.MessageType.Center, T(LKeys.RecycleDone));
-        RenameitConfig.VerboseInfo("[Paper] Recycled Written Page → blank.");
+        RenameitConfig.VerboseInfo($"[Paper] Recycled {count} page(s) → blank.");
         return true;
     }
 }

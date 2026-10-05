@@ -1,3 +1,10 @@
+- Version 1.2.0-beta.3
+  - **Beta for the 1.2.0 release candidate** — Hexium / GitHub prerelease only (not Thunderstore). Treat as a test build toward stable 1.2.0; configs and saves should be fine, but expect polish before the RC/stable cut.
+  - Requires **DrakeModsLibs 0.9.8+** (nested `DrakeConfirmPanel` keeps parent BlockInput).
+  - **Fix (ISSUE-015 / ISSUE-016):** Placing a Printed / immutable paper stack no longer rebinds the stack to Written shared (`m_maxStackSize = 1`). Remaining sheets keep their stack counter (e.g. 4/50); split and re-merge work again.
+  - **Fix (ISSUE-017):** Optional `PaperRecycleImmutableEnabled` (default **false**) — when on (with `PaperRecycleEnabled`), Recycle is available on Printed / immutable stacks (one blank per sheet).
+  - **Fix (ISSUE-005):** Field Reset confirms but only applies on OK; Cancel / Esc discard pending edits without wiping the item. Nested Yes/No confirm no longer releases BlockInput while the editor is still open (cursor/camera lock).
+  - **Fix (ISSUE-011):** Reset-All restores CraftedBy overrides even when CraftedBy editing is disabled for normal users.
 - Version 1.1.10
   - Requires **DrakeModsLibs 0.9.7+** (`CompatHost`, `GetItemStandHoverLabel`).
   - **WardIsLove soft-compat:** wall paper take / edit and item-stand No-access name display use WIL `WardMonoscript` when present (vanilla `PrivateArea.CheckAccess` is always true under WIL-only empty `m_allAreas`). Modules live on the Libs compat host: vanilla wards, WardIsLove, item-stand hover (`Compat/ItemLibs`), DevCommands.

@@ -16,7 +16,11 @@
     { "key": "btn_no", "value": "No" },
 
     { "key": "reset_all_title", "value": "¿Restablecer todas las personalizaciones?" },
-    { "key": "reset_all_body", "value": "Restablecer nombre, descripción y el nombre del «creador» de este objeto." },
+    { "key": "reset_all_body", "value": "Restablecer nombre, descripción y el nombre del «creador» de este objeto. ¿Seguro? Esto no se puede recuperar." },
+    { "key": "reset_name_title", "value": "¿Restablecer el nombre personalizado?" },
+    { "key": "reset_desc_title", "value": "¿Restablecer la descripción personalizada?" },
+    { "key": "reset_crafted_by_title", "value": "¿Restablecer «creado por»?" },
+    { "key": "reset_confirm_body", "value": "¿Seguro? Esto no se puede recuperar." },
 
     { "key": "panel_rename_title", "value": "Renombrar objeto" },
     { "key": "panel_desc_title", "value": "Editar descripción" },

@@ -25,7 +25,11 @@ internal static class LocalizationDefaults
         Add(LKeys.BtnNo, "No");
 
         Add(LKeys.ResetAllTitle, "Reset all customizations?");
-        Add(LKeys.ResetAllBody, "Clears custom name, description, and crafted-by on this stack.");
+        Add(LKeys.ResetAllBody, "Clears custom name, description, and crafted-by on this stack. Are you sure? This cannot be recovered.");
+        Add(LKeys.ResetNameTitle, "Reset custom name?");
+        Add(LKeys.ResetDescTitle, "Reset custom description?");
+        Add(LKeys.ResetCraftedByTitle, "Reset crafted-by?");
+        Add(LKeys.ResetConfirmBody, "Are you sure? This cannot be recovered.");
 
         Add(LKeys.PanelRenameTitle, "Rename Item");
         Add(LKeys.PanelDescTitle, "Rewrite Item Desc");
@@ -55,11 +59,11 @@ internal static class LocalizationDefaults
         Add(LKeys.CopyPageErrInventoryFull, "Inventory full — cannot copy pages.");
 
         Add(LKeys.RecycleBtn, "♻");
-        Add(LKeys.RecycleBtnTip, "Recycle — wipe all settings and tags. Returns a blank Piece of Paper. Owner, Shared, or admin only.");
+        Add(LKeys.RecycleBtnTip, "Recycle — wipe all settings and tags. Returns blank Piece of Paper (one per sheet in the stack). Owner, Shared, or admin only.");
         Add(LKeys.RecycleTitle, "Recycle this page?");
-        Add(LKeys.RecycleBody, "Are you sure? This will wipe all settings and tags and return a blank Piece of Paper.");
+        Add(LKeys.RecycleBody, "Are you sure? This will wipe all settings and tags and return blank Piece of Paper for each sheet in the stack.");
         Add(LKeys.RecycleDone, "Page recycled to blank paper.");
-        Add(LKeys.RecycleErrNotWritten, "Only a Written Page (not a Printed copy) can be recycled.");
+        Add(LKeys.RecycleErrNotWritten, "Only a Written Page can be recycled (enable PaperRecycleImmutableEnabled for Printed copies).");
         Add(LKeys.RecycleErrNoBlank, "Blank paper is not available.");
         Add(LKeys.RecycleErrInventoryFull, "Inventory full — cannot recycle.");
         Add(LKeys.RecycleErrWall, "Pick the page up before recycling.");

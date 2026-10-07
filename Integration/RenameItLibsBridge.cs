@@ -15,6 +15,7 @@ using DrakeModsLibs.Tags;
 using DrakeModsLibs.API;
 
 using DrakeModsLibs.Input;
+using DrakeModsLibs.Permissions;
 
 using DrakeModsLibs.UI;
 
@@ -119,6 +120,15 @@ internal static class RenameItLibsBridge
 
 
         RegisterPermissionValidators();
+
+        // Link target for other Drake mods (e.g. ReskinIt AdminSource / ExclusionSource = RenameIt).
+        // RenameIt keeps its own config and logic; this only exposes them.
+        DrakePermissionProfiles.RegisterSource(
+            "RenameIt",
+            isElevated: RenameitPermission.IsElevatedForOverrides,
+            isExcluded: item => RenameExclusionRules.IsExcludedFromConfig(item)
+                                && !RenameExclusionRules.MatchesRenameAllowlist(item));
+        DrakeItemCategory.RegisterAlias("paper", PaperItem.IsPaperItem);
 
         CustomizationGatekeeper.TagBypass = RenameitPermission.IsElevatedForOverrides;
 

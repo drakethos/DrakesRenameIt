@@ -186,6 +186,27 @@ jobs:
 
           cd "$PKG_DIR" && zip -r "../$ZIP_NAME" . && cd ..
 
+          # Guard: store listing icons break if more than one icon.png ships in the zip
+          # (Hexium/Gale pick up nested Assets/Items/*/icon.png as the package icon).
+          ICON_PATHS=$(zipinfo -1 "$ZIP_NAME" | grep -E '(^|/)icon\.png$' || true)
+          ICON_COUNT=$(printf '%s\n' "$ICON_PATHS" | grep -c . || true)
+          if [ "$ICON_COUNT" -ne 1 ] || [ "$ICON_PATHS" != "icon.png" ]; then
+            echo "::error::Package must contain exactly one icon.png at zip root (found $ICON_COUNT):" >&2
+            printf '%s\n' "$ICON_PATHS" >&2
+            exit 1
+          fi
+          python3 - "$ZIP_NAME" <<'PY'
+          import struct, sys, zipfile
+          z = zipfile.ZipFile(sys.argv[1])
+          data = z.read("icon.png")
+          if data[:8] != b"\x89PNG\r\n\x1a\n":
+              raise SystemExit("icon.png is not a PNG")
+          w, h = struct.unpack(">II", data[16:24])
+          if (w, h) != (256, 256):
+              raise SystemExit(f"icon.png must be 256x256, got {w}x{h}")
+          print(f"OK package icon.png {w}x{h} ({len(data)} bytes)")
+          PY
+
           echo "zip=$ZIP_NAME" >> "$GITHUB_OUTPUT"
           {
             echo "description<<EOF"

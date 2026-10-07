@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using BepInEx.Configuration;
+using HarmonyLib;
 using Jotunn.Managers;
 using DrakeModsLibs.Sync;
 
@@ -8,6 +10,10 @@ namespace DrakeRenameit.API;
 
 public static class RenameitPermission
 {
+    // ZNet.m_adminList / ListContainsId are private in the real game: reflection only (direct access throws at runtime).
+    private static readonly FieldInfo? AdminListField = AccessTools.Field(typeof(ZNet), "m_adminList");
+    private static readonly MethodInfo? ListContainsIdMethod = AccessTools.Method(typeof(ZNet), "ListContainsId");
+
     /// <summary>From synced <see cref="RenameitConfig.VipList"/> cfg only.</summary>
     private static readonly HashSet<string> configVipList = new(StringComparer.OrdinalIgnoreCase);
 
@@ -252,14 +258,15 @@ public static class RenameitPermission
     {
         try
         {
-            if (ZNet.instance!.m_adminList == null)
+            object? adminList = AdminListField?.GetValue(ZNet.instance!);
+            if (adminList == null)
                 return false;
 
             string? hostId = TryGetPeerHostId(player);
             if (string.IsNullOrEmpty(hostId))
                 return false;
 
-            return ZNet.instance.ListContainsId(ZNet.instance.m_adminList, hostId);
+            return ListContainsIdMethod?.Invoke(ZNet.instance, new object[] { adminList, hostId! }) is true;
         }
         catch
         {

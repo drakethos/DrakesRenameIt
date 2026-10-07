@@ -404,10 +404,7 @@ internal static class PaperBlankPlace
     {
         try
         {
-            if (SetPlaceModeMethod != null)
-                SetPlaceModeMethod.Invoke(player, new object?[] { null });
-            else
-                player.SetPlaceMode(null!);
+            SetPlaceModeMethod?.Invoke(player, new object?[] { null });
         }
         catch
         {

@@ -550,10 +550,7 @@ internal static class PaperWrittenPlace
 
         PaperPieceTables.Harden(table);
 
-        if (SetPlaceModeMethod != null)
-            SetPlaceModeMethod.Invoke(player, new object[] { table });
-        else
-            player.SetPlaceMode(table);
+        SetPlaceModeMethod?.Invoke(player, new object[] { table });
 
         PaperPieceTables.RefreshPlayerAvailable(player);
         SelectOrientation(player, _orientIndex);
@@ -743,10 +740,7 @@ internal static class PaperWrittenPlace
     {
         try
         {
-            if (SetPlaceModeMethod != null)
-                SetPlaceModeMethod.Invoke(player, new object?[] { null });
-            else
-                player.SetPlaceMode(null!);
+            SetPlaceModeMethod?.Invoke(player, new object?[] { null });
         }
         catch
         {
@@ -1428,6 +1422,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     /// <summary>Take-off-wall bypass. Not the rewrite flag (<see cref="ZdoPublic"/>).</summary>
     internal const string ZdoTakePublic = PaperItemStyle.TakePublicKey;
     const string RpcSetTakePublic = "DrakePaper_SetTakePublic";
+    const string RpcApplyCustomization = "DrakePaper_ApplyCustomization";
+    const string RpcApplyStyle = "DrakePaper_ApplyStyle";
     const string ZdoHandled = "DrakePaper_Handled";
     internal const string ZdoFontSize = PaperItemStyle.FontSizeKey;
     internal const string ZdoLandscape = PaperItemStyle.LandscapeKey;
@@ -1435,6 +1431,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
 
     PaperWrittenPlace.PaperSnapshot? _pending;
     bool _rpcRegistered;
+    float _nextDescPoll;
+    string? _lastDesc;
     bool _handled;
     bool _reclaimQueued;
 
@@ -1490,6 +1488,18 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             FlushPendingSnapshot();
         if (_reclaimQueued && Player.m_localPlayer != null)
             TryReclaim(Player.m_localPlayer);
+
+        // Remote edits arrive as ZDO changes, not calls — re-sync the face text when it changes.
+        if (Time.unscaledTime >= _nextDescPoll)
+        {
+            _nextDescPoll = Time.unscaledTime + 0.5f;
+            var desc = ReadPageDescription();
+            if (desc != _lastDesc)
+            {
+                _lastDesc = desc;
+                RefreshPageVisual();
+            }
+        }
     }
 
     /// <summary>Write pending snapshot to ZDO when available.</summary>
@@ -1627,6 +1637,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         try
         {
             nv.Register<int>(RpcSetTakePublic, RPC_SetTakePublic);
+            nv.Register<ZPackage>(RpcApplyCustomization, RPC_ApplyCustomization);
+            nv.Register<ZPackage>(RpcApplyStyle, RPC_ApplyStyle);
             _rpcRegistered = true;
         }
         catch (Exception)
@@ -1954,37 +1966,84 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     {
         if (item == null)
             return;
-        var zdo = EnsureOwnedZdo();
-        if (zdo == null)
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid())
             return;
 
         var rename = DrakeRenameit.hasNewName(item) ? DrakeRenameit.GetPropperName(item) : "";
         var desc = DrakeRenameit.hasNewDesc(item) ? DrakeRenameit.getPropperDesc(item) : "";
-        zdo.Set(ZdoRename, rename ?? "");
-        zdo.Set(ZdoDesc, desc ?? "");
-        zdo.Set(ZdoPublic, Permissions.RenamePermissionManager.HasPublicRewriteFlag(item) ? 1 : 0);
-        zdo.Set(ZdoUnlock, DrakeRenameit.IsRenameUnlocked(item) ? 1 : 0);
-        zdo.Set(ZdoCrafterId, item.m_crafterID);
-        zdo.Set(ZdoCrafterName, item.m_crafterName ?? "");
         PaperItemStyle.Read(item, out var fontSize, out var landscape, out var takePublic);
-        zdo.Set(ZdoFontSize, fontSize);
-        zdo.Set(ZdoLandscape, landscape ? 1 : 0);
-        zdo.Set(ZdoTakePublic, takePublic ? 1 : 0);
-        zdo.Set(ZdoIsCopy, PaperCopyMark.IsCopy(item) ? 1 : 0);
-        RefreshPageVisual();
+
+        // Writes from a non-owner never stick (ownership transfer is async and the owner's
+        // copy wins), so send the payload to the owner and let it write the ZDO.
+        var pkg = new ZPackage();
+        pkg.Write(rename ?? "");
+        pkg.Write(desc ?? "");
+        pkg.Write(Permissions.RenamePermissionManager.HasPublicRewriteFlag(item) ? 1 : 0);
+        pkg.Write(DrakeRenameit.IsRenameUnlocked(item) ? 1 : 0);
+        pkg.Write(item.m_crafterID);
+        pkg.Write(item.m_crafterName ?? "");
+        pkg.Write(fontSize);
+        pkg.Write(landscape ? 1 : 0);
+        pkg.Write(takePublic ? 1 : 0);
+        pkg.Write(PaperCopyMark.IsCopy(item) ? 1 : 0);
+        nv.InvokeRPC(RpcApplyCustomization, pkg);
+
+        // Optimistic: the editor sees the new text before the ZDO round-trips.
+        if (!PaperWrittenPlace.IsPlacementGhost(gameObject))
+            PaperNotePageText.Sync(gameObject, desc ?? "");
     }
 
     internal void ApplyPaperStyle(float fontSize, bool landscape)
     {
-        var zdo = EnsureOwnedZdo();
-        if (zdo == null)
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid())
             return;
 
         var size = PaperFontScale.NormalizeStored(fontSize);
-        zdo.Set(ZdoFontSize, size);
-        zdo.Set(ZdoLandscape, landscape ? 1 : 0);
+        var pkg = new ZPackage();
+        pkg.Write(size);
+        pkg.Write(landscape ? 1 : 0);
+        nv.InvokeRPC(RpcApplyStyle, pkg);
         // Keep wall-session / inventory item in sync so take/place keeps Paper tab choices.
         PaperItemStyle.WriteStyle(DrakeRenameit.CurrentItem, size, landscape);
+    }
+
+    void RPC_ApplyCustomization(long sender, ZPackage pkg)
+    {
+        _ = sender;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid() || !nv.IsOwner())
+            return;
+        var zdo = nv.GetZDO();
+        if (zdo == null)
+            return;
+
+        zdo.Set(ZdoRename, pkg.ReadString());
+        zdo.Set(ZdoDesc, pkg.ReadString());
+        zdo.Set(ZdoPublic, pkg.ReadInt());
+        zdo.Set(ZdoUnlock, pkg.ReadInt());
+        zdo.Set(ZdoCrafterId, pkg.ReadLong());
+        zdo.Set(ZdoCrafterName, pkg.ReadString());
+        zdo.Set(ZdoFontSize, pkg.ReadSingle());
+        zdo.Set(ZdoLandscape, pkg.ReadInt());
+        zdo.Set(ZdoTakePublic, pkg.ReadInt());
+        zdo.Set(ZdoIsCopy, pkg.ReadInt());
+        RefreshPageVisual();
+    }
+
+    void RPC_ApplyStyle(long sender, ZPackage pkg)
+    {
+        _ = sender;
+        var nv = GetComponent<ZNetView>();
+        if (nv == null || !nv.IsValid() || !nv.IsOwner())
+            return;
+        var zdo = nv.GetZDO();
+        if (zdo == null)
+            return;
+
+        zdo.Set(ZdoFontSize, pkg.ReadSingle());
+        zdo.Set(ZdoLandscape, pkg.ReadInt());
         RefreshPageVisual();
     }
 

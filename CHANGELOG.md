@@ -1,3 +1,7 @@
+- Version 1.2.0-beta.5
+  - **Fix (multiplayer):** Renaming or re-describing a wall-pinned Written Page as a non-owner (without picking it up via Shift+E) now syncs. Edits were written to the page's ZDO before ownership transferred, so the owner's copy won and the change was lost on logoff / world save. Name, description, flags, crafter and Paper-tab font/landscape are now sent to the ZDO owner by RPC (`DrakePaper_ApplyCustomization` / `DrakePaper_ApplyStyle`), which writes and syncs them.
+  - Wall page text now refreshes on other players' clients when the description changes remotely.
+  - **All players need this build** — older clients ignore the new RPCs.
 - Version 1.2.0-beta.4
   - Requires **DrakeModsLibs 0.9.10+** (permission profiles; includes the 0.9.9 join fix).
   - **Fix:** Players could not join a server running a pre-release build (ServerSync threw parsing `1.2.0-beta.3` in its version check). Fixed in DrakeModsLibs 0.9.9.

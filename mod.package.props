@@ -5,7 +5,7 @@
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
-    <Version>1.2.0-beta.3</Version>
+    <Version>1.2.0-beta.4</Version>
     <!-- BepIn plugin display name — do not change (existing installs / docs) -->
     <BepInPluginName>DrakesRenameit</BepInPluginName>
     <BepInGuid>com.drakesworkshop.renameit</BepInGuid>
@@ -15,8 +15,8 @@
     <DeployAfterTargets>CopyLocalizationToOutput</DeployAfterTargets>
   </PropertyGroup>
   <ItemGroup>
-    <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2333" />
-    <ThunderstoreDependency Include="ValheimModding-Jotunn-2.29.0" />
-    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-0.9.8" />
+    <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
+    <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
+    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-0.9.9" />
   </ItemGroup>
 </Project>

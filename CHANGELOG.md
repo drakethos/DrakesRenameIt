@@ -1,3 +1,8 @@
+- Version 1.2.0-beta.4
+  - Requires **DrakeModsLibs 0.9.9+**.
+  - **Fix:** Players could not join a server running a pre-release build (ServerSync threw parsing `1.2.0-beta.3` in its version check). Fixed in DrakeModsLibs 0.9.9.
+  - Fix: startup `[DrakeConfigSync] Expected 56 synced entries, registered 59` error (expected count updated).
+  - Dependencies: BepInExPack_Valheim 5.4.2351, Jotunn 2.30.2.
 - Version 1.2.0-beta.3
   - **Beta for the 1.2.0 release candidate** — Hexium / GitHub prerelease only (not Thunderstore). Treat as a test build toward stable 1.2.0; configs and saves should be fine, but expect polish before the RC/stable cut.
   - Requires **DrakeModsLibs 0.9.8+** (nested `DrakeConfirmPanel` keeps parent BlockInput).

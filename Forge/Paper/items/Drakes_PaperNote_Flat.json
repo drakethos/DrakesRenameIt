@@ -1,0 +1,30 @@
+{
+  "id": "Drakes_PaperNote_Flat",
+  "kind": "piece",
+  "base": "sign",
+  "name": "Note (flat)",
+  "description": "A written note lying flat.",
+  "look": {
+    "hideMesh": true,
+    "sprites": [
+      {
+        "file": "textures/paper_sheet_written.png",
+        "size": [
+          0.2159,
+          0.2794
+        ],
+        "position": [
+          0,
+          0.002,
+          0.1397
+        ],
+        "rotation": [
+          -90,
+          0,
+          0
+        ]
+      }
+    ],
+    "icon": "textures/paper_written_icon.png"
+  }
+}

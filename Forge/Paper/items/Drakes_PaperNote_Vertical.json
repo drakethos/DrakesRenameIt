@@ -1,0 +1,25 @@
+{
+  "id": "Drakes_PaperNote_Vertical",
+  "kind": "piece",
+  "base": "sign",
+  "name": "Note (wall)",
+  "description": "A written note pinned to a wall.",
+  "look": {
+    "hideMesh": true,
+    "sprites": [
+      {
+        "file": "textures/paper_sheet_written.png",
+        "size": [
+          0.2159,
+          0.2794
+        ],
+        "position": [
+          0,
+          -0.1397,
+          0
+        ]
+      }
+    ],
+    "icon": "textures/paper_written_icon.png"
+  }
+}

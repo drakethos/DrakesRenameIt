@@ -1,3 +1,9 @@
+- Unreleased (version not set yet)
+  - **New paper look**, defined in a Drakes Asset Forge pack (`Forge/Paper`): a torn parchment sheet and a written sheet with baked-in ink, as flat images, with new icons. Items, flat and wall sheets, notes and the paper stack all use it.
+  - Images now live **inside the DLL**, so Hexium/Gale flattening plugin folders can't lose them. The Unity `art.bundle`s, `Assets/Icons` and `Assets/Items` are gone.
+  - Removed ~800 lines of runtime guessing: mesh fitting, material/shader hunting, PNG cropping and inpainting, procedural fallbacks. Note pieces switch between two shared materials instead of reloading PNGs on every refresh.
+  - Requires **DrakeModsLibs 0.10.0+** (its new `DrakeModsLibs.Forge` helpers).
+  - Prefab names are unchanged: paper in existing worlds keeps working.
 - Version 1.2.0-beta.5
   - **Fix (multiplayer):** Renaming or re-describing a wall-pinned Written Page as a non-owner (without picking it up via Shift+E) now syncs. Edits were written to the page's ZDO before ownership transferred, so the owner's copy won and the change was lost on logoff / world save. Name, description, flags, crafter and Paper-tab font/landscape are now sent to the ZDO owner by RPC (`DrakePaper_ApplyCustomization` / `DrakePaper_ApplyStyle`), which writes and syncs them.
   - Wall page text now refreshes on other players' clients when the description changes remotely.

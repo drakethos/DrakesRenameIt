@@ -353,56 +353,37 @@ internal static class PaperNotePageText
     static Vector3 WorldScale(Transform t) => t.localToWorldMatrix.lossyScale;
 
     /// <summary>
-    /// Forge parchment faces local +Y. Portrait (default): shared wall/flat LTR frame.
-    /// Landscape: prior flat landscape page-up (text along the long edge).
-    /// Negative X undoes the mirror both showed on the front face.
+    /// The sheet (DrakesPaper Forge pack) lies face up (+Y) on flat notes, with page-up toward −Z, and stands
+    /// facing +Z on walls, with page-up +Y. Text frames are written for the flat sheet; on walls the same frame
+    /// is tipped up by Euler(90,0,0), which is where the sheet itself used to be tipped.
+    /// Portrait: canvas up = paper height, LTR = width. Landscape: lines run along the long edge.
+    /// Negative X undoes the mirror the front face would show.
     /// </summary>
     static void OrientOnParchment(Transform holder, Transform decor, bool wall, bool landscape)
     {
-        var forgeFace = decor.Find("paper_front") == null;
-        var lift = FaceClearance + MaxExtent(decor, forgeFace ? 1 : 2);
-        _ = wall;
-
-        if (forgeFace)
+        var flatFrame = landscape
+            ? Quaternion.LookRotation(Vector3.up, Vector3.right)
+            : Quaternion.LookRotation(Vector3.up, Vector3.back);
+        if (wall)
         {
-            holder.localPosition = new Vector3(0f, lift, 0f);
-            if (landscape)
-            {
-                // Prior flat landscape frame — lines run along paper width as page-up.
-                holder.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.right);
-            }
-            else
-            {
-                // Portrait: canvas up = paper height (−Z), LTR = width (+X).
-                holder.localRotation = Quaternion.LookRotation(Vector3.up, Vector3.back);
-            }
+            holder.localPosition = new Vector3(0f, 0f, FaceClearance + MaxExtent(decor, 2));
+            holder.localRotation = Quaternion.Euler(90f, 0f, 0f) * flatFrame;
         }
         else
         {
-            holder.localPosition = new Vector3(0f, 0f, lift);
-            holder.localRotation = landscape
-                ? Quaternion.identity
-                : Quaternion.LookRotation(Vector3.forward, Vector3.up);
+            holder.localPosition = new Vector3(0f, FaceClearance + MaxExtent(decor, 1), 0f);
+            holder.localRotation = flatFrame;
         }
 
         holder.localScale = new Vector3(-1f, 1f, 1f);
     }
 
+    /// <summary>Wall notes are the "Vertical" pieces (and the blank "Upright" sheets); everything else lies flat.</summary>
     static bool IsWallPiece(GameObject root)
     {
         var n = root.name ?? "";
-        if (n.IndexOf("Vertical", StringComparison.OrdinalIgnoreCase) >= 0)
-            return true;
-        if (n.IndexOf("Flat", StringComparison.OrdinalIgnoreCase) >= 0)
-            return false;
-        return IsWallDecor(FindDecor(root));
-    }
-
-    /// <summary>Wall notes tip the forge sheet with Euler(90,0,0). Flat keeps identity.</summary>
-    static bool IsWallDecor(Transform decor)
-    {
-        var e = decor.localEulerAngles;
-        return Mathf.Abs(Mathf.DeltaAngle(e.x, 90f)) < 5f;
+        return n.IndexOf("Vertical", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               n.IndexOf("Upright", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     static float MaxExtent(Transform decor, int axis)

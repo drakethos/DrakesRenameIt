@@ -63,7 +63,7 @@ def icon(img, name, tilt):
     canvas.save(OUT / name, optimize=True)
 
 
-icon(sheet, "paper_icon.png", 4)
-icon(written, "paper_written_icon.png", -4)
+icon(sheet, "paper_icon.png", 0)
+icon(written, "paper_written_icon.png", 0)
 for f in sorted(OUT.iterdir()):
     print(f.name, Image.open(f).size, f.stat().st_size)

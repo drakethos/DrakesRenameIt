@@ -34,13 +34,32 @@ public static class RenameitPermission
         if (player == null)
             return false;
 
+        bool trustLocal = LocalVipListsTrusted();
         foreach (string key in GetVipIdentityKeys(player))
         {
-            if (configVipList.Contains(key) || apiVipList.Contains(key))
+            if (trustLocal && configVipList.Contains(key))
+                return true;
+            if ((trustLocal || _apiListFromHost) && apiVipList.Contains(key))
                 return true;
         }
 
         return false;
+    }
+
+    static DrakeConfigSync? _vipConfigSync;
+    static bool _apiListFromHost;
+
+    /// <summary>
+    /// A remote client may only trust VIP entries the host pushed. If we are connected to someone else's
+    /// server and ConfigSync never made the host the source of truth (server lacks this mod, or sync not
+    /// finished), the local cfg VipList is just a file the player can edit — ignore it.
+    /// </summary>
+    static bool LocalVipListsTrusted()
+    {
+        var znet = ZNet.instance;
+        if (znet == null || znet.IsServer())
+            return true;
+        return _vipConfigSync != null && !_vipConfigSync.IsSourceOfTruth;
     }
 
     /// <summary>
@@ -67,6 +86,7 @@ public static class RenameitPermission
     /// <summary>Subscribe to ServerSync config updates; call once from <see cref="RenameitConfig.Bind"/>.</summary>
     internal static void WireVipListSync(ConfigEntry<string> vipListEntry, DrakeConfigSync configSync)
     {
+        _vipConfigSync = configSync;
         vipListEntry.SettingChanged += (_, _) => ReloadVipsFromSyncedConfig();
         configSync.SourceOfTruthChanged += _ => ReloadVipsFromSyncedConfig();
         ReloadVipsFromSyncedConfig();
@@ -173,6 +193,7 @@ public static class RenameitPermission
         if (entries == null)
             return;
 
+        _apiListFromHost = true;
         ReplaceApiVipList(entries);
     }
 

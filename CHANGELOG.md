@@ -1,4 +1,8 @@
-- Unreleased (version not set yet)
+- Version 1.2.0-beta.6
+  - **Security fix (VIP):** a client could grant itself VIP. The VRP VIP-list receiver on the host accepted the message from any peer, and a remote client still honoured its own edited `VipList` cfg when the server did not sync it. The host now rejects the message, and a remote client trusts only VIP entries the host pushed or synced. **Update the host and every client.**
+  - **Fix:** VRP VIP sync never reached clients on Valheim 1.0 (`ZRoutedRpc.Everybody` no longer exists; sends are now per peer) and the join hook called the non-public `ZNet.GetPeer`.
+  - **Fix:** a wall Written Page's face text did not repaint after an edit; the page now repaints like a freshly placed one.
+  - **Fix:** paper icons were baked at a 4 degree tilt; they are now straight.
   - **New paper look**, defined in a Drakes Asset Forge pack (`Forge/Paper`): a torn parchment sheet and a written sheet with baked-in ink, as flat images, with new icons. Items, flat and wall sheets, notes and the paper stack all use it.
   - Images now live **inside the DLL**, so Hexium/Gale flattening plugin folders can't lose them. The Unity `art.bundle`s, `Assets/Icons` and `Assets/Items` are gone.
   - Removed ~800 lines of runtime guessing: mesh fitting, material/shader hunting, PNG cropping and inpainting, procedural fallbacks. Note pieces switch between two shared materials instead of reloading PNGs on every refresh.

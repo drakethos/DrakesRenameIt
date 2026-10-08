@@ -262,6 +262,9 @@ internal static class PaperNotePageText
             if (bind == null)
                 bind = root.AddComponent<PaperPageTextBind>();
             bind.Desc = description ?? "";
+            // The bind stops itself after the first paint. Re-arm it so later edits repaint
+            // the same way the first one did (a lone ForceMeshUpdate left the old mesh showing).
+            bind.Restart();
 
             LogSync(root, widget, description);
         }
@@ -304,6 +307,7 @@ internal static class PaperNotePageText
         if (string.IsNullOrWhiteSpace(desc))
             desc = EmptyFaceCue;
         body.text = desc;
+        body.SetAllDirty();
         body.ForceMeshUpdate(ignoreActiveState: true);
     }
 
@@ -454,6 +458,12 @@ internal sealed class PaperPageTextBind : MonoBehaviour
 {
     internal string Desc = "";
     int _frames;
+
+    internal void Restart()
+    {
+        _frames = 0;
+        enabled = true;
+    }
 
     void LateUpdate()
     {

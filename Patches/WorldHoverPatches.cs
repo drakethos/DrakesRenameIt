@@ -11,5 +11,6 @@ namespace DrakeRenameit.Patches;
 internal static class WorldHoverPatches
 {
     [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)] // after every other mod (and Paper's own wall-page hover) has written its text
     private static void UpdateCrosshair_Postfix(Hud __instance, Player player) => WorldHover.Tick(__instance, player);
 }

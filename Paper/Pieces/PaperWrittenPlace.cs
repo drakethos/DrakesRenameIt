@@ -154,6 +154,8 @@ internal static class PaperWrittenPlace
         public bool Landscape;
         public bool TakePublic;
         public bool IsCopy;
+        public string ModelTint = "";
+        public string IconTint = "";
         public ItemDrop.ItemData? SourceItem;
 
         public static PaperSnapshot From(ItemDrop.ItemData item)
@@ -177,6 +179,8 @@ internal static class PaperWrittenPlace
                 Landscape = landscape,
                 TakePublic = takePublic,
                 IsCopy = PaperCopyMark.IsCopy(item),
+                ModelTint = DrakeModsLibs.Display.ItemLookService.FormatColor(DrakeModsLibs.Display.ItemLookService.GetModelTint(item)) ?? "",
+                IconTint = DrakeModsLibs.Display.ItemLookService.FormatColor(DrakeModsLibs.Display.ItemLookService.GetIconTint(item)) ?? "",
                 SourceItem = item,
             };
         }
@@ -1428,6 +1432,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
     internal const string ZdoFontSize = PaperItemStyle.FontSizeKey;
     internal const string ZdoLandscape = PaperItemStyle.LandscapeKey;
     const string ZdoIsCopy = PaperCopyMark.IsCopyKey;
+    /// <summary>A Reskin colour on the sheet (model tint, and icon tint so it survives taking the page back).</summary>
+    const string ZdoModelTint = "DrakePaper_ModelTint";
+    const string ZdoIconTint = "DrakePaper_IconTint";
 
     PaperWrittenPlace.PaperSnapshot? _pending;
     bool _rpcRegistered;
@@ -1523,6 +1530,14 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         if (PaperWrittenPlace.IsPlacementGhost(gameObject))
             return;
         PaperNotePageText.Sync(gameObject, ReadPageDescription());
+        TintSheet(GetComponent<ZNetView>()?.GetZDO()?.GetString(ZdoModelTint, ""));
+    }
+
+    /// <summary>Colour the sheet's mesh (not the ink, which lives on a canvas) with the Reskin colour it was placed with.</summary>
+    void TintSheet(string? hex)
+    {
+        var tint = DrakeModsLibs.Display.ItemLookService.ParseColor(hex);
+        DrakeModsLibs.Display.WorldLook.Tint(gameObject, tint, r => r.GetComponentInParent<Canvas>() != null);
     }
 
     /// <summary>Ward permit, or original creator / elevated (public-take guests stay out).</summary>
@@ -1552,6 +1567,9 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
         zdo.Set(ZdoLandscape, snap.Landscape ? 1 : 0);
         zdo.Set(ZdoTakePublic, snap.TakePublic ? 1 : 0);
         zdo.Set(ZdoIsCopy, snap.IsCopy ? 1 : 0);
+        zdo.Set(ZdoModelTint, snap.ModelTint ?? "");
+        zdo.Set(ZdoIconTint, snap.IconTint ?? "");
+        TintSheet(snap.ModelTint);
         // Ghosts included — empty desc paints "..." so you see which face gets ink.
         PaperNotePageText.Sync(gameObject, snap.Desc);
     }
@@ -1954,6 +1972,8 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             DrakeRenameit.SetRenameUnlocked(item);
         item.m_crafterID = zdo.GetLong(ZdoCrafterId, 0L);
         item.m_crafterName = zdo.GetString(ZdoCrafterName, "");
+        DrakeModsLibs.Display.ItemLookService.SetModelTint(item, DrakeModsLibs.Display.ItemLookService.ParseColor(zdo.GetString(ZdoModelTint, "")));
+        DrakeModsLibs.Display.ItemLookService.SetIconTint(item, DrakeModsLibs.Display.ItemLookService.ParseColor(zdo.GetString(ZdoIconTint, "")));
         PaperItemStyle.WriteAll(
             item,
             PaperFontScale.NormalizeStored(zdo.GetFloat(ZdoFontSize, RenameitConfig.PaperDefaultFontSize)),

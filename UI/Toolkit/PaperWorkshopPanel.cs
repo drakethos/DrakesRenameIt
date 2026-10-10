@@ -33,7 +33,8 @@ internal sealed class PaperWorkshopPanel
     readonly Button _copyButton;
     readonly VisualElement _copyRow;
     readonly VisualElement _recycleCard;
-    readonly UkConfirm _recycle;
+    readonly Button _recycleButton;
+    readonly DrakeConfirmPanel _recycleConfirm = new DrakeConfirmPanel("renameit_paper_recycle_confirm_tk");
 
     // Same state the classic panel keeps (copies is remembered between openings).
     float _fontSize = PaperFontScale.LevelToSize(3);
@@ -131,7 +132,7 @@ internal sealed class PaperWorkshopPanel
         body.Add(copyCard);
         _window.Tips.Attach(_copyRow, () => _copyReason);
 
-        // Recycle: asks inline, no popup.
+        // Recycle: a drawn icon button; asks in a popup.
         _recycleCard = UkControls.Card().Row().Pad(12, 16);
         var recycleText = new VisualElement().Column().Grow();
         recycleText.Add(UkControls.Text("Recycle", 16, UkTheme.Text, heading: true, wrap: false));
@@ -139,28 +140,22 @@ internal sealed class PaperWorkshopPanel
         recycleHint.style.marginTop = 2;
         recycleText.Add(recycleHint);
         _recycleCard.Add(recycleText);
-        _recycle = new UkConfirm(T(LKeys.RecycleBtn), "Wipe the writing and get a blank sheet back?", "Recycle", OnRecycleConfirmed);
-        _recycleCard.Add(_recycle.Root);
+        _recycleButton = UkControls.MakeButton("", AskRecycle, UkButtonKind.Secondary, 56f);
+        _recycleButton.style.paddingLeft = _recycleButton.style.paddingRight = 0;
+        _recycleButton.style.alignItems = Align.Center;
+        _recycleButton.style.justifyContent = Justify.Center;
+        _recycleButton.Add(UkIcons.Recycle(26, new Color(0.45f, 0.82f, 0.40f, 1f)));
+        _recycleCard.Add(_recycleButton);
         body.Add(_recycleCard);
 
         _window.Footer.Add(UkControls.Spacer());
         _window.Footer.Add(UkControls.MakeButton("Close", () => _window.Close(), UkButtonKind.Secondary));
         _window.ShowFooter(true);
-
-        // Esc cancels a pending "Recycle?" before it closes the window.
-        _window.EscapeHandler = () =>
-        {
-            if (!_recycle.IsAsking)
-                return false;
-            _recycle.Cancel();
-            return true;
-        };
     }
 
     void Open(ItemDrop.ItemData? item)
     {
         DrakeRenameit.CurrentItem = item;
-        _recycle.Cancel();
         LoadFromContext(item);
         Refresh();
         _window.ShowTabs(PaperTabPanel.TabId);
@@ -332,6 +327,14 @@ internal sealed class PaperWorkshopPanel
             _window.Toast.Show(_copies == 1 ? "Made a copy" : $"Made {_copies} copies", null, 3f);
 
         RefreshCopyCost();
+    }
+
+    void AskRecycle()
+    {
+        var item = DrakeRenameit.CurrentItem;
+        if (!PaperRecycleService.CanRecycle(item, Player.m_localPlayer))
+            return;
+        _recycleConfirm.Show(T(LKeys.RecycleTitle), T(LKeys.RecycleBody), OnRecycleConfirmed, null, T(LKeys.BtnYes), T(LKeys.BtnNo));
     }
 
     void OnRecycleConfirmed()

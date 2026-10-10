@@ -1780,7 +1780,14 @@ internal sealed class PaperWrittenVessel : MonoBehaviour
             // Keep hover short so wrapped desc does not sit on top of [E] Take.
             // Full letter lives on the parchment when PaperShowPageText is on.
             if (RenameitConfig.PaperShowPageText && desc.Length > 72)
-                desc = desc.Substring(0, 69).TrimEnd() + "...";
+            {
+                desc = desc.Substring(0, 69);
+                // Never cut inside a tag, then close whatever the cut left open so it can't bleed into the key hints.
+                int lt = desc.LastIndexOf('<');
+                if (lt > desc.LastIndexOf('>'))
+                    desc = desc.Substring(0, lt);
+                desc = TooltipRichText.EnsureRichTextTagsClosedForTooltip(desc.TrimEnd()) + "...";
+            }
             sb += "\n" + desc;
         }
 

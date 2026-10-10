@@ -163,7 +163,9 @@
     <Compile Include="UI\TooltipRichText.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\UIPanels.cs" />
+    <Compile Include="UI\ClassicPaperTabPanel.cs" />
     <Compile Include="UI\PaperTabPanel.cs" />
+    <Compile Include="UI\Toolkit\PaperWorkshopPanel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

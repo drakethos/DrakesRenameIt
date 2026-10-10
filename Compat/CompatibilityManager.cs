@@ -1,7 +1,6 @@
 using System;
 using DrakeModsLibs.Compat;
 using DrakeRenameit.Compat.ArcaneWard;
-using DrakeRenameit.Compat.DevCommands;
 using DrakeRenameit.Compat.ItemLibs;
 using DrakeRenameit.Compat.ProtectiveWards;
 using DrakeRenameit.Compat.Vanilla;
@@ -27,7 +26,6 @@ internal static class CompatibilityManager
         public const string WardIsLove = WardIsLoveModule.PluginGuid;
         public const string ProtectiveWards = ProtectiveWardsModule.PluginGuid;
         public const string ArcaneWard = ArcaneWardModule.PluginGuid;
-        public const string DevCommands = DevCommandsModule.PluginGuid;
         public const string LockSmith = WardHoverAccess.LockSmithGuid;
     }
 
@@ -48,7 +46,6 @@ internal static class CompatibilityManager
         Host.Register(new ProtectiveWardsModule());
         Host.Register(new ArcaneWardModule());
         Host.Register(new ItemStandHoverModule());
-        Host.Register(new DevCommandsModule());
         Host.Initialize(harmony);
     }
 

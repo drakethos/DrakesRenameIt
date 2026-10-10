@@ -157,7 +157,6 @@
     <Compile Include="Compat\ArcaneWard\ArcaneWardModule.cs" />
     <Compile Include="Compat\WardHoverAccess.cs" />
     <Compile Include="Compat\ItemLibs\ItemStandHoverModule.cs" />
-    <Compile Include="Compat\DevCommands\DevCommandsModule.cs" />
     <Compile Include="Patches\RenameItInventoryPatches.cs" />
     <Compile Include="Patches\PaperItemStandPatches.cs" />
     <Compile Include="UI\TooltipRichText.cs" />
@@ -210,7 +209,6 @@
     <Content Include="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <AssetFiles Include="Assets\*.*" />
     <Content Include="README.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

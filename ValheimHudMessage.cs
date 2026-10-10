@@ -1,47 +1,19 @@
-using System;
-using System.Reflection;
-using HarmonyLib;
-using UnityEngine;
+using DrakeModsLibs.UI;
 
 namespace DrakeRenameit;
 
 /// <summary>
-/// Valheim 1.0 <c>Character.Message</c> is 5-arg (<c>log</c>). Pfhoenix CI stubs still expose 4-arg.
-/// A direct C# call bakes a MethodRef; Mono throws <see cref="MissingMethodException"/> when
-/// JIT-compiling <b>any</b> method that contains that token — even a dead branch. Store builds
-/// compiled against stubs then abort inventory tooltip / HUD updates every frame.
-/// Bind and Invoke at runtime so local (1.0 publicized) and CI (stubs) both work.
+/// RenameIt's on-screen feedback. Every message now goes to the shared card (<see cref="DrakeMessage"/>) instead of Valheim's
+/// yellow centre text. The name is kept so RenameIt's call sites stay as they are; change the look in Libs, not here.
 /// </summary>
 internal static class ValheimHudMessage
 {
-    private static readonly MethodInfo? Message5 = AccessTools.Method(
-        typeof(Character),
-        nameof(Character.Message),
-        new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite), typeof(bool) });
-
-    private static readonly MethodInfo? Message4 = AccessTools.Method(
-        typeof(Character),
-        nameof(Character.Message),
-        new[] { typeof(MessageHud.MessageType), typeof(string), typeof(int), typeof(UnityEngine.Sprite) });
-
+    /// <summary>Shows <paramref name="text"/> on the card. <paramref name="type"/> is ignored: the card has one style.</summary>
     internal static void Show(Character? character, MessageHud.MessageType type, string? text)
     {
         if (character == null || string.IsNullOrEmpty(text))
             return;
 
-        try
-        {
-            if (Message5 != null)
-            {
-                Message5.Invoke(character, new object?[] { type, text, 0, null, false });
-                return;
-            }
-
-            Message4?.Invoke(character, new object?[] { type, text, 0, null });
-        }
-        catch (Exception)
-        {
-            /* never break HUD */
-        }
+        DrakeMessage.Show(text!);
     }
 }

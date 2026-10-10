@@ -226,6 +226,8 @@ jobs:
           body: |
             ## DrakesRenameIt v${{ steps.ver.outputs.version }}
 
+            > **DrakeMods is moving to Hexium.** 1.2.0 is the final DrakesRenameIt release on Thunderstore. Future updates: [DrakeMods on Hexium](https://valheim.hexium.gg/?q=DrakeMods).
+
             Thunderstore zip attached. CI also publishes to **Thunderstore** then **Hexium**.
 
             ### Install

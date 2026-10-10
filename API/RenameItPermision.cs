@@ -35,11 +35,12 @@ public static class RenameitPermission
             return false;
 
         bool trustLocal = LocalVipListsTrusted();
+        bool trustHostApi = HostApiListActive();
         foreach (string key in GetVipIdentityKeys(player))
         {
             if (trustLocal && configVipList.Contains(key))
                 return true;
-            if ((trustLocal || _apiListFromHost) && apiVipList.Contains(key))
+            if ((trustLocal || trustHostApi) && apiVipList.Contains(key))
                 return true;
         }
 
@@ -59,7 +60,23 @@ public static class RenameitPermission
         var znet = ZNet.instance;
         if (znet == null || znet.IsServer())
             return true;
-        return _vipConfigSync != null && !_vipConfigSync.IsSourceOfTruth;
+        return _vipConfigSync != null && _vipConfigSync.IsSourceOfTruth;
+    }
+
+    /// <summary>
+    /// The host-pushed VIP list only counts while we are connected to that host. Once we are no longer
+    /// connected (left the server, or the host is gone), drop it so the next server does not inherit it.
+    /// </summary>
+    static bool HostApiListActive()
+    {
+        var znet = ZNet.instance;
+        bool connected = znet != null && !znet.IsServer() && znet.GetServerPeer() != null;
+        if (!connected && _apiListFromHost)
+        {
+            _apiListFromHost = false;
+            apiVipList.Clear();
+        }
+        return connected && _apiListFromHost;
     }
 
     /// <summary>

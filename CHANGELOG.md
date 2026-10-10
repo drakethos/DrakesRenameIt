@@ -1,5 +1,10 @@
+- Version 1.2.0
+  - **Final Thunderstore release.** DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
+  - Stable cut of the 1.2.0 betas below: new Asset Forge paper look, wall page edits synced through the owner, VIP security fixes, and Valheim 1.0 fixes.
+  - Requires **DrakeModsLibs 0.11.1+** (VIP config trust fix from 0.10.1, and the bundled ServerSync patched for Valheim 1.0 so live admin config changes reach clients).
 - Version 1.2.0-beta.6
   - **Security fix (VIP):** a client could grant itself VIP. The VRP VIP-list receiver on the host accepted the message from any peer, and a remote client still honoured its own edited `VipList` cfg when the server did not sync it. The host now rejects the message, and a remote client trusts only VIP entries the host pushed or synced. **Update the host and every client.**
+  - **Security fix (VIP, self-hosted / no dedicated server):** the local VIP trust check was inverted. A client whose config sync did not make the host the source of truth trusted its own edited `VipList`, so a player could trip the sync, add their name, and log back on as VIP. Trust now requires the host's synced config. The host-pushed VIP list is also cleared when you leave that server, so it no longer carries over to the next one. DrakeModsLibs 0.10.1 applies the same fix to the Libs VIP profile used by other mods.
   - **Fix:** VRP VIP sync never reached clients on Valheim 1.0 (`ZRoutedRpc.Everybody` no longer exists; sends are now per peer) and the join hook called the non-public `ZNet.GetPeer`.
   - **Fix:** a wall Written Page's face text did not repaint after an edit; the page now repaints like a freshly placed one.
   - **Fix:** paper icons were baked at a 4 degree tilt; they are now straight.

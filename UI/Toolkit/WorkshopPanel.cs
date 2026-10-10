@@ -213,15 +213,16 @@ internal sealed class WorkshopPanel
         _desc.Root.style.marginBottom = 16;
         body.Add(_desc.Root);
 
-        // Name and description take rich text: one toolbar writes the tags (closed correctly) and the limit ignores them.
+        // Name, description and crafter take rich text: one toolbar writes the tags (closed correctly) and the limit ignores them.
         _name.EnableRich();
         _desc.EnableRich();
-        _richBar = new UkRichToolbar(_tips, card, () => RenameitConfig.RecentColors, value => RenameitConfig.RecentColors = value,
-            (TitleName, _name), (TitleDesc, _desc));
-        _richBar.Root.style.marginBottom = 10;
-        body.Insert(body.IndexOf(_name.Root) + 1, _richBar.Root);
 
         _crafted = new UkField(TitleCrafted, multiline: false, resetTooltip: "Back to the original crafter and label", tips: _tips);
+        _crafted.EnableRich();
+        _richBar = new UkRichToolbar(_tips, card, () => RenameitConfig.RecentColors, value => RenameitConfig.RecentColors = value,
+            (TitleName, _name), (TitleDesc, _desc), (TitleCrafted, _crafted));
+        _richBar.Root.style.marginBottom = 10;
+        body.Insert(body.IndexOf(_name.Root) + 1, _richBar.Root);
         _crafted.Changed = _ => OnEdited();
         _crafted.ResetClicked = () =>
         {

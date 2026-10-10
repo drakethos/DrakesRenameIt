@@ -714,7 +714,7 @@ public static class RenameitConfig
         _hoverStyle = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,
             "HoverStyle",
-            "Vanilla",
+            "Minimal",
             "World hover text style (what you see looking at an item on the ground or on a stand): Vanilla = untouched, Minimal = name and a quiet key hint, Detailed = adds description and crafter. Per-client.");
 
         _hoverKeyHint = _drakeConfigSync.BindClientOnly(config,

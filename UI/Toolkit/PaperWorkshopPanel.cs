@@ -139,7 +139,7 @@ internal sealed class PaperWorkshopPanel
         recycleHint.style.marginTop = 2;
         recycleText.Add(recycleHint);
         _recycleCard.Add(recycleText);
-        _recycle = new UkConfirm("Recycle", "Wipe the writing and get a blank sheet back?", "Recycle", OnRecycleConfirmed);
+        _recycle = new UkConfirm(T(LKeys.RecycleBtn), "Wipe the writing and get a blank sheet back?", "Recycle", OnRecycleConfirmed);
         _recycleCard.Add(_recycle.Root);
         body.Add(_recycleCard);
 

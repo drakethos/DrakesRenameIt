@@ -51,16 +51,16 @@ public static class RenameitPermission
     static bool _apiListFromHost;
 
     /// <summary>
-    /// A remote client may only trust VIP entries the host pushed. If we are connected to someone else's
-    /// server and ConfigSync never made the host the source of truth (server lacks this mod, or sync not
-    /// finished), the local cfg VipList is just a file the player can edit — ignore it.
+    /// A remote client may only trust VIP entries the host pushed. IsSourceOfTruth stays true until the host's
+    /// synced config replaces ours; while it is true (server lacks this mod, or sync not finished) the local
+    /// cfg VipList is just a file the player can edit, so ignore it.
     /// </summary>
     static bool LocalVipListsTrusted()
     {
         var znet = ZNet.instance;
         if (znet == null || znet.IsServer())
             return true;
-        return _vipConfigSync != null && _vipConfigSync.IsSourceOfTruth;
+        return _vipConfigSync != null && !_vipConfigSync.IsSourceOfTruth;
     }
 
     /// <summary>

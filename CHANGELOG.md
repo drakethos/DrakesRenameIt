@@ -1,3 +1,7 @@
+- Version 1.2.1
+  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
+  - **Security fix (VIP):** the 1.2.0 local VIP check was inverted. A remote client trusted its own `VipList` only before the host's config had synced, so a player could still grant themselves VIP, and real VIPs on a remote or dedicated server lost VIP once synced. A remote client now trusts `VipList` only after the host's config has taken over. Host and offline play are unchanged.
+  - Requires **DrakeModsLibs 0.11.2+**, which fixes the same inverted check in the Libs VIP profile.
 - Version 1.2.0
   - **Final Thunderstore release.** DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
   - Stable cut of the 1.2.0 betas below: new Asset Forge paper look, wall page edits synced through the owner, VIP security fixes, and Valheim 1.0 fixes.

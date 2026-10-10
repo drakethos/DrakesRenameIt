@@ -14,12 +14,14 @@ internal static class PaperAssets
 {
     private static float Scale => RenameitConfig.PaperScale;
 
-    internal static Sprite? BlankIcon => PieceOfPaper.Icon;
-    internal static Sprite? WrittenIcon => WrittenPaper.Icon;
+    internal static Sprite? BlankIcon => (RenameitConfig.PaperMeshLook ? PaperMesh.BlankIcon : null) ?? PieceOfPaper.Icon;
+    internal static Sprite? WrittenIcon => (RenameitConfig.PaperMeshLook ? PaperMesh.WrittenIcon : null) ?? WrittenPaper.Icon;
 
     /// <summary>An inventory/dropped sheet: flat, face up, under the item's <c>attach</c>.</summary>
     internal static void AttachItemSheet(Transform attach, bool written)
     {
+        if (RenameitConfig.PaperMeshLook && PaperMesh.Build(attach, Scale, wall: false, written) != null)
+            return;
         if (written)
             WrittenPaper.Build(attach, Scale);
         else
@@ -29,6 +31,8 @@ internal static class PaperAssets
     /// <summary>A placed sheet under the piece's decor holder: standing facing +Z on walls, face up when flat.</summary>
     internal static void AttachPieceSheet(Transform decor, bool wall, bool written)
     {
+        if (RenameitConfig.PaperMeshLook && PaperMesh.Build(decor, Scale, wall, written) != null)
+            return;
         switch (wall, written)
         {
             case (true, true):
@@ -49,6 +53,8 @@ internal static class PaperAssets
     /// <summary>The shared sheet material (blank or written), for swapping a placed note's look. Built once.</summary>
     internal static Material? SheetMaterial(bool written)
     {
+        if (RenameitConfig.PaperMeshLook && PaperMesh.SheetMaterial(written) is { } meshMaterial)
+            return meshMaterial;
         var texture = ForgeTextures.Load(typeof(PaperAssets).Assembly, written ? "textures/paper_sheet_written.png" : "textures/paper_sheet.png");
         return texture != null ? ForgeSprites.Material(texture) : null;
     }

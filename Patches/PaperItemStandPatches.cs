@@ -118,7 +118,7 @@ internal static class PaperItemStandPatches
         return desc;
     }
 
-    private static ItemDrop.ItemData? TryLoadAttached(ItemStand stand)
+    internal static ItemDrop.ItemData? TryLoadAttached(ItemStand stand)
     {
         // Valheim 1.0 / Pfhoenix: GetAttachedItem() returns prefab name (string).
         // Older publicized refs: returns prefab hash (int). Resolve via reflection so both CI and local builds compile.

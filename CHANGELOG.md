@@ -1,3 +1,7 @@
+- Version 1.3.0-beta.2
+  - Beta. Still works with **DrakeModsLibs 1.0.0-beta.1** or newer.
+  - **Fix: hover text left on the main menu.** The styled world hover lives on its own screen that outlives the world, so logging out with a piece in view left its name ("Unassigned PO Box" and so on) showing over the menu. It now hides when the world unloads.
+
 - Version 1.3.0-beta.1
   - Beta. Requires **DrakeModsLibs 1.0.0-beta.1** (new message card).
   - Feedback messages (saves, errors, renames) now show on the shared DrakeMessage card instead of RenameIt's own HUD code.

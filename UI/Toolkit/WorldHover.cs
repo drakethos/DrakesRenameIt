@@ -105,11 +105,22 @@ internal static class WorldHover
         Place();
     }
 
+    static void Hide()
+    {
+        _alpha = 0f;
+        _shownText = "";
+        _signature = "";
+        _box?.Show(false);
+    }
+
     static void EnsureCreated()
     {
         if (_screen != null)
             return;
         _screen = UkScreen.Create("drakes_world_hover");
+        // The HUD (and with it Tick) is gone once the world unloads, but this screen outlives it: hide it so the last hover text
+        // does not stay on the main menu.
+        UnityEngine.SceneManagement.SceneManager.sceneUnloaded += _ => Hide();
         _screen.RaiseAboveCanvases(2);
         _box = new VisualElement { pickingMode = PickingMode.Ignore };
         _box.style.position = Position.Absolute;

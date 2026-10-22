@@ -1,0 +1,75 @@
+{
+  "name": "TC-106b pinning one print keeps the stack count",
+  "description": "Sheet: TC-106 step 8, ISSUE-015, ISSUE-016. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Print Me"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.copy",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "copies": 5,
+        "immutable": true
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "use",
+      "block": "pinPage",
+      "args": {
+        "prefab": "Drakes_Paper_Print",
+        "label": "pin one print"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": "4",
+      "label": "4 prints left in one stack"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": "5",
+      "label": "taking it back stacks again"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

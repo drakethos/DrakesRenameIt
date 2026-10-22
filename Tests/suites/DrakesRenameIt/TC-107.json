@@ -1,0 +1,81 @@
+{
+  "name": "TC-107 shared page: others may rewrite, not re-share",
+  "description": "Sheet: TC-107, TC-504 (simulated). ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Shared Page"
+      }
+    },
+    {
+      "do": "use",
+      "block": "pinPage"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageShare",
+      "args": {
+        "on": true
+      },
+      "expect": true,
+      "label": "owner turns Shared on"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageIsShared",
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageEdit",
+      "args": {
+        "op": "name",
+        "text": "Bob was here"
+      },
+      "expect": true,
+      "label": "Bob may rename a Shared page"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageName",
+      "contains": "Bob was here"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageShare",
+      "args": {
+        "on": false
+      },
+      "expect": false,
+      "label": "Bob cannot turn Shared off"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageIsShared",
+      "expect": true,
+      "label": "still shared"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

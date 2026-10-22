@@ -1,0 +1,109 @@
+{
+  "name": "X-01 paper config: stack sizes, item type, hammer pieces",
+  "description": "Sheet: CONFIGS 10 Paper rows 7-9, 23-25. ",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.maxStack",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": 50,
+      "label": "BlankPaperStackSize 50"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.maxStack",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": 1,
+      "label": "Written Page always 1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.maxStack",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": 50,
+      "label": "PrintedPaperStackSize 50"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.itemType",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": "Material",
+      "label": "PaperItemType Material"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperBlank_Upright"
+      },
+      "expect": true,
+      "label": "wall sheet placeable"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperBlank_Laying"
+      },
+      "expect": true,
+      "label": "flat sheet placeable"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperStack"
+      },
+      "expect": true,
+      "label": "paper stack placeable"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/VerticalPaperPlaceable": "false",
+        "10 Paper/StackPaperPlaceable": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperBlank_Upright"
+      },
+      "expect": false,
+      "label": "VerticalPaperPlaceable off hides the wall sheet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperBlank_Laying"
+      },
+      "expect": true,
+      "label": "flat sheet unaffected"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceEnabled",
+      "args": {
+        "prefab": "Drakes_PaperStack"
+      },
+      "expect": false,
+      "label": "StackPaperPlaceable off hides the stack"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

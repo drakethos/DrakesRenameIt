@@ -1,0 +1,47 @@
+{
+  "name": "SM-005 upgrade keeps the changes",
+  "description": "Sheet: SM-005. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "craftRenamed",
+      "args": {
+        "text": "Test Club"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.upgrade",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "upgrade at the workbench (game crafting code)",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quality",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": 2,
+      "label": "now quality 2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Test Club",
+      "label": "name survived the upgrade"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

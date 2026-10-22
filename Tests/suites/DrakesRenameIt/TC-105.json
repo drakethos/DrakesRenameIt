@@ -1,0 +1,108 @@
+{
+  "name": "TC-105 paper basics: write, pin, style, take",
+  "description": "Sheet: TC-105. Screenshot shows the landscape text; whether only LINE 1/LINE 2 fit is a visual check (manual suite).",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper",
+        "op": "name",
+        "text": "Test Paper"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "desc",
+        "text": "Line 1\nLine 2\nLine 3\nLine 4"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "craftedBy",
+        "text": "Test Name"
+      },
+      "expect": true,
+      "label": "crafted-by on a written page"
+    },
+    {
+      "do": "use",
+      "block": "pinPage"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageMayEdit",
+      "expect": true,
+      "label": "owner may open the wall editor"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageStyle",
+      "args": {
+        "font": 7,
+        "landscape": true
+      },
+      "contains": "landscape=True",
+      "label": "landscape + font 7"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "screenshot",
+      "name": "landscape-font7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true,
+      "label": "hold E takes it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "contains": "Test Paper"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "contains": "Line 4"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

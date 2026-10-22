@@ -1,0 +1,33 @@
+{
+  "name": "M-HOVER world hover text styles",
+  "description": "Sheet: CONFIGS 11 UI (hover settings, not in the sheet).",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "Hover Axe"
+      }
+    },
+    {
+      "do": "checkpoint",
+      "message": "Drop the axe and look at it. Shift+F1 opens Quick Settings: try Vanilla / Minimal / Detailed, sizes S/M/L, Beside/Under, backdrop. The hover text follows each choice. Pass?"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

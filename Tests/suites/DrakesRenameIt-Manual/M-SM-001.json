@@ -1,0 +1,28 @@
+{
+  "name": "M-SM-001 Shift+RMB opens the Workshop window",
+  "description": "Sheet: SM-001, TC-101 step 2.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "pressKey",
+      "button": "Inventory"
+    },
+    {
+      "do": "checkpoint",
+      "message": "Hover the stone axe and press Shift + Right click. The RenameIt window opens, the cursor works and you cannot move. Close it with Cancel. Pass?"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

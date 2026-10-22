@@ -1,0 +1,20 @@
+{
+  "name": "M-SM-015 menus in another language",
+  "description": "Sheet: SM-015.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "checkpoint",
+      "message": "Settings > Language: switch to another language, open the RenameIt window and the Paper tab. Texts are translated or fall back to English, nothing shows raw $tokens. Switch back. Pass?"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

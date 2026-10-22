@@ -1,0 +1,46 @@
+{
+  "name": "TC-210 SeparateStacks on, HardLock on",
+  "description": "Sheet: TC-210. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "splitStacks",
+      "args": {
+        "sep": "true",
+        "hard": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dropAndPickup",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 2,
+      "label": "dropped and picked up: still 2 stacks"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dragMerge",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": false,
+      "label": "drag does not merge"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 2
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

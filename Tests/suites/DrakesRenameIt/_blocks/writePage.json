@@ -1,0 +1,39 @@
+{
+  "description": "Turn a blank sheet into a written page named text (stops the test if that fails); desc = page text.",
+  "params": {
+    "desc": null,
+    "blanks": 1
+  },
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": "{{blanks}}"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper",
+        "op": "name",
+        "text": "{{text}}"
+      },
+      "expect": true,
+      "label": "write the page",
+      "stop": true
+    },
+    {
+      "if": "{{desc}}",
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "match": "{{text}}",
+        "op": "desc",
+        "text": "{{desc}}"
+      },
+      "expect": true,
+      "label": "page text"
+    }
+  ]
+}

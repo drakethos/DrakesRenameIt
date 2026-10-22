@@ -1,0 +1,141 @@
+{
+  "name": "TC-209 durability labels",
+  "description": "Sheet: TC-209, ISSUE-008. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "09 Modifiers/DurabilityModifierEnabled": "true"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.durability",
+      "args": {
+        "prefab": "AxeStone",
+        "fraction": 1.0
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Pristine",
+      "label": "full = Pristine"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.durability",
+      "args": {
+        "prefab": "AxeStone",
+        "fraction": 0.75
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Tarnished",
+      "label": "<=0.8 = Tarnished"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.durability",
+      "args": {
+        "prefab": "AxeStone",
+        "fraction": 0.55
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Worn",
+      "label": "<=0.6 = Worn"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.durability",
+      "args": {
+        "prefab": "AxeStone",
+        "fraction": 0.3
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Rusty",
+      "label": "<=0.4 = Rusty"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.durability",
+      "args": {
+        "prefab": "AxeStone",
+        "fraction": 0.0
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Broken",
+      "label": "0 = Broken"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Wood"
+      },
+      "notContains": "Pristine",
+      "label": "no label on resources (ISSUE-008)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "09 Modifiers/DurabilityModifierEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Broken",
+      "label": "off = no label"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

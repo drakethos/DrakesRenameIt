@@ -1,0 +1,73 @@
+{
+  "name": "TC-215 denial UI and reasons",
+  "description": "Sheet: TC-215. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "own this item",
+      "label": "ShowReason on: specific reason"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "x"
+      },
+      "expect": false,
+      "label": "editing is refused"
+    },
+    {
+      "do": "check",
+      "check": "message",
+      "contains": "own",
+      "label": "an on-screen message told the player"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/ShowReason": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "own this item",
+      "label": "ShowReason off: generic text"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/ShowDenialUi": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": "",
+      "label": "ShowDenialUi off: no denial text"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

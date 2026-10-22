@@ -1,0 +1,104 @@
+{
+  "name": "SM-012 pin a page, copy it, take it",
+  "description": "Sheet: SM-012, SM-013, SM-014. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Test Paper",
+        "desc": "Hello from the wall"
+      }
+    },
+    {
+      "do": "use",
+      "block": "pinPage",
+      "args": {
+        "label": "pin the page (place-mode code)"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageName",
+      "contains": "Test Paper",
+      "label": "pinned page keeps its name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageDesc",
+      "contains": "Hello from the wall",
+      "label": "and its text"
+    },
+    {
+      "do": "check",
+      "check": "noItem",
+      "prefab": "Drakes_Paper_Written",
+      "label": "the page left the inventory"
+    },
+    {
+      "do": "screenshot",
+      "name": "pinned"
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageCopy",
+      "args": {
+        "copies": 1
+      },
+      "expect": true,
+      "label": "copy it from the wall (uses one blank)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "contains": "Test Paper",
+      "label": "the copy has the same name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isCopy",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "label": "copy mark on a separate written copy (informational: only printed stacks are stamped)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true,
+      "label": "hold E takes it back"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": 2,
+      "label": "copy + original in the inventory"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

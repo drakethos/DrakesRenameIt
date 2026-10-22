@@ -1,0 +1,62 @@
+{
+  "name": "TC-107b private page: others cannot rewrite",
+  "description": "Sheet: TC-107, TC-503 (simulated). ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Private Page"
+      }
+    },
+    {
+      "do": "use",
+      "block": "pinPage"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageEdit",
+      "args": {
+        "op": "name",
+        "text": "Bob was here"
+      },
+      "expect": false,
+      "label": "Bob cannot rename a private page"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageName",
+      "contains": "Private Page",
+      "label": "unchanged"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageShare",
+      "args": {
+        "on": true
+      },
+      "expect": false,
+      "label": "Bob cannot share it"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

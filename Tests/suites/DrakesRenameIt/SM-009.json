@@ -1,0 +1,78 @@
+{
+  "name": "SM-009 VIP can edit anyone's item",
+  "description": "Sheet: SM-009, TC-217. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": true,
+      "label": "Nacho-VIP is elevated"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "VIP Club"
+      },
+      "expect": true,
+      "label": "VIP renames Alice's axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "VIP Club"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": false,
+      "label": "Bob is not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": false,
+      "label": "Bob cannot rename Alice's axe"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

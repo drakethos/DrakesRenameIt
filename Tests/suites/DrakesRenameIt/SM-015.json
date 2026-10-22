@@ -1,0 +1,45 @@
+{
+  "name": "SM-015 paper names follow the language file",
+  "description": "Sheet: SM-015 (partly). Switching the game language is in the manual suite.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": "Piece of Paper",
+      "label": "blank paper name (English)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/PaperName": "Scrap"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": "Scrap",
+      "label": "PaperName config renames blank paper live"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

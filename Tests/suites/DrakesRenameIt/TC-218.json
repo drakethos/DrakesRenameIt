@@ -1,0 +1,93 @@
+{
+  "name": "TC-218 WrittenPaperIgnoresRestrictions",
+  "description": "Sheet: TC-218. ",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Alice Notes"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.share",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "on": true
+      },
+      "expect": true,
+      "label": "Alice shares the page"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "02 Features/RenameEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "name"
+      },
+      "expect": false,
+      "label": "rename off: Bob cannot rename the shared page"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/WrittenPaperIgnoresRestrictions": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "with the bypass he can"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/WrittenPaperIgnoresRestrictions": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "the owner always may"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "M-TC-301 character limits in the window",
+  "description": "Sheet: TC-301.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "08 Limits/NameCharacterLimit": "10"
+      }
+    },
+    {
+      "do": "pressKey",
+      "button": "Inventory"
+    },
+    {
+      "do": "checkpoint",
+      "message": "Open the window for the axe (Shift+RMB) and type more than 10 characters in Name. It stops at 10 (NameCharacterLimit = 10). Pass?"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

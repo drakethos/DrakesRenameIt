@@ -1,0 +1,148 @@
+{
+  "name": "TC-106 copies, printed stack, recycle",
+  "description": "Sheet: TC-106, ISSUE-017. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Copy Me",
+        "desc": "Copy body"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.copy",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "match": "Copy Me",
+        "copies": 5
+      },
+      "expect": true,
+      "label": "5 separate copies",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": 6,
+      "label": "original + 5 copies, unstackable"
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.copy",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "index": 0,
+        "copies": 5,
+        "immutable": true
+      },
+      "expect": true,
+      "label": "printed (immutable) stack of 5",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": "5",
+      "label": "one stack of 5 prints"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.canRecycle",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "index": 0
+      },
+      "expect": true,
+      "label": "a written page can be recycled"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.recycle",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "index": 0
+      },
+      "expect": true,
+      "label": "recycle it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": 5,
+      "label": "one written page fewer"
+    },
+    {
+      "do": "check",
+      "check": "hasItem",
+      "prefab": "Drakes_PieceOfPaper",
+      "label": "got a blank back"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.canRecycle",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": false,
+      "label": "prints cannot be recycled (default)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/PaperRecycleImmutableEnabled": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.canRecycle",
+      "args": {
+        "prefab": "Drakes_Paper_Print"
+      },
+      "expect": true,
+      "label": "unless PaperRecycleImmutableEnabled"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/PaperRecycleEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.canRecycle",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "index": 0
+      },
+      "expect": false,
+      "label": "PaperRecycleEnabled off blocks all recycling"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

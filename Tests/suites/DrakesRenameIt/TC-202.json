@@ -1,0 +1,78 @@
+{
+  "name": "TC-202 LockToOwner on, NameClaimsOwner on",
+  "description": "Sheet: TC-202. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/LockToOwner": "true",
+        "05 General/NameClaimsOwner": "true"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": "NotOwner",
+      "label": "cannot edit Alice's axe"
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wood",
+        "op": "name",
+        "text": "My Wood"
+      },
+      "expect": true,
+      "label": "rename unowned wood"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "Wood"
+      },
+      "contains": "",
+      "notContains": "Alice",
+      "label": "renaming claimed it"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Wood",
+        "op": "name"
+      },
+      "expect": false,
+      "label": "Bob cannot edit the claimed wood"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

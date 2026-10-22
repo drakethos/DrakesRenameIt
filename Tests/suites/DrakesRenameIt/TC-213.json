@@ -1,0 +1,68 @@
+{
+  "name": "TC-213 ExcludeStacks",
+  "description": "Sheet: TC-213. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "06 Stacks/ExcludeStacks": "true"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Mushroom",
+      "count": 10
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 10
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "Mushroom",
+        "op": "name"
+      },
+      "expect": "ExcludedStacks",
+      "label": "stackable mushrooms blocked"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "the axe (stack 1) is fine"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "03 Exclusions/RenameAllowlist": "Torch,Wood"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Wood",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "allowlisted wood bypasses ExcludeStacks"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "name": "X-04 unlock cost with other prices and nocost",
+  "description": "Sheet: CONFIGS 07 UnlockCost. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "07 UnlockCost/UnlockCostEnabled": "true",
+        "07 UnlockCost/UnlockCost": "Coal:2;Wood:3"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "give",
+      "prefab": "Coal",
+      "count": 2
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.unlock",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "pays a two-item cost (semicolon list)"
+    },
+    {
+      "do": "check",
+      "check": "noItem",
+      "prefab": "Coal",
+      "label": "coal spent"
+    },
+    {
+      "do": "check",
+      "check": "noItem",
+      "prefab": "Wood",
+      "label": "wood spent"
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper",
+        "op": "name"
+      },
+      "expect": "None",
+      "label": "paper is never unlock-gated"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "07 UnlockCost/UnlockCost": "NotAnItem:5"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeFlint"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.showsUnlock",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "expect": false,
+      "label": "an invalid cost is ignored (no gate)"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

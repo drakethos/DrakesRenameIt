@@ -1,0 +1,72 @@
+{
+  "name": "TC-302 rich text in names",
+  "description": "Sheet: TC-302, ISSUE-002. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "<color=red>Red</color> Axe"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "<color=red>Red</color>",
+      "label": "colour tag kept"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "<color=#00ff00>Unclosed"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "</color>",
+      "label": "unclosed tag gets closed for display"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc",
+        "text": "<b>Bold</b> and <i>italic</i>"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "<b>Bold</b>"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

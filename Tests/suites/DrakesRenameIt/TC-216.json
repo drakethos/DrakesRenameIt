@@ -1,0 +1,85 @@
+{
+  "name": "TC-216 stand name hidden setting",
+  "description": "Sheet: TC-216 (assumed: ShowItemStandItemNameWhenNoAccess). ",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "use",
+      "block": "craftRenamed",
+      "args": {
+        "by": "Alice",
+        "text": "Hidden Axe"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "itemstandh",
+      "dz": 2.5,
+      "owner": "Alice",
+      "as": "stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": {
+        "prefab": "AxeStone",
+        "target": "stand"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -3,
+      "owner": "Alice",
+      "enabled": true,
+      "radius": 15
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Hidden Axe",
+      "label": "on: name shown to someone without access"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/ShowItemStandItemNameWhenNoAccess": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "notContains": "Hidden Axe",
+      "label": "off: name hidden"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "TC-211 SeparateStacks on, HardLock off",
+  "description": "Sheet: TC-211. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "splitStacks",
+      "args": {
+        "sep": "true",
+        "hard": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dropAndPickup",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 2,
+      "label": "pickup keeps them apart"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dragMerge",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": true,
+      "label": "drag merges"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 1
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

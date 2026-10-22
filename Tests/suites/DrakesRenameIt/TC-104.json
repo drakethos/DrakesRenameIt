@@ -1,0 +1,134 @@
+{
+  "name": "TC-104 reset fields and reset all",
+  "description": "Sheet: TC-104. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "use",
+      "block": "editAll",
+      "args": {
+        "name": "Old Name",
+        "desc": "Old Desc",
+        "craftedBy": "Old Maker"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "reset name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Old Name",
+      "label": "default name back"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc"
+      },
+      "expect": true,
+      "label": "reset description"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Old Desc"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy"
+      },
+      "expect": true,
+      "label": "reset crafted-by"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Old Maker",
+      "label": "original crafter shown again"
+    },
+    {
+      "do": "use",
+      "block": "editAll",
+      "args": {
+        "name": "111",
+        "desc": "222",
+        "craftedBy": "333"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "all"
+      },
+      "expect": true,
+      "label": "Reset All"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "111"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "222"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "333"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "all"
+      },
+      "expect": false,
+      "label": "nothing left to reset"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

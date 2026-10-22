@@ -1,0 +1,89 @@
+{
+  "name": "TC-217 VIP and admin override settings",
+  "description": "Sheet: TC-217. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": false,
+      "label": "AllowAdminOverride off: nobody elevated"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "label": "observed: local host counts as admin (informational)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipOnlyOverride": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": false,
+      "label": "VipOnlyOverride: admin alone is not enough"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipList": "Bob;Nacho-VIP"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": true,
+      "label": "Bob on the VIP list (semicolon separated)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "VIP may edit Alice's axe"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.elevated",
+      "expect": false,
+      "label": "AllowAdminOverride off turns VIPs off too"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

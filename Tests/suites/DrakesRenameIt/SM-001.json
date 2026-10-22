@@ -1,0 +1,66 @@
+{
+  "name": "SM-001 open rename menu",
+  "description": "Sheet: SM-001. Items are crafted through the game (real owner). The action menu would open (same rule as Shift+RMB). The real Shift+RMB and window are in the manual suite.",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Alice",
+      "label": "crafting made you the owner",
+      "stop": true
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeFlint",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "expect": "Alice",
+      "label": "crafted by Alice = owned by Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.menuOpens",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "menu opens for your own crafted axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.tooltip",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "label": "inventory tooltip"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.menuOpens",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "expect": false,
+      "label": "not for the axe Alice made"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

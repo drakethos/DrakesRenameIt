@@ -1,0 +1,38 @@
+{
+  "description": "Set name, description and crafted-by on an item (each edit must succeed).",
+  "params": {
+    "prefab": "AxeStone"
+  },
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "{{prefab}}",
+        "op": "name",
+        "text": "{{name}}"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "{{prefab}}",
+        "op": "desc",
+        "text": "{{desc}}"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "{{prefab}}",
+        "op": "craftedBy",
+        "text": "{{craftedBy}}"
+      },
+      "expect": true
+    }
+  ]
+}

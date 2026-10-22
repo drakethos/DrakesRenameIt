@@ -1,0 +1,49 @@
+{
+  "name": "X-03 shared items need PublicRewriteEnabled",
+  "description": "Sheet: CONFIGS 02 Features row 4. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.share",
+      "args": {
+        "prefab": "AxeStone",
+        "on": true
+      },
+      "expect": true
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "02 Features/PublicRewriteEnabled": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": false,
+      "label": "PublicRewriteEnabled off: Shared does nothing"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

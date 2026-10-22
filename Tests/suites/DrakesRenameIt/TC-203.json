@@ -1,0 +1,67 @@
+{
+  "name": "TC-203 LockToOwner off, NameClaimsOwner on",
+  "description": "Sheet: TC-203. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/LockToOwner": "false",
+        "05 General/NameClaimsOwner": "true"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "may edit Alice's axe"
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wood",
+        "op": "name",
+        "text": "My Wood"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Wood",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "Bob may edit it too (no owner lock)"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

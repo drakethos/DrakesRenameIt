@@ -1,0 +1,275 @@
+{
+  "requireMods": [
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "minVersion": "1.2.0"
+    }
+  ],
+  "configOverrides": [
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "01 Admin",
+      "key": "AllowAdminOverride",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "01 Admin",
+      "key": "VipOnlyOverride",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "01 Admin",
+      "key": "VipList",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "02 Features",
+      "key": "RenameEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "02 Features",
+      "key": "RewriteDescriptionsEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "02 Features",
+      "key": "CraftedByLabelEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "02 Features",
+      "key": "PublicRewriteEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "03 Exclusions",
+      "key": "ExcludedNames",
+      "value": "AtgeirBronze"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "03 Exclusions",
+      "key": "ExcludedCategory",
+      "value": "Clubs"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "03 Exclusions",
+      "key": "RenameAllowlist",
+      "value": "Torch"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "04 CraftedBy",
+      "key": "LabelCustomizable",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "04 CraftedBy",
+      "key": "AllowedLabels",
+      "value": "Crafted By, Belongs To, Return to"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "LockToOwner",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "NameClaimsOwner",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "AllowRenameUnownedItems",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "ShowDenialUi",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "ShowReason",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "ShowItemStandItemNameWhenNoAccess",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "05 General",
+      "key": "ServerDefaultMenuOpenModifier",
+      "value": "Shift"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "06 Stacks",
+      "key": "SeparateStacks",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "06 Stacks",
+      "key": "SeparateStacksHardLock",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "06 Stacks",
+      "key": "ExcludeStacks",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "07 UnlockCost",
+      "key": "UnlockCostEnabled",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "07 UnlockCost",
+      "key": "UnlockCost",
+      "value": "Coins:5"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "08 Limits",
+      "key": "NameCharacterLimit",
+      "value": "50"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "08 Limits",
+      "key": "CraftedByCharLimit",
+      "value": "50"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "08 Limits",
+      "key": "DescriptionCharacterLimit",
+      "value": "1000"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "09 Modifiers",
+      "key": "DurabilityModifierEnabled",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperName",
+      "value": "Piece of Paper"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperPlaceEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperTakePublicEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperHoldToTake",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperWallRenameEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperRecycleEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "PaperRecycleImmutableEnabled",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "WrittenPaperIgnoresRestrictions",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "BlankPaperPlaceOrientation",
+      "value": "Both"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "VerticalPaperPlaceable",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "HorizontalPaperPlaceable",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "10 Paper",
+      "key": "StackPaperPlaceable",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "11 UI-NotSynced",
+      "key": "MenuOpenModifier",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "11 UI-NotSynced",
+      "key": "LogSpam",
+      "value": "false"
+    }
+  ],
+  "setup": {
+    "timeOfDay": 0.5,
+    "freezeTime": 1,
+    "god": 1,
+    "noBuild": "off",
+    "hideUnlockPopups": 1
+  }
+}

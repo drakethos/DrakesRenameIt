@@ -1,0 +1,171 @@
+{
+  "name": "TC-110 locked ward: stand name shown, public page takeable",
+  "description": "Sheet: TC-110, TC-216. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "use",
+      "block": "craftRenamed",
+      "args": {
+        "by": "Alice",
+        "text": "Alice Axe"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "itemstandh",
+      "dz": 2.5,
+      "dx": -1.5,
+      "owner": "Alice",
+      "as": "stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": {
+        "prefab": "AxeStone",
+        "target": "stand"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Public Page"
+      }
+    },
+    {
+      "do": "use",
+      "block": "pinPage"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageShare",
+      "args": {
+        "on": true
+      },
+      "expect": true,
+      "label": "Alice shares the page"
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -3,
+      "owner": "Alice",
+      "enabled": true,
+      "radius": 15,
+      "as": "ward"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTakePublic",
+      "args": {
+        "on": true
+      },
+      "expect": true,
+      "label": "Alice makes it public (anyone may take it)"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageIsTakePublic",
+      "expect": true,
+      "label": "the page is now public"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageHover",
+      "label": "Bob's hover on the public page (informational)"
+    },
+    {
+      "do": "check",
+      "check": "wardAccess",
+      "expect": false,
+      "label": "Bob has no ward access"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Alice Axe",
+      "label": "Bob still sees the axe name on the stand"
+    },
+    {
+      "do": "screenshot",
+      "name": "bob-sees-stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true,
+      "label": "Bob may take the public page"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "op": "name",
+        "text": "My Paper Now"
+      },
+      "expect": true,
+      "label": "Bob renames the shared page"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "contains": "My Paper Now"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/ShowItemStandItemNameWhenNoAccess": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "notContains": "Alice Axe",
+      "label": "with ShowItemStandItemNameWhenNoAccess off the name is hidden"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

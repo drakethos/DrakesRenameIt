@@ -1,0 +1,137 @@
+{
+  "name": "TC-101 unlock cost then edit everything",
+  "description": "Sheet: TC-101. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "07 UnlockCost/UnlockCostEnabled": "true",
+        "07 UnlockCost/UnlockCost": "Coins:5"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 10
+    },
+    {
+      "do": "hook",
+      "name": "renameit.showsUnlock",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "Unlock button offered"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": "UnlockCostRequired",
+      "label": "locked until paid"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.unlock",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "pay the unlock",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Coins"
+      },
+      "expect": "5",
+      "label": "5 coins spent"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isUnlocked",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true
+    },
+    {
+      "do": "use",
+      "block": "editAll",
+      "args": {
+        "name": "Test Name",
+        "desc": "Test Desc",
+        "craftedBy": "Crafted in Test"
+      }
+    },
+    {
+      "do": "use",
+      "block": "checkAll",
+      "args": {
+        "name": "Test Name",
+        "desc": "Test Desc",
+        "craftedBy": "Crafted in Test"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.unlock",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": false,
+      "label": "cannot pay twice"
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeFlint"
+    },
+    {
+      "do": "give",
+      "prefab": "Coins",
+      "count": 3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.showsUnlock",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "expect": true,
+      "label": "Unlock offered for the new axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.unlock",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "expect": false,
+      "label": "not enough coins"
+    },
+    {
+      "do": "check",
+      "check": "message",
+      "contains": "unlock requirements",
+      "label": "the player was told why"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

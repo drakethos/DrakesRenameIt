@@ -1,0 +1,29 @@
+{
+  "name": "TC-212 SeparateStacks off",
+  "description": "Sheet: TC-212. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "splitStacks",
+      "args": {
+        "sep": "false",
+        "hard": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dropAndPickup",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 1,
+      "label": "pickup merges them"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

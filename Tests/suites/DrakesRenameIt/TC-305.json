@@ -1,0 +1,57 @@
+{
+  "name": "TC-305 copy more pages than you can hold",
+  "description": "Sheet: TC-305. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Too Many"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 50
+    },
+    {
+      "do": "give",
+      "prefab": "Stone",
+      "count": 1400
+    },
+    {
+      "do": "hook",
+      "name": "renameit.copy",
+      "args": {
+        "prefab": "Drakes_Paper_Written",
+        "copies": 10
+      },
+      "expect": false,
+      "label": "refused when there is no room for the copies"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": 1,
+      "label": "no partial copies left behind"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": "50",
+      "label": "blanks refunded / not used"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

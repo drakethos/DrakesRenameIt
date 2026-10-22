@@ -1,0 +1,74 @@
+{
+  "name": "SM-011 blank paper becomes a written page",
+  "description": "Sheet: SM-011. ",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "blank paper always allows a name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper",
+        "op": "name",
+        "text": "Test Paper"
+      },
+      "expect": true,
+      "label": "write a name",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isWritten",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "expect": true,
+      "label": "a written page appeared"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "contains": "Test Paper"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "expect": "1",
+      "label": "one blank sheet used"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "Drakes_Paper_Written"
+      },
+      "notContains": "Alice",
+      "label": "the writer owns the page"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

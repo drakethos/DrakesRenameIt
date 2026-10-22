@@ -1,0 +1,35 @@
+{
+  "description": "Spawn a horizontal item stand (tag \"stand\"), face it and put the item on it.",
+  "params": {
+    "prefab": "AxeStone",
+    "label": null
+  },
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "itemstandh",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "stand"
+    },
+    {
+      "do": "face",
+      "target": "stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": {
+        "prefab": "{{prefab}}",
+        "target": "stand"
+      },
+      "expect": true,
+      "label": "{{label}}",
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    }
+  ]
+}

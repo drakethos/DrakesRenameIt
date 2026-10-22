@@ -1,0 +1,55 @@
+{
+  "name": "TC-214 menu keys config",
+  "description": "Sheet: TC-214 (partly). Pressing the keys for real is in the manual suite.",
+  "steps": [
+    {
+      "do": "invoke",
+      "method": "DrakeRenameit.RenameitConfig.MenuOpenModifier"
+    },
+    {
+      "do": "check",
+      "check": "lastResult",
+      "expect": "Shift",
+      "label": "server default is Shift"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/MenuOpenModifier": "Ctrl"
+      }
+    },
+    {
+      "do": "invoke",
+      "method": "DrakeRenameit.RenameitConfig.MenuOpenModifier"
+    },
+    {
+      "do": "check",
+      "check": "lastResult",
+      "expect": "Ctrl",
+      "label": "a local key overrides it"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/MenuOpenModifier": "",
+        "05 General/ServerDefaultMenuOpenModifier": "None"
+      }
+    },
+    {
+      "do": "invoke",
+      "method": "DrakeRenameit.RenameitConfig.MenuOpenModifier"
+    },
+    {
+      "do": "check",
+      "check": "lastResult",
+      "expect": "None",
+      "label": "empty local key follows the server default"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

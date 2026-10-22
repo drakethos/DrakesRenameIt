@@ -1,0 +1,76 @@
+{
+  "name": "SM-002 modify name / desc / crafted-by",
+  "description": "Sheet: SM-002, SM-003, SM-004. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "Test Club"
+      },
+      "expect": true,
+      "label": "name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc",
+        "text": "Test description"
+      },
+      "expect": true,
+      "label": "desc"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "crafted in test"
+      },
+      "expect": true,
+      "label": "crafted-by"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Test Club",
+      "label": "shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Test description",
+      "label": "shows the new description"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "crafted in test",
+      "label": "shows the new crafted-by"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

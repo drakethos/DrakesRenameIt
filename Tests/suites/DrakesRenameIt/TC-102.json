@@ -1,0 +1,43 @@
+{
+  "name": "TC-102 upgrade keeps name, desc and crafted-by",
+  "description": "Sheet: TC-102. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "use",
+      "block": "editAll",
+      "args": {
+        "name": "Test Name",
+        "desc": "Test Desc",
+        "craftedBy": "Crafted in Test"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.upgrade",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "use",
+      "block": "checkAll",
+      "args": {
+        "name": "Test Name",
+        "desc": "Test Desc",
+        "craftedBy": "Crafted in Test"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

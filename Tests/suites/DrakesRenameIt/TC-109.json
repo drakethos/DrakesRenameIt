@@ -1,0 +1,96 @@
+{
+  "name": "TC-109 upgrading an unowned item claims it",
+  "description": "Sheet: TC-109, ISSUE-004. ",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "AxeStone",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": "",
+      "label": "unowned to start"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.upgrade",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Alice",
+      "label": "upgrader now owns it (ISSUE-004, by design)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "My Stone Axe"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "My Stone Axe"
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.upgrade",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "upgrading Alice's axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "label": "observed owner after upgrading someone else's axe (informational)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "label": "observed: may rename it after upgrading (informational)"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

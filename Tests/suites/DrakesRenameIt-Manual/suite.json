@@ -1,0 +1,9 @@
+{
+  "name": "DrakesRenameIt-Manual",
+  "description": "What a person has to look at or press: real keys and windows, language, relaunch, other mods, real multiplayer. Run it after the automated suite. Each test sets things up and asks you Pass / Fail.",
+  "include": [
+    "../DrakesRenameIt/_shared/baseline.json",
+    "../DrakesRenameIt/_blocks"
+  ],
+  "resetBetweenTests": true
+}

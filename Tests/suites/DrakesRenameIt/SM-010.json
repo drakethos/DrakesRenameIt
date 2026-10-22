@@ -1,0 +1,76 @@
+{
+  "name": "SM-010 craft paper",
+  "description": "Sheet: SM-010. Actually crafting it at the inventory is in the manual suite.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 1
+    },
+    {
+      "do": "give",
+      "prefab": "Coal",
+      "count": 1
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_PieceOfPaper",
+      "free": false
+    },
+    {
+      "do": "check",
+      "check": "hasItem",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1,
+      "label": "crafted one Piece of Paper"
+    },
+    {
+      "do": "check",
+      "check": "noItem",
+      "prefab": "Wood",
+      "label": "used the wood"
+    },
+    {
+      "do": "check",
+      "check": "noItem",
+      "prefab": "Coal",
+      "label": "used the coal"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.paperRecipe",
+      "contains": "enabled=True",
+      "label": "recipe enabled"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.paperRecipe",
+      "contains": "cost=Wood:1,Coal:1",
+      "label": "default cost"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/PaperEnabled": "false"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "log",
+      "message": "PaperEnabled=false: the recipe state is recorded below (the recipe is applied when items register; a live toggle may need a world reload)."
+    },
+    {
+      "do": "hook",
+      "name": "renameit.paperRecipe"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

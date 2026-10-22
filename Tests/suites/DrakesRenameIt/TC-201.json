@@ -1,0 +1,99 @@
+{
+  "name": "TC-201 excluded names / categories / allowlist",
+  "description": "Sheet: TC-201. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AtgeirBronze"
+    },
+    {
+      "do": "craft",
+      "prefab": "Club"
+    },
+    {
+      "do": "craft",
+      "prefab": "MaceIron"
+    },
+    {
+      "do": "craft",
+      "prefab": "MaceNeedle"
+    },
+    {
+      "do": "craft",
+      "prefab": "Torch"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "AtgeirBronze",
+        "op": "name"
+      },
+      "expect": "ExcludedByName",
+      "label": "Bronze atgeir excluded by name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "Club",
+        "op": "name"
+      },
+      "expect": "ExcludedByCategory",
+      "label": "Club excluded by category"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "MaceIron",
+        "op": "name"
+      },
+      "expect": "ExcludedByCategory",
+      "label": "Iron mace excluded by category"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "MaceNeedle",
+        "op": "name"
+      },
+      "expect": "ExcludedByCategory",
+      "label": "Porcupine excluded by category"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Torch",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "Torch is on the allowlist"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AtgeirBronze"
+      },
+      "contains": "Excluded by name",
+      "label": "denial text names the reason"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "Club"
+      },
+      "contains": "Excluded by category"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

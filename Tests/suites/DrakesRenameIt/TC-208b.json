@@ -1,0 +1,75 @@
+{
+  "name": "TC-208b Reset All clears a VIP crafted-by even when crafted-by is off",
+  "description": "Sheet: ISSUE-011. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "VIP Label"
+      },
+      "expect": true,
+      "label": "VIP sets a crafted-by label"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "02 Features/CraftedByLabelEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.reset",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "all"
+      },
+      "expect": true,
+      "label": "owner uses Reset All"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "VIP Label"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

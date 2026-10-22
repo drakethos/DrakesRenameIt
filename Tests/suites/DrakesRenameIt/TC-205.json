@@ -1,0 +1,89 @@
+{
+  "name": "TC-205 AllowRenameUnownedItems off",
+  "description": "Sheet: TC-205, ISSUE-009. ",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wood",
+        "op": "name",
+        "text": "Claimed Wood"
+      },
+      "expect": true,
+      "label": "rename wood while allowed (claims it)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/AllowRenameUnownedItems": "false"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Stone",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "Stone",
+        "op": "name"
+      },
+      "expect": "UncraftedResourceBlocked",
+      "label": "unowned stone blocked"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Wood",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "already-claimed wood can still be changed"
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "crafted items unaffected"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "03 Exclusions/RenameAllowlist": "Torch,Stone"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Stone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "allowlist bypasses the unowned rule"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

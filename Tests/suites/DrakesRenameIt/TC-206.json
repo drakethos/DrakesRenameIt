@@ -1,0 +1,78 @@
+{
+  "name": "TC-206 RenameEnabled off",
+  "description": "Sheet: TC-206. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "02 Features/RenameEnabled": "false"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.denial",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": "GlobalRenameDisabled",
+      "label": "name blocked"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc"
+      },
+      "expect": true,
+      "label": "desc still allowed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy"
+      },
+      "expect": true,
+      "label": "craftedBy still allowed"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "VIP override still may"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

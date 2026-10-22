@@ -1,0 +1,6 @@
+{
+  "name": "DrakesRenameIt",
+  "description": "Automated regression for Drake's RenameIt, following \"Drake's RenameIt Test Suite 2.0\" (SM-/TC- ids) plus extra config coverage (X-). Other players are simulated with play-as (Alice, Bob, Nacho-VIP). Visual / UI / multiplayer checks are in DrakesRenameIt-Manual.",
+  "include": "_shared/baseline.json",
+  "resetBetweenTests": true
+}

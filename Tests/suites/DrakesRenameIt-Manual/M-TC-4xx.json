@@ -1,0 +1,20 @@
+{
+  "name": "M-TC-4xx other mods",
+  "description": "Sheet: TC-401..408.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "checkpoint",
+      "message": "With the modpack: VRP, Shrooms, RPChatter, PlanBuild (stands/walls lose data: known, ISSUE-003), InfinityHammer, Ward is Love, Protective Wards, Arcane Wards. No errors, wards respected. Mark Fail if not tested."
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

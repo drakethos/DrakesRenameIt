@@ -1,0 +1,20 @@
+{
+  "name": "M-TC-501 server lock and VIP list (dedicated server)",
+  "description": "Sheet: TC-501, ISSUE-019.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "checkpoint",
+      "message": "Needs a dedicated server and two clients: a non-admin client cannot change synced settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested."
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

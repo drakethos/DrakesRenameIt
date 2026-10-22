@@ -1,0 +1,32 @@
+{
+  "description": "Check the item shows the given name, description and crafted-by.",
+  "params": {
+    "prefab": "AxeStone"
+  },
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "{{prefab}}"
+      },
+      "contains": "{{name}}"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "{{prefab}}"
+      },
+      "contains": "{{desc}}"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "{{prefab}}"
+      },
+      "contains": "{{craftedBy}}"
+    }
+  ]
+}

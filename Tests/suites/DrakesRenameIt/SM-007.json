@@ -1,0 +1,83 @@
+{
+  "name": "SM-007 split, rename half, drag back",
+  "description": "Sheet: SM-007. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "06 Stacks/SeparateStacks": "true",
+        "06 Stacks/SeparateStacksHardLock": "false"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Mushroom",
+      "count": 10
+    },
+    {
+      "do": "hook",
+      "name": "renameit.split",
+      "args": {
+        "prefab": "Mushroom",
+        "amount": 5
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Mushroom",
+        "index": 1,
+        "op": "name",
+        "text": "Test Shroom"
+      },
+      "expect": true,
+      "label": "rename one half"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 2,
+      "label": "two stacks"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.dragMerge",
+      "args": {
+        "prefab": "Mushroom",
+        "from": 0,
+        "to": 1
+      },
+      "expect": true,
+      "label": "drag the plain stack onto the renamed one merges (hard lock off)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackSizes",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": "10",
+      "label": "one stack of 10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "contains": "Test Shroom",
+      "label": "the merged stack kept the custom name"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "TC-304 take a page with a full inventory",
+  "description": "Sheet: TC-304. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    {
+      "do": "use",
+      "block": "writePage",
+      "args": {
+        "text": "Full Inv Page"
+      }
+    },
+    {
+      "do": "use",
+      "block": "pinPage"
+    },
+    {
+      "do": "give",
+      "prefab": "Stone",
+      "count": 1600
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": false,
+      "label": "cannot take it with no room"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageName",
+      "contains": "Full Inv Page",
+      "label": "page still on the wall"
+    },
+    {
+      "do": "clearInventory"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true,
+      "label": "takes it once there is room"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

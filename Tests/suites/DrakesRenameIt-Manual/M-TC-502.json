@@ -1,0 +1,20 @@
+{
+  "name": "M-TC-502 item info for another real player",
+  "description": "Sheet: TC-502..504.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "checkpoint",
+      "message": "Two real players: a renamed item handed over or put on a stand shows the same name / description / crafted-by for the other player, and their edit rights match the automated play-as results. Mark Fail if not tested."
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

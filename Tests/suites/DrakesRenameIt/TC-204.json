@@ -1,0 +1,61 @@
+{
+  "name": "TC-204 LockToOwner on, NameClaimsOwner off",
+  "description": "Sheet: TC-204. ",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "05 General/LockToOwner": "true",
+        "05 General/NameClaimsOwner": "false"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wood",
+        "op": "name",
+        "text": "Nobody Wood"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "Wood"
+      },
+      "expect": "",
+      "label": "renaming did not claim it"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "Wood",
+        "op": "name"
+      },
+      "expect": true,
+      "label": "still unowned, so Bob may edit it"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

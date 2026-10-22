@@ -1,0 +1,125 @@
+{
+  "name": "TC-108 shared item: another player renames it",
+  "description": "Sheet: TC-108, TC-504 (simulated). ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.share",
+      "args": {
+        "prefab": "AxeStone",
+        "on": true
+      },
+      "expect": true,
+      "label": "owner turns Shared on"
+    },
+    {
+      "do": "use",
+      "block": "itemOnStand"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standTake",
+      "args": {
+        "target": "stand"
+      },
+      "expect": true,
+      "label": "Bob takes it off the stand",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isShared",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": true,
+      "label": "still Shared after the stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "Shared Axe"
+      },
+      "expect": true,
+      "label": "Bob renames the Shared axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy"
+      },
+      "expect": false,
+      "label": "but not the crafted-by line"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.share",
+      "args": {
+        "prefab": "AxeStone",
+        "on": false
+      },
+      "expect": false,
+      "label": "and cannot turn Shared off"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Bob",
+      "label": "owner unchanged"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.share",
+      "args": {
+        "prefab": "AxeStone",
+        "on": false
+      },
+      "expect": true,
+      "label": "owner turns Shared off"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.can",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name"
+      },
+      "expect": false,
+      "label": "now Bob cannot rename it"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

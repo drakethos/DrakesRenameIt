@@ -1,0 +1,71 @@
+{
+  "description": "SeparateStacks / HardLock as given, 50 mushrooms split 25/25, both halves renamed differently.",
+  "params": {},
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "06 Stacks/SeparateStacks": "{{sep}}",
+        "06 Stacks/SeparateStacksHardLock": "{{hard}}"
+      }
+    },
+    {
+      "do": "give",
+      "prefab": "Mushroom",
+      "count": 50
+    },
+    {
+      "do": "hook",
+      "name": "renameit.split",
+      "args": {
+        "prefab": "Mushroom",
+        "amount": 25
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.stackCount",
+      "args": {
+        "prefab": "Mushroom"
+      },
+      "expect": 2,
+      "label": "split into two stacks",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Mushroom",
+        "index": 0,
+        "op": "name",
+        "text": "Test Shroom"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Mushroom",
+        "index": 0,
+        "op": "desc",
+        "text": "Shroom desc"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Mushroom",
+        "index": 1,
+        "op": "name",
+        "text": "Test Mush"
+      },
+      "expect": true
+    }
+  ]
+}

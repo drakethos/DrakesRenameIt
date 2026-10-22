@@ -1,0 +1,75 @@
+{
+  "name": "X-02 crafted-by labels",
+  "description": "Sheet: CONFIGS 04 CraftedBy. ",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "Bjorn",
+        "lineLabel": "Belongs To"
+      },
+      "expect": true,
+      "label": "pick the Belongs To label"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Belongs To"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "Bjorn",
+        "lineLabel": "Stolen From"
+      },
+      "expect": false,
+      "label": "a label not in AllowedLabels is refused"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "04 CraftedBy/LabelCustomizable": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "Bjorn2",
+        "lineLabel": "Return to"
+      },
+      "expect": true,
+      "label": "label picker locked for normal players"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.craftedBy",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Return to",
+      "label": "label unchanged when not customizable"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "TC-103 stand shows the name, taking it back keeps it",
+  "description": "Sheet: TC-103. ",
+  "steps": [
+    {
+      "do": "use",
+      "block": "craftRenamed",
+      "args": {
+        "text": "Test Name",
+        "desc": "Test Desc"
+      }
+    },
+    {
+      "do": "use",
+      "block": "itemOnStand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Test Name"
+    },
+    {
+      "do": "screenshot",
+      "name": "on-stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standTake",
+      "args": {
+        "target": "stand"
+      },
+      "expect": true,
+      "label": "take it back",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Test Name",
+      "label": "name back in the inventory"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Test Desc",
+      "label": "description too"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -78,6 +78,7 @@ namespace DrakeRenameit
         {
             RenameitConfig.Log = Logger;
             Bind(Config);
+            LogLookSummary();
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             try
@@ -103,6 +104,24 @@ namespace DrakeRenameit
 
             harmony.PatchAll();
             CompatibilityManager.Initialize(harmony);
+        }
+
+        /// <summary>One line saying which look is active and which Libs is loaded, so "why is this the old UI?" is answered by the log.</summary>
+        private void LogLookSummary()
+        {
+            try
+            {
+                var libs = typeof(DrakeModsLibs.UI.Toolkit.DrakeUiMode).Assembly;
+                var libsVersion = (System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(libs)?.InformationalVersion
+                    ?? libs.GetName().Version?.ToString()) ?? "?";
+                Logger.LogInfo($"[Look] RenameIt {Version}, DrakeModsLibs {libsVersion}: Libs UseToolkitUi={DrakeModsLibs.UI.Toolkit.DrakeUiMode.Toolkit}, " +
+                               $"RenameIt UseToolkitUi={RenameitConfig.UseToolkitUi}, PaperMeshLook={RenameitConfig.PaperMeshLook}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"[Look] Could not read the UI mode (is DrakeModsLibs 1.0.0-beta.3 installed?): {ex.Message}");
+            }
         }
 
         private void Update()

@@ -2,6 +2,7 @@
   - Beta. Requires **DrakeModsLibs 1.0.0-beta.3** or newer.
   - The new Toolkit UI (live preview card, rich-text colour bar, Quick Settings, styled world hover) is now on `main`; earlier betas lived on `feature/ui-toolkit`.
   - **Fix: paper is no longer shiny.** The 3D sheet glinted under the sun and lights because it inherited Standard smoothness and reflections. It is now fully matte and slightly darker so it does not blow out in direct sun. Restart the world/menu to re-apply.
+  - Startup log now has a `[Look]` line with the RenameIt and DrakeModsLibs versions, whether the new UI is on in Libs and in RenameIt, and `PaperMeshLook`, to make "why am I seeing the old UI?" easy to answer.
   - Placed-piece renaming (chests, doors, beds, stands, carts) is planned for 1.4, not this release. See `docs/PIECES-PLAN.md`.
 
 - Version 1.3.0-beta.2

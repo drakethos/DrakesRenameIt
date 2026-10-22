@@ -1,3 +1,8 @@
+- Version 1.3.0-beta.3
+  - Beta. Requires **DrakeModsLibs 1.0.0-beta.1** or newer.
+  - The new Toolkit UI (live preview card, rich-text colour bar, Quick Settings, styled world hover) is now on `main`; earlier betas lived on `feature/ui-toolkit`.
+  - Placed-piece renaming (chests, doors, beds, stands, carts) is planned for 1.4, not this release. See `docs/PIECES-PLAN.md`.
+
 - Version 1.3.0-beta.2
   - Beta. Still works with **DrakeModsLibs 1.0.0-beta.1** or newer.
   - **Fix: hover text left on the main menu.** The styled world hover lives on its own screen that outlives the world, so logging out with a piece in view left its name ("Unassigned PO Box" and so on) showing over the menu. It now hides when the world unloads.

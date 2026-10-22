@@ -41,9 +41,22 @@ The Valheim DLLs in `libs/` are links to the PC's Steam folder, so every "verify
 
 Pieces change the data model (ZDO instead of item data) and add a new section to the dialog, but nothing existing breaks. That argues for **1.3** unless the dialog is restructured. Take 2.0 only if the item dialog layout has to change for everyone.
 
+## Real dialog vs. the mockup (from the README screenshots, wiki `paper-rename-tab.png`, `paper-tab.png`, `paper-hover.png`)
+
+The shipped UI is not the parchment mockup. Match the shipped one, or decide to restyle it for everyone (that would push toward 2.0).
+
+- Frame: Valheim wood panel, title "Drake's Renameit", orange Valheim-style text.
+- Tabs sit above the panel as small buttons: **Rename | Paper**. A piece section would most naturally be a third tab or replace "Paper" for placed pieces. The mockup's single-dialog "Piece section card" would need the tab bar dropped.
+- Rename tab: two buttons, **Rename** and **Description**, which open their own editors (not inline fields). Below them a hover hint ("Anyone can rewrite this item's name and description."), a **Shared** toggle, then **Reset All** and **OK**. There is no Cancel.
+- Paper tab: toggles (Make public, Landscape text, Immutable stack), +/- steppers, **Make Copy**, **Close**.
+- Hover: "[Hold E] Take item" and "**[Shift + E] Edit**". The shipped modifier is Shift + E, not Shift + Right click. That resolves open item 6 for paper: pieces should reuse `MenuOpenModifier`.
+- Mockup items that have no equivalent today: per-field labels, the footer Cancel, the amber locked state, Cinzel/Source Sans fonts. Each is new work or a deliberate redesign.
+
+Not retrievable here: valheim.hexium.gg (host not reachable from this environment) and the `github.com/user-attachments` images (403). Only the wiki images were fetched.
+
 ## Open items (all need the PC decompile)
 
-1. Real dialog layout versus the baseline board: a screenshot is still needed.
+1. Real dialog layout: see the section above; the other README screenshots (user-attachments) could not be fetched.
 2. `Piece.m_creator`, `SetCreator`, and whether `GetCreator` exists in the current Valheim build.
 3. Hover-name methods on `Container`, `ItemStand`, `Sign`, `Bed`, `Vagon` (and `ArmorStand`, which is an `ItemStand`-like type; confirm).
 4. Item stands still show the original item name: decide on a separate hover path for pieces.

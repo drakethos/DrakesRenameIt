@@ -74,18 +74,14 @@ internal static class PaperMesh
         }
 
         // Paper is matte. The shared sprite material carries Standard's smoothness, which glints under Valheim's sun and lights.
-        var shine = Mathf.Clamp01(RenameitConfig.PaperShine);
         if (material.HasProperty("_Glossiness"))
-            material.SetFloat("_Glossiness", shine * 0.5f);
+            material.SetFloat("_Glossiness", 0f);
         if (material.HasProperty("_Metallic"))
             material.SetFloat("_Metallic", 0f);
-        if (shine <= 0f)
-        {
-            material.SetFloat("_SpecularHighlights", 0f);
-            material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
-            material.SetFloat("_GlossyReflections", 0f);
-            material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
-        }
+        material.SetFloat("_SpecularHighlights", 0f);
+        material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+        material.SetFloat("_GlossyReflections", 0f);
+        material.EnableKeyword("_GLOSSYREFLECTIONS_OFF");
 
         Materials[slot] = material;
         return material;

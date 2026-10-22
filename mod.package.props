@@ -17,6 +17,6 @@
   <ItemGroup>
     <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
     <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
-    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-1.0.0-beta.1" />
+    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-1.0.0-beta.3" />
   </ItemGroup>
 </Project>

@@ -259,7 +259,7 @@ jobs:
             **Beta for the 1.2.0 release candidate.** Hexium + GitHub prerelease only (Thunderstore skipped; Hexium accepts `-beta.N`). Not a stable store build — please test and report issues before the 1.2.0 RC/stable cut.
 
             ### Highlights
-            - Requires **DrakeModsLibs 0.9.8+**
+            - Requires **DrakeModsLibs 1.0.0-beta.3+**
             - **ISSUE-015 / 016:** Printed / immutable paper stacks keep their stack counter after place; split/merge works again
             - **ISSUE-017:** Optional `PaperRecycleImmutableEnabled` (default off) to recycle Printed stacks
             - **ISSUE-005:** Field Reset is confirm → pending → OK; Cancel/Esc discard; nested Yes/No no longer drops the cursor

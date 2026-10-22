@@ -99,7 +99,6 @@ public static class RenameitConfig
     private static ConfigEntry<string> _paperCraftingStation = default!;
     private static ConfigEntry<float> _paperScale = default!;
     private static ConfigEntry<bool> _paperMeshLook = default!;
-    private static ConfigEntry<float> _paperShine = default!;
     private static ConfigEntry<string> _paperItemType = default!;
     private static ConfigEntry<int> _blankPaperStackSize = default!;
     private static ConfigEntry<int> _printedPaperStackSize = default!;
@@ -331,7 +330,6 @@ public static class RenameitConfig
 
     /// <summary>Low-poly 3D sheet (Valheim look) instead of the flat sprite. Applied when items/pieces register.</summary>
     public static bool PaperMeshLook => _paperMeshLook.Value;
-    public static float PaperShine => _paperShine.Value;
 
     /// <summary>Vanilla <see cref="ItemDrop.ItemData.ItemType"/> for Piece of Paper (<c>Material</c> or <c>Misc</c>).</summary>
     public static string PaperItemType => _paperItemType.Value;
@@ -831,12 +829,6 @@ public static class RenameitConfig
             "PaperMeshLook",
             true,
             "Draw paper as a low-poly 3D sheet with a little thickness (Valheim style) instead of a flat image. Per-client; applied when items/pieces register, so restart the world/menu to re-apply.");
-
-        _paperShine = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "PaperShine",
-            0f,
-            "How glossy the 3D paper sheet looks, 0 to 1. 0 = fully matte (default), higher values add a soft highlight. Per-client; applied when items/pieces register, so restart the world/menu to re-apply.");
 
         _paperItemType = _drakeConfigSync.BindSynced(config,
             SectionPaper, DisplayPaper,

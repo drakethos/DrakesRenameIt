@@ -20,7 +20,29 @@
 
 Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
 
-**Requires [DrakeModsLibs 1.0.0-beta.1+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.0-beta.3+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+
+### New in 1.3: the Workshop window
+
+A redesigned window (UI Toolkit) replaces the old wood popups. Hold your menu keys and **right-click** an item as before.
+
+- **Live preview card** beside the window shows the tooltip as you type.
+- **Rich text bar**: bold, italic, bigger or smaller, ten colours and a colour picker (your recent colours are remembered). Colour tags do not count toward the 50-character name limit.
+- **Name, Description and Crafted-by line** in one place, each with its own **Reset**; **Reset all**, **Revert** and **Save** at the bottom (Enter saves, Esc closes). The **Shared** switch lets anyone rewrite the item.
+- **Tabs** (Paper, Rename, Reskin, Lock) appear when more than one Drake mod offers something for the item. Works with **ReskinIt**.
+- **Quick Settings** (default **Shift+S**, changeable): preview card on/off and the world hover style, size, strength and position. Per player.
+- **World hover text** (Vanilla, Minimal or Detailed) for items on the ground or on a stand, with key chips such as **[Hold E] Take item** and **Edit [Shift]+[E]**.
+- Paper is matte, with a 3D sheet look (**PaperMeshLook**).
+
+Turn **UseToolkitUi** off to get the old wood popups back.
+
+<img width="560" alt="Workshop window: name and description with colours, live preview card, crafted-by line, shared switch" src="https://raw.githubusercontent.com/drakethos/DrakesRenameIt/main/docs/images/workshop-rename.png" />
+
+<img width="360" alt="Paper note in the Workshop window with Paper, Rename and Reskin tabs" src="https://raw.githubusercontent.com/drakethos/DrakesRenameIt/main/docs/images/workshop-paper.png" />
+
+<img width="280" alt="Quick Settings: preview card, hover style, size, strength, position, shortcut" src="https://raw.githubusercontent.com/drakethos/DrakesRenameIt/main/docs/images/quick-settings.png" />
+
+<img width="268" alt="World hover text on a pinned paper note" src="https://raw.githubusercontent.com/drakethos/DrakesRenameIt/main/docs/images/world-hover.png" />
 
 ### Piece of Paper (1.1)
 
@@ -30,13 +52,11 @@ Craft blank **Piece of Paper** from the inventory craft list (default recipe **1
 
 ### LockSmith integration
 
-With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 1.0.0-beta.1+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 1.0.0-beta.3+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
 
 ### How to use
 
-Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item. With only RenameIt usable you get the rename action menu; with LockSmith (or another tab) also usable you get the shared tab strip first. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
-
-**Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
+Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to open the **Workshop window**. With LockSmith (or another tab) also usable you get the tab strip across the top. Type a name, description or crafted-by line and watch the preview card; **Save** applies it, **Revert** drops unsaved edits, and each field's **Reset** restores the original localized string. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
 localization with an additional name, simply leave the $string intact and add around it.
 <p>Its placeable. Designed to be renamed. Text shows here!</p>
@@ -48,14 +68,7 @@ localization with an additional name, simply leave the $string intact and add ar
 <p>Make copies easily</p>
 <img width="355" height="338" alt="Copied paper notes pinned side by side" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-copies.png" />
 
-<p>Shift + E on the wall: Rename | Paper. Anyone can rewrite when Shared is on.</p>
-<img width="479" height="465" alt="Rename tab on a pinned paper note" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-rename-tab.png" />
-
-<p>Paper tab: make public, landscape text, font size, immutable stacks, and make copies.</p>
-<img width="446" height="515" alt="Paper tab with public, landscape, font, copies" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-tab.png" />
-
-<p>Hold E to take. Shift + E to edit.</p>
-<img width="422" height="287" alt="Pinned paper hover: take item or edit" src="https://raw.githubusercontent.com/wiki/drakethos/DrakesRenameIt/paper-hover.png" />
+<p>Shift + E on a pinned note opens the Workshop window (Paper | Rename | Reskin). Anyone can rewrite it when Shared is on; the Paper tab holds make public, landscape text, font size, immutable stacks and make copies.</p>
 
 <p>Rename anything:</p>
 <img width="262" height="137" alt="image" src="https://github.com/user-attachments/assets/0d1634b0-5fff-4518-9bea-3d72f6c19b7d" />
@@ -202,6 +215,12 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 #### UI-NotSynced (client only, section 11)
 
 - **MenuOpenModifier** — Optional per-client override for menu keys. Leave empty to use **ServerDefaultMenuOpenModifier** from the server. When set, always applies on this machine. Same key syntax as the server default.
+- **UseToolkitUi** — Use the new Workshop window (default on). Off gives the old wood popups.
+- **ShowPreviewCard** — Floating preview beside the window (default on).
+- **HoverStyle** — `Vanilla`, `Minimal` (default) or `Detailed`; **HoverKeyHint**, **HoverCrafter**, **HoverDescription**, **HoverBackdrop**, **HoverSize** (S/M/L), **HoverStrength** (Light/Normal/Bold) and **HoverPosition** (Under/Beside) fine-tune it. Also in Quick Settings.
+- **QuickSettingsKey** — Shortcut that opens Quick Settings (default `Shift+S`).
+- **RecentColors** — Remembered colour-picker colours (managed by the window).
+- **PaperMeshLook** — Draw paper as a low-poly 3D sheet (default on); restart the world/menu to re-apply.
 - **MenuHintColor** — Tooltip hint color for the menu shortcut (Unity color name or `#rrggbb`).
 - **LogSpam** — Verbose BepInEx traces on this client only (leave off unless debugging).
 

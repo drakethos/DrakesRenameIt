@@ -10,6 +10,8 @@ using DrakeRenameit.Permissions;
 
 using DrakeRenameit.UI;
 
+using DrakeRenameit.UI.Toolkit;
+
 using DrakeModsLibs.Tags;
 
 using DrakeModsLibs.API;
@@ -264,6 +266,13 @@ internal static class RenameItLibsBridge
 
         var item = ctx.Item;
 
+        // New UI Toolkit Item Workshop (it handles the locked/unlock state itself); old wood popups when the toggle is off.
+        if (RenameitConfig.UseToolkitUi)
+        {
+            WorkshopPanel.Show(item);
+            return;
+        }
+
         if (DrakeRenameit.ShowUnlockButton(item))
 
         {
@@ -282,7 +291,11 @@ internal static class RenameItLibsBridge
 
 
 
-    static void HideRenameTab() => UIPanels.HideForTabHost();
+    static void HideRenameTab()
+    {
+        WorkshopPanel.HideFromHost();
+        UIPanels.HideForTabHost();
+    }
 
 
 

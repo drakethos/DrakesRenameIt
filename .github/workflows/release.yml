@@ -69,21 +69,27 @@ jobs:
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
+      # Compile reference for DrakeModsLibs: the exact version this mod depends on, from Hexium.
       - name: Fetch DrakeModsLibs reference DLL
         run: |
-          LIBS_DEP=$(grep -oE 'DrakeMods-DrakeModsLibs-[0-9]+\.[0-9]+\.[0-9]+' mod.package.props | head -1)
+          LIBS_DEP=$(grep -oE 'DrakeMods-DrakeModsLibs-[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?' mod.package.props | head -1)
           LIBS_VER="${LIBS_DEP#DrakeMods-DrakeModsLibs-}"
           if [ -z "$LIBS_VER" ]; then
             echo "::error::Could not parse DrakeMods-DrakeModsLibs version from mod.package.props" >&2
             exit 1
           fi
-          echo "Downloading DrakeModsLibs $LIBS_VER for compile reference"
-          curl -fsSL "https://thunderstore.io/package/download/DrakeMods/DrakeModsLibs/${LIBS_VER}/" -o /tmp/drakemodslibs.zip
+          echo "Resolving DrakeModsLibs $LIBS_VER on Hexium"
+          URL=$(curl -fsSL "https://valheim.hexium.gg/api/experimental/package/DrakeMods/DrakeModsLibs/${LIBS_VER}/" | jq -r '.download_url // empty')
+          if [ -z "$URL" ]; then
+            echo "::error::DrakeModsLibs ${LIBS_VER} is not on Hexium. Publish it first." >&2
+            exit 1
+          fi
+          curl -fsSL "$URL" -o /tmp/drakemodslibs.zip
           mkdir -p ci_libs /tmp/drakemodslibs
           unzip -qo /tmp/drakemodslibs.zip -d /tmp/drakemodslibs
           DLL=$(find /tmp/drakemodslibs -name 'DrakeModsLibs.dll' | head -1)
           if [ -z "$DLL" ]; then
-            echo "::error::DrakeModsLibs.dll missing from Thunderstore zip" >&2
+            echo "::error::DrakeModsLibs.dll missing from Hexium zip" >&2
             find /tmp/drakemodslibs -type f >&2
             exit 1
           fi

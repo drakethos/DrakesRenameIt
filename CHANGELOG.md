@@ -1,5 +1,15 @@
-- Version 1.2.1
-  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
+- Version 1.3.0-beta.2
+  - Beta. Still works with **DrakeModsLibs 1.0.0-beta.1** or newer.
+  - **Fix: hover text left on the main menu.** The styled world hover lives on its own screen that outlives the world, so logging out with a piece in view left its name ("Unassigned PO Box" and so on) showing over the menu. It now hides when the world unloads.
+
+- Version 1.3.0-beta.1
+  - Beta. Requires **DrakeModsLibs 1.0.0-beta.1** (new message card).
+  - Feedback messages (saves, errors, renames) now show on the shared DrakeMessage card instead of RenameIt's own HUD code.
+  - Paper window: Recycle is a drawn icon with a confirm popup; the Paper tab uses the new UI.
+  - Crafted-by lines take rich text; hover defaults to Minimal and no longer leaves tags open.
+  - A wall paper keeps and shows its Reskin colour; world hover runs after the other hover patches.
+  - Removed the old dev-only commands module.
+  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
   - **Security fix (VIP):** the 1.2.0 local VIP check was inverted. A remote client trusted its own `VipList` only before the host's config had synced, so a player could still grant themselves VIP, and real VIPs on a remote or dedicated server lost VIP once synced. A remote client now trusts `VipList` only after the host's config has taken over. Host and offline play are unchanged.
   - Requires **DrakeModsLibs 0.11.2+**, which fixes the same inverted check in the Libs VIP profile.
 - Version 1.2.0

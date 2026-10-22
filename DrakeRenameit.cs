@@ -33,7 +33,6 @@ namespace DrakeRenameit
     [BepInDependency(CompatibilityManager.SoftGuids.ProtectiveWards, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ArcaneWard, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.LockSmith, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(CompatibilityManager.SoftGuids.DevCommands, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public partial class DrakeRenameit : BaseUnityPlugin
     {
@@ -108,7 +107,16 @@ namespace DrakeRenameit
 
         private void Update()
         {
+            var wasCapturingKey = global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Capturing;
+            global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Poll();
+            if (wasCapturingKey)
+                return;
+
             if (!UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
+                return;
+            if (global::DrakeRenameit.UI.Toolkit.QuickSettingsPanel.TryHandleEscape())
+                return;
+            if (global::DrakeRenameit.UI.Toolkit.WorkshopPanel.TryHandleEscape())
                 return;
             UIPanels.TryHandleEscape();
         }

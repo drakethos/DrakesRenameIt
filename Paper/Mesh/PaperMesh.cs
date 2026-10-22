@@ -51,6 +51,9 @@ internal static class PaperMesh
         return go;
     }
 
+    /// <summary>Albedo multiplier for the 3D sheet (1 = untouched). Lower it if paper still glares in direct sun.</summary>
+    const float SunTint = 0.82f;
+
     /// <summary>Shared blank/written sheet material: Standard, albedo + normal map, Point filtering. Built once each.</summary>
     internal static Material? SheetMaterial(bool written)
     {
@@ -78,6 +81,8 @@ internal static class PaperMesh
             material.SetFloat("_Glossiness", 0f);
         if (material.HasProperty("_Metallic"))
             material.SetFloat("_Metallic", 0f);
+        // Near-white parchment albedo blows out under Valheim's sun; a touch of grey keeps it readable outdoors and still fine indoors.
+        material.SetColor("_Color", new Color(SunTint, SunTint, SunTint, 1f));
         material.SetFloat("_SpecularHighlights", 0f);
         material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
         material.SetFloat("_GlossyReflections", 0f);

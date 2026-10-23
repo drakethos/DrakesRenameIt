@@ -321,6 +321,21 @@ internal static class RenameItTestHooks
         return item.m_customData != null && item.m_customData.TryGetValue(S(args, "key"), out var v) ? v : "";
     }
 
+    /// <summary>Set (or with value "" remove) a custom data key on the stack, e.g. a tag like Drake_NoRename.</summary>
+    [TestHook("renameit.setData")]
+    static bool SetData(Dictionary<string, object?> args)
+    {
+        var item = Item(args);
+        item.m_customData ??= new Dictionary<string, string>();
+        var key = S(args, "key");
+        var value = S(args, "value");
+        if (value.Length == 0)
+            item.m_customData.Remove(key);
+        else
+            item.m_customData[key] = value;
+        return true;
+    }
+
     // ---------- unlock cost
 
     [TestHook("renameit.unlock")]

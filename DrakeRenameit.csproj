@@ -104,7 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\RenameEvents.cs" />
-    <Compile Include="Testing\RenameItTestHooks.cs" />
+    <Compile Include="Testing\RenameItTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="API\RenameItPermision.cs" />
     <Compile Include="extensions\ButtonExtensions.cs" />
     <Compile Include="Localization\LKeys.cs" />

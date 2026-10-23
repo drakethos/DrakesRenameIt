@@ -206,7 +206,7 @@ public static class RenameitConfig
 
     /// <summary>
     /// Shortcut that opens Quick Settings when you are not looking at an item: modifiers held, then the last key pressed
-    /// (<c>Shift+S</c>). Empty turns it off. Per-client; the Quick Settings menu has a Change button.
+    /// (<c>Shift+F1</c>). Empty turns it off. Per-client; the Quick Settings menu has a Change button.
     /// </summary>
     public static string QuickSettingsKey
     {
@@ -784,11 +784,11 @@ public static class RenameitConfig
         _quickSettingsKey = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,
             "QuickSettingsKey",
-            "Shift+S",
-            "Shortcut that opens Quick Settings (preview card, hover text). Modifiers held, then the last key pressed, e.g. Shift+S or Ctrl+Shift+F8. Does nothing while you are looking at an item or stand (and, for W/A/S/D shortcuts, while you are moving). Leave empty to turn it off. Per-client; also changeable from the Quick Settings menu.");
-        // The first dev builds shipped Alt+F7; nobody picked it on purpose, so move it to the new default.
-        if (_quickSettingsKey.Value == "Alt+F7")
-            _quickSettingsKey.Value = "Shift+S";
+            "Shift+F1",
+            "Shortcut that opens Quick Settings (preview card, hover text). Modifiers held, then the last key pressed, e.g. Shift+F1 or Ctrl+Shift+F8. Ignored while a menu or text field has focus, and while you are looking at an item or stand (and, for W/A/S/D shortcuts, while you are moving). Leave empty to turn it off. Per-client; also changeable from the Quick Settings menu.");
+        // Older defaults fought typing (Shift+S → "Sheep") or were awkward (Alt+F7).
+        if (_quickSettingsKey.Value == "Alt+F7" || _quickSettingsKey.Value == "Shift+S")
+            _quickSettingsKey.Value = "Shift+F1";
 
         _recentColors = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,

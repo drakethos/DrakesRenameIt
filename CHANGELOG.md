@@ -1,3 +1,11 @@
+- Version 1.3.0-beta.3
+  - Beta. Requires **DrakeModsLibs 1.0.0** (the menu-key fix uses its new `MenuBindingRegistry.LinkTab`).
+  - **Fix: your menu key is respected.** With `MenuOpenModifier` set to another key (e.g. Ctrl), Shift + right-click no longer opens RenameIt's window through the shared Libs key.
+  - **Fix: `ShowItemStandItemNameWhenNoAccess`** now applies live and when the server's synced value arrives (it was read once at startup).
+  - **Fix: paper names and descriptions** (`PaperName`, `PaperDescription`, written / printed page names) update live and when synced from the server. In Spanish the shipped default texts are translated ("Hoja de papel"); a server's own text is used in every language.
+  - **Quick Settings key** now defaults to **Shift+F1** (Shift+S fought typing); old Shift+S / Alt+F7 settings move to it. Ignored while a menu or text field has focus.
+  - Automated tests (DrakesTestLab: 59 automated + 3 manual, mapped to the RenameIt test sheet) in `Tests/`; test hooks compile in Debug builds only. Not part of the release.
+
 - Version 1.3.0-beta.2
   - Beta. Still works with **DrakeModsLibs 1.0.0-beta.1** or newer.
   - **Fix: hover text left on the main menu.** The styled world hover lives on its own screen that outlives the world, so logging out with a piece in view left its name ("Unassigned PO Box" and so on) showing over the menu. It now hides when the world unloads.

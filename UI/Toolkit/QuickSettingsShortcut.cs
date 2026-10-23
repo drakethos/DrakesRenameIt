@@ -5,10 +5,10 @@ using UnityEngine;
 namespace DrakeRenameit.UI.Toolkit;
 
 /// <summary>
-/// The shortcut that opens Quick Settings (config <c>QuickSettingsKey</c>, default <c>Shift+S</c>: modifiers held, then the last key
-/// pressed). It does nothing while you are looking at an item or a stand, so it never fights an item's own actions, and pressing it
-/// again closes the window. When the last key is a movement key (W A S D) it also waits until you are standing still, so backpedalling
-/// at a run (Shift+S) doesn't pop the menu open. <see cref="BeginCapture"/> lets the menu rebind it with a keypress.
+/// The shortcut that opens Quick Settings (config <c>QuickSettingsKey</c>, default <c>Shift+F1</c>: modifiers held, then the last key
+/// pressed). It does nothing while a menu/text field has focus or while you are looking at an item or a stand, so it never fights
+/// typing or an item's own actions, and pressing it again closes the window. When the last key is a movement key (W A S D) it also
+/// waits until you are standing still. <see cref="BeginCapture"/> lets the menu rebind it with a keypress.
 /// </summary>
 internal static class QuickSettingsShortcut
 {
@@ -39,7 +39,7 @@ internal static class QuickSettingsShortcut
             return;
         }
 
-        // The item window has the same settings under its cog; chat and console own the keyboard while they are open.
+        // Menus / text fields own the keyboard; the item window has the same settings under its cog.
         if (WorkshopPanel.IsOpen || LookingAtItem() || TypingElsewhere())
             return;
         if (IsMovementKey(key) && MovingNow())
@@ -117,7 +117,7 @@ internal static class QuickSettingsShortcut
 
     // ---------------------------------------------------------------- the check
 
-    /// <summary>"Shift+S": every token before the last must be held, and the last key must go down this frame.</summary>
+    /// <summary>"Shift+F1": every token before the last must be held, and the last key must go down this frame.</summary>
     static bool Pressed(string binding, out KeyCode key)
     {
         key = KeyCode.None;
@@ -161,6 +161,12 @@ internal static class QuickSettingsShortcut
         return hovered != null && (hovered.GetComponentInParent<ItemDrop>() != null || hovered.GetComponentInParent<ItemStand>() != null);
     }
 
+    /// <summary>Any UI that should keep letter keys for typing / navigation, not open Quick Settings.</summary>
     static bool TypingElsewhere() =>
-        (Chat.instance != null && Chat.instance.HasFocus()) || Console.IsVisible();
+        UkWindow.AnyOpen
+        || (Chat.instance != null && Chat.instance.HasFocus())
+        || Console.IsVisible()
+        || TextInput.IsVisible()
+        || Menu.IsVisible()
+        || InventoryGui.IsVisible();
 }

@@ -2,13 +2,7 @@
   "name": "TC-305 copy more pages than you can hold",
   "description": "Sheet: TC-305. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Too Many"
-      }
-    },
+    "writePage(\"Too Many\")",
     {
       "do": "give",
       "prefab": "Drakes_PieceOfPaper",

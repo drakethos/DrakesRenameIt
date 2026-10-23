@@ -1,9 +1,14 @@
 {
   "description": "Check the item shows the given name, description and crafted-by.",
-  "params": {
-    "prefab": "AxeStone"
-  },
-  "steps": [
+  "params": [
+    "name",
+    "desc",
+    "craftedBy",
+    {
+      "prefab": "AxeStone"
+    }
+  ],
+  "actions": [
     {
       "do": "hook",
       "name": "renameit.name",

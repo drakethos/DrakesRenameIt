@@ -1,0 +1,49 @@
+{
+  "name": "TC-105-UI landscape + font 7 shows only the first lines",
+  "description": "Sheet: TC-105 step 9. Reads what the page actually shows (cut where it overflows). Formerly manual M-TC-105.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    "writePage(\"Look At Me\", \"LINE 1\\nLINE 2\\nLINE 3\\nLINE 4\")",
+    "pinPage()",
+    {
+      "do": "hook",
+      "name": "renameit.pageStyle",
+      "args": {
+        "font": 7,
+        "landscape": true
+      },
+      "contains": "landscape=True"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageVisibleText",
+      "contains": "LINE 1",
+      "label": "the first line is visible"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageVisibleText",
+      "notContains": "LINE 4",
+      "label": "the last line does not fit"
+    },
+    {
+      "do": "screenshot",
+      "name": "landscape-font7"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

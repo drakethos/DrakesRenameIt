@@ -2,14 +2,7 @@
   "name": "TC-210 SeparateStacks on, HardLock on",
   "description": "Sheet: TC-210. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "splitStacks",
-      "args": {
-        "sep": "true",
-        "hard": "true"
-      }
-    },
+    "splitStacks(\"true\", \"true\")",
     {
       "do": "hook",
       "name": "renameit.dropAndPickup",

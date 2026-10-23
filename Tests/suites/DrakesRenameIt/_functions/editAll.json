@@ -1,9 +1,14 @@
 {
   "description": "Set name, description and crafted-by on an item (each edit must succeed).",
-  "params": {
-    "prefab": "AxeStone"
-  },
-  "steps": [
+  "params": [
+    "name",
+    "desc",
+    "craftedBy",
+    {
+      "prefab": "AxeStone"
+    }
+  ],
+  "actions": [
     {
       "do": "hook",
       "name": "renameit.edit",

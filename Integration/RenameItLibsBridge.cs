@@ -119,6 +119,10 @@ internal static class RenameItLibsBridge
 
             modLabel: "DrakesRenameit");
 
+        // the shared Libs modifier leaves RenameIt's tabs out unless RenameIt's own key (MenuOpenModifier) is held
+        MenuBindingRegistry.LinkTab(InventoryMenuBindingId, TabId);
+        MenuBindingRegistry.LinkTab(InventoryMenuBindingId, PaperTabId);
+
 
 
         RegisterPermissionValidators();

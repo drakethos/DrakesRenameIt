@@ -1,0 +1,85 @@
+{
+  "name": "SM-001-UI Shift + right-click opens the Workshop window",
+  "description": "Sheet: SM-001, TC-101 step 2. Real Shift + right-click on the inventory slot (formerly manual M-SM-001).",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeFlint",
+      "by": "Alice"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": true,
+      "label": "the window opened for your own axe",
+      "stop": true
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Save",
+      "label": "its Save button is showing"
+    },
+    {
+      "do": "screenshot",
+      "name": "workshop-open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeFlint",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": false,
+      "label": "the RenameIt window does not open for the axe Alice made"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AxeFlint"
+      },
+      "contains": "own",
+      "label": "the reason a player is given (a tab from another mod, e.g. ReskinIt, may open instead)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

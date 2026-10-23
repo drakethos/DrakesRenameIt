@@ -2,19 +2,10 @@
   "name": "SM-006 item stand shows the new name",
   "description": "Sheet: SM-006. ",
   "steps": [
+    "craftRenamed(\"Test Club\")",
     {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "text": "Test Club"
-      }
-    },
-    {
-      "do": "use",
-      "block": "itemOnStand",
-      "args": {
-        "label": "put the axe on the stand"
-      }
+      "do": "itemOnStand",
+      "label": "put the axe on the stand"
     },
     {
       "do": "hook",

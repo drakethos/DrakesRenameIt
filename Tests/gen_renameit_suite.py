@@ -1,5 +1,6 @@
 # Writes Tests/suites/DrakesRenameIt (automated) and DrakesRenameIt-Manual. Repeated step runs live as DrakesTestLab
-# blocks in DrakesRenameIt/_blocks/ (called with {"do": "use", ...}); the config baseline both suites share is
+# DrakesTestLab functions in DrakesRenameIt/_functions/ (called like steps: "writePage(\"X\")" or {"do": "pinPage", ...});
+# the config baseline both suites share is
 # DrakesRenameIt/_shared/baseline.json (pulled in with "include"). Run: python gen_renameit_suite.py
 import json, os, shutil
 
@@ -62,12 +63,13 @@ def check(checkName, label=None, **f):
         s['label'] = label
     return s
 
-def U(block, **args):
-    # call a block from _blocks/; args fill its {{params}}
-    s = {'do': 'use', 'block': block}
-    if args:
-        s['args'] = args
-    return s
+def U(fn, **args):
+    # call a function from _functions/. Args that are the first params in order -> the short form 'fn("a", 2)';
+    # otherwise the step form {"do": fn, ...args}
+    order = [p if isinstance(p, str) else next(iter(p)) for p in BLOCKS[fn].get('params', [])]
+    if list(args) == order[:len(args)]:
+        return f"{fn}({', '.join(json.dumps(v, ensure_ascii=False) for v in args.values())})"
+    return {'do': fn, **args}
 
 def P(name):
     # a block parameter: "{{name}}" (alone in a string it passes the value as is: numbers, true, objects)
@@ -77,8 +79,8 @@ NOERR = {'check': 'noErrors', 'source': 'DrakesRenameit'}
 
 VIP = {'01 Admin/AllowAdminOverride': 'true', '01 Admin/VipOnlyOverride': 'true', '01 Admin/VipList': 'Nacho-VIP'}
 
-# ---------------------------------------------------------------- blocks (written to DrakesRenameIt/_blocks/<name>.json)
-# params without a default are required; None = optional (a key that is only "{{param}}" is then left out)
+# ---------------------------------------------------------------- functions (written to DrakesRenameIt/_functions/<name>.json)
+# params in call order: a plain name is required, {name: default} is optional; None = left out (a key that is only "{{param}}" is dropped)
 
 def guarded(param, step):
     # the step only runs when the param has a value
@@ -87,37 +89,37 @@ def guarded(param, step):
 BLOCKS = {
     'craftRenamed': {
         'description': 'Craft an item through the game (real owner) and rename it; optionally give it a description too.',
-        'params': {'prefab': 'AxeStone', 'by': None, 'desc': None},
-        'steps': [
+        'params': ['text', {'desc': None}, {'prefab': 'AxeStone'}, {'by': None}],
+        'actions': [
             {'do': 'craft', 'prefab': P('prefab'), 'by': P('by')},
             H('edit', True, prefab=P('prefab'), op='name', text=P('text')),
             guarded('desc', H('edit', True, prefab=P('prefab'), op='desc', text=P('desc'))),
         ]},
     'editAll': {
         'description': 'Set name, description and crafted-by on an item (each edit must succeed).',
-        'params': {'prefab': 'AxeStone'},
-        'steps': [H('edit', True, prefab=P('prefab'), op=op, text=P(op)) for op in ('name', 'desc', 'craftedBy')]},
+        'params': ['name', 'desc', 'craftedBy', {'prefab': 'AxeStone'}],
+        'actions': [H('edit', True, prefab=P('prefab'), op=op, text=P(op)) for op in ('name', 'desc', 'craftedBy')]},
     'checkAll': {
         'description': 'Check the item shows the given name, description and crafted-by.',
-        'params': {'prefab': 'AxeStone'},
-        'steps': [H(op, contains=P(op), prefab=P('prefab')) for op in ('name', 'desc', 'craftedBy')]},
+        'params': ['name', 'desc', 'craftedBy', {'prefab': 'AxeStone'}],
+        'actions': [H(op, contains=P(op), prefab=P('prefab')) for op in ('name', 'desc', 'craftedBy')]},
     'writePage': {
         'description': 'Turn a blank sheet into a written page named text (stops the test if that fails); desc = page text.',
-        'params': {'desc': None, 'blanks': 1},
-        'steps': [
+        'params': ['text', {'desc': None}, {'blanks': 1}],
+        'actions': [
             {'do': 'give', 'prefab': 'Drakes_PieceOfPaper', 'count': P('blanks')},
             H('edit', True, 'write the page', stop=True, prefab='Drakes_PieceOfPaper', op='name', text=P('text')),
             guarded('desc', H('edit', True, 'page text', prefab='Drakes_Paper_Written', match=P('text'), op='desc', text=P('desc'))),
         ]},
     'pinPage': {
         'description': 'Pin a page from the inventory 2 m ahead (place-mode code) and let it settle.',
-        'params': {'prefab': 'Drakes_Paper_Written', 'label': None, 'dz': 2},
-        'steps': [H('pin', True, P('label'), stop=True, prefab=P('prefab'), dz=P('dz')), wait(1.0)]},
+        'params': [{'prefab': 'Drakes_Paper_Written'}, {'label': None}, {'dz': 2}],
+        'actions': [H('clearPages'), H('pin', True, P('label'), stop=True, prefab=P('prefab'), dz=P('dz')), wait(1.0)]},
     'itemOnStand': {
         'description': 'Spawn a horizontal item stand (tag "stand"), face it and put the item on it.',
-        'params': {'prefab': 'AxeStone', 'label': None},
-        'steps': [
-            {'do': 'spawn', 'prefab': 'itemstandh', 'dz': 2.5, 'owner': 'me', 'as': 'stand'},
+        'params': [{'prefab': 'AxeStone'}, {'label': None}],
+        'actions': [
+            {'do': 'place', 'prefab': 'itemstandh', 'dz': 2.5, 'as': 'stand'},
             {'do': 'face', 'target': 'stand'},
             H('standPut', True, P('label'), stop=True, prefab=P('prefab'), target='stand'),
             wait(0.5),
@@ -126,9 +128,11 @@ BLOCKS = {
 
 tests = {}
 
-def T(tid, title, steps, asserts=None, desc='', setup=None, sheet=None):
+def T(tid, title, steps, asserts=None, desc='', setup=None, sheet=None, timeout=None):
     t = {'name': f'{tid} {title}', 'description': (f'Sheet: {sheet}. ' if sheet else '') + desc, 'steps': steps,
          'asserts': (asserts or []) + [NOERR]}
+    if timeout:
+        t['timeout'] = timeout
     if setup:
         t['setup'] = setup
     tests[tid] = t
@@ -551,8 +555,8 @@ def stacks_setup(sep, hard):
 
 BLOCKS['splitStacks'] = {
     'description': 'SeparateStacks / HardLock as given, 50 mushrooms split 25/25, both halves renamed differently.',
-    'params': {},
-    'steps': stacks_setup(P('sep'), P('hard'))}
+    'params': ['sep', 'hard'],
+    'actions': stacks_setup(P('sep'), P('hard'))}
 
 T('TC-210', 'SeparateStacks on, HardLock on', [
     U('splitStacks', sep='true', hard='true'),
@@ -743,6 +747,172 @@ T('X-05', 'renamed item survives drop and pickup', [
     H('desc', contains='Still here', prefab='AxeStone'),
 ], sheet='SM-008 (partly: persistence through the world, not a relaunch)')
 
+T('SM-008', 'changes survive logging out and back in', [
+    PIN_FLAT,
+    U('craftRenamed', text='Saved Axe', desc='Saved desc'),
+    H('edit', True, prefab='AxeStone', op='craftedBy', text='Saved maker'),
+    {'do': 'craft', 'prefab': 'AxeFlint'},
+    H('edit', True, prefab='AxeFlint', op='name', text='Stand Axe'),
+    U('itemOnStand', prefab='AxeFlint'),
+    *written('Saved Page', 'Saved text'),
+    U('pinPage', dz=1.2),
+    {'do': 'relog', 'timeout': 240},
+    U('checkAll', name='Saved Axe', desc='Saved desc', craftedBy='Saved maker'),
+    check('hook', 'still has an owner', name='renameit.owner', args={'prefab': 'AxeStone'}),
+    H('standHover', label='the stand still shows the renamed axe', contains='Stand Axe', target='stand'),
+    H('pageName', label='the pinned page kept its name', contains='Saved Page'),
+    H('pageDesc', label='and its text', contains='Saved text'),
+    shot('after-relog'),
+    H('pageTake', True, 'take the page back (keeps the world clean)', hold=True),
+], sheet='SM-008', timeout=300,
+   desc='Logs out to the main menu and loads the same world and character back in (the relog step; no game restart), like a player checking their changes were saved.')
+
+# ---------------------------------------------------------------- real UI and world (formerly manual)
+# Keys go through the same calls the game and mods read (Input.GetKey/GetKeyDown, ZInput, Libs' key check);
+# the inventory right-click runs the grid's own right-click handler, the same code a mouse click runs.
+
+def open_window(prefab='AxeStone', mods='Shift'):
+    return [{'do': 'itemClick', 'prefab': prefab, 'mods': mods}, wait(0.4)]
+
+CLOSE = [H('closeWindows'), {'do': 'closeUi'}]
+
+T('SM-001-UI', 'Shift + right-click opens the Workshop window', [
+    give('AxeStone', crafter='me'),
+    {'do': 'craft', 'prefab': 'AxeFlint', 'by': 'Alice'},
+    *open_window(),
+    H('windowOpen', True, 'the window opened for your own axe', stop=True),
+    check('uiVisible', 'its Save button is showing', name='Save'),
+    shot('workshop-open'),
+    *CLOSE,
+    *open_window('AxeFlint'),
+    H('windowOpen', False, 'the RenameIt window does not open for the axe Alice made'),
+    H('blockedMessage', label='the reason a player is given (a tab from another mod, e.g. ReskinIt, may open instead)', contains='own', prefab='AxeFlint'),
+    *CLOSE,
+], sheet='SM-001, TC-101 step 2', desc='Real Shift + right-click on the inventory slot (formerly manual M-SM-001).')
+
+T('TC-214-UI', 'menu keys pressed for real', [
+    C({'11 UI-NotSynced/MenuOpenModifier': 'Ctrl'}),
+    give('AxeStone', crafter='me'),
+    *open_window(mods='Shift'),
+    H('windowOpen', False, 'with Ctrl configured, Shift + right-click does nothing'),
+    *CLOSE,
+    *open_window(mods='Ctrl'),
+    H('windowOpen', True, 'Ctrl + right-click opens it'),
+    *CLOSE,
+    C({'11 UI-NotSynced/MenuOpenModifier': 'Ctrl+Alt'}),
+    *open_window(mods='Ctrl'),
+    H('windowOpen', False, 'Ctrl alone is not enough for Ctrl+Alt'),
+    *CLOSE,
+    *open_window(mods='Ctrl+Alt'),
+    H('windowOpen', True, 'Ctrl+Alt + right-click opens it'),
+    *CLOSE,
+], sheet='TC-214', desc='Formerly manual M-TC-214.')
+
+T('TC-301-UI', 'character limit in the Name field', [
+    C({'08 Limits/NameCharacterLimit': '10'}),
+    give('AxeStone', crafter='me'),
+    *open_window(),
+    H('windowOpen', True, stop=True),
+    {'do': 'type', 'field': 'Name', 'text': 'ABCDEFGHIJKLMNOP'},
+    wait(0.2),
+    shot('typed-16-chars'),
+    {'do': 'click', 'button': 'Save'},
+    wait(0.3),
+    H('name', label='the saved name stops at 10 characters', contains='ABCDEFGHIJ', notContains='K', prefab='AxeStone'),
+    *CLOSE,
+], sheet='TC-301', desc='Types 16 characters into the real Name field with a limit of 10 (formerly manual M-TC-301).')
+
+T('TC-303-UI', 'close and Esc do not save', [
+    give('AxeStone', crafter='me'),
+    *open_window(),
+    H('windowOpen', True, stop=True),
+    {'do': 'type', 'field': 'Name', 'text': 'Not Saved X'},
+    {'do': 'click', 'button': '\u2715'},
+    wait(0.3),
+    H('windowOpen', False, 'the close button closes it'),
+    H('name', label='and nothing was saved', notContains='Not Saved', prefab='AxeStone'),
+    *open_window(),
+    {'do': 'type', 'field': 'Name', 'text': 'Not Saved Y'},
+    {'do': 'pressKey', 'key': 'Escape'},
+    wait(0.4),
+    H('windowOpen', False, 'Esc closes it (known issue in 1.2.1)'),
+    H('name', label='and nothing was saved', notContains='Not Saved', prefab='AxeStone'),
+    {'do': 'closeUi'},
+    *open_window(),
+    {'do': 'type', 'field': 'Name', 'text': 'Saved For Real'},
+    {'do': 'click', 'button': 'Save'},
+    wait(0.3),
+    H('name', label='Save does save', contains='Saved For Real', prefab='AxeStone'),
+    *CLOSE,
+], sheet='TC-303', desc='Formerly manual M-TC-303.')
+
+T('SM-010-UI', 'paper is in the crafting list', [
+    give('Wood', 5),
+    give('Coal', 5),
+    {'do': 'pressKey', 'button': 'Inventory'},
+    wait(0.6),
+    check('uiVisible', 'Piece of Paper is listed (no station needed)', name='Piece of Paper'),
+    shot('crafting-list'),
+    {'do': 'closeUi'},
+], sheet='SM-010', desc='Formerly manual M-SM-010; the crafting itself is SM-010.')
+
+T('SM-012-UI', 'pin a page on a real wall', [
+    C({'10 Paper/BlankPaperPlaceOrientation': 'Vertical Only'}),
+    *written('Wall Page', 'On the wall'),
+    {'do': 'place', 'prefab': 'woodwall', 'dz': 3, 'as': 'wall'},
+    wait(0.3),
+    {'do': 'lookAt', 'target': 'wall', 'distance': 2},
+    H('clearPages'),
+    H('pin', True, 'pinned on the wall where the crosshair is', stop=True, prefab='Drakes_Paper_Written', wall=True),
+    wait(1.0),
+    H('pageName', label='the wall page keeps its name', contains='Wall Page'),
+    H('pageMayEdit', True, 'Shift+E editing is allowed for the owner'),
+    shot('page-on-wall'),
+    H('pageTake', True, 'hold E takes it', hold=True),
+    check('hasItem', 'back in the inventory', prefab='Drakes_Paper_Written'),
+], sheet='SM-012..014, TC-105 6-10', desc='Formerly manual M-SM-012.')
+
+T('SM-015-UI', 'RenameIt in Spanish', [
+    {'do': 'setLanguage', 'language': 'Spanish'},
+    wait(0.3),
+    {'do': 'craft', 'prefab': 'AxeStone', 'by': 'Alice'},
+    H('blockedMessage', label='denial messages come from the Spanish file', contains='dueño', prefab='AxeStone'),
+    give('Drakes_PieceOfPaper', 1),
+    H('name', label='blank paper name is translated', notContains='Piece of Paper', prefab='Drakes_PieceOfPaper'),
+    H('desc', label='blank paper description is translated', notContains='blank piece of paper', prefab='Drakes_PieceOfPaper'),
+    shot('spanish'),
+], sheet='SM-015', desc='Switches the game to Spanish for the test (put back after). Formerly manual M-SM-015.')
+
+T('TC-105-UI', 'landscape + font 7 shows only the first lines', [
+    PIN_FLAT,
+    *written('Look At Me', 'LINE 1\nLINE 2\nLINE 3\nLINE 4'),
+    U('pinPage'),
+    H('pageStyle', contains='landscape=True', font=7, landscape=True),
+    wait(0.6),
+    H('pageVisibleText', label='the first line is visible', contains='LINE 1'),
+    H('pageVisibleText', label='the last line does not fit', notContains='LINE 4'),
+    shot('landscape-font7'),
+], sheet='TC-105 step 9', desc='Reads what the page actually shows (cut where it overflows). Formerly manual M-TC-105.')
+
+T('X-06-UI', 'world hover text styles', [
+    U('craftRenamed', text='Hover Axe', desc='Hover desc'),
+    {'do': 'drop', 'prefab': 'AxeStone', 'as': 'axe', 'dz': 1.5},
+    wait(1.0),
+    {'do': 'lookAt', 'target': 'axe', 'distance': 1.5},
+    C({'11 UI-NotSynced/HoverStyle': 'Minimal'}),
+    wait(0.3),
+    check('uiVisible', 'Minimal shows the custom name', name='Hover Axe'),
+    check('uiVisible', 'Minimal hides the description', name='Hover desc', expect=False),
+    shot('hover-minimal'),
+    C({'11 UI-NotSynced/HoverStyle': 'Detailed'}),
+    wait(0.3),
+    check('uiVisible', 'Detailed adds the description', name='Hover desc'),
+    shot('hover-detailed'),
+    C({'11 UI-NotSynced/HoverStyle': 'Vanilla'}),
+    wait(0.3),
+    check('crosshair', 'Vanilla: the game crosshair text shows the name', contains='Hover Axe'),
+], sheet='CONFIGS 11 UI (hover)', desc='Formerly manual M-HOVER.')
+
 # ---------------------------------------------------------------- write
 
 DESCRIPTION = ('Automated regression for Drake\'s RenameIt, following "Drake\'s RenameIt Test Suite 2.0" (SM-/TC- ids) plus extra config coverage (X-). '
@@ -779,7 +949,7 @@ baseline = {
 suite = {
     'name': 'DrakesRenameIt',
     'description': DESCRIPTION,
-    'include': '_shared/baseline.json',  # blocks come from _blocks/ next to this file
+    'include': '_shared/baseline.json',  # functions come from _functions/ next to this file
     'resetBetweenTests': True,
 }
 
@@ -796,7 +966,7 @@ for d in (AUTO, MANUAL):
 dump(os.path.join(AUTO, 'suite.json'), suite)
 dump(os.path.join(AUTO, '_shared', 'baseline.json'), baseline)
 for name, block in BLOCKS.items():
-    dump(os.path.join(AUTO, '_blocks', f'{name}.json'), block)
+    dump(os.path.join(AUTO, '_functions', f'{name}.json'), block)
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
         json.dump(t, f, indent=2, ensure_ascii=False)
@@ -807,32 +977,20 @@ manual = {
     'name': 'DrakesRenameIt-Manual',
     'description': 'What a person has to look at or press: real keys and windows, language, relaunch, other mods, real multiplayer. Run it after the automated suite. Each test sets things up and asks you Pass / Fail.',
     # the same baseline and blocks as the automated suite
-    'include': ['../DrakesRenameIt/_shared/baseline.json', '../DrakesRenameIt/_blocks'],
+    'include': ['../DrakesRenameIt/_shared/baseline.json', '../DrakesRenameIt/_functions'],
     'resetBetweenTests': True,
 }
 mtests = {
-    'M-SM-001': ('Shift+RMB opens the Workshop window', [give('AxeStone', crafter='me'), {'do': 'pressKey', 'button': 'Inventory'},
-        {'do': 'checkpoint', 'message': 'Hover the stone axe and press Shift + Right click. The RenameIt window opens, the cursor works and you cannot move. Close it with Cancel. Pass?'}], 'SM-001, TC-101 step 2'),
-    'M-TC-301': ('character limits in the window', [give('AxeStone', crafter='me'), C({'08 Limits/NameCharacterLimit': '10'}), {'do': 'pressKey', 'button': 'Inventory'},
-        {'do': 'checkpoint', 'message': 'Open the window for the axe (Shift+RMB) and type more than 10 characters in Name. It stops at 10 (NameCharacterLimit = 10). Pass?'}], 'TC-301'),
-    'M-TC-303': ('Cancel and Esc close the window without saving', [give('AxeStone', crafter='me'), {'do': 'pressKey', 'button': 'Inventory'},
-        {'do': 'checkpoint', 'message': 'Open the window, change the name, press Cancel: the name is unchanged. Open it again, change it, press Esc: closes and unchanged. (Esc was a known issue in 1.2.1.) Pass?'}], 'TC-303'),
-    'M-TC-214': ('menu keys for real', [give('AxeStone', crafter='me'), C({'11 UI-NotSynced/MenuOpenModifier': 'Ctrl'}), {'do': 'pressKey', 'button': 'Inventory'},
-        {'do': 'checkpoint', 'message': 'MenuOpenModifier is now Ctrl: Ctrl + Right click opens the window and Shift + Right click does not. Pass?'}], 'TC-214'),
-    'M-TC-105': ('landscape text looks right', [PIN_FLAT, *written('Look At Me', 'LINE 1\nLINE 2\nLINE 3\nLINE 4'),
-        U('pinPage'), H('pageStyle', font=7, landscape=True),
-        {'do': 'checkpoint', 'message': 'The page on the ground shows its text rotated 90 degrees with font 7 (only about LINE 1 and LINE 2 fit). Pass?'}], 'TC-105 step 9'),
-    'M-SM-012': ('pin a page on a wall by hand', [*written('Wall Page'),
-        {'do': 'checkpoint', 'message': 'Put the Written Page on the hotbar, select it and pin it on a house wall with the mouse (both orientations if Both). Then Shift+E opens Rename|Paper, and hold E takes it. Pass?'}], 'SM-012..014, TC-105 6-10'),
-    'M-SM-015': ('menus in another language', [{'do': 'checkpoint', 'message': 'Settings > Language: switch to another language, open the RenameIt window and the Paper tab. Texts are translated or fall back to English, nothing shows raw $tokens. Switch back. Pass?'}], 'SM-015'),
-    'M-SM-008': ('changes survive a relaunch', [{'do': 'checkpoint', 'message': 'Rename an item, save, quit to desktop and start again (DrakesTestLab boots the test world fresh, so load your own world/character for this). The custom name, description and crafted-by are still there. Pass?'}], 'SM-008'),
-    'M-SM-010': ('craft paper at the inventory', [give('Wood', 5), give('Coal', 5), {'do': 'pressKey', 'button': 'Inventory'},
-        {'do': 'checkpoint', 'message': 'In the inventory crafting list, Piece of Paper is there (no station needed) and crafting it uses 1 Wood + 1 Coal. Pass?'}], 'SM-010'),
-    'M-HOVER': ('world hover text styles', [give('AxeStone', crafter='me'), H('edit', prefab='AxeStone', op='name', text='Hover Axe'),
-        {'do': 'checkpoint', 'message': 'Drop the axe and look at it. Shift+F1 opens Quick Settings: try Vanilla / Minimal / Detailed, sizes S/M/L, Beside/Under, backdrop. The hover text follows each choice. Pass?'}], 'CONFIGS 11 UI (hover settings, not in the sheet)'),
-    'M-TC-501': ('server lock and VIP list (dedicated server)', [{'do': 'checkpoint', 'message': 'Needs a dedicated server and two clients: a non-admin client cannot change synced settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested.'}], 'TC-501, ISSUE-019'),
-    'M-TC-502': ('item info for another real player', [{'do': 'checkpoint', 'message': 'Two real players: a renamed item handed over or put on a stand shows the same name / description / crafted-by for the other player, and their edit rights match the automated play-as results. Mark Fail if not tested.'}], 'TC-502..504'),
-    'M-TC-4xx': ('other mods', [{'do': 'checkpoint', 'message': 'With the modpack: VRP, Shrooms, RPChatter, PlanBuild (stands/walls lose data: known, ISSUE-003), InfinityHammer, Ward is Love, Protective Wards, Arcane Wards. No errors, wards respected. Mark Fail if not tested.'}], 'TC-401..408'),
+    'M-TC-502': ('item info for another real player', [
+        U('craftRenamed', text='Shared Look', desc='Seen by both'),
+        H('edit', True, prefab='AxeStone', op='craftedBy', text='Made by tester'),
+        U('itemOnStand'),
+        {'do': 'checkpoint', 'message': 'A renamed axe (Shared Look / Seen by both / Made by tester) is on the stand in front of you. With a second REAL player joined: they see the same name, description and crafted-by on the stand and after taking it, and they cannot rename it (it is yours). Mark Fail if no second player is available.'}], 'TC-502..504'),
+    'M-TC-501': ('server lock and VIP list (dedicated server)', [
+        {'do': 'checkpoint', 'message': 'Needs a dedicated server and a non-admin client: the client cannot change synced RenameIt settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested.'}], 'TC-501, ISSUE-019'),
+    'M-TC-4xx': ('other mods', [
+        U('craftRenamed', text='Mod Check', desc='With other mods'),
+        {'do': 'checkpoint', 'message': 'With the modpack loaded (VRP, Shrooms, RPChatter, PlanBuild, InfinityHammer, Ward is Love, Protective Wards, Arcane Wards): the renamed axe in your inventory keeps its name and description, no errors, and wards from those mods are respected. PlanBuild losing data on stands/walls is known (ISSUE-003). Mark Fail if not tested.'}], 'TC-401..408'),
 }
 for tid, (title, steps, sheet) in mtests.items():
     t = {'name': f'{tid} {title}', 'description': f'Sheet: {sheet}.', 'manualOnly': True, 'steps': steps + [{'do': 'closeUi'}], 'asserts': [NOERR]}

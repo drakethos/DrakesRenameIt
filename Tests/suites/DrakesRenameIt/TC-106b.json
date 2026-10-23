@@ -8,13 +8,7 @@
         "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
       }
     },
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Print Me"
-      }
-    },
+    "writePage(\"Print Me\")",
     {
       "do": "give",
       "prefab": "Drakes_PieceOfPaper",
@@ -31,14 +25,7 @@
       "expect": true,
       "stop": true
     },
-    {
-      "do": "use",
-      "block": "pinPage",
-      "args": {
-        "prefab": "Drakes_Paper_Print",
-        "label": "pin one print"
-      }
-    },
+    "pinPage(\"Drakes_Paper_Print\", \"pin one print\")",
     {
       "do": "hook",
       "name": "renameit.stackSizes",

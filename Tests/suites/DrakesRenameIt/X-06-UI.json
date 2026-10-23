@@ -1,0 +1,91 @@
+{
+  "name": "X-06-UI world hover text styles",
+  "description": "Sheet: CONFIGS 11 UI (hover). Formerly manual M-HOVER.",
+  "steps": [
+    "craftRenamed(\"Hover Axe\", \"Hover desc\")",
+    {
+      "do": "drop",
+      "prefab": "AxeStone",
+      "as": "axe",
+      "dz": 1.5
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "lookAt",
+      "target": "axe",
+      "distance": 1.5
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/HoverStyle": "Minimal"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Hover Axe",
+      "label": "Minimal shows the custom name"
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Hover desc",
+      "expect": false,
+      "label": "Minimal hides the description"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-minimal"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/HoverStyle": "Detailed"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Hover desc",
+      "label": "Detailed adds the description"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-detailed"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/HoverStyle": "Vanilla"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "check",
+      "check": "crosshair",
+      "contains": "Hover Axe",
+      "label": "Vanilla: the game crosshair text shows the name"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -2,17 +2,17 @@
 
 DrakesTestLab suites for RenameIt. What maps to the test sheet, and what is still manual: [COVERAGE.md](COVERAGE.md).
 
-- `suites/DrakesRenameIt/`: automated (49 tests). Runs unattended.
+- `suites/DrakesRenameIt/`: automated (50 tests). Runs unattended.
 - `suites/DrakesRenameIt-Manual/`: needs a person (real keys, windows, language, relaunch, other mods, a second real client). Each test sets up and asks Pass / Fail.
-- `suites/DrakesRenameIt/_blocks/`: steps many tests share (`writePage`, `pinPage`, `craftRenamed`, `editAll`, `checkAll`, `itemOnStand`, `splitStacks`), called with `{ "do": "use", "block": ... }`.
-- `suites/DrakesRenameIt/_shared/baseline.json`: required mod, the config baseline and start state; both suites `include` it (the manual suite also includes the blocks).
-- `gen_renameit_suite.py`: writes both suite folders (`python gen_renameit_suite.py`). Edit tests and blocks there, not in the JSON.
+- `suites/DrakesRenameIt/_functions/`: steps many tests share (`writePage`, `pinPage`, `craftRenamed`, `editAll`, `checkAll`, `itemOnStand`, `splitStacks`), called like steps: `"writePage(\"Shared Page\")"` or `{ "do": "pinPage", "label": ... }`.
+- `suites/DrakesRenameIt/_shared/baseline.json`: required mod, the config baseline and start state; both suites `include` it (the manual suite also includes the functions).
+- `gen_renameit_suite.py`: writes both suite folders (`python gen_renameit_suite.py`). Edit tests and functions there, not in the JSON.
 - `../Testing/RenameItTestHooks.cs`: the `renameit.*` test hooks the suites call. They use RenameIt's real permission and apply code. No reference to DrakesTestLab; without it installed they are never called.
 
 ## Run
 
 1. Build RenameIt (deploys to the drakeTest profile) and have DrakesTestLab in that profile.
-2. Copy both suite folders (with their `_blocks/` and `_shared/` subfolders) into `<profile>\BepInEx\config\DrakesTestLab\suites\`.
+2. Copy both suite folders (with their `_functions/` and `_shared/` subfolders) into `<profile>\BepInEx\config\DrakesTestLab\suites\`.
 3. With the game closed:
 
 ```powershell

@@ -159,6 +159,23 @@ internal static class RenameItTestHooks
         throw new InvalidOperationException("ItemData.GetTooltip not found");
     }
 
+    /// <summary>Is the Item Workshop window (or the Paper tab) open?</summary>
+    [TestHook("renameit.windowOpen")]
+    static bool WindowOpen() =>
+        global::DrakeRenameit.UI.Toolkit.WorkshopPanel.IsOpen || PaperWallSession.IsActive;
+
+    /// <summary>Close every RenameIt window (Workshop, tab host, wood popups) without saving.</summary>
+    [TestHook("renameit.closeWindows")]
+    static bool CloseWindows()
+    {
+        global::DrakeRenameit.UI.Toolkit.WorkshopPanel.HideFromHost();
+        DrakeModsLibs.UI.DrakeTabHost.Close();
+        global::DrakeRenameit.UI.UIPanels.CloseAllRenameEditingUi();
+        if (PaperWallSession.IsActive)
+            PaperWallSession.End();
+        return true;
+    }
+
     [TestHook("renameit.elevated")]
     static bool Elevated() => RenameitPermission.IsElevatedForOverrides(P);
 
@@ -642,10 +659,25 @@ internal static class RenameItTestHooks
         if (piece == null)
             throw new InvalidOperationException("place mode did not start (is it a Written Page on the hotbar, and PaperPlaceEnabled on?)");
 
-        var pos = player.transform.position + player.transform.forward * F(args, "dz", 2f);
-        if (ZoneSystem.instance != null && ZoneSystem.instance.GetGroundHeight(pos, out var ground))
-            pos.y = ground + 0.02f;
-        var rot = Quaternion.Euler(0f, player.transform.eulerAngles.y + 180f, 0f);
+        Vector3 pos;
+        Quaternion rot;
+        if (B(args, "wall"))
+        {
+            // onto the wall in front of the camera, like aiming the placement ghost at it (orientation: Vertical Only)
+            var cam = GameCamera.instance != null ? GameCamera.instance.transform : player.transform;
+            var mask = LayerMask.GetMask("piece", "piece_nonsolid", "Default", "static_solid", "terrain");
+            if (!Physics.Raycast(cam.position, cam.forward, out var hit, 8f, mask))
+                throw new InvalidOperationException("no wall in front of the camera (use lookAt on a wall first)");
+            pos = hit.point + hit.normal * 0.01f;
+            rot = Quaternion.LookRotation(-hit.normal, Vector3.up);
+        }
+        else
+        {
+            pos = player.transform.position + player.transform.forward * F(args, "dz", 2f);
+            if (ZoneSystem.instance != null && ZoneSystem.instance.GetGroundHeight(pos, out var ground))
+                pos.y = ground + 0.02f;
+            rot = Quaternion.Euler(0f, player.transform.eulerAngles.y + 180f, 0f);
+        }
 
         var place = typeof(Player).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .FirstOrDefault(m => m.Name == "PlacePiece" && m.GetParameters().Length >= 3 && m.GetParameters()[0].ParameterType == typeof(Piece))
@@ -659,6 +691,46 @@ internal static class RenameItTestHooks
             call[i] = ps[i].ParameterType == typeof(bool) ? false : (ps[i].HasDefaultValue ? ps[i].DefaultValue! : null!);
         var result = place.Invoke(player, call);
         return result is not bool b || b;
+    }
+
+    /// <summary>The text actually visible on the pinned page (cut where the page overflows), e.g. to check landscape + big font.</summary>
+    [TestHook("renameit.pageVisibleText")]
+    static string PageVisibleText()
+    {
+        var widget = PaperNotePageText.FindPageWidget(Page().gameObject) ?? throw new InvalidOperationException("the page shows no text");
+        widget.ForceMeshUpdate();
+        var parsed = widget.GetParsedText() ?? "";
+        var cut = widget.isTextOverflowing && widget.firstOverflowCharacterIndex >= 0 && widget.firstOverflowCharacterIndex < parsed.Length
+            ? parsed.Substring(0, widget.firstOverflowCharacterIndex)
+            : parsed;
+        return cut.Replace("\n", " / ");
+    }
+
+    /// <summary>Remove every pinned page within 40 m (the world keeps pages between tests after a relog).</summary>
+    [TestHook("renameit.clearPages")]
+    static int ClearPages()
+    {
+        var removed = 0;
+        foreach (var v in UnityEngine.Object.FindObjectsOfType<PaperWrittenVessel>())
+        {
+            if (v == null || PaperWrittenPlace.IsPlacementGhost(v.gameObject) || Vector3.Distance(v.transform.position, P.transform.position) > 40f)
+                continue;
+            var nv = v.GetComponent<ZNetView>();
+            if (nv != null && nv.IsValid())
+            {
+                if (!nv.IsOwner())
+                    nv.ClaimOwnership();
+                nv.Destroy();
+            }
+            else
+            {
+                UnityEngine.Object.Destroy(v.gameObject);
+            }
+
+            removed++;
+        }
+
+        return removed;
     }
 
     [TestHook("renameit.pageHover")]

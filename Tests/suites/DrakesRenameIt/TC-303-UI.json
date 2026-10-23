@@ -1,0 +1,137 @@
+{
+  "name": "TC-303-UI close and Esc do not save",
+  "description": "Sheet: TC-303. Formerly manual M-TC-303.",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "Not Saved X"
+    },
+    {
+      "do": "click",
+      "button": "✕"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": false,
+      "label": "the close button closes it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Not Saved",
+      "label": "and nothing was saved"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "Not Saved Y"
+    },
+    {
+      "do": "pressKey",
+      "key": "Escape"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": false,
+      "label": "Esc closes it (known issue in 1.2.1)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "Not Saved",
+      "label": "and nothing was saved"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "Saved For Real"
+    },
+    {
+      "do": "click",
+      "button": "Save"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Saved For Real",
+      "label": "Save does save"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

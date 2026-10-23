@@ -16,10 +16,7 @@
       "expect": true,
       "label": "owner turns Shared on"
     },
-    {
-      "do": "use",
-      "block": "itemOnStand"
-    },
+    "itemOnStand()",
     {
       "do": "playAs",
       "who": "Bob"

@@ -179,40 +179,65 @@ internal static class PaperItem
         }
     }
 
+    /// <summary>Shipped Spanish for the paper items, used while the config text is still its default.</summary>
+    private static readonly Dictionary<string, string> SpanishDefaults = new()
+    {
+        ["item_drakes_pieceofpaper"] = "Hoja de papel",
+        ["item_drakes_pieceofpaper_desc"] = "Una hoja de papel en blanco para escribir. Ponerle nombre o descripción gasta una hoja y crea una página escrita.",
+        ["item_drakes_paper_written"] = "Página escrita",
+        ["item_drakes_paper_written_desc"] = "Una página con algo escrito.",
+        ["item_drakes_paper_print"] = "Página impresa",
+        ["item_drakes_paper_print_desc"] = "Una copia impresa de una página escrita. Se puede apilar; el texto queda bloqueado salvo con permiso de administrador.",
+    };
+
     private static void AddLocalization()
     {
-        var name = string.IsNullOrWhiteSpace(RenameitConfig.PaperName)
-            ? "Piece of Paper"
-            : RenameitConfig.PaperName.Trim();
-        var desc = string.IsNullOrWhiteSpace(RenameitConfig.PaperDescription)
-            ? "A blank piece of paper you can write on. Renaming uses one sheet and creates a Written Page."
-            : RenameitConfig.PaperDescription.Trim();
-        var wName = string.IsNullOrWhiteSpace(RenameitConfig.WrittenPaperName)
-            ? "Written Page"
-            : RenameitConfig.WrittenPaperName.Trim();
-        var wDesc = string.IsNullOrWhiteSpace(RenameitConfig.WrittenPaperDescription)
-            ? "A page with writing on it."
-            : RenameitConfig.WrittenPaperDescription.Trim();
-        var pName = string.IsNullOrWhiteSpace(RenameitConfig.PrintedPaperName)
-            ? "Printed Page"
-            : RenameitConfig.PrintedPaperName.Trim();
-        var pDesc = string.IsNullOrWhiteSpace(RenameitConfig.PrintedPaperDescription)
-            ? "A printed copy of a written page. Stackable; text is locked unless you have override."
-            : RenameitConfig.PrintedPaperDescription.Trim();
+        // token, config switch name, current config text (English default when empty)
+        var entries = new[]
+        {
+            ("item_drakes_pieceofpaper", "name", Or(RenameitConfig.PaperName, "Piece of Paper")),
+            ("item_drakes_pieceofpaper_desc", "desc", Or(RenameitConfig.PaperDescription, "A blank piece of paper you can write on. Renaming uses one sheet and creates a Written Page.")),
+            ("item_drakes_paper_written", "writtenName", Or(RenameitConfig.WrittenPaperName, "Written Page")),
+            ("item_drakes_paper_written_desc", "writtenDesc", Or(RenameitConfig.WrittenPaperDescription, "A page with writing on it.")),
+            ("item_drakes_paper_print", "printedName", Or(RenameitConfig.PrintedPaperName, "Printed Page")),
+            ("item_drakes_paper_print_desc", "printedDesc", Or(RenameitConfig.PrintedPaperDescription, "A printed copy of a written page. Stackable; text is locked unless you have override.")),
+        };
 
         var loc = LocalizationManager.Instance.GetLocalization();
-        loc.AddTranslation("English", "item_drakes_pieceofpaper", name);
-        loc.AddTranslation("English", "item_drakes_pieceofpaper_desc", desc);
-        loc.AddTranslation("Spanish", "item_drakes_pieceofpaper", name);
-        loc.AddTranslation("Spanish", "item_drakes_pieceofpaper_desc", desc);
-        loc.AddTranslation("English", "item_drakes_paper_written", wName);
-        loc.AddTranslation("English", "item_drakes_paper_written_desc", wDesc);
-        loc.AddTranslation("Spanish", "item_drakes_paper_written", wName);
-        loc.AddTranslation("Spanish", "item_drakes_paper_written_desc", wDesc);
-        loc.AddTranslation("English", "item_drakes_paper_print", pName);
-        loc.AddTranslation("English", "item_drakes_paper_print_desc", pDesc);
-        loc.AddTranslation("Spanish", "item_drakes_paper_print", pName);
-        loc.AddTranslation("Spanish", "item_drakes_paper_print_desc", pDesc);
+        var english = new Dictionary<string, string>();
+        var spanish = new Dictionary<string, string>();
+        foreach (var (token, which, text) in entries)
+        {
+            english[token] = text;
+            // a server's own text applies in every language; the shipped default is translated
+            spanish[token] = RenameitConfig.PaperTextIsDefault(which) ? SpanishDefaults[token] : text;
+            loc.AddTranslation("English", token, english[token]);
+            loc.AddTranslation("Spanish", token, spanish[token]);
+        }
+
+        // Jotunn only copies its table into the game on language setup; after that, config changes (live or
+        // server-synced) need the game's own table and cache updated or the old name sticks. The game's table holds
+        // the selected language only; languages without a translation fall back to English.
+        var selected = Localization.instance != null ? Localization.instance.GetSelectedLanguage() : "English";
+        PushToGameLocalization(string.Equals(selected, "Spanish", StringComparison.OrdinalIgnoreCase) ? spanish : english);
+    }
+
+    private static string Or(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : value!.Trim();
+
+    private static readonly System.Reflection.FieldInfo? LocTranslationsField =
+        typeof(Localization).GetField("m_translations", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+    private static readonly System.Reflection.FieldInfo? LocCacheField =
+        typeof(Localization).GetField("m_cache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+    private static void PushToGameLocalization(Dictionary<string, string> words)
+    {
+        var game = Localization.instance;
+        if (game == null || LocTranslationsField?.GetValue(game) is not Dictionary<string, string> table)
+            return;
+        foreach (var kv in words)
+            table[kv.Key] = kv.Value;
+        var cache = LocCacheField?.GetValue(game);
+        cache?.GetType().GetMethod("EvictAll")?.Invoke(cache, null);
     }
 
     private static void ApplyRecipeFromConfig(ItemConfig itemConfig)

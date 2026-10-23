@@ -64,24 +64,8 @@
       },
       "expect": true
     },
-    {
-      "do": "use",
-      "block": "editAll",
-      "args": {
-        "name": "Test Name",
-        "desc": "Test Desc",
-        "craftedBy": "Crafted in Test"
-      }
-    },
-    {
-      "do": "use",
-      "block": "checkAll",
-      "args": {
-        "name": "Test Name",
-        "desc": "Test Desc",
-        "craftedBy": "Crafted in Test"
-      }
-    },
+    "editAll(\"Test Name\", \"Test Desc\", \"Crafted in Test\")",
+    "checkAll(\"Test Name\", \"Test Desc\", \"Crafted in Test\")",
     {
       "do": "hook",
       "name": "renameit.unlock",

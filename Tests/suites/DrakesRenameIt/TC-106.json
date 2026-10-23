@@ -2,14 +2,7 @@
   "name": "TC-106 copies, printed stack, recycle",
   "description": "Sheet: TC-106, ISSUE-017. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Copy Me",
-        "desc": "Copy body"
-      }
-    },
+    "writePage(\"Copy Me\", \"Copy body\")",
     {
       "do": "give",
       "prefab": "Drakes_PieceOfPaper",

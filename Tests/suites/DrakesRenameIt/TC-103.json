@@ -2,18 +2,8 @@
   "name": "TC-103 stand shows the name, taking it back keeps it",
   "description": "Sheet: TC-103. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "text": "Test Name",
-        "desc": "Test Desc"
-      }
-    },
-    {
-      "do": "use",
-      "block": "itemOnStand"
-    },
+    "craftRenamed(\"Test Name\", \"Test Desc\")",
+    "itemOnStand()",
     {
       "do": "hook",
       "name": "renameit.standHover",

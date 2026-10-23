@@ -2,14 +2,7 @@
   "name": "TC-212 SeparateStacks off",
   "description": "Sheet: TC-212. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "splitStacks",
-      "args": {
-        "sep": "false",
-        "hard": "false"
-      }
-    },
+    "splitStacks(\"false\", \"false\")",
     {
       "do": "hook",
       "name": "renameit.dropAndPickup",

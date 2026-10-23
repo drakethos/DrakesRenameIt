@@ -1,15 +1,18 @@
 {
   "description": "Spawn a horizontal item stand (tag \"stand\"), face it and put the item on it.",
-  "params": {
-    "prefab": "AxeStone",
-    "label": null
-  },
-  "steps": [
+  "params": [
     {
-      "do": "spawn",
+      "prefab": "AxeStone"
+    },
+    {
+      "label": null
+    }
+  ],
+  "actions": [
+    {
+      "do": "place",
       "prefab": "itemstandh",
       "dz": 2.5,
-      "owner": "me",
       "as": "stand"
     },
     {

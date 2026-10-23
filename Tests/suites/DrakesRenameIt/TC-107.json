@@ -8,17 +8,8 @@
         "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
       }
     },
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Shared Page"
-      }
-    },
-    {
-      "do": "use",
-      "block": "pinPage"
-    },
+    "writePage(\"Shared Page\")",
+    "pinPage()",
     {
       "do": "hook",
       "name": "renameit.pageShare",

@@ -1,11 +1,21 @@
 {
   "description": "Pin a page from the inventory 2 m ahead (place-mode code) and let it settle.",
-  "params": {
-    "prefab": "Drakes_Paper_Written",
-    "label": null,
-    "dz": 2
-  },
-  "steps": [
+  "params": [
+    {
+      "prefab": "Drakes_Paper_Written"
+    },
+    {
+      "label": null
+    },
+    {
+      "dz": 2
+    }
+  ],
+  "actions": [
+    {
+      "do": "hook",
+      "name": "renameit.clearPages"
+    },
     {
       "do": "hook",
       "name": "renameit.pin",

@@ -1,0 +1,116 @@
+{
+  "name": "TC-214-UI menu keys pressed for real",
+  "description": "Sheet: TC-214. Formerly manual M-TC-214.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/MenuOpenModifier": "Ctrl"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": false,
+      "label": "with Ctrl configured, Shift + right-click does nothing"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Ctrl"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": true,
+      "label": "Ctrl + right-click opens it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/MenuOpenModifier": "Ctrl+Alt"
+      }
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Ctrl"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": false,
+      "label": "Ctrl alone is not enough for Ctrl+Alt"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Ctrl+Alt"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": true,
+      "label": "Ctrl+Alt + right-click opens it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

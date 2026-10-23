@@ -13,12 +13,9 @@
       "who": "Alice"
     },
     {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "by": "Alice",
-        "text": "Alice Axe"
-      }
+      "do": "craftRenamed",
+      "by": "Alice",
+      "text": "Alice Axe"
     },
     {
       "do": "spawn",
@@ -38,17 +35,8 @@
       "expect": true,
       "stop": true
     },
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Public Page"
-      }
-    },
-    {
-      "do": "use",
-      "block": "pinPage"
-    },
+    "writePage(\"Public Page\")",
+    "pinPage()",
     {
       "do": "hook",
       "name": "renameit.pageShare",

@@ -5,7 +5,7 @@
   "steps": [
     {
       "do": "checkpoint",
-      "message": "Needs a dedicated server and two clients: a non-admin client cannot change synced settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested."
+      "message": "Needs a dedicated server and a non-admin client: the client cannot change synced RenameIt settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested."
     },
     {
       "do": "closeUi"

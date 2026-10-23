@@ -8,17 +8,8 @@
         "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
       }
     },
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Private Page"
-      }
-    },
-    {
-      "do": "use",
-      "block": "pinPage"
-    },
+    "writePage(\"Private Page\")",
+    "pinPage()",
     {
       "do": "playAs",
       "who": "Bob"

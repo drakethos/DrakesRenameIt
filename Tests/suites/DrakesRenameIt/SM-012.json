@@ -8,20 +8,10 @@
         "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
       }
     },
+    "writePage(\"Test Paper\", \"Hello from the wall\")",
     {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Test Paper",
-        "desc": "Hello from the wall"
-      }
-    },
-    {
-      "do": "use",
-      "block": "pinPage",
-      "args": {
-        "label": "pin the page (place-mode code)"
-      }
+      "do": "pinPage",
+      "label": "pin the page (place-mode code)"
     },
     {
       "do": "hook",

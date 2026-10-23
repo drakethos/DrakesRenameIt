@@ -2,13 +2,7 @@
   "name": "SM-005 upgrade keeps the changes",
   "description": "Sheet: SM-005. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "text": "Test Club"
-      }
-    },
+    "craftRenamed(\"Test Club\")",
     {
       "do": "hook",
       "name": "renameit.upgrade",

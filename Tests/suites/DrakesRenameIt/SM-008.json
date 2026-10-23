@@ -1,0 +1,98 @@
+{
+  "name": "SM-008 changes survive logging out and back in",
+  "description": "Sheet: SM-008. Logs out to the main menu and loads the same world and character back in (the relog step; no game restart), like a player checking their changes were saved.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    "craftRenamed(\"Saved Axe\", \"Saved desc\")",
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "Saved maker"
+      },
+      "expect": true
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeFlint"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeFlint",
+        "op": "name",
+        "text": "Stand Axe"
+      },
+      "expect": true
+    },
+    "itemOnStand(\"AxeFlint\")",
+    "writePage(\"Saved Page\", \"Saved text\")",
+    {
+      "do": "pinPage",
+      "dz": 1.2
+    },
+    {
+      "do": "relog",
+      "timeout": 240
+    },
+    "checkAll(\"Saved Axe\", \"Saved desc\", \"Saved maker\")",
+    {
+      "do": "check",
+      "check": "hook",
+      "name": "renameit.owner",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "label": "still has an owner"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Stand Axe",
+      "label": "the stand still shows the renamed axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageName",
+      "contains": "Saved Page",
+      "label": "the pinned page kept its name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageDesc",
+      "contains": "Saved text",
+      "label": "and its text"
+    },
+    {
+      "do": "screenshot",
+      "name": "after-relog"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageTake",
+      "args": {
+        "hold": true
+      },
+      "expect": true,
+      "label": "take the page back (keeps the world clean)"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 300
+}

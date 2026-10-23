@@ -1,10 +1,15 @@
 {
   "description": "Turn a blank sheet into a written page named text (stops the test if that fails); desc = page text.",
-  "params": {
-    "desc": null,
-    "blanks": 1
-  },
-  "steps": [
+  "params": [
+    "text",
+    {
+      "desc": null
+    },
+    {
+      "blanks": 1
+    }
+  ],
+  "actions": [
     {
       "do": "give",
       "prefab": "Drakes_PieceOfPaper",

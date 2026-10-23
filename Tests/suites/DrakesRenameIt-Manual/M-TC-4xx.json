@@ -3,9 +3,10 @@
   "description": "Sheet: TC-401..408.",
   "manualOnly": true,
   "steps": [
+    "craftRenamed(\"Mod Check\", \"With other mods\")",
     {
       "do": "checkpoint",
-      "message": "With the modpack: VRP, Shrooms, RPChatter, PlanBuild (stands/walls lose data: known, ISSUE-003), InfinityHammer, Ward is Love, Protective Wards, Arcane Wards. No errors, wards respected. Mark Fail if not tested."
+      "message": "With the modpack loaded (VRP, Shrooms, RPChatter, PlanBuild, InfinityHammer, Ward is Love, Protective Wards, Arcane Wards): the renamed axe in your inventory keeps its name and description, no errors, and wards from those mods are respected. PlanBuild losing data on stands/walls is known (ISSUE-003). Mark Fail if not tested."
     },
     {
       "do": "closeUi"

@@ -3,9 +3,21 @@
   "description": "Sheet: TC-502..504.",
   "manualOnly": true,
   "steps": [
+    "craftRenamed(\"Shared Look\", \"Seen by both\")",
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "Made by tester"
+      },
+      "expect": true
+    },
+    "itemOnStand()",
     {
       "do": "checkpoint",
-      "message": "Two real players: a renamed item handed over or put on a stand shows the same name / description / crafted-by for the other player, and their edit rights match the automated play-as results. Mark Fail if not tested."
+      "message": "A renamed axe (Shared Look / Seen by both / Made by tester) is on the stand in front of you. With a second REAL player joined: they see the same name, description and crafted-by on the stand and after taking it, and they cannot rename it (it is yours). Mark Fail if no second player is available."
     },
     {
       "do": "closeUi"

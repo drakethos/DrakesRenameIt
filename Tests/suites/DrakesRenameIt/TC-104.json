@@ -6,15 +6,7 @@
       "do": "craft",
       "prefab": "AxeStone"
     },
-    {
-      "do": "use",
-      "block": "editAll",
-      "args": {
-        "name": "Old Name",
-        "desc": "Old Desc",
-        "craftedBy": "Old Maker"
-      }
-    },
+    "editAll(\"Old Name\", \"Old Desc\", \"Old Maker\")",
     {
       "do": "hook",
       "name": "renameit.reset",
@@ -71,15 +63,7 @@
       "notContains": "Old Maker",
       "label": "original crafter shown again"
     },
-    {
-      "do": "use",
-      "block": "editAll",
-      "args": {
-        "name": "111",
-        "desc": "222",
-        "craftedBy": "333"
-      }
-    },
+    "editAll(\"111\", \"222\", \"333\")",
     {
       "do": "hook",
       "name": "renameit.reset",

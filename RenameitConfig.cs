@@ -317,6 +317,28 @@ public static class RenameitConfig
     /// <summary>Default description for blank Piece of Paper (server-synced; feeds localization token).</summary>
     public static string PaperDescription => _paperDescription.Value;
 
+    /// <summary>
+    /// True while a paper text setting is empty or still its shipped default: then each language uses its own translation.
+    /// A server that sets its own text gets that text in every language. which = name, desc, writtenName, writtenDesc, printedName, printedDesc.
+    /// </summary>
+    internal static bool PaperTextIsDefault(string which)
+    {
+        var entry = which switch
+        {
+            "name" => _paperName,
+            "desc" => _paperDescription,
+            "writtenName" => _writtenPaperName,
+            "writtenDesc" => _writtenPaperDescription,
+            "printedName" => _printedPaperName,
+            "printedDesc" => _printedPaperDescription,
+            _ => null
+        };
+        if (entry == null)
+            return true;
+        var value = entry.Value?.Trim() ?? "";
+        return value.Length == 0 || string.Equals(value, (entry.DefaultValue as string)?.Trim(), StringComparison.Ordinal);
+    }
+
     /// <summary>Comma- or semicolon-separated <c>PrefabName:amount</c> recipe cost for Piece of Paper (same format as <see cref="UnlockCost"/>).</summary>
     public static string PaperCost => _paperCost.Value;
 
@@ -968,6 +990,14 @@ public static class RenameitConfig
         _paperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
         _writtenPaperName.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
         _writtenPaperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+        _printedPaperName.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+        _printedPaperDescription.SettingChanged += (_, __) => PaperItem.ApplyLocalizationFromConfig();
+
+        // Libs keeps its own copy; push live toggles and server-synced values (ServerSync sets the entry, so this fires).
+        _showItemStandItemNameWhenNoAccess.SettingChanged += (_, __) =>
+            CustomizeLibsAPI.SetShowItemStandItemNameWhenNoAccess(_showItemStandItemNameWhenNoAccess.Value);
+        _drakeConfigSync.SourceOfTruthChanged += _ =>
+            CustomizeLibsAPI.SetShowItemStandItemNameWhenNoAccess(_showItemStandItemNameWhenNoAccess.Value);
 
         // Durability labels are applied live; stands used to bake "Pristine …" into ZDO and only updated on enable.
         void RefreshStandLabelsOnDurabilityConfigChange(object sender, EventArgs e) =>

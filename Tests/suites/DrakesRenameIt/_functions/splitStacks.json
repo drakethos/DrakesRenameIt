@@ -1,7 +1,10 @@
 {
   "description": "SeparateStacks / HardLock as given, 50 mushrooms split 25/25, both halves renamed differently.",
-  "params": {},
-  "steps": [
+  "params": [
+    "sep",
+    "hard"
+  ],
+  "actions": [
     {
       "do": "setConfig",
       "values": {

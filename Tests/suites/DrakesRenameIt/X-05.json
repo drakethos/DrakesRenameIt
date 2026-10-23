@@ -2,14 +2,7 @@
   "name": "X-05 renamed item survives drop and pickup",
   "description": "Sheet: SM-008 (partly: persistence through the world, not a relaunch). ",
   "steps": [
-    {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "text": "Dropped Axe",
-        "desc": "Still here"
-      }
-    },
+    "craftRenamed(\"Dropped Axe\", \"Still here\")",
     {
       "do": "hook",
       "name": "renameit.dropAndPickup",

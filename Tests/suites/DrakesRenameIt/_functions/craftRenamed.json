@@ -1,11 +1,18 @@
 {
   "description": "Craft an item through the game (real owner) and rename it; optionally give it a description too.",
-  "params": {
-    "prefab": "AxeStone",
-    "by": null,
-    "desc": null
-  },
-  "steps": [
+  "params": [
+    "text",
+    {
+      "desc": null
+    },
+    {
+      "prefab": "AxeStone"
+    },
+    {
+      "by": null
+    }
+  ],
+  "actions": [
     {
       "do": "craft",
       "prefab": "{{prefab}}",

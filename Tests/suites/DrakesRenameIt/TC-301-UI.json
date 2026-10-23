@@ -1,0 +1,75 @@
+{
+  "name": "TC-301-UI character limit in the Name field",
+  "description": "Sheet: TC-301. Types 16 characters into the real Name field with a limit of 10 (formerly manual M-TC-301).",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "08 Limits/NameCharacterLimit": "10"
+      }
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone"
+    },
+    {
+      "do": "itemClick",
+      "prefab": "AxeStone",
+      "mods": "Shift"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.windowOpen",
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "ABCDEFGHIJKLMNOP"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "screenshot",
+      "name": "typed-16-chars"
+    },
+    {
+      "do": "click",
+      "button": "Save"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "ABCDEFGHIJ",
+      "notContains": "K",
+      "label": "the saved name stops at 10 characters"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

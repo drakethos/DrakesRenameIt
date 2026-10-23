@@ -6,13 +6,7 @@
       "do": "playAs",
       "who": "Alice"
     },
-    {
-      "do": "use",
-      "block": "writePage",
-      "args": {
-        "text": "Alice Notes"
-      }
-    },
+    "writePage(\"Alice Notes\")",
     {
       "do": "hook",
       "name": "renameit.share",

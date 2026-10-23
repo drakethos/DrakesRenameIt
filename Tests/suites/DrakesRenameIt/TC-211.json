@@ -2,14 +2,7 @@
   "name": "TC-211 SeparateStacks on, HardLock off",
   "description": "Sheet: TC-211. ",
   "steps": [
-    {
-      "do": "use",
-      "block": "splitStacks",
-      "args": {
-        "sep": "true",
-        "hard": "false"
-      }
-    },
+    "splitStacks(\"true\", \"false\")",
     {
       "do": "hook",
       "name": "renameit.dropAndPickup",

@@ -45,10 +45,7 @@
       "expect": true,
       "label": "crafted-by on a written page"
     },
-    {
-      "do": "use",
-      "block": "pinPage"
-    },
+    "pinPage()",
     {
       "do": "hook",
       "name": "renameit.pageMayEdit",

@@ -1,0 +1,61 @@
+{
+  "name": "SM-015-UI RenameIt in Spanish",
+  "description": "Sheet: SM-015. Switches the game to Spanish for the test (put back after). Formerly manual M-SM-015.",
+  "steps": [
+    {
+      "do": "setLanguage",
+      "language": "Spanish"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "craft",
+      "prefab": "AxeStone",
+      "by": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.blockedMessage",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "dueño",
+      "label": "denial messages come from the Spanish file"
+    },
+    {
+      "do": "give",
+      "prefab": "Drakes_PieceOfPaper",
+      "count": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "notContains": "Piece of Paper",
+      "label": "blank paper name is translated"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper"
+      },
+      "notContains": "blank piece of paper",
+      "label": "blank paper description is translated"
+    },
+    {
+      "do": "screenshot",
+      "name": "spanish"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

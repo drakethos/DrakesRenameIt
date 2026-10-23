@@ -1,0 +1,43 @@
+{
+  "name": "SM-010-UI paper is in the crafting list",
+  "description": "Sheet: SM-010. Formerly manual M-SM-010; the crafting itself is SM-010.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "Wood",
+      "count": 5
+    },
+    {
+      "do": "give",
+      "prefab": "Coal",
+      "count": 5
+    },
+    {
+      "do": "pressKey",
+      "button": "Inventory"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Piece of Paper",
+      "label": "Piece of Paper is listed (no station needed)"
+    },
+    {
+      "do": "screenshot",
+      "name": "crafting-list"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

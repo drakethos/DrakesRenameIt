@@ -7,12 +7,9 @@
       "who": "Alice"
     },
     {
-      "do": "use",
-      "block": "craftRenamed",
-      "args": {
-        "by": "Alice",
-        "text": "Hidden Axe"
-      }
+      "do": "craftRenamed",
+      "by": "Alice",
+      "text": "Hidden Axe"
     },
     {
       "do": "spawn",

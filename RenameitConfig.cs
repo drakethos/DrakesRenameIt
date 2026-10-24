@@ -125,6 +125,8 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _pieceLockToBuilder = default!;
     private static ConfigEntry<bool> _pieceRequireWardAccess = default!;
     private static ConfigEntry<bool> _pieceSharedEnabled = default!;
+    private static ConfigEntry<bool> _mapPinEditEnabled = default!;
+    private static ConfigEntry<string> _mapPinEditKey = default!;
     private static ConfigEntry<bool> _animalRenameEnabled = default!;
     private static ConfigEntry<int> _animalNameCharLimit = default!;
     private static ConfigEntry<bool> _animalAllowColour = default!;
@@ -439,6 +441,22 @@ public static class RenameitConfig
     public static bool PieceRequireWardAccess => _pieceRequireWardAccess.Value;
     /// <summary>Builders may mark a piece Shared so others can rename it.</summary>
     public static bool PieceSharedEnabled => _pieceSharedEnabled.Value;
+
+    /// <summary>Modifier + click on a map pin opens the pin editor (name with colours, tint, icon, remove). Per-client.</summary>
+    public static bool MapPinEditEnabled => _mapPinEditEnabled.Value;
+
+    /// <summary>The key held while clicking a pin to edit it: Shift (default), Ctrl, Alt or None (a plain click). Per-client.</summary>
+    public static string MapPinEditKey
+    {
+        get
+        {
+            var key = (_mapPinEditKey.Value ?? "Shift").Trim();
+            return key.Equals("Ctrl", StringComparison.OrdinalIgnoreCase) ? "Ctrl"
+                : key.Equals("Alt", StringComparison.OrdinalIgnoreCase) ? "Alt"
+                : key.Equals("None", StringComparison.OrdinalIgnoreCase) ? "None"
+                : "Shift";
+        }
+    }
 
     /// <summary>Tamed animals get the rename window (Shift+Use) instead of vanilla's 10-character box.</summary>
     public static bool AnimalRenameEnabled => _animalRenameEnabled.Value;
@@ -1185,6 +1203,18 @@ public static class RenameitConfig
             "AnimalAllowLock",
             true,
             "The player who named an animal may lock the name so nobody else (except admins/VIP) can change it.");
+
+        _mapPinEditEnabled = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "MapPinEditEnabled",
+            true,
+            "Click a map pin while holding MapPinEditKey to edit it after placing: rename with colours, tint the pin, change its icon, cross it off or remove it. Per-client; pin colours and styled names are kept on your character.");
+
+        _mapPinEditKey = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "MapPinEditKey",
+            "Shift",
+            "Key held while clicking a pin to edit it: Shift, Ctrl, Alt or None (a plain click; then crossing a pin off needs another way). Per-client.");
 
         _animalLabelStyle = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,

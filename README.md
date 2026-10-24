@@ -20,6 +20,20 @@ Any built piece that shows a hover name (chests, doors, beds, stations, signs, f
 
 Synced config section **12 Pieces:** `PieceRenameEnabled`, `PieceRenameAdminOnly`, `PieceExcludedNames` (prefab, token or shown name), `PieceExcludedCategory` (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), `PieceRenameAllowlist`, `PieceNameCharacterLimit`, `PieceLockToBuilder`, `PieceRequireWardAccess`, `PieceSharedEnabled`. `ExcludedCategoryReference.txt` lists the categories and every buildable piece with a hover name once you have joined a world.
 
+### Tamed animals (1.4)
+
+**Shift+Use** on a tamed animal opens a proper rename window instead of vanilla's 10-character box: name with colours and bold, a label preview, Reset, Revert / Save with Undo, and a **Lock name** switch. Vanilla showed every animal name in white; colours now show on the label above the animal, and an **Improved** label style makes it bigger (`AnimalLabelStyle`, `AnimalLabelScale`, per player). Synced config section **13 Animals:** `AnimalRenameEnabled`, `AnimalNameCharacterLimit` (30, colour codes not counted), `AnimalAllowColour`, `AnimalRenameAccess` (Anyone / Namer / Admin) and `AnimalAllowLock`. The animal's owner applies the limit and colour rules again, so a modified client cannot get around them.
+
+### Map pins (1.4)
+
+**Shift + click a pin** on the map to edit it after placing: rename with colours, tint the pin, change its icon, cross it off or remove it. A small hint follows the pointer when it is over a pin you can edit. Colours and styled names are kept on your character, per world (the map file only saves the plain name). Per-player config: `MapPinEditEnabled`, `MapPinEditKey` (Shift, Ctrl, Alt or None). Pins shared by other players can't be edited.
+
+### Saved names and the builder line (1.4)
+
+Every Name field (items, pieces, animals, map pins) suggests names you saved before in a drop-down as you type: Up/Down to pick, Tab or Enter to fill, Esc to close. Suggestions only come from the same kind of thing (a boat name is never offered for a sword; chests, doors and boats are separate). `QuickNamesEnabled` turns it off.
+
+Renamed pieces can show **Crafted by: <builder>** (or **Built by**) as their own hover line, handy for boats and carts. Server: `PieceCrafterLine` (Off / On / Forced) and `PieceCrafterLineStyle`; players: `ShowPieceCrafter` when the server says On. Portal hovers now show the name on one line and `Tag: ...` on the next.
+
 ### Piece of Paper (1.1)
 
 Craft blank **Piece of Paper** from the inventory craft list (default recipe **1 Wood + 1 Coal**; override with **PaperCost**). Blanks stack (default **50**). Open the Drake menu and set a **name** and/or **description** — that **uses one sheet** and creates a **Written Page** (always stack size 1) with your text.

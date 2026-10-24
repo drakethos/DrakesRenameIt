@@ -1,0 +1,46 @@
+{
+  "name": "MP-02 map pins: the editor window opens",
+  "description": "The Toolkit pin editor (Shift + click a pin on the map).",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.pinAdd",
+      "args": {
+        "text": "Camp"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinOpen",
+      "expect": true,
+      "label": "the pin editor opens",
+      "stop": true
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Pin colour",
+      "label": "the editor is showing"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinRemove",
+      "expect": true
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

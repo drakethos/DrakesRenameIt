@@ -1,0 +1,85 @@
+{
+  "name": "MP-01 map pins: edit after placing (name colours, tint, icon) and remove",
+  "description": "Pins can be renamed with colours, tinted, given another icon and removed after they are placed. Vanilla keeps only the plain name; the styling lives on the character.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.pinAdd",
+      "args": {
+        "text": "Troll cave"
+      },
+      "expect": true,
+      "label": "a pin on the map",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinInfo",
+      "contains": "Troll cave|Troll cave||Icon3|False",
+      "label": "starts plain"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinEdit",
+      "args": {
+        "text": "<color=#d8584a>Troll</color> cave",
+        "colour": "#5cc6b8",
+        "type": "Icon0",
+        "checked": true
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinInfo",
+      "contains": "Troll cave|",
+      "label": "the game keeps the plain name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinInfo",
+      "contains": "<color=#d8584a>Troll</color> cave|#5cc6b8|Icon0|True",
+      "label": "our styled name has the colour"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinStored",
+      "contains": "#5cc6b8",
+      "label": "saved on the character per world"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinEdit",
+      "args": {
+        "text": "",
+        "colour": "",
+        "type": "Icon1",
+        "checked": false
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinInfo",
+      "contains": "||Icon1|False",
+      "label": "the name is cleared, tint gone, icon changed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinStored",
+      "notContains": "#5cc6b8",
+      "label": "nothing left to store for a plain pin"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pinRemove",
+      "expect": true
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

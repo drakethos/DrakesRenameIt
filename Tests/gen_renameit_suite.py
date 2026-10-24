@@ -1301,6 +1301,27 @@ T('AN-03', 'animal window opens and closes', [
     *CLOSE,
 ], desc='The Toolkit window for a tamed animal.')
 
+T('MP-01', 'map pins: edit after placing (name colours, tint, icon) and remove', [
+    H('pinAdd', True, 'a pin on the map', stop=True, text='Troll cave'),
+    H('pinInfo', label='starts plain', contains='Troll cave|Troll cave||Icon3|False'),
+    H('pinEdit', True, text='<color=#d8584a>Troll</color> cave', colour='#5cc6b8', type='Icon0', checked=True),
+    H('pinInfo', label='the game keeps the plain name', contains='Troll cave|'),
+    H('pinInfo', label='our styled name has the colour', contains='<color=#d8584a>Troll</color> cave|#5cc6b8|Icon0|True'),
+    H('pinStored', label='saved on the character per world', contains='#5cc6b8'),
+    H('pinEdit', True, text='', colour='', type='Icon1', checked=False),
+    H('pinInfo', label='the name is cleared, tint gone, icon changed', contains='||Icon1|False'),
+    H('pinStored', label='nothing left to store for a plain pin', notContains='#5cc6b8'),
+    H('pinRemove', True),
+], desc='Pins can be renamed with colours, tinted, given another icon and removed after they are placed. Vanilla keeps only the plain name; the styling lives on the character.')
+
+T('MP-02', 'map pins: the editor window opens', [
+    H('pinAdd', True, stop=True, text='Camp'),
+    H('pinOpen', True, 'the pin editor opens', stop=True),
+    check('uiVisible', 'the editor is showing', name='Pin colour'),
+    *CLOSE,
+    H('pinRemove', True),
+], desc='The Toolkit pin editor (Shift + click a pin on the map).')
+
 # ---------------------------------------------------------------- write
 
 DESCRIPTION = ('Automated regression for Drake\'s RenameIt, following "Drake\'s RenameIt Test Suite 2.0" (SM-/TC- ids) plus extra config coverage (X-). '

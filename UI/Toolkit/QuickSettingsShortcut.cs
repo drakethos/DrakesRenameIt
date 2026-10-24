@@ -40,7 +40,7 @@ internal static class QuickSettingsShortcut
         }
 
         // Menus / text fields own the keyboard; the item window has the same settings under its cog.
-        if (WorkshopPanel.IsOpen || PieceWorkshopPanel.IsOpen || AnimalWorkshopPanel.IsOpen || LookingAtItem() || TypingElsewhere())
+        if (WorkshopPanel.IsOpen || PieceWorkshopPanel.IsOpen || AnimalWorkshopPanel.IsOpen || PinEditorPanel.IsOpen || LookingAtItem() || TypingElsewhere())
             return;
         if (IsMovementKey(key) && MovingNow())
             return;

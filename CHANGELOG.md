@@ -1,3 +1,13 @@
+- Version 1.4.0-beta.2 (not released yet)
+  - **Requires a DrakeModsLibs with `UkField.SetSuggestions` (the next Libs minor, 1.1.0). Release Libs first, then pin it here.**
+  - **New: tamed animals.** Shift+Use opens a rename window (colours, bold, preview, Reset, Undo, Lock name) instead of vanilla's 10-character box. Names keep their colours on the label above the animal (vanilla showed them white); the label can be drawn bigger (`AnimalLabelStyle` Improved / Vanilla, `AnimalLabelScale`, per player). New synced section **13 Animals**: AnimalRenameEnabled, AnimalNameCharacterLimit (30, colour codes not counted), AnimalAllowColour, AnimalRenameAccess (Anyone / Namer / Admin), AnimalAllowLock. The animal's owner applies the limit and colour rules too.
+  - **New: edit map pins after placing.** Shift + click a pin: rename with colours, tint, change icon, cross off, remove. Hover hint near the pointer. Styling is kept on your character per world. `MapPinEditEnabled`, `MapPinEditKey` (per player).
+  - **New: saved-name suggestions.** A drop-down under every Name field suggests names you saved before, only from the same kind (items, a piece type such as Boat or Chest, animals, pins). `QuickNamesEnabled`.
+  - **New: builder line on renamed pieces** ("Crafted by" / "Built by", own hover line). Server `PieceCrafterLine` Off / On / Forced and `PieceCrafterLineStyle`; player `ShowPieceCrafter`.
+  - **Portals:** the hover shows the name, then `Tag: ...` on its own line.
+  - **Fix: hover over vanilla dialogs.** The RenameIt hover no longer draws on top of the game's rename / tag box, menus, the console or our own windows.
+  - Hover backdrop darker and the builder line brighter, for readability.
+  - Automated tests added: AN-01..03 (animals), MP-01..02 (map pins), PC-01..02 (builder line, suggestions).
 - Version 1.4.0-beta.1
   - Beta. Requires **DrakeModsLibs 1.0.0** or newer.
   - **New: rename placed pieces.** Any built piece that shows a hover name can be renamed by its builder (with ward access where it stands). Shift+Use opens the piece window: name with the formatting toolbar and hover preview, Reset name, Revert / Save with Undo, quick settings. Free. Admins/VIP can override, as with items.

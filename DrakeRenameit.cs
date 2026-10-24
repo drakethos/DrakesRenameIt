@@ -149,6 +149,8 @@ namespace DrakeRenameit
                 return;
             if (global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.TryHandleEscape())
                 return;
+            if (global::DrakeRenameit.UI.Toolkit.PinEditorPanel.TryHandleEscape())
+                return;
             UIPanels.TryHandleEscape();
         }
 

@@ -171,6 +171,7 @@ internal static class RenameItTestHooks
         global::DrakeRenameit.UI.Toolkit.WorkshopPanel.HideFromHost();
         global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.Hide();
         global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.Hide();
+        global::DrakeRenameit.UI.Toolkit.PinEditorPanel.Hide();
         DrakeModsLibs.UI.DrakeTabHost.Close();
         global::DrakeRenameit.UI.UIPanels.CloseAllRenameEditingUi();
         if (PaperWallSession.IsActive)
@@ -729,6 +730,74 @@ internal static class RenameItTestHooks
             return false;
         Animals.AnimalRename.OpenEditor(animal);
         return global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.IsOpen;
+    }
+
+    // ---------- map pins
+
+    static Minimap.PinData? _testPin;
+
+    /// <summary>Adds a pin of ours to the map 50 m east of the player (the game's own AddPin, saved like a placed pin).</summary>
+    [TestHook("renameit.pinAdd")]
+    static bool PinAdd(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var map = Minimap.instance ?? throw new InvalidOperationException("no minimap");
+        var pos = P.transform.position + Vector3.right * 50f;
+        var method = typeof(Minimap).GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+            .First(m => m.Name == "AddPin" && m.GetParameters().Length >= 6);
+        var parameters = method.GetParameters();
+        var values = new object?[parameters.Length];
+        values[0] = pos;
+        values[1] = Minimap.PinType.Icon3;
+        values[2] = S(args, "text", "Test pin");
+        values[3] = true;
+        values[4] = false;
+        values[5] = 0L;
+        for (var i = 6; i < values.Length; i++)
+            values[i] = parameters[i].ParameterType.IsValueType ? Activator.CreateInstance(parameters[i].ParameterType) : null;
+        _testPin = method.Invoke(map, values) as Minimap.PinData;
+        return _testPin != null;
+    }
+
+    static Minimap.PinData TestPin => _testPin ?? throw new InvalidOperationException("add a pin first (renameit.pinAdd)");
+
+    [TestHook("renameit.pinEdit")]
+    static bool PinEditHook(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var type = Enum.TryParse<Minimap.PinType>(S(args, "type", "Icon3"), out var t) ? t : Minimap.PinType.Icon3;
+        global::DrakeRenameit.Map.PinEdit.Apply(TestPin, S(args, "text"), S(args, "colour"), type, B(args, "checked"));
+        return true;
+    }
+
+    /// <summary>name | styled name | colour | icon | crossed off, as the pin is now.</summary>
+    [TestHook("renameit.pinInfo")]
+    static string PinInfo(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var pin = TestPin;
+        return pin.m_name + "|" + global::DrakeRenameit.Map.PinEdit.DisplayName(pin) + "|" + global::DrakeRenameit.Map.PinEdit.Colour(pin) + "|" + pin.m_type + "|" + pin.m_checked;
+    }
+
+    /// <summary>What is saved on the character for this world's pins.</summary>
+    [TestHook("renameit.pinStored")]
+    static string PinStored(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var data = P.m_customData;
+        var key = "DrakePins_" + ZNet.instance.GetWorldName();
+        return data != null && data.TryGetValue(key, out var text) ? text : "";
+    }
+
+    [TestHook("renameit.pinOpen")]
+    static bool PinOpen(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        global::DrakeRenameit.UI.Toolkit.PinEditorPanel.Show(TestPin);
+        return global::DrakeRenameit.UI.Toolkit.PinEditorPanel.IsOpen;
+    }
+
+    [TestHook("renameit.pinRemove")]
+    static bool PinRemove(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        global::DrakeRenameit.Map.PinEdit.Remove(TestPin);
+        _testPin = null;
+        return true;
     }
 
     /// <summary>Replaces the saved quick names (<c>text</c>, kind:name entries joined by ||); empty clears them.</summary>

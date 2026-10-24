@@ -113,6 +113,9 @@
     <Compile Include="MenuKeyBinding.cs" />
     <Compile Include="NameLibrary.cs" />
     <Compile Include="Animals\AnimalRename.cs" />
+    <Compile Include="Map\PinStyles.cs" />
+    <Compile Include="Map\PinEdit.cs" />
+    <Compile Include="UI\Toolkit\PinEditorPanel.cs" />
     <Compile Include="UI\Toolkit\AnimalWorkshopPanel.cs" />
     <Compile Include="RenameitConfig.cs" />
     <Compile Include="Permissions\ExcludedCategoryAliases.cs" />

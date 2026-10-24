@@ -1,0 +1,148 @@
+{
+  "name": "PR-02 shared piece: others with ward access may rename",
+  "description": "The builder turns Shared on, then another player may rename it but not change Shared; off locks them out again.",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dz": 2.5,
+      "owner": "Alice",
+      "as": "bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIsShared",
+      "args": {
+        "target": "bench"
+      },
+      "expect": false,
+      "label": "not shared by default",
+      "stop": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": true
+      },
+      "expect": false,
+      "label": "others cannot turn Shared on"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "bench"
+      },
+      "expect": false,
+      "label": "not shared: others cannot rename"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": true
+      },
+      "expect": true,
+      "label": "builder turns Shared on"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIsShared",
+      "args": {
+        "target": "bench"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "bench"
+      },
+      "expect": true,
+      "label": "shared: others may rename"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "bench",
+        "text": "Village Bench"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "bench"
+      },
+      "contains": "Village Bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": false
+      },
+      "expect": false,
+      "label": "others cannot turn Shared off"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": false
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "bench"
+      },
+      "expect": false,
+      "label": "unshared again: others locked out"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

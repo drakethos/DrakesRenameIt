@@ -118,6 +118,8 @@ namespace DrakeRenameit
                 return;
             if (global::DrakeRenameit.UI.Toolkit.WorkshopPanel.TryHandleEscape())
                 return;
+            if (global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.TryHandleEscape())
+                return;
             UIPanels.TryHandleEscape();
         }
 

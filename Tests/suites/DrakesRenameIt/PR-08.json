@@ -1,0 +1,99 @@
+{
+  "name": "PR-08 PieceRenameAdminOnly: only admins / VIP",
+  "description": "Admin-only mode, and admins/VIP need AllowAdminOverride.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameAdminOnly": "true",
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "admin-only: the builder cannot rename"
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "admin-only: a VIP can"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "VIP Chest"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "VIP Chest",
+      "label": "everyone still sees the name"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "AllowAdminOverride off: the VIP is a normal player again"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

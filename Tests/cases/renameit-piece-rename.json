@@ -1,0 +1,449 @@
+{
+  "name": "renameit-piece-rename",
+  "description": "RenameIt 1.4 piece rename, by hand. Rows of placed pieces, each with a sign on its left saying what should happen when you look at a piece and press Shift+E. AllowAdminOverride is turned off so you count as a normal builder (turn it back on afterwards). Hammer and free building included to try more pieces.",
+  "arena": "build",
+  "arenaRadius": 95,
+  "noBuild": "off",
+  "timeOfDay": 0.5,
+  "freezeTime": 1,
+  "god": 1,
+  "noCost": 1,
+  "costMultiplier": 0,
+  "stationLevel": 7,
+  "carryWeight": 9999,
+  "infiniteStamina": 1,
+  "discover": "all",
+  "globalKeys": [
+    "AllPiecesUnlocked",
+    "AllRecipesUnlocked"
+  ],
+  "items": [
+    {
+      "prefab": "Hammer"
+    },
+    {
+      "prefab": "Wood",
+      "count": 200
+    },
+    {
+      "prefab": "FineWood",
+      "count": 100
+    },
+    {
+      "prefab": "Stone",
+      "count": 200
+    }
+  ],
+  "wards": [
+    {
+      "owner": "Alice",
+      "enabled": true,
+      "dz": 84,
+      "radius": 12
+    }
+  ],
+  "pieces": [
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 6,
+      "yaw": 180,
+      "owner": "me",
+      "text": "A Containers: Shift+E renames; chest window title shows it"
+    },
+    {
+      "prefab": "piece_chest_wood",
+      "dx": -16.0,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_chest",
+      "dx": -9.6,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_chest_private",
+      "dx": -3.2,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_chest_blackmetal",
+      "dx": 3.2,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_chest_barrel",
+      "dx": 9.6,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "incinerator",
+      "dx": 16.0,
+      "dz": 6,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 14,
+      "yaw": 180,
+      "owner": "me",
+      "text": "B Stations: Shift+E renames"
+    },
+    {
+      "prefab": "piece_workbench",
+      "dx": -20.0,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "forge",
+      "dx": -14.3,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_stonecutter",
+      "dx": -8.6,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_artisanstation",
+      "dx": -2.9,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "blackforge",
+      "dx": 2.9,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_magetable",
+      "dx": 8.6,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_cauldron",
+      "dx": 14.3,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_preptable",
+      "dx": 20.0,
+      "dz": 14,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 23,
+      "yaw": 180,
+      "owner": "me",
+      "text": "C Production: Shift+E renames"
+    },
+    {
+      "prefab": "smelter",
+      "dx": -21.0,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "charcoal_kiln",
+      "dx": -15.8,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "blastfurnace",
+      "dx": -10.5,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_spinningwheel",
+      "dx": -5.2,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "eitrrefinery",
+      "dx": 0.0,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "fermenter",
+      "dx": 5.2,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_beehive",
+      "dx": 10.5,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_oven",
+      "dx": 15.8,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_cookingstation",
+      "dx": 21.0,
+      "dz": 23,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 32,
+      "yaw": 180,
+      "owner": "me",
+      "text": "D Doors, beds, seats, cart: Shift+E renames"
+    },
+    {
+      "prefab": "wood_door",
+      "dx": -21.0,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "iron_grate",
+      "dx": -16.3,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "darkwood_gate",
+      "dx": -11.7,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "bed",
+      "dx": -7.0,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_bed02",
+      "dx": -2.3,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_chair",
+      "dx": 2.3,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_bench01",
+      "dx": 7.0,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_throne01",
+      "dx": 11.7,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "ArmorStand_Male",
+      "dx": 16.3,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "Cart",
+      "dx": 21.0,
+      "dz": 32,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 43,
+      "yaw": 180,
+      "owner": "me",
+      "text": "E Big pieces: Shift+E renames"
+    },
+    {
+      "prefab": "portal_wood",
+      "dx": -15.0,
+      "dz": 43,
+      "owner": "me"
+    },
+    {
+      "prefab": "portal_stone",
+      "dx": -5.0,
+      "dz": 43,
+      "owner": "me"
+    },
+    {
+      "prefab": "windmill",
+      "dx": 5.0,
+      "dz": 43,
+      "owner": "me"
+    },
+    {
+      "prefab": "guard_stone",
+      "dx": 15.0,
+      "dz": 43,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 54,
+      "yaw": 180,
+      "owner": "me",
+      "text": "F Should NOT rename: no hint; vanilla Shift+E still works"
+    },
+    {
+      "prefab": "fire_pit",
+      "dx": -16.0,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "hearth",
+      "dx": -9.6,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_groundtorch",
+      "dx": -3.2,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "itemstandh",
+      "dx": 3.2,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": 9.6,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "woodwall",
+      "dx": 16.0,
+      "dz": 54,
+      "owner": "me"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 64,
+      "yaw": 180,
+      "owner": "me",
+      "text": "G Built by Alice, no ward: no hint, Shift+E does nothing new"
+    },
+    {
+      "prefab": "piece_chest_wood",
+      "dx": -6.0,
+      "dz": 64,
+      "owner": "Alice"
+    },
+    {
+      "prefab": "piece_workbench",
+      "dx": 0.0,
+      "dz": 64,
+      "owner": "Alice"
+    },
+    {
+      "prefab": "wood_door",
+      "dx": 6.0,
+      "dz": 64,
+      "owner": "Alice"
+    },
+    {
+      "prefab": "sign",
+      "dx": -26,
+      "dz": 78,
+      "yaw": 180,
+      "owner": "me",
+      "text": "H Yours, inside Alice's ward: no hint (no ward access)"
+    },
+    {
+      "prefab": "piece_chest_wood",
+      "dx": -6.0,
+      "dz": 78,
+      "owner": "me"
+    },
+    {
+      "prefab": "piece_workbench",
+      "dx": 0.0,
+      "dz": 78,
+      "owner": "me"
+    },
+    {
+      "prefab": "wood_door",
+      "dx": 6.0,
+      "dz": 78,
+      "owner": "me"
+    }
+  ],
+  "configs": [
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "01 Admin",
+      "key": "AllowAdminOverride",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRenameEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceExcludedNames",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceExcludedCategory",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRenameAdminOnly",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceLockToBuilder",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRequireWardAccess",
+      "value": "true"
+    }
+  ]
+}

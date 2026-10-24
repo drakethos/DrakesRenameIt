@@ -169,6 +169,7 @@ internal static class RenameItTestHooks
     static bool CloseWindows()
     {
         global::DrakeRenameit.UI.Toolkit.WorkshopPanel.HideFromHost();
+        global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.Hide();
         DrakeModsLibs.UI.DrakeTabHost.Close();
         global::DrakeRenameit.UI.UIPanels.CloseAllRenameEditingUi();
         if (PaperWallSession.IsActive)
@@ -561,17 +562,24 @@ internal static class RenameItTestHooks
 
     // ---------- placed pieces (1.4 piece rename)
 
-    /// <summary>The nameable piece on the tagged target, else the nearest one to the player.</summary>
+    /// <summary>
+    /// The piece on the tagged target, else the nearest piece with a nameable hover. Does not check the config, so tests
+    /// can also look at pieces while renaming is off or the piece is excluded (see renameit.pieceNameable).
+    /// </summary>
     static Piece NameablePiece(GameObject? target)
     {
         if (target != null)
-            return Pieces.PieceRename.NameablePiece(target.GetComponentInChildren<Hoverable>() is Component h ? h.gameObject : target)
-                   ?? throw new InvalidOperationException($"{target.name} cannot carry a custom name");
+        {
+            var own = target.GetComponentInParent<Piece>() ?? target.GetComponentInChildren<Piece>();
+            if (own == null || Pieces.PieceRename.FirstNameableHover(own) == null)
+                throw new InvalidOperationException($"{target.name} has no hover name a custom name could replace");
+            return own;
+        }
         Piece? best = null;
         var bestDist = float.MaxValue;
         foreach (var piece in UnityEngine.Object.FindObjectsOfType<Piece>())
         {
-            if (piece.GetComponentInChildren<Hoverable>() is not Component h || Pieces.PieceRename.NameablePiece(h.gameObject) != piece)
+            if (Pieces.PieceRename.FirstNameableHover(piece) == null)
                 continue;
             var d = Vector3.Distance(piece.transform.position, P.transform.position);
             if (d < bestDist)
@@ -582,6 +590,21 @@ internal static class RenameItTestHooks
         }
         return best ?? throw new InvalidOperationException("no nameable piece nearby");
     }
+
+    /// <summary>Would looking at this piece offer piece renaming at all (feature on, a hover RenameIt handles)?</summary>
+    [TestHook("renameit.pieceNameable")]
+    static bool PieceNameable(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = target != null ? target.GetComponentInParent<Piece>() ?? target.GetComponentInChildren<Piece>() : NameablePiece(null);
+        if (piece == null)
+            throw new InvalidOperationException("no piece on that target");
+        return Pieces.PieceRename.FirstNameableHover(piece) is Component h && Pieces.PieceRename.NameablePiece(h.gameObject) == piece;
+    }
+
+    /// <summary>The categories PieceExcludedCategory matches for this piece, comma separated.</summary>
+    [TestHook("renameit.pieceCategories")]
+    static string PieceCategories(Dictionary<string, object?> args, GameObject? target = null) =>
+        string.Join(",", Pieces.PieceRename.CategoriesOf(NameablePiece(target)));
 
     [TestHook("renameit.pieceCan")]
     static bool PieceCan(Dictionary<string, object?> args, GameObject? target = null) =>
@@ -598,6 +621,41 @@ internal static class RenameItTestHooks
         return true;
     }
 
+    /// <summary>Turns Shared on/off like the switch (builder or admin only); false when not allowed.</summary>
+    [TestHook("renameit.pieceShare")]
+    static bool PieceShare(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = NameablePiece(target);
+        if (!Pieces.PieceRename.CanChangeShared(piece, P))
+            return false;
+        Pieces.PieceRename.SetShared(piece, B(args, "on", true));
+        return true;
+    }
+
+    [TestHook("renameit.pieceIsShared")]
+    static bool PieceIsShared(Dictionary<string, object?> args, GameObject? target = null) =>
+        Pieces.PieceRename.IsShared(NameablePiece(target));
+
+    /// <summary>Opens the piece editor as Shift+Use would (when allowed); true when the Workshop window is showing.</summary>
+    [TestHook("renameit.pieceOpen")]
+    static bool PieceOpen(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = NameablePiece(target);
+        if (!Pieces.PieceRename.CanRename(piece, P, flash: false))
+            return false;
+        Pieces.PieceRename.OpenEditor(piece);
+        return global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.IsOpen;
+    }
+
+    /// <summary>First line of the hover (the title) as the HUD shows it: the custom name only, never the old one above or below.</summary>
+    [TestHook("renameit.pieceHoverTitle")]
+    static string PieceHoverTitle(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var text = PieceHover(args, target);
+        var nl = text.IndexOf('\n');
+        return nl >= 0 ? text.Substring(0, nl) : text;
+    }
+
     [TestHook("renameit.pieceName")]
     static string PieceName(Dictionary<string, object?> args, GameObject? target = null) =>
         Pieces.PieceRename.GetCustomName(NameablePiece(target));
@@ -607,8 +665,12 @@ internal static class RenameItTestHooks
     static string PieceHover(Dictionary<string, object?> args, GameObject? target = null)
     {
         var piece = NameablePiece(target);
-        var hoverable = piece.GetComponentInChildren<Hoverable>();
-        return Loc(Pieces.PieceRename.ApplyToHoverText(piece, hoverable?.GetHoverText() ?? "", P));
+        var part = Pieces.PieceRename.FirstNameableHover(piece);
+        var vanilla = (part as Hoverable)?.GetHoverText() ?? "";
+        // Like the HUD: RenameIt only touches the hover when piece renaming applies to it.
+        if (part == null || Pieces.PieceRename.NameablePiece(part.gameObject) != piece)
+            return Loc(vanilla);
+        return Loc(Pieces.PieceRename.ApplyToHoverText(piece, vanilla, P, part as Hoverable));
     }
 
     // ---------- paper

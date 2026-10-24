@@ -1,0 +1,82 @@
+{
+  "name": "PR-06 skipped pieces: fires, item stands, signs, plain walls",
+  "description": "Pieces where vanilla already uses Shift+Use, or that have their own text, are left alone.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "fire_pit",
+      "dz": 3,
+      "owner": "me",
+      "as": "fire",
+      "dx": -4
+    },
+    {
+      "do": "spawn",
+      "prefab": "itemstandh",
+      "dz": 3,
+      "owner": "me",
+      "as": "stand"
+    },
+    {
+      "do": "spawn",
+      "prefab": "sign",
+      "dz": 3,
+      "owner": "me",
+      "as": "sign",
+      "dx": 4
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "fire"
+      },
+      "expect": false,
+      "label": "fire pit: vanilla Shift+Use (fuel) stays"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "stand"
+      },
+      "expect": false,
+      "label": "item stand: vanilla Shift+Use stays"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "sign"
+      },
+      "expect": false,
+      "label": "sign: has its own text"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bathtub",
+      "dz": -4,
+      "owner": "me",
+      "as": "tub"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "tub"
+      },
+      "expect": true,
+      "label": "hot tub seat is renamable (its heater is not)"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

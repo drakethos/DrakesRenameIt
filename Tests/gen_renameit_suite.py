@@ -913,6 +913,280 @@ T('X-06-UI', 'world hover text styles', [
     check('crosshair', 'Vanilla: the game crosshair text shows the name', contains='Hover Axe'),
 ], sheet='CONFIGS 11 UI (hover)', desc='Formerly manual M-HOVER.')
 
+# ---------------------------------------------------------------- PIECE RENAME (1.4)
+# Hooks take target = a spawned piece's tag. Config lives in section "12 Pieces".
+
+PC = '12 Pieces/'
+
+def spawn(prefab, tag, owner='me', dz=2.5, dx=0):
+    s = {'do': 'spawn', 'prefab': prefab, 'dz': dz, 'owner': owner, 'as': tag}
+    if dx:
+        s['dx'] = dx
+    return s
+
+def ward(owner, dz=-3, radius=15):
+    return {'do': 'spawn', 'prefab': 'guard_stone', 'dz': dz, 'owner': owner, 'enabled': True, 'radius': radius}
+
+def renames(tag, text, label=None):
+    # rename and check the hover title is the new name (stop: later steps need it)
+    return [H('pieceRename', True, label or f'{tag} can be renamed', stop=True, target=tag, text=text),
+            H('pieceHoverTitle', label=f'{tag} hover shows the new name', contains=text, target=tag)]
+
+T('PR-01', 'rename a placed piece', [
+    play('Alice'),
+    spawn('piece_chest_wood', 'chest', 'Alice'),
+    H('pieceCan', True, 'builder may rename', stop=True, target='chest'),
+    H('pieceRename', True, target='chest', text="Alice's Loot"),
+    H('pieceName', "Alice's Loot", target='chest'),
+    H('pieceHover', label='hover shows the custom name', contains="Alice's Loot", target='chest'),
+    H('pieceHover', label='builder sees the Rename hint', contains='Rename', target='chest'),
+    play('Bob'),
+    H('pieceHover', label='others see the name', contains="Alice's Loot", target='chest'),
+    H('pieceHover', label='others get no hint', notContains='Rename', target='chest'),
+    H('pieceRename', False, 'others cannot rename', target='chest', text="Bob's now"),
+    H('pieceName', "Alice's Loot", target='chest'),
+    ward('Bob'),
+    wait(0.5),
+    play('Alice'),
+    H('pieceCan', False, 'builder without ward access cannot rename', target='chest'),
+    play('me'),
+], desc='The builder renames a chest, everyone sees the name, others and players without ward access cannot rename it.')
+
+T('PR-02', 'shared piece: others with ward access may rename', [
+    play('Alice'),
+    spawn('piece_workbench', 'bench', 'Alice'),
+    H('pieceIsShared', False, 'not shared by default', stop=True, target='bench'),
+    play('Bob'),
+    H('pieceShare', False, 'others cannot turn Shared on', target='bench', on=True),
+    H('pieceCan', False, 'not shared: others cannot rename', target='bench'),
+    play('Alice'),
+    H('pieceShare', True, 'builder turns Shared on', target='bench', on=True),
+    H('pieceIsShared', True, target='bench'),
+    play('Bob'),
+    H('pieceCan', True, 'shared: others may rename', target='bench'),
+    H('pieceRename', True, target='bench', text='Village Bench'),
+    H('pieceHover', contains='Village Bench', target='bench'),
+    H('pieceShare', False, 'others cannot turn Shared off', target='bench', on=False),
+    play('Alice'),
+    H('pieceShare', True, target='bench', on=False),
+    play('Bob'),
+    H('pieceCan', False, 'unshared again: others locked out', target='bench'),
+    play('me'),
+], desc='The builder turns Shared on, then another player may rename it but not change Shared; off locks them out again.')
+
+T('PR-03', 'piece Workshop window: type, save, close', [
+    C({'11 UI-NotSynced/UseToolkitUi': 'true'}),
+    spawn('piece_chest_wood', 'chest'),
+    H('pieceOpen', True, 'Shift+Use opens the piece Workshop', stop=True, target='chest'),
+    wait(0.4),
+    check('uiVisible', 'the Shared switch is there', name='Shared'),
+    check('uiVisible', 'the Reset name button is there', name='Reset name'),
+    shot('piece-workshop'),
+    {'do': 'type', 'field': 'Name', 'text': 'Typed Chest'},
+    wait(0.2),
+    {'do': 'click', 'button': 'Save'},
+    wait(0.3),
+    H('pieceName', 'Typed Chest', 'Save writes the name', target='chest'),
+    *CLOSE,
+    H('pieceOpen', True, target='chest'),
+    wait(0.3),
+    {'do': 'type', 'field': 'Name', 'text': 'Not Saved'},
+    {'do': 'pressKey', 'key': 'Escape'},
+    wait(0.3),
+    H('pieceName', 'Typed Chest', 'Esc closes without saving', target='chest'),
+    *CLOSE,
+], desc='The UI Toolkit piece Workshop opens, saves through its own Save button and Esc does not save.')
+
+T('PR-04', 'hover shows only the new name', [
+    spawn('iron_grate', 'gate', dz=3, dx=-3),
+    spawn('piece_bathtub', 'tub', dz=4, dx=3),
+    spawn('piece_chest_wood', 'chest', dz=3, dx=8),
+    H('pieceRename', True, stop=True, target='gate', text='Special Gate'),
+    H('pieceHoverTitle', 'Special Gate', 'gate title is the new name only', target='gate'),
+    H('pieceHover', label='old gate name gone', notContains='Iron', target='gate'),
+    H('pieceRename', True, stop=True, target='tub', text='Hot Tubyy'),
+    H('pieceHoverTitle', 'Hot Tubyy', 'hot tub seat title is the new name only', target='tub'),
+    H('pieceHover', label='seat name gone', notContains='Wood Bench', target='tub'),
+    H('pieceRename', True, target='chest', text='Loot'),
+    H('pieceHoverTitle', label='chest title has the new name', contains='Loot', target='chest'),
+    H('pieceHoverTitle', label='old chest name gone', notContains='Chest', target='chest'),
+    H('pieceHoverTitle', label='chest keeps ( Empty )', contains='Empty', target='chest'),
+    H('pieceRename', True, target='gate', text=''),
+    H('pieceHover', label='empty name restores the original', notContains='Special Gate', target='gate'),
+], desc='Bug found by hand: pieces whose hover name differs from the piece name (iron gate, the hot tub seat "Wood Bench") showed the new name above the old one. The hot tub heater keeps vanilla Shift+Use.')
+
+# one piece of every kind: (prefab, tag, category RenameIt matches)
+KINDS = [
+    ('piece_chest_wood', 'chest', 'Chest'),
+    ('piece_chest_private', 'private', 'Chest'),
+    ('piece_workbench', 'workbench', 'Station'),
+    ('forge', 'forge', 'Station'),
+    ('piece_stonecutter', 'stonecutter', 'Station'),
+    ('piece_artisanstation', 'artisan', 'Station'),
+    ('smelter', 'smelter', 'Smelter'),
+    ('charcoal_kiln', 'kiln', 'Smelter'),
+    ('windmill', 'windmill', 'Smelter'),
+    ('piece_spinningwheel', 'wheel', 'Smelter'),
+    ('piece_cookingstation', 'spit', 'Cooking'),
+    ('fermenter', 'fermenter', 'Cooking'),
+    ('wood_door', 'door', 'Door'),
+    ('iron_grate', 'gate', 'Door'),
+    ('bed', 'bed', 'Bed'),
+    ('portal_wood', 'portal', 'Portal'),
+    ('piece_chair', 'chair', 'Seat'),
+    ('piece_beehive', 'beehive', None),
+]
+
+def kinds_row(kinds, dz=4, step=4.5):
+    x0 = -step * (len(kinds) - 1) / 2
+    return [spawn(p, t, dz=dz, dx=round(x0 + i * step, 1)) for i, (p, t, _) in enumerate(kinds)]
+
+steps = kinds_row(KINDS[:9]) + kinds_row(KINDS[9:], dz=12) + [wait(0.5)]
+for prefab, tag, cat in KINDS:
+    steps += renames(tag, f'My {tag}', f'{prefab} can be renamed')
+    if cat:
+        steps.append(H('pieceCategories', label=f'{prefab} counts as {cat}', contains=cat, target=tag))
+# ward last, away from the rest, so it does not cover the others
+steps += [spawn('guard_stone', 'wardstone', dz=-14), *renames('wardstone', 'My ward')]
+steps.append(H('pieceCategories', label='guard_stone counts as Ward', contains='Ward', target='wardstone'))
+T('PR-05', 'one piece of every kind can be renamed', steps, timeout=180,
+  desc='Chests, stations, smelters and other processors, cooking, doors and gates, bed, portal, seat, beehive and the ward: each renames and shows the new name, and each reports the category PieceExcludedCategory uses.')
+
+T('PR-06', 'skipped pieces: fires, item stands, signs, plain walls', [
+    spawn('fire_pit', 'fire', dz=3, dx=-4),
+    spawn('itemstandh', 'stand', dz=3),
+    spawn('sign', 'sign', dz=3, dx=4),
+    wait(0.3),
+    H('pieceNameable', False, 'fire pit: vanilla Shift+Use (fuel) stays', target='fire'),
+    H('pieceNameable', False, 'item stand: vanilla Shift+Use stays', target='stand'),
+    H('pieceNameable', False, 'sign: has its own text', target='sign'),
+    spawn('piece_bathtub', 'tub', dz=-4),
+    H('pieceNameable', True, 'hot tub seat is renamable (its heater is not)', target='tub'),
+], desc='Pieces where vanilla already uses Shift+Use, or that have their own text, are left alone.')
+
+T('PR-07', 'PieceRenameEnabled off: nobody renames, names hidden', [
+    spawn('piece_chest_wood', 'chest'),
+    *renames('chest', 'Hidden Loot'),
+    C({PC + 'PieceRenameEnabled': 'false'}),
+    H('pieceNameable', False, 'off: Shift+Use does not offer renaming', target='chest'),
+    H('pieceCan', False, 'off: builder cannot rename', target='chest'),
+    H('pieceHover', label='off: the custom name is hidden', notContains='Hidden Loot', target='chest'),
+    C({PC + 'PieceRenameEnabled': 'true'}),
+    H('pieceHover', label='back on: the name is still there', contains='Hidden Loot', target='chest'),
+], desc='Turning the feature off hides names without deleting them.')
+
+T('PR-08', 'PieceRenameAdminOnly: only admins / VIP', [
+    C({PC + 'PieceRenameAdminOnly': 'true', **VIP}),
+    spawn('piece_chest_wood', 'chest'),
+    H('pieceCan', False, 'admin-only: the builder cannot rename', target='chest'),
+    play('Nacho-VIP'),
+    H('pieceCan', True, 'admin-only: a VIP can', target='chest'),
+    H('pieceRename', True, target='chest', text='VIP Chest'),
+    play('Bob'),
+    H('pieceHover', label='everyone still sees the name', contains='VIP Chest', target='chest'),
+    play('me'),
+    C({'01 Admin/AllowAdminOverride': 'false'}),
+    play('Nacho-VIP'),
+    H('pieceCan', False, 'AllowAdminOverride off: the VIP is a normal player again', target='chest'),
+    play('me'),
+], desc='Admin-only mode, and admins/VIP need AllowAdminOverride.')
+
+T('PR-09', 'PieceExcludedNames: prefab, token or shown name', [
+    spawn('piece_chest_wood', 'chest', dx=-4),
+    spawn('piece_workbench', 'workbench'),
+    spawn('wood_door', 'door', dx=4),
+    C({PC + 'PieceExcludedNames': 'piece_chest_wood'}),
+    H('pieceCan', False, 'excluded by prefab name', target='chest'),
+    H('pieceCan', True, 'other pieces unaffected', target='workbench'),
+    C({PC + 'PieceExcludedNames': '$piece_workbench'}),
+    H('pieceCan', False, 'excluded by token', target='workbench'),
+    H('pieceCan', True, 'the chest is free again', target='chest'),
+    C({PC + 'PieceExcludedNames': 'Wood door'}),
+    H('pieceCan', False, 'excluded by the name players see (any case)', target='door'),
+    C({PC + 'PieceRenameAllowlist': 'wood_door'}),
+    H('pieceCan', True, 'PieceRenameAllowlist beats the exclusion', target='door'),
+    C({PC + 'PieceRenameAllowlist': '', **VIP}),
+    play('Nacho-VIP'),
+    H('pieceCan', True, 'admins / VIP ignore exclusions', target='door'),
+    play('me'),
+], desc='Each name format, the allowlist, and the admin bypass.')
+
+T('PR-10', 'PieceExcludedCategory: what a piece does, or its build category', [
+    spawn('piece_chest_wood', 'chest', dx=-6),
+    spawn('piece_chest_private', 'private', dx=-2),
+    spawn('piece_workbench', 'workbench', dx=2),
+    spawn('smelter', 'smelter', dx=6),
+    spawn('wood_door', 'door', dz=8),
+    C({PC + 'PieceExcludedCategory': 'Chest'}),
+    H('pieceCan', False, 'Chest excludes the wood chest', target='chest'),
+    H('pieceCan', False, 'Chest excludes the private chest', target='private'),
+    H('pieceCan', True, 'the workbench is unaffected', target='workbench'),
+    C({PC + 'PieceExcludedCategory': 'Smelter,Door'}),
+    H('pieceCan', False, 'Smelter excludes the smelter', target='smelter'),
+    H('pieceCan', False, 'Door excludes the door', target='door'),
+    H('pieceCan', True, 'chests are free again', target='chest'),
+    C({PC + 'PieceExcludedCategory': 'Crafting'}),
+    H('pieceCategories', label='the workbench is in the Crafting build category', contains='Crafting', target='workbench'),
+    H('pieceCan', False, 'a build-menu category works too', target='workbench'),
+    C({PC + 'PieceExcludedCategory': 'Chest', PC + 'PieceRenameAllowlist': 'piece_chest_private'}),
+    H('pieceCan', True, 'allowlist lets one chest through', target='private'),
+    H('pieceCan', False, 'the other chests stay excluded', target='chest'),
+], desc='Function categories (Chest, Smelter, Door, …), build-menu categories, and the allowlist.')
+
+T('PR-11', 'PieceNameCharacterLimit in the window', [
+    C({PC + 'PieceNameCharacterLimit': '5', '11 UI-NotSynced/UseToolkitUi': 'true'}),
+    spawn('piece_chest_wood', 'chest'),
+    H('pieceOpen', True, stop=True, target='chest'),
+    wait(0.3),
+    {'do': 'type', 'field': 'Name', 'text': 'ABCDEFGHIJ'},
+    wait(0.2),
+    {'do': 'click', 'button': 'Save'},
+    wait(0.3),
+    H('pieceName', 'ABCDE', 'the name stops at 5 characters', target='chest'),
+    *CLOSE,
+], desc='The limit is per piece setting, separate from the item NameCharacterLimit.')
+
+T('PR-12', 'PieceLockToBuilder off: anyone the ward allows', [
+    C({PC + 'PieceLockToBuilder': 'false'}),
+    play('Alice'),
+    spawn('piece_chest_wood', 'chest', 'Alice'),
+    play('Bob'),
+    H('pieceCan', True, 'no ward: Bob may rename Alice\'s chest', target='chest'),
+    H('pieceRename', True, target='chest', text='Bob was here'),
+    play('Alice'),
+    ward('Alice'),
+    wait(0.5),
+    play('Bob'),
+    H('pieceCan', False, 'inside Alice\'s ward Bob cannot', target='chest'),
+    play('me'),
+], desc='With the builder lock off, ward access decides.')
+
+T('PR-13', 'PieceRequireWardAccess off: wards are ignored', [
+    play('Alice'),
+    spawn('piece_chest_wood', 'chest', 'Alice'),
+    ward('Bob'),
+    wait(0.5),
+    H('pieceCan', False, 'default: Bob\'s ward stops the builder', target='chest'),
+    C({PC + 'PieceRequireWardAccess': 'false'}),
+    H('pieceCan', True, 'ward access off: the builder may rename', target='chest'),
+    play('Bob'),
+    H('pieceCan', False, 'still only the builder (PieceLockToBuilder)', target='chest'),
+    play('me'),
+], desc='The ward rule can be turned off; the builder rule still applies.')
+
+T('PR-14', 'PieceSharedEnabled off: no Shared', [
+    play('Alice'),
+    spawn('piece_workbench', 'bench', 'Alice'),
+    H('pieceShare', True, target='bench', on=True),
+    play('Bob'),
+    H('pieceCan', True, 'shared: Bob may rename', target='bench'),
+    C({PC + 'PieceSharedEnabled': 'false'}),
+    H('pieceCan', False, 'Shared off: the shared piece acts as not shared', target='bench'),
+    play('Alice'),
+    H('pieceShare', False, 'Shared off: the builder cannot switch it', target='bench', on=False),
+    play('me'),
+], desc='Turning Shared off hides the switch and ignores Shared marks.')
+
 # ---------------------------------------------------------------- write
 
 DESCRIPTION = ('Automated regression for Drake\'s RenameIt, following "Drake\'s RenameIt Test Suite 2.0" (SM-/TC- ids) plus extra config coverage (X-). '
@@ -942,6 +1216,9 @@ baseline = {
         '10 Paper/WrittenPaperIgnoresRestrictions': 'false', '10 Paper/BlankPaperPlaceOrientation': 'Both',
         '10 Paper/VerticalPaperPlaceable': 'true', '10 Paper/HorizontalPaperPlaceable': 'true', '10 Paper/StackPaperPlaceable': 'true',
         '11 UI-NotSynced/MenuOpenModifier': '', '11 UI-NotSynced/LogSpam': 'false',
+        '12 Pieces/PieceRenameEnabled': 'true', '12 Pieces/PieceRenameAdminOnly': 'false', '12 Pieces/PieceExcludedNames': '',
+        '12 Pieces/PieceExcludedCategory': '', '12 Pieces/PieceRenameAllowlist': '', '12 Pieces/PieceNameCharacterLimit': '50',
+        '12 Pieces/PieceLockToBuilder': 'true', '12 Pieces/PieceRequireWardAccess': 'true', '12 Pieces/PieceSharedEnabled': 'true',
     }.items()],
     'setup': {'timeOfDay': 0.5, 'freezeTime': 1, 'god': 1, 'noBuild': 'off', 'hideUnlockPopups': 1},
 }

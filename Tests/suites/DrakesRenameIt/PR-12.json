@@ -1,0 +1,84 @@
+{
+  "name": "PR-12 PieceLockToBuilder off: anyone the ward allows",
+  "description": "With the builder lock off, ward access decides.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceLockToBuilder": "false"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "Alice",
+      "as": "chest"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "no ward: Bob may rename Alice's chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "Bob was here"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -3,
+      "owner": "Alice",
+      "enabled": true,
+      "radius": 15
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "inside Alice's ward Bob cannot"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

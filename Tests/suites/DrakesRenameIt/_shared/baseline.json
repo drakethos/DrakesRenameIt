@@ -263,6 +263,60 @@
       "section": "11 UI-NotSynced",
       "key": "LogSpam",
       "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRenameEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRenameAdminOnly",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceExcludedNames",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceExcludedCategory",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRenameAllowlist",
+      "value": ""
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceNameCharacterLimit",
+      "value": "50"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceLockToBuilder",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceRequireWardAccess",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakesworkshop.renameit",
+      "section": "12 Pieces",
+      "key": "PieceSharedEnabled",
+      "value": "true"
     }
   ],
   "setup": {

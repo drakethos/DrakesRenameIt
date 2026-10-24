@@ -1,0 +1,72 @@
+{
+  "name": "PR-11 PieceNameCharacterLimit in the window",
+  "description": "The limit is per piece setting, separate from the item NameCharacterLimit.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceNameCharacterLimit": "5",
+        "11 UI-NotSynced/UseToolkitUi": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceOpen",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "ABCDEFGHIJ"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "click",
+      "button": "Save"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "expect": "ABCDE",
+      "label": "the name stops at 5 characters"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

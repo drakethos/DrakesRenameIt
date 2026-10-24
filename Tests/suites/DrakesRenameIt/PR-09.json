@@ -1,0 +1,139 @@
+{
+  "name": "PR-09 PieceExcludedNames: prefab, token or shown name",
+  "description": "Each name format, the allowlist, and the admin bypass.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest",
+      "dx": -4
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "workbench"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "door",
+      "dx": 4
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedNames": "piece_chest_wood"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "excluded by prefab name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "workbench"
+      },
+      "expect": true,
+      "label": "other pieces unaffected"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedNames": "$piece_workbench"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "workbench"
+      },
+      "expect": false,
+      "label": "excluded by token"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "the chest is free again"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedNames": "Wood door"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "excluded by the name players see (any case)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameAllowlist": "wood_door"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "PieceRenameAllowlist beats the exclusion"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameAllowlist": "",
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "admins / VIP ignore exclusions"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "name": "PR-10 PieceExcludedCategory: what a piece does, or its build category",
+  "description": "Function categories (Chest, Smelter, Door, …), build-menu categories, and the allowlist.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest",
+      "dx": -6
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "private",
+      "dx": -2
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "workbench",
+      "dx": 2
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "smelter",
+      "dx": 6
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dz": 8,
+      "owner": "me",
+      "as": "door"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedCategory": "Chest"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "Chest excludes the wood chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "private"
+      },
+      "expect": false,
+      "label": "Chest excludes the private chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "workbench"
+      },
+      "expect": true,
+      "label": "the workbench is unaffected"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedCategory": "Smelter,Door"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "smelter"
+      },
+      "expect": false,
+      "label": "Smelter excludes the smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "Door excludes the door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "chests are free again"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedCategory": "Crafting"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "workbench"
+      },
+      "contains": "Crafting",
+      "label": "the workbench is in the Crafting build category"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "workbench"
+      },
+      "expect": false,
+      "label": "a build-menu category works too"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceExcludedCategory": "Chest",
+        "12 Pieces/PieceRenameAllowlist": "piece_chest_private"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "private"
+      },
+      "expect": true,
+      "label": "allowlist lets one chest through"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "the other chests stay excluded"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

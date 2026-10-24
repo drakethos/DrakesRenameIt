@@ -1,0 +1,76 @@
+{
+  "name": "PR-13 PieceRequireWardAccess off: wards are ignored",
+  "description": "The ward rule can be turned off; the builder rule still applies.",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "Alice",
+      "as": "chest"
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -3,
+      "owner": "Bob",
+      "enabled": true,
+      "radius": 15
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "default: Bob's ward stops the builder"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "ward access off: the builder may rename"
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "still only the builder (PieceLockToBuilder)"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

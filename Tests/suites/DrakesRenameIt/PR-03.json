@@ -1,0 +1,129 @@
+{
+  "name": "PR-03 piece Workshop window: type, save, close",
+  "description": "The UI Toolkit piece Workshop opens, saves through its own Save button and Esc does not save.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/UseToolkitUi": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceOpen",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "Shift+Use opens the piece Workshop",
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Shared",
+      "label": "the Shared switch is there"
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Reset name",
+      "label": "the Reset name button is there"
+    },
+    {
+      "do": "screenshot",
+      "name": "piece-workshop"
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "Typed Chest"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "click",
+      "button": "Save"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "expect": "Typed Chest",
+      "label": "Save writes the name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceOpen",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "type",
+      "field": "Name",
+      "text": "Not Saved"
+    },
+    {
+      "do": "pressKey",
+      "key": "Escape"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "expect": "Typed Chest",
+      "label": "Esc closes without saving"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

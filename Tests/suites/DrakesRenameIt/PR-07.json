@@ -1,0 +1,87 @@
+{
+  "name": "PR-07 PieceRenameEnabled off: nobody renames, names hidden",
+  "description": "Turning the feature off hides names without deleting them.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "Hidden Loot"
+      },
+      "expect": true,
+      "label": "chest can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Hidden Loot",
+      "label": "chest hover shows the new name"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "off: Shift+Use does not offer renaming"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "off: builder cannot rename"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "notContains": "Hidden Loot",
+      "label": "off: the custom name is hidden"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Hidden Loot",
+      "label": "back on: the name is still there"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

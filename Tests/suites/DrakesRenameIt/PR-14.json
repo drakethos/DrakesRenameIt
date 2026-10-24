@@ -1,0 +1,78 @@
+{
+  "name": "PR-14 PieceSharedEnabled off: no Shared",
+  "description": "Turning Shared off hides the switch and ignores Shared marks.",
+  "steps": [
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dz": 2.5,
+      "owner": "Alice",
+      "as": "bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": true
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "bench"
+      },
+      "expect": true,
+      "label": "shared: Bob may rename"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceSharedEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "bench"
+      },
+      "expect": false,
+      "label": "Shared off: the shared piece acts as not shared"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "bench",
+        "on": false
+      },
+      "expect": false,
+      "label": "Shared off: the builder cannot switch it"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 61;
+    private const int ExpectedSyncedEntryCount = 68;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -28,6 +28,8 @@ public static class RenameitConfig
     private const string SectionModifiers = "09 Modifiers";
     private const string SectionPaper = "10 Paper";
     private const string SectionUI = "11 UI-NotSynced";
+    // Added in 1.4 after the client-only UI section, so no existing section moves.
+    private const string SectionPieces = "12 Pieces";
 
     private const string DisplayAdmin = "Admin";
     private const string DisplayFeatures = "Features";
@@ -40,6 +42,7 @@ public static class RenameitConfig
     private const string DisplayModifiers = "Modifiers";
     private const string DisplayUI = "UI-NotSynced";
     private const string DisplayPaper = "Paper";
+    private const string DisplayPieces = "Pieces";
 
     private static readonly DrakeConfigSync _drakeConfigSync = DrakeConfigSync.Create(
         DrakeRenameit.ModName,
@@ -109,7 +112,14 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _writtenPaperIgnoresRestrictions = default!;
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
     private static ConfigEntry<bool> _pieceRenameEnabled = default!;
-    private static ConfigEntry<string> _pieceRenameExcluded = default!;
+    private static ConfigEntry<bool> _pieceRenameAdminOnly = default!;
+    private static ConfigEntry<string> _pieceExcludedNames = default!;
+    private static ConfigEntry<string> _pieceExcludedCategory = default!;
+    private static ConfigEntry<string> _pieceRenameAllowlist = default!;
+    private static ConfigEntry<int> _pieceNameCharLimit = default!;
+    private static ConfigEntry<bool> _pieceLockToBuilder = default!;
+    private static ConfigEntry<bool> _pieceRequireWardAccess = default!;
+    private static ConfigEntry<bool> _pieceSharedEnabled = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
     private static ConfigEntry<bool> _paperHoldToTake = default!;
@@ -385,11 +395,25 @@ public static class RenameitConfig
     /// <summary>When true, items with <c>Drake_PublicRewrite</c> allow non-owners to edit name/description.</summary>
     public static bool PublicRewriteEnabled => _publicRewriteEnabled.Value;
 
-    /// <summary>When true, builders can Shift+Use a placed piece (chest, station, door, …) to give it a custom hover name.</summary>
-    public static bool PieceRenameEnabled => _pieceRenameEnabled.Value;
+    // --- 12 Pieces (rename placed pieces, 1.4) ---
 
-    /// <summary>Comma-separated piece prefab names (e.g. <c>portal_wood</c>) that cannot be renamed.</summary>
-    public static string PieceRenameExcluded => _pieceRenameExcluded.Value;
+    /// <summary>Shift+Use on a placed piece (chest, station, door, …) gives it a custom hover name. Off also hides existing names.</summary>
+    public static bool PieceRenameEnabled => _pieceRenameEnabled.Value;
+    /// <summary>Only admins/VIP (with AllowAdminOverride) may rename pieces.</summary>
+    public static bool PieceRenameAdminOnly => _pieceRenameAdminOnly.Value;
+    /// <summary>Pieces that cannot be renamed: prefab name, <c>$piece_</c> token or the name players see.</summary>
+    public static string PieceExcludedNames => _pieceExcludedNames.Value;
+    /// <summary>Piece categories that cannot be renamed: build-menu categories or Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat.</summary>
+    public static string PieceExcludedCategory => _pieceExcludedCategory.Value;
+    /// <summary>Pieces that may be renamed even when PieceExcludedNames / PieceExcludedCategory match.</summary>
+    public static string PieceRenameAllowlist => _pieceRenameAllowlist.Value;
+    public static int PieceNameCharLimit => Math.Max(1, _pieceNameCharLimit.Value);
+    /// <summary>Only the builder may rename (or anyone, on a piece the builder marked Shared). Off: anyone allowed by the ward rule.</summary>
+    public static bool PieceLockToBuilder => _pieceLockToBuilder.Value;
+    /// <summary>Renaming needs access in the wards covering the piece.</summary>
+    public static bool PieceRequireWardAccess => _pieceRequireWardAccess.Value;
+    /// <summary>Builders may mark a piece Shared so others can rename it.</summary>
+    public static bool PieceSharedEnabled => _pieceSharedEnabled.Value;
 
     /// <summary>When true, Blank/Written paper can open place-mode and pin notes in the world.</summary>
     public static bool PaperPlaceEnabled => _paperPlaceEnabled.Value;
@@ -571,12 +595,6 @@ public static class RenameitConfig
             true,
             "If true, items flagged Shared (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default on.");
 
-        _pieceRenameEnabled = _drakeConfigSync.BindSynced(config,
-            SectionFeatures, DisplayFeatures,
-            "PieceRenameEnabled",
-            true,
-            "If true, the player who built a piece that shows a name on hover (chest, workbench, door, bed, portal, …) can Shift+Use it to give it a custom name, when they have access in any ward covering it. Admins/VIP can rename any piece when AdminOverride is on. Off hides existing piece names too. Fireplaces and item stands are skipped (vanilla uses Shift+Use on them). Default on.");
-
         // --- Exclusions ---
         _excludedNames = _drakeConfigSync.BindSynced(config, 
             SectionExclusions, DisplayExclusions,
@@ -595,12 +613,6 @@ public static class RenameitConfig
             "RenameAllowlist",
             "",
             "Comma-separated entries (same format as ExcludedNames). When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStacks, and the unowned (AllowRenameUnownedItems) rule. Does NOT bypass global Features toggles when those are off. Does not bypass LockToOwner.");
-
-        _pieceRenameExcluded = _drakeConfigSync.BindSynced(config,
-            SectionExclusions, DisplayExclusions,
-            "PieceRenameExcluded",
-            "",
-            "Comma-separated piece prefab names that cannot be renamed (e.g. portal_wood,piece_chest_private). Admins/VIP ignore this when AdminOverride is on.");
 
         // --- Crafted by labels ---
         _craftedByLabelCustomizable = _drakeConfigSync.BindSynced(config, 
@@ -999,6 +1011,61 @@ public static class RenameitConfig
             BlankPlaceBoth,
             "How Written Page places from the hotbar (Use). Vertical Only or Horizontal Only: tooltip is just Use to place, and Use does not switch orientation. Both (default): Use again switches wall / flat, and the tooltip says so. Blank paper is not placeable from Use.",
             new AcceptableValueList<string>(BlankPlaceVerticalOnly, BlankPlaceHorizontalOnly, BlankPlaceBoth));
+
+        // --- Pieces (rename placed pieces) ---
+        _pieceRenameEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceRenameEnabled",
+            true,
+            "If true, pieces that show a name on hover (chests, stations, smelters, doors, beds, portals, ...) can be given a custom name with Shift+Use. Off: nobody can, and names already given are hidden (not deleted). Fireplaces, item stands and signs are skipped (vanilla uses Shift+Use on them). Default on.");
+
+        _pieceRenameAdminOnly = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceRenameAdminOnly",
+            false,
+            "If true, only admins/VIP (needs AllowAdminOverride) can rename pieces. Everyone still sees the names.");
+
+        _pieceExcludedNames = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceExcludedNames",
+            "",
+            "Comma-separated pieces that cannot be renamed: prefab name (portal_wood), token ($piece_chestwood) or the English name players see (Chest). Admins/VIP ignore this when AdminOverride is on.");
+
+        _pieceExcludedCategory = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceExcludedCategory",
+            "",
+            "Comma-separated piece categories that cannot be renamed. What a piece does: Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat. Or its build-menu category: Misc, Crafting, Furniture, BuildingWorkbench, BuildingStonecutter, ... Admins/VIP ignore this when AdminOverride is on.");
+
+        _pieceRenameAllowlist = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceRenameAllowlist",
+            "",
+            "Comma-separated pieces (same format as PieceExcludedNames) that can be renamed even when PieceExcludedNames or PieceExcludedCategory match them. Does not bypass the other rules.");
+
+        _pieceNameCharLimit = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceNameCharacterLimit",
+            50,
+            "Max visible characters in a piece name (formatting codes not counted).");
+
+        _pieceLockToBuilder = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceLockToBuilder",
+            true,
+            "If true, only the player who built a piece can rename it (others can when the builder marks it Shared). If false, anyone the ward rule allows can rename it.");
+
+        _pieceRequireWardAccess = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceRequireWardAccess",
+            true,
+            "If true, renaming a piece needs access in the wards covering it (the builder included). If false, wards are ignored.");
+
+        _pieceSharedEnabled = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceSharedEnabled",
+            true,
+            "If true, a builder can switch a piece to Shared in its rename window so other players (with ward access) can rename it too. Off: the switch is hidden and Shared pieces act as not shared.");
 
         void RaiseHammerPlaceableChanged(object sender, EventArgs e) =>
             HammerPaperPlaceableChanged?.Invoke();

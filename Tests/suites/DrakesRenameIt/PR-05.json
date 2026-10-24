@@ -1,0 +1,708 @@
+{
+  "name": "PR-05 one piece of every kind can be renamed",
+  "description": "Chests, stations, smelters and other processors, cooking, doors and gates, bed, portal, seat, beehive and the ward: each renames and shows the new name, and each reports the category PieceExcludedCategory uses.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 4,
+      "owner": "me",
+      "as": "chest",
+      "dx": -18.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dz": 4,
+      "owner": "me",
+      "as": "private",
+      "dx": -13.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dz": 4,
+      "owner": "me",
+      "as": "workbench",
+      "dx": -9.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dz": 4,
+      "owner": "me",
+      "as": "forge",
+      "dx": -4.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dz": 4,
+      "owner": "me",
+      "as": "stonecutter"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dz": 4,
+      "owner": "me",
+      "as": "artisan",
+      "dx": 4.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dz": 4,
+      "owner": "me",
+      "as": "smelter",
+      "dx": 9.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dz": 4,
+      "owner": "me",
+      "as": "kiln",
+      "dx": 13.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dz": 4,
+      "owner": "me",
+      "as": "windmill",
+      "dx": 18.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dz": 12,
+      "owner": "me",
+      "as": "wheel",
+      "dx": -18.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dz": 12,
+      "owner": "me",
+      "as": "spit",
+      "dx": -13.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dz": 12,
+      "owner": "me",
+      "as": "fermenter",
+      "dx": -9.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dz": 12,
+      "owner": "me",
+      "as": "door",
+      "dx": -4.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "iron_grate",
+      "dz": 12,
+      "owner": "me",
+      "as": "gate"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dz": 12,
+      "owner": "me",
+      "as": "bed",
+      "dx": 4.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dz": 12,
+      "owner": "me",
+      "as": "portal",
+      "dx": 9.0
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dz": 12,
+      "owner": "me",
+      "as": "chair",
+      "dx": 13.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dz": 12,
+      "owner": "me",
+      "as": "beehive",
+      "dx": 18.0
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "My chest"
+      },
+      "expect": true,
+      "label": "piece_chest_wood can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "My chest",
+      "label": "chest hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Chest",
+      "label": "piece_chest_wood counts as Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "private",
+        "text": "My private"
+      },
+      "expect": true,
+      "label": "piece_chest_private can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "private"
+      },
+      "contains": "My private",
+      "label": "private hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "private"
+      },
+      "contains": "Chest",
+      "label": "piece_chest_private counts as Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "workbench",
+        "text": "My workbench"
+      },
+      "expect": true,
+      "label": "piece_workbench can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "workbench"
+      },
+      "contains": "My workbench",
+      "label": "workbench hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "workbench"
+      },
+      "contains": "Station",
+      "label": "piece_workbench counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "forge",
+        "text": "My forge"
+      },
+      "expect": true,
+      "label": "forge can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "forge"
+      },
+      "contains": "My forge",
+      "label": "forge hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "forge"
+      },
+      "contains": "Station",
+      "label": "forge counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "stonecutter",
+        "text": "My stonecutter"
+      },
+      "expect": true,
+      "label": "piece_stonecutter can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "stonecutter"
+      },
+      "contains": "My stonecutter",
+      "label": "stonecutter hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "stonecutter"
+      },
+      "contains": "Station",
+      "label": "piece_stonecutter counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "artisan",
+        "text": "My artisan"
+      },
+      "expect": true,
+      "label": "piece_artisanstation can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "artisan"
+      },
+      "contains": "My artisan",
+      "label": "artisan hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "artisan"
+      },
+      "contains": "Station",
+      "label": "piece_artisanstation counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "smelter",
+        "text": "My smelter"
+      },
+      "expect": true,
+      "label": "smelter can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "smelter"
+      },
+      "contains": "My smelter",
+      "label": "smelter hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "smelter"
+      },
+      "contains": "Smelter",
+      "label": "smelter counts as Smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "kiln",
+        "text": "My kiln"
+      },
+      "expect": true,
+      "label": "charcoal_kiln can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "kiln"
+      },
+      "contains": "My kiln",
+      "label": "kiln hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "kiln"
+      },
+      "contains": "Smelter",
+      "label": "charcoal_kiln counts as Smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "windmill",
+        "text": "My windmill"
+      },
+      "expect": true,
+      "label": "windmill can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "windmill"
+      },
+      "contains": "My windmill",
+      "label": "windmill hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "windmill"
+      },
+      "contains": "Smelter",
+      "label": "windmill counts as Smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "wheel",
+        "text": "My wheel"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "wheel"
+      },
+      "contains": "My wheel",
+      "label": "wheel hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "wheel"
+      },
+      "contains": "Smelter",
+      "label": "piece_spinningwheel counts as Smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "spit",
+        "text": "My spit"
+      },
+      "expect": true,
+      "label": "piece_cookingstation can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "spit"
+      },
+      "contains": "My spit",
+      "label": "spit hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "spit"
+      },
+      "contains": "Cooking",
+      "label": "piece_cookingstation counts as Cooking"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "fermenter",
+        "text": "My fermenter"
+      },
+      "expect": true,
+      "label": "fermenter can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "fermenter"
+      },
+      "contains": "My fermenter",
+      "label": "fermenter hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "fermenter"
+      },
+      "contains": "Cooking",
+      "label": "fermenter counts as Cooking"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "door",
+        "text": "My door"
+      },
+      "expect": true,
+      "label": "wood_door can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "door"
+      },
+      "contains": "My door",
+      "label": "door hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "door"
+      },
+      "contains": "Door",
+      "label": "wood_door counts as Door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "gate",
+        "text": "My gate"
+      },
+      "expect": true,
+      "label": "iron_grate can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "gate"
+      },
+      "contains": "My gate",
+      "label": "gate hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "gate"
+      },
+      "contains": "Door",
+      "label": "iron_grate counts as Door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "bed",
+        "text": "My bed"
+      },
+      "expect": true,
+      "label": "bed can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "bed"
+      },
+      "contains": "My bed",
+      "label": "bed hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "bed"
+      },
+      "contains": "Bed",
+      "label": "bed counts as Bed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "portal",
+        "text": "My portal"
+      },
+      "expect": true,
+      "label": "portal_wood can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "portal"
+      },
+      "contains": "My portal",
+      "label": "portal hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "portal"
+      },
+      "contains": "Portal",
+      "label": "portal_wood counts as Portal"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chair",
+        "text": "My chair"
+      },
+      "expect": true,
+      "label": "piece_chair can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chair"
+      },
+      "contains": "My chair",
+      "label": "chair hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "chair"
+      },
+      "contains": "Seat",
+      "label": "piece_chair counts as Seat"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "beehive",
+        "text": "My beehive"
+      },
+      "expect": true,
+      "label": "piece_beehive can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "beehive"
+      },
+      "contains": "My beehive",
+      "label": "beehive hover shows the new name"
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -14,
+      "owner": "me",
+      "as": "wardstone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "wardstone",
+        "text": "My ward"
+      },
+      "expect": true,
+      "label": "wardstone can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "wardstone"
+      },
+      "contains": "My ward",
+      "label": "wardstone hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "wardstone"
+      },
+      "contains": "Ward",
+      "label": "guard_stone counts as Ward"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 180
+}

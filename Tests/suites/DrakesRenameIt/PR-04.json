@@ -1,0 +1,146 @@
+{
+  "name": "PR-04 hover shows only the new name",
+  "description": "Bug found by hand: pieces whose hover name differs from the piece name (iron gate, the hot tub seat \"Wood Bench\") showed the new name above the old one. The hot tub heater keeps vanilla Shift+Use.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "iron_grate",
+      "dz": 3,
+      "owner": "me",
+      "as": "gate",
+      "dx": -3
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bathtub",
+      "dz": 4,
+      "owner": "me",
+      "as": "tub",
+      "dx": 3
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 3,
+      "owner": "me",
+      "as": "chest",
+      "dx": 8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "gate",
+        "text": "Special Gate"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "gate"
+      },
+      "expect": "Special Gate",
+      "label": "gate title is the new name only"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "gate"
+      },
+      "notContains": "Iron",
+      "label": "old gate name gone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "tub",
+        "text": "Hot Tubyy"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "tub"
+      },
+      "expect": "Hot Tubyy",
+      "label": "hot tub seat title is the new name only"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "tub"
+      },
+      "notContains": "Wood Bench",
+      "label": "seat name gone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "Loot"
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Loot",
+      "label": "chest title has the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chest"
+      },
+      "notContains": "Chest",
+      "label": "old chest name gone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Empty",
+      "label": "chest keeps ( Empty )"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "gate",
+        "text": ""
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "gate"
+      },
+      "notContains": "Special Gate",
+      "label": "empty name restores the original"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

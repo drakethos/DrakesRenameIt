@@ -647,6 +647,27 @@ internal static class RenameItTestHooks
         return global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.IsOpen;
     }
 
+    /// <summary>Replaces the saved quick names (<c>text</c>, kind:name entries joined by ||); empty clears them.</summary>
+    [TestHook("renameit.quickNamesSet")]
+    static bool QuickNamesSet(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        RenameitConfig.QuickNames = S(args, "text");
+        return true;
+    }
+
+    /// <summary>What the suggestion drop-down would offer for <c>typed</c> in a <c>kind</c> field, joined by ' | '.</summary>
+    [TestHook("renameit.quickNamesSuggest")]
+    static string QuickNamesSuggest(Dictionary<string, object?> args, GameObject? target = null) =>
+        string.Join(" | ", global::DrakeRenameit.NameLibrary.Suggest(S(args, "kind", "pieces"), S(args, "typed")).Select(s => s.Text));
+
+    /// <summary>Saves a name the way the windows do after Save.</summary>
+    [TestHook("renameit.quickNamesAdd")]
+    static string QuickNamesAdd(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        global::DrakeRenameit.NameLibrary.Add(S(args, "kind", "pieces"), S(args, "text"));
+        return RenameitConfig.QuickNames;
+    }
+
     /// <summary>First line of the hover (the title) as the HUD shows it: the custom name only, never the old one above or below.</summary>
     [TestHook("renameit.pieceHoverTitle")]
     static string PieceHoverTitle(Dictionary<string, object?> args, GameObject? target = null)

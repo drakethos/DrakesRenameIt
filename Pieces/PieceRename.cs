@@ -360,9 +360,73 @@ internal static class PieceRename
         var custom = GetCustomName(piece);
         if (custom.Length > 0)
             text = ReplaceTitleName(piece, text, custom, hoverable ?? FirstNameableHover(piece) as Hoverable);
+        if (custom.Length > 0 && RenameitConfig.PieceCrafterLineShown)
+        {
+            var builder = CreatorName(piece);
+            if (builder.Length > 0)
+                text += "\n<color=#cfc3a3>" + RenameitConfig.PieceCrafterLineStyle + ": " + builder + "</color>";
+        }
+
         if (offerRename && CanRename(piece, player, flash: false))
             text += HintLine();
         return text;
+    }
+
+    static readonly Dictionary<long, string> CreatorNames = new();
+
+    /// <summary>
+    /// Who built the piece. Valheim 1.0 keeps a world player history and the piece stores an index into it; that API is not in the
+    /// stub assemblies this builds against, so it is read by reflection. Falls back to the local player and to players who are online.
+    /// Empty when unknown (a piece from an older world, or a builder not seen yet).
+    /// </summary>
+    internal static string CreatorName(Piece piece)
+    {
+        var creator = piece.GetCreator();
+        if (creator == 0L)
+            return "";
+        if (CreatorNames.TryGetValue(creator, out var known))
+            return known;
+
+        var name = "";
+        if (Player.m_localPlayer != null && Player.m_localPlayer.GetPlayerID() == creator)
+        {
+            name = Player.m_localPlayer.GetPlayerName();
+        }
+        else
+        {
+            try
+            {
+                var index = AccessTools.Method(typeof(Piece), "GetCreatorPlatformUserIdIndex")?.Invoke(piece, null) is int i ? i : -1;
+                var world = AccessTools.Property(typeof(ZNet), "World")?.GetValue(null) ?? AccessTools.Field(typeof(ZNet), "World")?.GetValue(null);
+                var history = world == null ? null : AccessTools.Field(world.GetType(), "m_playerHistory")?.GetValue(world) as System.Collections.IList;
+                if (history != null && index >= 0 && index < history.Count)
+                {
+                    var info = history[index];
+                    name = AccessTools.Field(info.GetType(), "m_displayName")?.GetValue(info) as string ?? "";
+                }
+            }
+            catch
+            {
+                /* older game version without the history: use the online-player fallback below */
+            }
+
+            if (name.Length == 0)
+            {
+                foreach (var other in Player.GetAllPlayers())
+                {
+                    if (other.GetPlayerID() == creator)
+                    {
+                        name = other.GetPlayerName();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Only remember a real answer: a builder who is offline now may resolve later.
+        if (name.Length > 0)
+            CreatorNames[creator] = name;
+        return name;
     }
 
     /// <summary>Only the first line is the title; keep whatever follows the name on it (e.g. a chest's "( Empty )").</summary>

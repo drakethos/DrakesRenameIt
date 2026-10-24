@@ -13,7 +13,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 68;
+    private const int ExpectedSyncedEntryCount = 70;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -65,6 +65,8 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _showPreviewCard = default!;
     private static ConfigEntry<string> _quickSettingsKey = default!;
     private static ConfigEntry<string> _recentColors = default!;
+    private static ConfigEntry<string> _quickNames = default!;
+    private static ConfigEntry<bool> _quickNamesEnabled = default!;
     private static ConfigEntry<string> _hoverStyle = default!;
     private static ConfigEntry<bool> _hoverKeyHint = default!;
     private static ConfigEntry<bool> _hoverCrafter = default!;
@@ -120,6 +122,9 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _pieceLockToBuilder = default!;
     private static ConfigEntry<bool> _pieceRequireWardAccess = default!;
     private static ConfigEntry<bool> _pieceSharedEnabled = default!;
+    private static ConfigEntry<string> _pieceCrafterLine = default!;
+    private static ConfigEntry<string> _pieceCrafterLineStyle = default!;
+    private static ConfigEntry<bool> _showPieceCrafter = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
     private static ConfigEntry<bool> _paperHoldToTake = default!;
@@ -232,6 +237,16 @@ public static class RenameitConfig
         get => _recentColors.Value ?? "";
         set => _recentColors.Value = value;
     }
+
+    /// <summary>Names you saved before, offered as suggestions under the Name fields (see <c>NameLibrary</c>). Per-client.</summary>
+    public static string QuickNames
+    {
+        get => _quickNames.Value ?? "";
+        set => _quickNames.Value = value;
+    }
+
+    /// <summary>Suggest your earlier names as you type in a Name field, and remember the ones you save. Per-client.</summary>
+    public static bool QuickNamesEnabled => _quickNamesEnabled.Value;
 
     /// <summary>Show the floating item preview beside the Workshop window. Per-client; the window's cog menu flips it.</summary>
     public static bool ShowPreviewCard
@@ -414,6 +429,32 @@ public static class RenameitConfig
     public static bool PieceRequireWardAccess => _pieceRequireWardAccess.Value;
     /// <summary>Builders may mark a piece Shared so others can rename it.</summary>
     public static bool PieceSharedEnabled => _pieceSharedEnabled.Value;
+
+    /// <summary>Server setting for the builder line on renamed pieces: Off, On (player may turn it off) or Forced.</summary>
+    public static string PieceCrafterLine => _pieceCrafterLine.Value ?? "On";
+
+    /// <summary>"Crafted by" or "Built by".</summary>
+    public static string PieceCrafterLineStyle =>
+        string.Equals(_pieceCrafterLineStyle.Value, "Built by", StringComparison.OrdinalIgnoreCase) ? "Built by" : "Crafted by";
+
+    /// <summary>This player's choice when the server says On. Per-client.</summary>
+    public static bool ShowPieceCrafter
+    {
+        get => _showPieceCrafter.Value;
+        set => _showPieceCrafter.Value = value;
+    }
+
+    /// <summary>True when the builder line should show for this player.</summary>
+    public static bool PieceCrafterLineShown
+    {
+        get
+        {
+            var mode = PieceCrafterLine;
+            if (string.Equals(mode, "Forced", StringComparison.OrdinalIgnoreCase))
+                return true;
+            return string.Equals(mode, "On", StringComparison.OrdinalIgnoreCase) && _showPieceCrafter.Value;
+        }
+    }
 
     /// <summary>When true, Blank/Written paper can open place-mode and pin notes in the world.</summary>
     public static bool PaperPlaceEnabled => _paperPlaceEnabled.Value;
@@ -828,7 +869,24 @@ public static class RenameitConfig
             "",
             "Colours you picked with the rich text colour picker, newest first (the item window remembers them for you). Per-client.");
 
-        _menuOpenModifier = _drakeConfigSync.BindClientOnly(config, 
+        _showPieceCrafter = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "ShowPieceCrafter",
+            true,
+            "Show who built a renamed piece (boats, carts, furniture) in its hover text. Only matters when the server's PieceCrafterLine is On; Off hides it, Forced ignores this. Per-client.");
+
+        _quickNames = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "QuickNames",
+            "",
+            "Names you saved before, newest first, as kind:name entries separated by ||. Edit or clear freely. Per-client.");
+        _quickNamesEnabled = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "QuickNamesEnabled",
+            true,
+            "Suggest your earlier names in a drop-down as you type in a Name field, and remember the names you save. Per-client.");
+
+        _menuOpenModifier = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,
             "MenuOpenModifier",
             "",
@@ -1066,6 +1124,18 @@ public static class RenameitConfig
             "PieceSharedEnabled",
             true,
             "If true, a builder can switch a piece to Shared in its rename window so other players (with ward access) can rename it too. Off: the switch is hidden and Shared pieces act as not shared.");
+
+        _pieceCrafterLine = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceCrafterLine",
+            "On",
+            "Show who built a renamed piece as its own hover line (\"Crafted by: Bjorn\"), handy for boats and carts. Off = never. On = shown unless the player turns it off (client setting ShowPieceCrafter). Forced = always shown.");
+
+        _pieceCrafterLineStyle = _drakeConfigSync.BindSynced(config,
+            SectionPieces, DisplayPieces,
+            "PieceCrafterLineStyle",
+            "Crafted by",
+            "Wording of the builder line: \"Crafted by\" or \"Built by\".");
 
         void RaiseHammerPlaceableChanged(object sender, EventArgs e) =>
             HammerPaperPlaceableChanged?.Invoke();

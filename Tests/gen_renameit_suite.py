@@ -1203,6 +1203,42 @@ T('PR-15', 'world-generated pieces: admins only', [
     H('pieceHover', label='everyone sees the name the admin gave', contains='Crypt Hoard', target='loot'),
 ], desc='Pieces the world generated (dungeon chests, crypt doors) have no builder: only admins/VIP may rename them, whatever the builder and Shared settings say. A walk-into-a-real-dungeon check needs TestLab dungeon support (follow-up).')
 
+UIC = '11 UI-NotSynced/'
+
+T('PC-01', 'builder line on renamed pieces: Off / On / Forced and wording', [
+    spawn('piece_chest_wood', 'chest', 'me'),
+    H('pieceRename', True, stop=True, target='chest', text='Fjord Chest'),
+    H('pieceHover', label='Off (the suite default): no builder line', notContains='Crafted by', target='chest'),
+    C({PC + 'PieceCrafterLine': 'On', UIC + 'ShowPieceCrafter': 'true'}),
+    H('pieceHover', label='On and the player allows it: the builder line shows', contains='Crafted by: ', target='chest'),
+    C({UIC + 'ShowPieceCrafter': 'false'}),
+    H('pieceHover', label='On but the player turned it off: no line', notContains='Crafted by', target='chest'),
+    C({PC + 'PieceCrafterLine': 'Forced'}),
+    H('pieceHover', label='Forced ignores the player choice', contains='Crafted by: ', target='chest'),
+    C({PC + 'PieceCrafterLineStyle': 'Built by'}),
+    H('pieceHover', label='wording follows PieceCrafterLineStyle', contains='Built by: ', target='chest'),
+    C({PC + 'PieceCrafterLine': 'Off'}),
+    H('pieceHover', label='Off again: gone', notContains='Built by', target='chest'),
+    C({PC + 'PieceCrafterLineStyle': 'Crafted by', UIC + 'ShowPieceCrafter': 'true'}),
+], desc='A renamed piece can show who built it as its own hover line. Server: Off / On / Forced and Crafted by / Built by; player: ShowPieceCrafter.')
+
+T('PC-02', 'quick names: suggestions as you type', [
+    H('quickNamesSet', True, text=''),
+    H('quickNamesAdd', label='saving remembers the name', contains='pieces:Fjord Runner', kind='pieces', text='Fjord Runner'),
+    H('quickNamesAdd', kind='animals', text='Fenrir'),
+    H('quickNamesAdd', kind='pieces', text='<color=#5dd96a>Fen</color>Home'),
+    H('quickNamesSuggest', label='typing "fj" offers Fjord Runner', contains='Fjord Runner', kind='pieces', typed='fj'),
+    H('quickNamesSuggest', label='matching ignores the colour tags', contains='Home', kind='pieces', typed='fenh'),
+    H('quickNamesSuggest', label='other kinds are offered too', contains='Fenrir', kind='pieces', typed='fen'),
+    H('quickNamesSuggest', label='an exact match is not suggested again', notContains='Fjord Runner', kind='pieces', typed='Fjord Runner'),
+    H('quickNamesSuggest', label='nothing matches', expect='', kind='pieces', typed='zzz'),
+    H('quickNamesAdd', label='a repeat moves to the top, not a duplicate', notContains='Fjord Runner||Fjord Runner', kind='pieces', text='Fjord Runner'),
+    C({UIC + 'QuickNamesEnabled': 'false'}),
+    H('quickNamesSuggest', label='off: no suggestions', expect='', kind='pieces', typed='fj'),
+    C({UIC + 'QuickNamesEnabled': 'true'}),
+    H('quickNamesSet', True, text=''),
+], desc='The Name fields suggest names you saved before (any kind, this kind first); the drop-down itself is checked by hand.')
+
 # ---------------------------------------------------------------- write
 
 DESCRIPTION = ('Automated regression for Drake\'s RenameIt, following "Drake\'s RenameIt Test Suite 2.0" (SM-/TC- ids) plus extra config coverage (X-). '
@@ -1235,6 +1271,7 @@ baseline = {
         '12 Pieces/PieceRenameEnabled': 'true', '12 Pieces/PieceRenameAdminOnly': 'false', '12 Pieces/PieceExcludedNames': '',
         '12 Pieces/PieceExcludedCategory': '', '12 Pieces/PieceRenameAllowlist': '', '12 Pieces/PieceNameCharacterLimit': '50',
         '12 Pieces/PieceLockToBuilder': 'true', '12 Pieces/PieceRequireWardAccess': 'true', '12 Pieces/PieceSharedEnabled': 'true',
+        '12 Pieces/PieceCrafterLine': 'Off', '12 Pieces/PieceCrafterLineStyle': 'Crafted by', '11 UI-NotSynced/ShowPieceCrafter': 'true',
     }.items()],
     'setup': {'timeOfDay': 0.5, 'freezeTime': 1, 'god': 1, 'noBuild': 'off', 'hideUnlockPopups': 1},
 }

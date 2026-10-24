@@ -200,6 +200,7 @@ internal sealed class WorkshopPanel
             OnEdited();
         };
         _name.SubmitPressed = Save;
+        _name.SetSuggestions(_scrim, typed => NameLibrary.Suggest(NameLibrary.Item, typed));
         _name.Root.style.marginBottom = 16;
         body.Add(_name.Root);
 
@@ -614,6 +615,8 @@ internal sealed class WorkshopPanel
             ? null
             : _labelOptions[_labelPicker.SelectedIndex];
         var result = DrakeRenameit.CommitWorkshopEdits(item, name, desc, crafted, labelToken, setLabel);
+        if (!string.IsNullOrEmpty(name))
+            NameLibrary.Add(NameLibrary.Item, name);
         if (result == null)
         {
             Close(notifyHost: true);

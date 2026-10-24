@@ -145,6 +145,7 @@ internal sealed class PieceWorkshopPanel
             OnEdited();
         };
         _name.SubmitPressed = Save;
+        _name.SetSuggestions(_scrim, typed => NameLibrary.Suggest(NameLibrary.Piece, typed));
         _name.Root.style.marginBottom = 10;
         body.Add(_name.Root);
 
@@ -318,6 +319,7 @@ internal sealed class PieceWorkshopPanel
         // A value equal to the original name means "no custom name".
         var value = _name.Value == PieceRename.DefaultName(piece) ? "" : _name.Value;
         PieceRename.SetCustomName(piece, value);
+        NameLibrary.Add(NameLibrary.Piece, value);
         _undoName = before;
         Refresh();
         _toast.Show("Saved", Undo);

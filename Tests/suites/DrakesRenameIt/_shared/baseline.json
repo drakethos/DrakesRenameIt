@@ -317,6 +317,24 @@
       "section": "12 Pieces",
       "key": "PieceSharedEnabled",
       "value": "true"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "12 Pieces",
+      "key": "PieceCrafterLine",
+      "value": "Off"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "12 Pieces",
+      "key": "PieceCrafterLineStyle",
+      "value": "Crafted by"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "11 UI-NotSynced",
+      "key": "ShowPieceCrafter",
+      "value": "true"
     }
   ],
   "setup": {

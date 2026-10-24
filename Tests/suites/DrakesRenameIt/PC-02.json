@@ -1,0 +1,136 @@
+{
+  "name": "PC-02 quick names: suggestions as you type",
+  "description": "The Name fields suggest names you saved before (any kind, this kind first); the drop-down itself is checked by hand.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSet",
+      "args": {
+        "text": ""
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesAdd",
+      "args": {
+        "kind": "pieces",
+        "text": "Fjord Runner"
+      },
+      "contains": "pieces:Fjord Runner",
+      "label": "saving remembers the name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesAdd",
+      "args": {
+        "kind": "animals",
+        "text": "Fenrir"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesAdd",
+      "args": {
+        "kind": "pieces",
+        "text": "<color=#5dd96a>Fen</color>Home"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "fj"
+      },
+      "contains": "Fjord Runner",
+      "label": "typing \"fj\" offers Fjord Runner"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "fenh"
+      },
+      "contains": "Home",
+      "label": "matching ignores the colour tags"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "fen"
+      },
+      "contains": "Fenrir",
+      "label": "other kinds are offered too"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "Fjord Runner"
+      },
+      "notContains": "Fjord Runner",
+      "label": "an exact match is not suggested again"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "zzz"
+      },
+      "expect": "",
+      "label": "nothing matches"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesAdd",
+      "args": {
+        "kind": "pieces",
+        "text": "Fjord Runner"
+      },
+      "notContains": "Fjord Runner||Fjord Runner",
+      "label": "a repeat moves to the top, not a duplicate"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/QuickNamesEnabled": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces",
+        "typed": "fj"
+      },
+      "expect": "",
+      "label": "off: no suggestions"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/QuickNamesEnabled": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSet",
+      "args": {
+        "text": ""
+      },
+      "expect": true
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -111,6 +111,7 @@
     <Compile Include="Localization\LocalizationDefaults.cs" />
     <Compile Include="Localization\RenameItLocalization.cs" />
     <Compile Include="MenuKeyBinding.cs" />
+    <Compile Include="NameLibrary.cs" />
     <Compile Include="RenameitConfig.cs" />
     <Compile Include="Permissions\ExcludedCategoryAliases.cs" />
     <Compile Include="Permissions\ExcludedCategoryReferenceWriter.cs" />

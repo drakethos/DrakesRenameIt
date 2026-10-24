@@ -1,0 +1,121 @@
+{
+  "name": "PC-01 builder line on renamed pieces: Off / On / Forced and wording",
+  "description": "A renamed piece can show who built it as its own hover line. Server: Off / On / Forced and Crafted by / Built by; player: ShowPieceCrafter.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "Fjord Chest"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "notContains": "Crafted by",
+      "label": "Off (the suite default): no builder line"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceCrafterLine": "On",
+        "11 UI-NotSynced/ShowPieceCrafter": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Crafted by: ",
+      "label": "On and the player allows it: the builder line shows"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "11 UI-NotSynced/ShowPieceCrafter": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "notContains": "Crafted by",
+      "label": "On but the player turned it off: no line"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceCrafterLine": "Forced"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Crafted by: ",
+      "label": "Forced ignores the player choice"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceCrafterLineStyle": "Built by"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "Built by: ",
+      "label": "wording follows PieceCrafterLineStyle"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceCrafterLine": "Off"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "chest"
+      },
+      "notContains": "Built by",
+      "label": "Off again: gone"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceCrafterLineStyle": "Crafted by",
+        "11 UI-NotSynced/ShowPieceCrafter": "true"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

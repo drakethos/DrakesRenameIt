@@ -1322,6 +1322,16 @@ T('MP-02', 'map pins: the editor window opens', [
     H('pinRemove', True),
 ], desc='The Toolkit pin editor (Shift + click a pin on the map).')
 
+T('PR-16', 'training dummy (a piece that is a creature) can be renamed', [
+    spawn('piece_TrainingDummy', 'dummy', 'me'),
+    H('pieceNameable', True, 'the dummy counts as a nameable piece', stop=True, target='dummy'),
+    H('pieceRename', True, stop=True, target='dummy', text='<color=#5dd96a>Big</color> Twig'),
+    H('pieceName', '<color=#5dd96a>Big</color> Twig', target='dummy'),
+    H('pieceHover', label='its hover shows the new name and the Rename hint', contains='Big', target='dummy'),
+    H('pieceHover', label='with the rename hint for the builder', contains='Rename', target='dummy'),
+    H('creatureHoverName', label='the label over its head uses the new name', contains='Big', target='dummy'),
+], desc='The training dummy is a Piece and a Character: renaming it changes its hover and the name label above it.')
+
 # ---------------------------------------------------------------- write
 
 DESCRIPTION = ('Automated regression for Drake\'s RenameIt, following "Drake\'s RenameIt Test Suite 2.0" (SM-/TC- ids) plus extra config coverage (X-). '

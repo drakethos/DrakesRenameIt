@@ -732,6 +732,11 @@ internal static class RenameItTestHooks
         return global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.IsOpen;
     }
 
+    /// <summary>What the creature's name label (the one over its head) reads: Character.GetHoverName.</summary>
+    [TestHook("renameit.creatureHoverName")]
+    static string CreatureHoverName(Dictionary<string, object?> args, GameObject? target = null) =>
+        (target != null ? target.GetComponentInParent<Character>() : null)?.GetHoverName() ?? "";
+
     // ---------- map pins
 
     static Minimap.PinData? _testPin;

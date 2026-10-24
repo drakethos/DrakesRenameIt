@@ -528,13 +528,46 @@ internal static class PieceRenamePatches
                 return;
             var text = hoverName.text;
             if (string.IsNullOrEmpty(text))
-                return;
+            {
+                // A piece that is a creature (the training dummy) has no hover text of its own unless it is tame: start from its name.
+                var creature = piece.GetComponent<Character>();
+                if (creature == null || piece.GetComponent<Tameable>() != null)
+                    return;
+                text = creature.GetHoverName();
+                if (string.IsNullOrEmpty(text))
+                    return;
+            }
 
             hoverName.text = PieceRename.ApplyToHoverText(piece, text, player, hovered.GetComponentInParent<Hoverable>(), offerRename: nameable != null);
         }
         catch
         {
             /* never break the HUD, never log per frame */
+        }
+    }
+
+    /// <summary>
+    /// Pieces that are creatures (the training dummy) show their name in the label over their head and in the hover; both read
+    /// Character.GetHoverName, so a custom name on the piece goes there too. Tame animals have their own rename (AnimalRename).
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName))]
+    static void CharacterHoverName_Postfix(Character __instance, ref string __result)
+    {
+        try
+        {
+            if (!RenameitConfig.PieceRenameEnabled || __instance.GetComponent<Tameable>() != null)
+                return;
+            var piece = __instance.GetComponent<Piece>();
+            if (piece == null)
+                return;
+            var custom = PieceRename.GetCustomName(piece);
+            if (custom.Length > 0)
+                __result = custom;
+        }
+        catch
+        {
+            /* a name must never throw */
         }
     }
 

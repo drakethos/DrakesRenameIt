@@ -1,0 +1,74 @@
+{
+  "name": "PR-16 training dummy (a piece that is a creature) can be renamed",
+  "description": "The training dummy is a Piece and a Character: renaming it changes its hover and the name label above it.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "dummy"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceNameable",
+      "args": {
+        "target": "dummy"
+      },
+      "expect": true,
+      "label": "the dummy counts as a nameable piece",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "dummy",
+        "text": "<color=#5dd96a>Big</color> Twig"
+      },
+      "expect": true,
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "dummy"
+      },
+      "expect": "<color=#5dd96a>Big</color> Twig"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "dummy"
+      },
+      "contains": "Big",
+      "label": "its hover shows the new name and the Rename hint"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "dummy"
+      },
+      "contains": "Rename",
+      "label": "with the rename hint for the builder"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.creatureHoverName",
+      "args": {
+        "target": "dummy"
+      },
+      "contains": "Big",
+      "label": "the label over its head uses the new name"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

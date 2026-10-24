@@ -8,7 +8,7 @@
   - **Fix: hover text** showed the new name above the old one on pieces whose part name differs from the piece's (iron gate, hot tub seat). Any part of a renamed piece shows the name; Shift+Use stays vanilla on fires, item stands and signs.
   - `ExcludedCategoryReference.txt` also lists piece categories and, after joining a world, every buildable piece with a hover name.
   - **Plugin GUID is now `com.drakemods.renameit`.** On first start the old `com.drakesworkshop.renameit.cfg` is copied to the new file and renamed `*.migrated`, so settings carry over.
-  - Automated tests: 133 tests incl. PR-01..PR-15 (pieces) and the two-client DrakesRenameIt-Net suite (PN-01..03). Not part of the release.
+  - Automated tests incl. PR-01..PR-15 (pieces) and the two-client DrakesRenameIt-Net suite (PN-01..03). Not part of the release.
 - Version 1.3.0-beta.3
   - Beta. Requires **DrakeModsLibs 1.0.0** (the menu-key fix uses its new `MenuBindingRegistry.LinkTab`).
   - **Fix: your menu key is respected.** With `MenuOpenModifier` set to another key (e.g. Ctrl), Shift + right-click no longer opens RenameIt's window through the shared Libs key.

@@ -10,7 +10,7 @@
 
 Rename items **and placed pieces**, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
 
-**Requires [DrakeModsLibs 1.0.0+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.2+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Rename placed pieces (1.4)
 

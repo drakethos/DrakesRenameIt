@@ -5,18 +5,18 @@
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
-    <Version>1.4.0-beta.1</Version>
+    <Version>1.4.0-beta.2</Version>
     <!-- BepIn plugin display name — do not change (existing installs / docs) -->
     <BepInPluginName>DrakesRenameit</BepInPluginName>
     <BepInGuid>com.drakemods.renameit</BepInGuid>
     <ModInfoClass>DrakeRenameit</ModInfoClass>
-    <Description>Rename items and placed pieces (chests, doors, beds, stations...), descriptions and Crafted by lines. Shared piece renaming, craftable Paper notes, Lock|Rename tabs with LockSmith. Valheim 1.0.</Description>
+    <Description>Rename items, placed pieces, tamed animals and map pins, with colours and saved-name suggestions. Builder line on boats and carts, shared piece renaming, craftable Paper notes, Lock|Rename tabs with LockSmith. Valheim 1.0.</Description>
     <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
     <DeployAfterTargets>CopyLocalizationToOutput</DeployAfterTargets>
   </PropertyGroup>
   <ItemGroup>
     <ThunderstoreDependency Include="denikson-BepInExPack_Valheim-5.4.2351" />
     <ThunderstoreDependency Include="ValheimModding-Jotunn-2.30.2" />
-    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-1.0.0" />
+    <ThunderstoreDependency Include="DrakeMods-DrakeModsLibs-1.0.2" />
   </ItemGroup>
 </Project>

@@ -1017,7 +1017,7 @@ public static class RenameitConfig
             SectionPieces, DisplayPieces,
             "PieceRenameEnabled",
             true,
-            "If true, pieces that show a name on hover (chests, stations, smelters, doors, beds, portals, ...) can be given a custom name with Shift+Use. Off: nobody can, and names already given are hidden (not deleted). Fireplaces, item stands and signs are skipped (vanilla uses Shift+Use on them). Default on.");
+            "If true, pieces that show a name on hover (chests, stations, smelters, doors, beds, portals, ...) can be given a custom name with Shift+Use. Off: nobody can, and names already given are hidden (not deleted). Fireplaces, item stands and signs are skipped (vanilla uses Shift+Use on them). Pieces the world generated (dungeon chests, crypt doors) only admins/VIP can rename. Default on.");
 
         _pieceRenameAdminOnly = _drakeConfigSync.BindSynced(config,
             SectionPieces, DisplayPieces,
@@ -1029,13 +1029,13 @@ public static class RenameitConfig
             SectionPieces, DisplayPieces,
             "PieceExcludedNames",
             "",
-            "Comma-separated pieces that cannot be renamed: prefab name (portal_wood), token ($piece_chestwood) or the English name players see (Chest). Admins/VIP ignore this when AdminOverride is on.");
+            "Comma-separated pieces that cannot be renamed: prefab name (portal_wood), token ($piece_chestwood) or the English name players see (Chest). Admins/VIP ignore this when AdminOverride is on. Every piece and category: BepInEx/config/com.drakemods.renameit/ExcludedCategoryReference.txt (the piece list fills in after you join a world).");
 
         _pieceExcludedCategory = _drakeConfigSync.BindSynced(config,
             SectionPieces, DisplayPieces,
             "PieceExcludedCategory",
             "",
-            "Comma-separated piece categories that cannot be renamed. What a piece does: Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat. Or its build-menu category: Misc, Crafting, Furniture, BuildingWorkbench, BuildingStonecutter, ... Admins/VIP ignore this when AdminOverride is on.");
+            "Comma-separated piece categories that cannot be renamed. What a piece does: Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat. Or its build-menu category: Misc, Crafting, Furniture, BuildingWorkbench, BuildingStonecutter, ... Admins/VIP ignore this when AdminOverride is on. Every piece and category: BepInEx/config/com.drakemods.renameit/ExcludedCategoryReference.txt (the piece list fills in after you join a world).");
 
         _pieceRenameAllowlist = _drakeConfigSync.BindSynced(config,
             SectionPieces, DisplayPieces,

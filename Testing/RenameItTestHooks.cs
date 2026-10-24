@@ -656,6 +656,22 @@ internal static class RenameItTestHooks
         return nl >= 0 ? text.Substring(0, nl) : text;
     }
 
+    /// <summary>Clears the piece's builder, which is how pieces the world generated (dungeon chests and doors) look.</summary>
+    [TestHook("renameit.pieceWorldBuilt")]
+    static bool PieceWorldBuilt(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = NameablePiece(target);
+        // Piece.SetCreator took a PlatformUserID in 1.0; write what it writes (field + ZDO "creator") directly.
+        AccessTools.Field(typeof(Piece), "m_creator")?.SetValue(piece, 0L);
+        var nview = piece.GetComponent<ZNetView>();
+        if (nview != null && nview.IsValid())
+        {
+            nview.ClaimOwnership();
+            nview.GetZDO().Set("creator".GetStableHashCode(), 0L);
+        }
+        return !Pieces.PieceRename.IsPlayerBuilt(piece);
+    }
+
     [TestHook("renameit.pieceName")]
     static string PieceName(Dictionary<string, object?> args, GameObject? target = null) =>
         Pieces.PieceRename.GetCustomName(NameablePiece(target));

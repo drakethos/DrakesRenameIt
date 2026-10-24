@@ -7,7 +7,7 @@ import json, os, shutil
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'suites')
 AUTO = os.path.join(OUT, 'DrakesRenameIt')
 MANUAL = os.path.join(OUT, 'DrakesRenameIt-Manual')
-GUID = 'com.drakesworkshop.renameit'
+GUID = 'com.drakemods.renameit'
 
 # ---------------------------------------------------------------- helpers
 
@@ -1186,6 +1186,22 @@ T('PR-14', 'PieceSharedEnabled off: no Shared', [
     H('pieceShare', False, 'Shared off: the builder cannot switch it', target='bench', on=False),
     play('me'),
 ], desc='Turning Shared off hides the switch and ignores Shared marks.')
+
+T('PR-15', 'world-generated pieces: admins only', [
+    C({PC + 'PieceLockToBuilder': 'false', **VIP}),
+    spawn('TreasureChest_meadows', 'loot', dx=-3),
+    spawn('wood_door', 'cryptdoor', dx=3),
+    H('pieceWorldBuilt', True, 'the chest has no builder, like in a dungeon', stop=True, target='loot'),
+    H('pieceWorldBuilt', True, 'the door has no builder, like a crypt door', stop=True, target='cryptdoor'),
+    H('pieceCan', False, 'a player cannot rename a dungeon chest (even with PieceLockToBuilder off)', target='loot'),
+    H('pieceCan', False, 'a player cannot rename a dungeon door', target='cryptdoor'),
+    H('pieceHover', label='and gets no Rename hint', notContains='Rename', target='loot'),
+    play('Nacho-VIP'),
+    H('pieceCan', True, 'an admin / VIP can', target='loot'),
+    H('pieceRename', True, target='loot', text='Crypt Hoard'),
+    play('me'),
+    H('pieceHover', label='everyone sees the name the admin gave', contains='Crypt Hoard', target='loot'),
+], desc='Pieces the world generated (dungeon chests, crypt doors) have no builder: only admins/VIP may rename them, whatever the builder and Shared settings say. A walk-into-a-real-dungeon check needs TestLab dungeon support (follow-up).')
 
 # ---------------------------------------------------------------- write
 

@@ -122,7 +122,7 @@ localization with an additional name, simply leave the $string intact and add ar
   - (It does add craftable **Piece of Paper** / **Written Page** for rename RP and world notes.)
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 10 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 11 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`, `LogSpam`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/` (e.g. `com.drakemods.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 10 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 11 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`, `LogSpam`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
 
 #### Features (server-synced)
 
@@ -141,7 +141,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 #### Exclusions (server-synced)
 
 - **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions/crafted-by changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
-- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, `Paper` (Piece of Paper vessel), or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee`, `paper` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, `Paper` (Piece of Paper vessel), or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee`, `paper` also work. Reference file: **`BepInEx/config/com.drakemods.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
 - **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require the relevant **Features** toggles to be on and still obey **LockToOwner** if another player owns the item.
 
 #### Crafted by (server-synced)

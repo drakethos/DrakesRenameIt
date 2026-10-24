@@ -74,9 +74,36 @@ namespace DrakeRenameit
                 PaperWallSession.FlushCurrentItemToVessel();
         }
 
+        /// <summary>RenameIt's plugin GUID up to 1.3.x; its settings file is carried over once.</summary>
+        internal const string OldGuid = "com.drakesworkshop.renameit";
+
+        /// <summary>
+        /// 1.4 renamed the plugin GUID, which renames the config file. On first start with the new GUID, copy the old file
+        /// so players and servers keep their settings, then rename the old one to *.migrated so it is clearly no longer read.
+        /// </summary>
+        void MigrateConfigFromOldGuid()
+        {
+            try
+            {
+                var newPath = Config.ConfigFilePath;
+                var oldPath = Path.Combine(BepInEx.Paths.ConfigPath, OldGuid + ".cfg");
+                if (!File.Exists(oldPath) || File.Exists(newPath) || string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase))
+                    return;
+                File.Copy(oldPath, newPath);
+                Config.Reload();
+                File.Move(oldPath, oldPath + ".migrated");
+                Logger.LogInfo($"Settings carried over from {OldGuid}.cfg to {Path.GetFileName(newPath)} (old file kept as {OldGuid}.cfg.migrated).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Could not carry settings over from {OldGuid}.cfg: {ex.Message}. Copy it to {Path.GetFileName(Config.ConfigFilePath)} by hand.");
+            }
+        }
+
         private void Awake()
         {
             RenameitConfig.Log = Logger;
+            MigrateConfigFromOldGuid();
             Bind(Config);
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();

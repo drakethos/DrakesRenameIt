@@ -404,43 +404,43 @@
   ],
   "configs": [
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "01 Admin",
       "key": "AllowAdminOverride",
       "value": "false"
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceRenameEnabled",
       "value": "true"
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceExcludedNames",
       "value": ""
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceExcludedCategory",
       "value": ""
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceRenameAdminOnly",
       "value": "false"
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceLockToBuilder",
       "value": "true"
     },
     {
-      "guid": "com.drakesworkshop.renameit",
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceRequireWardAccess",
       "value": "true"

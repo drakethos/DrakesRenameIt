@@ -44,7 +44,7 @@ internal static class PieceRename
     /// their own text. Judged by the part being looked at, so a hot tub's seat is renamable and its heater is not.
     /// </summary>
     static bool IsNameableHover(Piece piece, Component hoverable) =>
-        hoverable.GetComponentInParent<Piece>() == piece
+        OwningPiece(hoverable) == piece
         && hoverable is not Fireplace && hoverable is not ItemStand && hoverable is not Sign
         && piece.GetComponent<PaperWrittenVessel>() == null;
 
@@ -64,6 +64,17 @@ internal static class PieceRename
         return GetCustomName(piece).Length > 0 ? piece : null;
     }
 
+    /// <summary>The nearest Piece above a part, also on inactive prefabs (GetComponentInParent skips those).</summary>
+    static Piece? OwningPiece(Component part)
+    {
+        for (var t = part.transform; t != null; t = t.parent)
+        {
+            if (t.GetComponent<Piece>() is Piece piece)
+                return piece;
+        }
+        return null;
+    }
+
     /// <summary>The first part of the piece that shows a nameable hover (tests and tools that have no crosshair).</summary>
     /// <summary>
     /// Prefers the piece's own part (a hot tub's seat) over a Switch (its wood hatch, a smelter's ore and coal slots);
@@ -72,7 +83,8 @@ internal static class PieceRename
     internal static Component? FirstNameableHover(Piece piece)
     {
         Component? fallback = null;
-        foreach (var part in piece.GetComponentsInChildren<Component>())
+        // includeInactive: prefabs (the reference file lists them) are inactive objects.
+        foreach (var part in piece.GetComponentsInChildren<Component>(true))
         {
             if (part is not Hoverable || !IsNameableHover(piece, part))
                 continue;
@@ -124,16 +136,39 @@ internal static class PieceRename
     /// </summary>
     internal static IEnumerable<string> CategoriesOf(Piece piece)
     {
-        yield return piece.m_category.ToString();
-        if (piece.GetComponentInChildren<Container>() != null) yield return "Chest";
-        if (piece.GetComponentInChildren<Door>() != null) yield return "Door";
-        if (piece.GetComponentInChildren<Bed>() != null) yield return "Bed";
-        if (piece.GetComponentInChildren<CraftingStation>() != null || piece.GetComponentInChildren<StationExtension>() != null) yield return "Station";
-        if (piece.GetComponentInChildren<Smelter>() != null) yield return "Smelter";
-        if (piece.GetComponentInChildren<CookingStation>() != null || piece.GetComponentInChildren<Fermenter>() != null) yield return "Cooking";
-        if (piece.GetComponentInChildren<TeleportWorld>() != null) yield return "Portal";
-        if (piece.GetComponentInChildren<PrivateArea>() != null) yield return "Ward";
-        if (piece.GetComponentInChildren<Chair>() != null) yield return "Seat";
+        yield return CategoryName(piece.m_category);
+        if (piece.GetComponentInChildren<Container>(true) != null) yield return "Chest";
+        if (piece.GetComponentInChildren<Door>(true) != null) yield return "Door";
+        if (piece.GetComponentInChildren<Bed>(true) != null) yield return "Bed";
+        if (piece.GetComponentInChildren<CraftingStation>(true) != null || piece.GetComponentInChildren<StationExtension>(true) != null) yield return "Station";
+        if (piece.GetComponentInChildren<Smelter>(true) != null) yield return "Smelter";
+        if (piece.GetComponentInChildren<CookingStation>(true) != null || piece.GetComponentInChildren<Fermenter>(true) != null) yield return "Cooking";
+        if (piece.GetComponentInChildren<TeleportWorld>(true) != null) yield return "Portal";
+        if (piece.GetComponentInChildren<PrivateArea>(true) != null) yield return "Ward";
+        if (piece.GetComponentInChildren<Chair>(true) != null) yield return "Seat";
+    }
+
+    static readonly Dictionary<int, string> CustomCategoryNames = new();
+
+    /// <summary>Vanilla categories by enum name; ones mods add through Jotunn (ItemShop's and so on) by their Jotunn name, not a number.</summary>
+    internal static string CategoryName(Piece.PieceCategory category)
+    {
+        if (Enum.IsDefined(typeof(Piece.PieceCategory), category))
+            return category.ToString();
+        if (CustomCategoryNames.TryGetValue((int)category, out var known))
+            return known;
+        var name = category.ToString();
+        try
+        {
+            if (Jotunn.Managers.PieceManager.Instance.GetPieceCategoriesMap().TryGetValue(category, out var jotunn) && !string.IsNullOrEmpty(jotunn))
+                name = jotunn;
+        }
+        catch
+        {
+            // Jotunn API drift: keep the number
+        }
+        CustomCategoryNames[(int)category] = name;
+        return name;
     }
 
     /// <summary>PieceExcludedNames / PieceExcludedCategory, unless PieceRenameAllowlist names it.</summary>
@@ -152,6 +187,9 @@ internal static class PieceRename
     internal static bool IsBuilder(Piece piece, Player? player) =>
         player != null && piece.GetCreator() != 0 && piece.GetCreator() == player.GetPlayerID();
 
+    /// <summary>False for pieces the world generated (no builder): dungeon chests, crypt doors, village props.</summary>
+    internal static bool IsPlayerBuilt(Piece piece) => piece.GetCreator() != 0;
+
     static bool HasWardAccess(Piece piece, bool flash) =>
         !RenameitConfig.PieceRequireWardAccess || PrivateArea.CheckAccess(piece.transform.position, 0f, flash, false);
 
@@ -167,6 +205,9 @@ internal static class PieceRename
         if (RenameitPermission.IsElevatedForOverrides(player))
             return true;
         if (RenameitConfig.PieceRenameAdminOnly || IsExcluded(piece))
+            return false;
+        // Built by the world (dungeon chests, crypt doors): admins only, whatever the builder / Shared settings say.
+        if (!IsPlayerBuilt(piece))
             return false;
         var mayEdit = !RenameitConfig.PieceLockToBuilder || IsBuilder(piece, player)
                       || (RenameitConfig.PieceSharedEnabled && IsShared(piece));
@@ -195,8 +236,7 @@ internal static class PieceRename
         var nview = piece.GetComponent<ZNetView>();
         if (nview == null || !nview.IsValid())
             return;
-        nview.ClaimOwnership();
-        nview.GetZDO().Set(ZdoSharedHash, on);
+        Write(nview, RpcSetShared, on, zdo => zdo.Set(ZdoSharedHash, on));
     }
 
     internal static string GetCustomName(Piece piece)
@@ -213,9 +253,48 @@ internal static class PieceRename
         var value = (name ?? "").Trim();
         if (value.Length > MaxRawLength)
             value = value.Substring(0, MaxRawLength);
-        // Same as vanilla signs: take ownership, then write.
+        Write(nview, RpcSetName, value, zdo => zdo.Set(ZdoHash, value));
+    }
+
+    // ---------------------------------------------------------------- writing through the owner
+
+    const string RpcSetName = "DrakePiece_RPC_SetName";
+    const string RpcSetShared = "DrakePiece_RPC_SetShared";
+
+    /// <summary>
+    /// Write on the piece's ZDO. When another player's client owns it (they have the chest open, or simply stand nearer),
+    /// ask that client to write it instead of claiming the piece: taking ownership closes an open chest on their screen.
+    /// </summary>
+    static void Write(ZNetView nview, string rpc, object value, Action<ZDO> apply)
+    {
+        var zdo = nview.GetZDO();
+        if (zdo.HasOwner() && !nview.IsOwner())
+        {
+            nview.InvokeRPC(rpc, value);
+            return;
+        }
+
         nview.ClaimOwnership();
-        nview.GetZDO().Set(ZdoHash, value);
+        apply(zdo);
+    }
+
+    /// <summary>The owner side of <see cref="Write"/>: registered on every piece's ZNetView when it wakes.</summary>
+    internal static void RegisterRpcs(ZNetView? nview)
+    {
+        if (nview == null || !nview.IsValid())
+            return;
+        nview.Unregister(RpcSetName);
+        nview.Register<string>(RpcSetName, (sender, name) =>
+        {
+            if (nview.IsValid() && nview.IsOwner())
+                nview.GetZDO().Set(ZdoHash, name ?? "");
+        });
+        nview.Unregister(RpcSetShared);
+        nview.Register<bool>(RpcSetShared, (sender, on) =>
+        {
+            if (nview.IsValid() && nview.IsOwner())
+                nview.GetZDO().Set(ZdoSharedHash, on);
+        });
     }
 
     /// <summary>Custom name if set (and the feature is on), else null.</summary>
@@ -326,6 +405,23 @@ internal static class PieceRenamePatches
 {
     // Never ldfld Hud.m_hoverName directly — the compile ref can disagree with the live game (see PaperWrittenPlace).
     static readonly System.Reflection.FieldInfo? HoverNameField = AccessTools.Field(typeof(Hud), "m_hoverName");
+
+    /// <summary>Owner side of a rename sent by another client (see PieceRename.Write).</summary>
+    [HarmonyPatch(typeof(Piece), "Awake")]
+    [HarmonyPostfix]
+    static void PieceAwake(Piece __instance)
+    {
+        try
+        {
+            // only pieces with a hover can carry a custom name (walls and floors never get these RPCs); one cheap lookup per piece
+            if (__instance.GetComponentInChildren<Hoverable>(true) != null)
+                PieceRename.RegisterRpcs(__instance.GetComponent<ZNetView>());
+        }
+        catch (Exception ex)
+        {
+            RenameitConfig.Log?.LogWarning($"Piece rename RPCs not registered on {__instance.name}: {ex.Message}");
+        }
+    }
 
     /// <summary>Swap the piece's normal name for its custom one in the hover text, and add the Rename hint.</summary>
     [HarmonyPostfix]

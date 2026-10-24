@@ -12,7 +12,7 @@ namespace DrakeRenameit.Compat;
 /// </summary>
 internal static class WardHoverAccess
 {
-    public const string LockSmithGuid = "com.drakesworkshop.locksmith";
+    public const string LockSmithGuid = "com.drakemods.locksmith";
 
     private static bool _resolved;
     private static MethodInfo? _isReady;

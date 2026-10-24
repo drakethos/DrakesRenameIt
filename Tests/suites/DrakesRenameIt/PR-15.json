@@ -1,0 +1,119 @@
+{
+  "name": "PR-15 world-generated pieces: admins only",
+  "description": "Pieces the world generated (dungeon chests, crypt doors) have no builder: only admins/VIP may rename them, whatever the builder and Shared settings say. A walk-into-a-real-dungeon check needs TestLab dungeon support (follow-up).",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceLockToBuilder": "false",
+        "01 Admin/AllowAdminOverride": "true",
+        "01 Admin/VipOnlyOverride": "true",
+        "01 Admin/VipList": "Nacho-VIP"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "TreasureChest_meadows",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "loot",
+      "dx": -3
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "cryptdoor",
+      "dx": 3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceWorldBuilt",
+      "args": {
+        "target": "loot"
+      },
+      "expect": true,
+      "label": "the chest has no builder, like in a dungeon",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceWorldBuilt",
+      "args": {
+        "target": "cryptdoor"
+      },
+      "expect": true,
+      "label": "the door has no builder, like a crypt door",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "loot"
+      },
+      "expect": false,
+      "label": "a player cannot rename a dungeon chest (even with PieceLockToBuilder off)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "cryptdoor"
+      },
+      "expect": false,
+      "label": "a player cannot rename a dungeon door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "loot"
+      },
+      "notContains": "Rename",
+      "label": "and gets no Rename hint"
+    },
+    {
+      "do": "playAs",
+      "who": "Nacho-VIP"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "loot"
+      },
+      "expect": true,
+      "label": "an admin / VIP can"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "loot",
+        "text": "Crypt Hoard"
+      },
+      "expect": true
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "loot"
+      },
+      "contains": "Crypt Hoard",
+      "label": "everyone sees the name the admin gave"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

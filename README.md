@@ -1,16 +1,6 @@
 <img width="256" height="256" alt="DrakesRenameit icon" src="icon.png" />
 
-# DrakesRenameIt — ⚠️ Moving to Hexium
-
-> [!IMPORTANT]
-> **DrakeMods is moving to Hexium.**
->
-> This is one of the last updates we'll post on Thunderstore. No new DrakeMods will be released here, and existing mods will get only limited support on Thunderstore from now on.
->
-> For the latest updates, newest versions and future mods, follow us on **Hexium**:
-> 👉 **[DrakeMods on Hexium](https://valheim.hexium.gg/?q=DrakeMods)**
->
-> These Thunderstore listings will be deprecated after this.
+# DrakesRenameIt
 
 > [!TIP]
 > ### 🎨 DrakesReskinIt is finally coming, on Hexium!
@@ -18,9 +8,17 @@
 > Both share the same Shift + right-click menu (Rename, Paper, Reskin tabs), so you can name *and* style a piece of gear in one place.
 > 👉 **[DrakesReskinIt on Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesReskinIt)**
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
+Rename items **and placed pieces**, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
 
-**Requires [DrakeModsLibs 0.11.2+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.0+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+
+### Rename placed pieces (1.4)
+
+Any built piece that shows a hover name (chests, doors, beds, stations, signs, furniture, mod pieces) can be renamed. Look at the piece and press **Shift+Use** (your **MenuOpenModifier** + Use) to open the piece window: name field with the rich-text toolbar and a hover preview, **Reset name**, **Revert / Save** with Undo, and quick settings. It is free, and only the **builder** can rename it, with ward access where it stands (admins and VIP can override, as with items). Pieces the world generated (dungeon chests, crypt doors) are admin/VIP only.
+
+**Shared:** the builder can tick **Shared** so other players (with ward access) may rename the piece too.
+
+Synced config section **12 Pieces:** `PieceRenameEnabled`, `PieceRenameAdminOnly`, `PieceExcludedNames` (prefab, token or shown name), `PieceExcludedCategory` (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), `PieceRenameAllowlist`, `PieceNameCharacterLimit`, `PieceLockToBuilder`, `PieceRequireWardAccess`, `PieceSharedEnabled`. `ExcludedCategoryReference.txt` lists the categories and every buildable piece with a hover name once you have joined a world.
 
 ### Piece of Paper (1.1)
 

@@ -1,26 +1,16 @@
 <img width="256" height="256" alt="DrakesRenameit icon" src="icon.png" />
 
-# DrakesRenameIt — ⚠️ Moving to Hexium
-
-> [!IMPORTANT]
-> **DrakeMods is moving to Hexium.**
->
-> This is one of the last updates we'll post on Thunderstore. No new DrakeMods will be released here, and existing mods will get only limited support on Thunderstore from now on.
->
-> For the latest updates, newest versions and future mods, follow us on **Hexium**:
-> 👉 **[DrakeMods on Hexium](https://valheim.hexium.gg/?q=DrakeMods)**
->
-> These Thunderstore listings will be deprecated after this.
+# DrakesRenameIt
 
 > [!TIP]
-> ### 🎨 DrakesReskinIt is finally coming, on Hexium!
+> ### 🎨 Try DrakesReskinIt
 > The perfect companion to DrakesRenameIt. RenameIt changes what your items are *called*; ReskinIt changes how they *look*: new inventory icon, new equipped model, custom colors and saveable presets.
 > Both share the same Shift + right-click menu (Rename, Paper, Reskin tabs), so you can name *and* style a piece of gear in one place.
 > 👉 **[DrakesReskinIt on Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesReskinIt)**
 
 Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
 
-**Requires [DrakeModsLibs 0.11.2+](https://thunderstore.io/c/valheim/p/DrakeMods/DrakeModsLibs/)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.0+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Piece of Paper (1.1)
 

@@ -5,12 +5,12 @@
     <ThunderstoreAuthor>DrakeMods</ThunderstoreAuthor>
     <RootNamespace>DrakeRenameit</RootNamespace>
     <AssemblyName>DrakesRenameit</AssemblyName>
-    <Version>1.3.0-beta.3</Version>
+    <Version>1.3.0</Version>
     <!-- BepIn plugin display name — do not change (existing installs / docs) -->
     <BepInPluginName>DrakesRenameit</BepInPluginName>
     <BepInGuid>com.drakesworkshop.renameit</BepInGuid>
     <ModInfoClass>DrakeRenameit</ModInfoClass>
-    <Description>MOVING TO HEXIUM: final Thunderstore release, updates continue on Hexium. Rename items, descriptions and Crafted by lines. Craftable Paper notes you can place. Shared Lock|Rename tabs with LockSmith. Valheim 1.0.</Description>
+    <Description>Rename items, descriptions and Crafted by lines. Craftable Paper notes you can place. Shared Lock|Rename tabs with LockSmith. Valheim 1.0.</Description>
     <WebsiteUrl>https://github.com/drakethos/DrakesRenameIt</WebsiteUrl>
     <DeployAfterTargets>CopyLocalizationToOutput</DeployAfterTargets>
   </PropertyGroup>

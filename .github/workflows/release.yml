@@ -26,9 +26,9 @@ jobs:
         uses: actions/checkout@v4
 
       # ── Version from mod.package.props (must match release tag v{Version}) ───
-      #  Stable:  v1.2.0        → Thunderstore + Hexium + GitHub release
-      #  Beta:    v1.2.0-beta.1 → Hexium + GitHub prerelease only (skip Thunderstore)
-      #  Hexium accepts -beta.X in version_number; Thunderstore/tcli do not.
+      #  Stable:  v1.3.0        → Hexium + GitHub release (Thunderstore ended with 1.2.1)
+      #  Beta:    v1.3.0-beta.1 → Hexium + GitHub prerelease
+      #  Hexium accepts -beta.X in version_number.
       - name: Resolve release version
         id: ver
         run: |
@@ -232,9 +232,7 @@ jobs:
           body: |
             ## DrakesRenameIt v${{ steps.ver.outputs.version }}
 
-            > **DrakeMods is moving to Hexium.** ${{ steps.ver.outputs.version }} is the final DrakesRenameIt release on Thunderstore. Future updates: [DrakeMods on Hexium](https://valheim.hexium.gg/?q=DrakeMods).
-
-            Thunderstore zip attached. CI also publishes to **Thunderstore** then **Hexium**.
+            Package zip attached. CI also publishes to [Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesRenameit).
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
@@ -256,14 +254,7 @@ jobs:
           body: |
             ## DrakesRenameIt v${{ steps.ver.outputs.version }} (beta)
 
-            **Beta for the 1.2.0 release candidate.** Hexium + GitHub prerelease only (Thunderstore skipped; Hexium accepts `-beta.N`). Not a stable store build — please test and report issues before the 1.2.0 RC/stable cut.
-
-            ### Highlights
-            - Requires **DrakeModsLibs 0.9.8+**
-            - **ISSUE-015 / 016:** Printed / immutable paper stacks keep their stack counter after place; split/merge works again
-            - **ISSUE-017:** Optional `PaperRecycleImmutableEnabled` (default off) to recycle Printed stacks
-            - **ISSUE-005:** Field Reset is confirm → pending → OK; Cancel/Esc discard; nested Yes/No no longer drops the cursor
-            - **ISSUE-011:** Reset-All restores CraftedBy even when CraftedBy editing is disabled
+            **Beta.** Hexium + GitHub prerelease. Please test and report issues before the stable cut.
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
@@ -282,42 +273,9 @@ jobs:
           path: ${{ steps.pkg.outputs.zip }}
           if-no-files-found: error
 
-  publish-thunderstore:
-    needs: build-and-release
-    if: needs.build-and-release.outputs.is_prerelease != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Thunderstore zip
-        uses: actions/download-artifact@v4
-        with:
-          name: thunderstore-zip
-          path: dist
-
-      - name: Publish package to Thunderstore
-        uses: GreenTF/upload-thunderstore-package@v4.3
-        with:
-          namespace: DrakeMods
-          name: DrakesRenameit
-          version: ${{ needs.build-and-release.outputs.version }}
-          description: ${{ needs.build-and-release.outputs.description }}
-          community: valheim
-          repo: https://thunderstore.io/c/valheim/
-          token: ${{ secrets.THUNDERSTORE_TOKEN }}
-          file: ${{ needs.build-and-release.outputs.zip }}
-          path: dist
-          website: ${{ needs.build-and-release.outputs.website_url }}
-          categories: |
-            misc
-
   publish-hexium:
-    needs: [build-and-release, publish-thunderstore]
-    # Run after a successful build even when Thunderstore was skipped (beta tags).
+    needs: build-and-release
     # Uses publish-hexium.py (not tcli) so Hexium can receive -beta.X versions.
-    if: |
-      always()
-      && needs.build-and-release.result == 'success'
-      && (needs.publish-thunderstore.result == 'success'
-          || needs.publish-thunderstore.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout publish script

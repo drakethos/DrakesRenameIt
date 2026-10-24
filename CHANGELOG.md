@@ -1,3 +1,8 @@
+- Version 1.3.0
+  - Stable cut of the 1.3.0 betas below. Requires **DrakeModsLibs 1.0.0+**. Published on Hexium and GitHub.
+  - New UI Toolkit Item Workshop (Rename tab) and Paper tab, with Quick Settings (Shift+F1), a preview card, rich text formatting and a styled world hover.
+  - Fixes from the automated test suite: your own menu key is respected, `ShowItemStandItemNameWhenNoAccess` and paper names apply live and when synced from the server.
+
 - Version 1.3.0-beta.3
   - Beta. Requires **DrakeModsLibs 1.0.0** (the menu-key fix uses its new `MenuBindingRegistry.LinkTab`).
   - **Fix: your menu key is respected.** With `MenuOpenModifier` set to another key (e.g. Ctrl), Shift + right-click no longer opens RenameIt's window through the shared Libs key.
@@ -17,7 +22,8 @@
   - Crafted-by lines take rich text; hover defaults to Minimal and no longer leaves tags open.
   - A wall paper keeps and shows its Reskin colour; world hover runs after the other hover patches.
   - Removed the old dev-only commands module.
-  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
+- Version 1.2.1
+  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
   - **Security fix (VIP):** the 1.2.0 local VIP check was inverted. A remote client trusted its own `VipList` only before the host's config had synced, so a player could still grant themselves VIP, and real VIPs on a remote or dedicated server lost VIP once synced. A remote client now trusts `VipList` only after the host's config has taken over. Host and offline play are unchanged.
   - Requires **DrakeModsLibs 0.11.2+**, which fixes the same inverted check in the Libs VIP profile.
 - Version 1.2.0

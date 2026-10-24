@@ -1,5 +1,5 @@
 - Version 1.4.0-beta.1
-  - Beta. Requires **DrakeModsLibs 1.0.1** or newer.
+  - Beta. Requires **DrakeModsLibs 1.0.0** or newer.
   - **New: rename placed pieces.** Any built piece that shows a hover name can be renamed by its builder (with ward access where it stands). Shift+Use opens the piece window: name with the formatting toolbar and hover preview, Reset name, Revert / Save with Undo, quick settings. Free. Admins/VIP can override, as with items.
   - **Shared pieces:** the builder can let other players (with ward access) rename a piece.
   - **New synced config section "12 Pieces":** PieceRenameEnabled, PieceRenameAdminOnly, PieceExcludedNames, PieceExcludedCategory (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), PieceRenameAllowlist, PieceNameCharacterLimit, PieceLockToBuilder, PieceRequireWardAccess, PieceSharedEnabled. Replaces the two piece keys under 02/03.

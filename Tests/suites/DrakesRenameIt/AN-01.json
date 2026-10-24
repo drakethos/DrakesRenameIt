@@ -1,0 +1,121 @@
+{
+  "name": "AN-01 animal names: colours kept, limit, colour switch",
+  "description": "Tamed animal names keep their colours in the label, honour the character limit (colour codes not counted) and the colour switch.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "Boar",
+      "dz": 4,
+      "as": "pet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalTame",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "the animal is tamed",
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "a tamed animal can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSet",
+      "args": {
+        "target": "pet",
+        "text": "<color=#5dd96a>Fen</color>rir"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalName",
+      "args": {
+        "target": "pet"
+      },
+      "contains": "<color=#5dd96a>",
+      "label": "stored with its colour"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalHoverName",
+      "args": {
+        "target": "pet"
+      },
+      "contains": "<color=#5dd96a>",
+      "label": "the label keeps the colour (vanilla strips it)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSanitize",
+      "args": {
+        "text": "<color=#5dd96a>Fen</color>rir"
+      },
+      "expect": "<color=#5dd96a>Fen</color>rir",
+      "label": "the limit counts visible characters only"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSanitize",
+      "args": {
+        "text": "abcdefghijklmnopqrstuvwxyz1234567890"
+      },
+      "expect": "abcdefghijklmnopqrstuvwxyz1234",
+      "label": "a name over the limit (30) is cut"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalNameCharacterLimit": "10"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSanitize",
+      "args": {
+        "text": "abcdefghijklmnopqrstuvwxyz"
+      },
+      "expect": "abcdefghij",
+      "label": "the server limit applies"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalAllowColour": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSanitize",
+      "args": {
+        "text": "<color=#5dd96a>Fen</color>rir"
+      },
+      "expect": "Fenrir",
+      "label": "colours off: tags stripped"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

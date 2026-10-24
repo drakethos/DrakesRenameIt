@@ -112,6 +112,8 @@
     <Compile Include="Localization\RenameItLocalization.cs" />
     <Compile Include="MenuKeyBinding.cs" />
     <Compile Include="NameLibrary.cs" />
+    <Compile Include="Animals\AnimalRename.cs" />
+    <Compile Include="UI\Toolkit\AnimalWorkshopPanel.cs" />
     <Compile Include="RenameitConfig.cs" />
     <Compile Include="Permissions\ExcludedCategoryAliases.cs" />
     <Compile Include="Permissions\ExcludedCategoryReferenceWriter.cs" />

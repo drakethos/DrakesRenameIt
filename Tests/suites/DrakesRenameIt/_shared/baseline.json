@@ -335,6 +335,36 @@
       "section": "11 UI-NotSynced",
       "key": "ShowPieceCrafter",
       "value": "true"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "13 Animals",
+      "key": "AnimalRenameEnabled",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "13 Animals",
+      "key": "AnimalNameCharacterLimit",
+      "value": "30"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "13 Animals",
+      "key": "AnimalAllowColour",
+      "value": "true"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "13 Animals",
+      "key": "AnimalRenameAccess",
+      "value": "Anyone"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "13 Animals",
+      "key": "AnimalAllowLock",
+      "value": "true"
     }
   ],
   "setup": {

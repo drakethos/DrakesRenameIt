@@ -1229,7 +1229,10 @@ T('PC-02', 'quick names: suggestions as you type', [
     H('quickNamesAdd', kind='pieces', text='<color=#5dd96a>Fen</color>Home'),
     H('quickNamesSuggest', label='typing "fj" offers Fjord Runner', contains='Fjord Runner', kind='pieces', typed='fj'),
     H('quickNamesSuggest', label='matching ignores the colour tags', contains='Home', kind='pieces', typed='fenh'),
-    H('quickNamesSuggest', label='other kinds are offered too', contains='Fenrir', kind='pieces', typed='fen'),
+    H('quickNamesSuggest', label='other kinds are not offered (no animal names for a piece)', notContains='Fenrir', kind='pieces', typed='fen'),
+    H('quickNamesSuggest', label='the same kind is', contains='Fenrir', kind='animals', typed='fen'),
+    H('quickNamesSuggest', label='an old plain pieces entry still suits any piece', contains='Fjord Runner', kind='pieces/Boat', typed='fj'),
+    H('quickNamesSuggest', label='but a boat name is not offered for an item', notContains='Fjord Runner', kind='items', typed='fj'),
     H('quickNamesSuggest', label='an exact match is not suggested again', notContains='Fjord Runner', kind='pieces', typed='Fjord Runner'),
     H('quickNamesSuggest', label='nothing matches', expect='', kind='pieces', typed='zzz'),
     H('quickNamesAdd', label='a repeat moves to the top, not a duplicate', notContains='Fjord Runner||Fjord Runner', kind='pieces', text='Fjord Runner'),
@@ -1237,7 +1240,66 @@ T('PC-02', 'quick names: suggestions as you type', [
     H('quickNamesSuggest', label='off: no suggestions', expect='', kind='pieces', typed='fj'),
     C({UIC + 'QuickNamesEnabled': 'true'}),
     H('quickNamesSet', True, text=''),
-], desc='The Name fields suggest names you saved before (any kind, this kind first); the drop-down itself is checked by hand.')
+], desc='The Name fields suggest names you saved before, only for the same kind of thing (items, a piece type like Boat or Chest, animals...); the drop-down itself is checked by hand.')
+
+AC = '13 Animals/'
+
+def pet(tag='pet', dx=0):
+    s = {'do': 'spawn', 'prefab': 'Boar', 'dz': 4, 'as': tag}
+    if dx:
+        s['dx'] = dx
+    return s
+
+def tame(tag='pet'):
+    return [H('animalTame', True, 'the animal is tamed', stop=True, target=tag), wait(0.5)]
+
+T('AN-01', 'animal names: colours kept, limit, colour switch', [
+    pet(),
+    *tame(),
+    H('animalCan', True, 'a tamed animal can be renamed', stop=True, target='pet'),
+    H('animalSet', True, target='pet', text='<color=#5dd96a>Fen</color>rir'),
+    wait(0.6),
+    H('animalName', label='stored with its colour', contains='<color=#5dd96a>', target='pet'),
+    H('animalHoverName', label='the label keeps the colour (vanilla strips it)', contains='<color=#5dd96a>', target='pet'),
+    H('animalSanitize', label='the limit counts visible characters only', expect='<color=#5dd96a>Fen</color>rir', text='<color=#5dd96a>Fen</color>rir'),
+    H('animalSanitize', label='a name over the limit (30) is cut', expect='abcdefghijklmnopqrstuvwxyz1234', text='abcdefghijklmnopqrstuvwxyz1234567890'),
+    C({AC + 'AnimalNameCharacterLimit': '10'}),
+    H('animalSanitize', label='the server limit applies', expect='abcdefghij', text='abcdefghijklmnopqrstuvwxyz'),
+    C({AC + 'AnimalAllowColour': 'false'}),
+    H('animalSanitize', label='colours off: tags stripped', expect='Fenrir', text='<color=#5dd96a>Fen</color>rir'),
+], desc='Tamed animal names keep their colours in the label, honour the character limit (colour codes not counted) and the colour switch.')
+
+T('AN-02', 'animal names: who may rename (Anyone / Namer / Admin) and the lock', [
+    pet(),
+    *tame(),
+    H('animalSet', True, 'I name it first', target='pet', text='Biscuit'),
+    wait(0.6),
+    play('Alice'),
+    H('animalCan', True, 'Anyone (the default): others may rename', target='pet'),
+    C({AC + 'AnimalRenameAccess': 'Namer'}),
+    H('animalCan', False, 'Namer: only whoever named it first', target='pet'),
+    play('me'),
+    H('animalCan', True, 'the namer still can', target='pet'),
+    C({AC + 'AnimalRenameAccess': 'Anyone'}),
+    H('animalLock', True, 'the namer locks the name', target='pet', on=True),
+    wait(0.6),
+    H('animalLocked', True, 'it is locked', target='pet'),
+    play('Alice'),
+    H('animalCan', False, 'locked: others may not rename', target='pet'),
+    H('animalLock', False, 'and may not unlock it', target='pet', on=False),
+    C({AC + 'AnimalRenameAccess': 'Admin'}),
+    play('me'),
+    H('animalCan', False, 'Admin only: not even the namer (no override in the suite baseline)', target='pet'),
+    C({AC + 'AnimalRenameAccess': 'Anyone'}),
+], desc='Anyone (vanilla) / Namer / Admin access, and the per-animal lock set by the player who named it.')
+
+T('AN-03', 'animal window opens and closes', [
+    pet(),
+    *tame(),
+    H('animalOpen', True, 'the window opens', stop=True, target='pet'),
+    check('uiVisible', 'the animal window is showing', name='Lock name'),
+    *CLOSE,
+], desc='The Toolkit window for a tamed animal.')
 
 # ---------------------------------------------------------------- write
 
@@ -1272,6 +1334,10 @@ baseline = {
         '12 Pieces/PieceExcludedCategory': '', '12 Pieces/PieceRenameAllowlist': '', '12 Pieces/PieceNameCharacterLimit': '50',
         '12 Pieces/PieceLockToBuilder': 'true', '12 Pieces/PieceRequireWardAccess': 'true', '12 Pieces/PieceSharedEnabled': 'true',
         '12 Pieces/PieceCrafterLine': 'Off', '12 Pieces/PieceCrafterLineStyle': 'Crafted by', '11 UI-NotSynced/ShowPieceCrafter': 'true',
+        '13 Animals/AnimalRenameEnabled': 'true', '13 Animals/AnimalNameCharacterLimit': '30', '13 Animals/AnimalAllowColour': 'true',
+        '13 Animals/AnimalRenameAccess': 'Anyone', '13 Animals/AnimalAllowLock': 'true',
+        '13 Animals/AnimalRenameEnabled': 'true', '13 Animals/AnimalNameCharacterLimit': '30', '13 Animals/AnimalAllowColour': 'true',
+        '13 Animals/AnimalRenameAccess': 'Anyone', '13 Animals/AnimalAllowLock': 'true',
     }.items()],
     'setup': {'timeOfDay': 0.5, 'freezeTime': 1, 'god': 1, 'noBuild': 'off', 'hideUnlockPopups': 1},
 }

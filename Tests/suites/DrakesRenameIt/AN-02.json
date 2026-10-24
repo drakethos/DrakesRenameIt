@@ -1,0 +1,164 @@
+{
+  "name": "AN-02 animal names: who may rename (Anyone / Namer / Admin) and the lock",
+  "description": "Anyone (vanilla) / Namer / Admin access, and the per-animal lock set by the player who named it.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "Boar",
+      "dz": 4,
+      "as": "pet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalTame",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "the animal is tamed",
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalSet",
+      "args": {
+        "target": "pet",
+        "text": "Biscuit"
+      },
+      "expect": true,
+      "label": "I name it first"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "Anyone (the default): others may rename"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalRenameAccess": "Namer"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": false,
+      "label": "Namer: only whoever named it first"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "the namer still can"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalRenameAccess": "Anyone"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalLock",
+      "args": {
+        "target": "pet",
+        "on": true
+      },
+      "expect": true,
+      "label": "the namer locks the name"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalLocked",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "it is locked"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": false,
+      "label": "locked: others may not rename"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalLock",
+      "args": {
+        "target": "pet",
+        "on": false
+      },
+      "expect": false,
+      "label": "and may not unlock it"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalRenameAccess": "Admin"
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalCan",
+      "args": {
+        "target": "pet"
+      },
+      "expect": false,
+      "label": "Admin only: not even the namer (no override in the suite baseline)"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "13 Animals/AnimalRenameAccess": "Anyone"
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

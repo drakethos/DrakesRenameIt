@@ -184,7 +184,7 @@ internal static class WorldHover
         // Backdrop: a light see-through dark box. Off = just text.
         if (RenameitConfig.HoverBackdrop)
         {
-            box.style.backgroundColor = new Color(0f, 0f, 0f, 0.42f);
+            box.style.backgroundColor = new Color(0f, 0f, 0f, 0.62f);
             box.style.paddingTop = 6;
             box.style.paddingBottom = 8;
             box.style.paddingLeft = box.style.paddingRight = 14;

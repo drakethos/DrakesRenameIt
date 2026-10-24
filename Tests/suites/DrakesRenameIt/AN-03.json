@@ -1,0 +1,55 @@
+{
+  "name": "AN-03 animal window opens and closes",
+  "description": "The Toolkit window for a tamed animal.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "Boar",
+      "dz": 4,
+      "as": "pet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalTame",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "the animal is tamed",
+      "stop": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.animalOpen",
+      "args": {
+        "target": "pet"
+      },
+      "expect": true,
+      "label": "the window opens",
+      "stop": true
+    },
+    {
+      "do": "check",
+      "check": "uiVisible",
+      "name": "Lock name",
+      "label": "the animal window is showing"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeWindows"
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

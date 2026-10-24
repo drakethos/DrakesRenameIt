@@ -46,7 +46,20 @@ internal static class NameLibrary
 
     public static void Clear() => RenameitConfig.QuickNames = "";
 
-    /// <summary>Suggestions for what has been typed so far: names containing it (any kind), this kind's first, newest first. Nothing typed gives the latest few.</summary>
+    /// <summary>The kind for a placed piece: what it is (Boat, Cart, Chest, Door, Portal, Seat...) so a chest never gets a boat's name suggested.</summary>
+    public static string PieceKind(Piece piece)
+    {
+        if (piece.GetComponentInChildren<Ship>(true) != null)
+            return Piece_ + "Boat";
+        if (piece.GetComponentInChildren<Vagon>(true) != null)
+            return Piece_ + "Cart";
+        var categories = Pieces.PieceRename.CategoriesOf(piece).ToList();
+        return Piece_ + (categories.Count > 1 ? categories[1] : categories[0]);
+    }
+
+    const string Piece_ = "pieces/";
+
+    /// <summary>Suggestions for what has been typed so far: only names saved for the same kind of thing (items for items, boats for boats; animals, portals and pins likewise), newest first. Nothing typed gives the latest few.</summary>
     public static IEnumerable<(string Text, string Note)> Suggest(string kind, string typed)
     {
         if (!RenameitConfig.QuickNamesEnabled)
@@ -57,10 +70,8 @@ internal static class NameLibrary
         return list
             .Where(e => needle.Length == 0 || plain(e.Name).IndexOf(needle, StringComparison.OrdinalIgnoreCase) >= 0)
             .Where(e => !string.Equals(plain(e.Name), needle, StringComparison.OrdinalIgnoreCase))
-            .Select((e, order) => (e, order))
-            .OrderBy(x => x.e.Kind == kind ? 0 : 1)
-            .ThenBy(x => x.order)
-            .Select(x => (x.e.Name, x.e.Kind == kind ? "" : x.e.Kind))
+            .Where(e => e.Kind == kind || (kind.StartsWith(Piece_, StringComparison.Ordinal) && e.Kind == Piece))
+            .Select(e => (e.Name, ""))
             .ToList();
     }
 

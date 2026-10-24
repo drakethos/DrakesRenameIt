@@ -357,6 +357,9 @@ internal static class PieceRename
     /// </summary>
     internal static string ApplyToHoverText(Piece piece, string text, Player? player, Hoverable? hoverable = null, bool offerRename = true)
     {
+        // A portal's vanilla title is one long line (name, Tag:"x" and the connection state): name on the first line, the tag on its own.
+        if (piece.GetComponent<TeleportWorld>() != null)
+            text = SplitPortalTitle(text);
         var custom = GetCustomName(piece);
         if (custom.Length > 0)
             text = ReplaceTitleName(piece, text, custom, hoverable ?? FirstNameableHover(piece) as Hoverable);
@@ -364,12 +367,31 @@ internal static class PieceRename
         {
             var builder = CreatorName(piece);
             if (builder.Length > 0)
-                text += "\n<color=#cfc3a3>" + RenameitConfig.PieceCrafterLineStyle + ": " + builder + "</color>";
+                text += "\n<color=#f2e6c0>" + RenameitConfig.PieceCrafterLineStyle + ": " + builder + "</color>";
         }
 
         if (offerRename && CanRename(piece, player, flash: false))
             text += HintLine();
         return text;
+    }
+
+    /// <summary>"Portal Tag:\"x\" [CONNECTED]" becomes "Portal" and, on the next line, "Tag: x [CONNECTED]". Anything else is left alone.</summary>
+    static string SplitPortalTitle(string text)
+    {
+        var nl = text.IndexOf('\n');
+        var title = nl >= 0 ? text.Substring(0, nl) : text;
+        var rest = nl >= 0 ? text.Substring(nl) : "";
+        var quote = title.IndexOf(":\"", StringComparison.Ordinal);
+        if (quote <= 0)
+            return text;
+        var space = title.LastIndexOf(' ', quote);
+        if (space <= 0)
+            return text;
+        var tag = title.Substring(space + 1).Replace(":\"", ": ");
+        var close = tag.IndexOf('"');
+        if (close >= 0)
+            tag = tag.Remove(close, 1);
+        return title.Substring(0, space) + "\n" + tag + rest;
     }
 
     static readonly Dictionary<long, string> CreatorNames = new();

@@ -170,6 +170,7 @@ internal static class RenameItTestHooks
     {
         global::DrakeRenameit.UI.Toolkit.WorkshopPanel.HideFromHost();
         global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.Hide();
+        global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.Hide();
         DrakeModsLibs.UI.DrakeTabHost.Close();
         global::DrakeRenameit.UI.UIPanels.CloseAllRenameEditingUi();
         if (PaperWallSession.IsActive)
@@ -645,6 +646,89 @@ internal static class RenameItTestHooks
             return false;
         Pieces.PieceRename.OpenEditor(piece);
         return global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.IsOpen;
+    }
+
+    // ---------- animals
+
+    static Tameable Animal(GameObject? target)
+    {
+        var own = target != null ? target.GetComponentInParent<Tameable>() ?? target.GetComponentInChildren<Tameable>() : null;
+        if (own != null)
+            return own;
+        Tameable? best = null;
+        var bestDist = float.MaxValue;
+        foreach (var t in UnityEngine.Object.FindObjectsOfType<Tameable>())
+        {
+            var d = Vector3.Distance(t.transform.position, P.transform.position);
+            if (d < bestDist)
+            {
+                best = t;
+                bestDist = d;
+            }
+        }
+
+        return best ?? throw new InvalidOperationException("no tameable animal nearby");
+    }
+
+    /// <summary>Tames the tagged creature (the suite's spawn step has no tamed option).</summary>
+    [TestHook("renameit.animalTame")]
+    static bool AnimalTame(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var character = (target != null ? target.GetComponentInParent<Character>() : null) ?? throw new InvalidOperationException("no creature tagged");
+        character.SetTamed(true);
+        return true;
+    }
+
+    [TestHook("renameit.animalCan")]
+    static bool AnimalCan(Dictionary<string, object?> args, GameObject? target = null) =>
+        Animals.AnimalRename.CanRename(Animal(target), P, flash: false);
+
+    /// <summary>Saves a name the way the window does (policy applied, namer remembered); false when the player may not. The write reaches the animal a frame later.</summary>
+    [TestHook("renameit.animalSet")]
+    static bool AnimalSet(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var animal = Animal(target);
+        if (!Animals.AnimalRename.CanRename(animal, P, flash: false))
+            return false;
+        Animals.AnimalRename.SetName(animal, S(args, "text"), args.ContainsKey("locked") ? B(args, "locked") : null);
+        return true;
+    }
+
+    [TestHook("renameit.animalName")]
+    static string AnimalName(Dictionary<string, object?> args, GameObject? target = null) =>
+        Animals.AnimalRename.GetCustomName(Animal(target));
+
+    /// <summary>What the name label and vanilla messages use for the animal.</summary>
+    [TestHook("renameit.animalHoverName")]
+    static string AnimalHoverName(Dictionary<string, object?> args, GameObject? target = null) =>
+        Animal(target).GetHoverName();
+
+    [TestHook("renameit.animalSanitize")]
+    static string AnimalSanitize(Dictionary<string, object?> args, GameObject? target = null) =>
+        Animals.AnimalRename.Sanitize(S(args, "text"));
+
+    [TestHook("renameit.animalLocked")]
+    static bool AnimalLocked(Dictionary<string, object?> args, GameObject? target = null) =>
+        Animals.AnimalRename.IsLocked(Animal(target));
+
+    [TestHook("renameit.animalLock")]
+    static bool AnimalLock(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var animal = Animal(target);
+        if (!Animals.AnimalRename.CanChangeLock(animal, P))
+            return false;
+        Animals.AnimalRename.SetLocked(animal, B(args, "on", true));
+        return true;
+    }
+
+    [TestHook("renameit.animalOpen")]
+    static bool AnimalOpen(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var animal = Animal(target);
+        if (!Animals.AnimalRename.CanRename(animal, P, flash: false))
+            return false;
+        Animals.AnimalRename.OpenEditor(animal);
+        return global::DrakeRenameit.UI.Toolkit.AnimalWorkshopPanel.IsOpen;
     }
 
     /// <summary>Replaces the saved quick names (<c>text</c>, kind:name entries joined by ||); empty clears them.</summary>

@@ -7,13 +7,14 @@ using DrakeModsLibs.API;
 using DrakeModsLibs.Sync;
 using DrakeRenameit.Paper.Functionality;
 using DrakeRenameit.Paper.Items;
+using UnityEngine;
 
 namespace DrakeRenameit;
 
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 70;
+    private const int ExpectedSyncedEntryCount = 75;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -30,6 +31,8 @@ public static class RenameitConfig
     private const string SectionUI = "11 UI-NotSynced";
     // Added in 1.4 after the client-only UI section, so no existing section moves.
     private const string SectionPieces = "12 Pieces";
+    private const string SectionAnimals = "13 Animals";
+    private const string DisplayAnimals = "Animals";
 
     private const string DisplayAdmin = "Admin";
     private const string DisplayFeatures = "Features";
@@ -122,6 +125,13 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _pieceLockToBuilder = default!;
     private static ConfigEntry<bool> _pieceRequireWardAccess = default!;
     private static ConfigEntry<bool> _pieceSharedEnabled = default!;
+    private static ConfigEntry<bool> _animalRenameEnabled = default!;
+    private static ConfigEntry<int> _animalNameCharLimit = default!;
+    private static ConfigEntry<bool> _animalAllowColour = default!;
+    private static ConfigEntry<string> _animalRenameAccess = default!;
+    private static ConfigEntry<bool> _animalAllowLock = default!;
+    private static ConfigEntry<string> _animalLabelStyle = default!;
+    private static ConfigEntry<float> _animalLabelScale = default!;
     private static ConfigEntry<string> _pieceCrafterLine = default!;
     private static ConfigEntry<string> _pieceCrafterLineStyle = default!;
     private static ConfigEntry<bool> _showPieceCrafter = default!;
@@ -429,6 +439,27 @@ public static class RenameitConfig
     public static bool PieceRequireWardAccess => _pieceRequireWardAccess.Value;
     /// <summary>Builders may mark a piece Shared so others can rename it.</summary>
     public static bool PieceSharedEnabled => _pieceSharedEnabled.Value;
+
+    /// <summary>Tamed animals get the rename window (Shift+Use) instead of vanilla's 10-character box.</summary>
+    public static bool AnimalRenameEnabled => _animalRenameEnabled.Value;
+
+    /// <summary>Max visible characters in an animal name (colour tags not counted). Vanilla allows 10.</summary>
+    public static int AnimalNameCharLimit => Math.Max(1, _animalNameCharLimit.Value);
+
+    /// <summary>When false, colour and style tags in animal names are stripped (by the window and by the animal's owner).</summary>
+    public static bool AnimalAllowColour => _animalAllowColour.Value;
+
+    /// <summary>Who may rename an animal: Anyone (vanilla), Namer (only whoever named it first, once named) or Admin.</summary>
+    public static string AnimalRenameAccess => _animalRenameAccess.Value ?? "Anyone";
+
+    /// <summary>The player who named an animal may lock its name so nobody else can change it.</summary>
+    public static bool AnimalAllowLock => _animalAllowLock.Value;
+
+    /// <summary>"Improved" draws animal name labels bigger with the name's colours; "Vanilla" leaves the label alone. Per-client.</summary>
+    public static string AnimalLabelStyle => _animalLabelStyle.Value ?? "Improved";
+
+    /// <summary>Size of the Improved animal label compared with vanilla (1 = same). Per-client.</summary>
+    public static float AnimalLabelScale => Mathf.Clamp(_animalLabelScale.Value, 0.5f, 3f);
 
     /// <summary>Server setting for the builder line on renamed pieces: Off, On (player may turn it off) or Forced.</summary>
     public static string PieceCrafterLine => _pieceCrafterLine.Value ?? "On";
@@ -1124,6 +1155,48 @@ public static class RenameitConfig
             "PieceSharedEnabled",
             true,
             "If true, a builder can switch a piece to Shared in its rename window so other players (with ward access) can rename it too. Off: the switch is hidden and Shared pieces act as not shared.");
+
+        _animalRenameEnabled = _drakeConfigSync.BindSynced(config,
+            SectionAnimals, DisplayAnimals,
+            "AnimalRenameEnabled",
+            true,
+            "Tamed animals open the rename window on Shift+Use (name with colours, saved-name suggestions, lock) instead of vanilla's 10-character box. Off: vanilla behaviour.");
+
+        _animalNameCharLimit = _drakeConfigSync.BindSynced(config,
+            SectionAnimals, DisplayAnimals,
+            "AnimalNameCharacterLimit",
+            30,
+            "Max visible characters in an animal's name (colour codes not counted). Vanilla allows 10. Enforced by the animal's owner too.");
+
+        _animalAllowColour = _drakeConfigSync.BindSynced(config,
+            SectionAnimals, DisplayAnimals,
+            "AnimalAllowColour",
+            true,
+            "Allow colours and bold in animal names. Off: tags are stripped.");
+
+        _animalRenameAccess = _drakeConfigSync.BindSynced(config,
+            SectionAnimals, DisplayAnimals,
+            "AnimalRenameAccess",
+            "Anyone",
+            "Who may rename a tamed animal: Anyone (vanilla), Namer (once an animal has a name only the player who first named it, plus admins/VIP) or Admin (only admins/VIP).");
+
+        _animalAllowLock = _drakeConfigSync.BindSynced(config,
+            SectionAnimals, DisplayAnimals,
+            "AnimalAllowLock",
+            true,
+            "The player who named an animal may lock the name so nobody else (except admins/VIP) can change it.");
+
+        _animalLabelStyle = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "AnimalLabelStyle",
+            "Improved",
+            "Name label above tamed animals: Improved = bigger, keeps the name's colours; Vanilla = untouched. Per-client.");
+
+        _animalLabelScale = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "AnimalLabelScale",
+            1.35f,
+            "Size of the Improved animal label compared with vanilla (1 = same, 0.5 to 3). Per-client.");
 
         _pieceCrafterLine = _drakeConfigSync.BindSynced(config,
             SectionPieces, DisplayPieces,

@@ -1,6 +1,6 @@
 {
   "name": "PC-02 quick names: suggestions as you type",
-  "description": "The Name fields suggest names you saved before (any kind, this kind first); the drop-down itself is checked by hand.",
+  "description": "The Name fields suggest names you saved before, only for the same kind of thing (items, a piece type like Boat or Chest, animals...); the drop-down itself is checked by hand.",
   "steps": [
     {
       "do": "hook",
@@ -63,8 +63,38 @@
         "kind": "pieces",
         "typed": "fen"
       },
+      "notContains": "Fenrir",
+      "label": "other kinds are not offered (no animal names for a piece)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "animals",
+        "typed": "fen"
+      },
       "contains": "Fenrir",
-      "label": "other kinds are offered too"
+      "label": "the same kind is"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "pieces/Boat",
+        "typed": "fj"
+      },
+      "contains": "Fjord Runner",
+      "label": "an old plain pieces entry still suits any piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.quickNamesSuggest",
+      "args": {
+        "kind": "items",
+        "typed": "fj"
+      },
+      "notContains": "Fjord Runner",
+      "label": "but a boat name is not offered for an item"
     },
     {
       "do": "hook",

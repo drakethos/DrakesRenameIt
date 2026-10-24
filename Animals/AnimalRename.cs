@@ -235,6 +235,21 @@ internal static class AnimalRenamePatches
             name = AnimalRename.Sanitize(name);
     }
 
+    /// <summary>Vanilla's hover starts with the species ("Boar ( Tame, Hungry )"); show the animal's own name there instead, coloured.</summary>
+    [HarmonyPatch(typeof(Tameable), nameof(Tameable.GetHoverText))]
+    [HarmonyPostfix]
+    static void HoverTextPostfix(Tameable __instance, ref string __result)
+    {
+        if (!RenameitConfig.AnimalRenameEnabled || string.IsNullOrEmpty(__result) || !__instance.IsTamed())
+            return;
+        var raw = AnimalRename.GetCustomName(__instance);
+        if (raw.Length == 0)
+            return;
+        var species = AnimalRename.DefaultName(__instance);
+        if (species.Length > 0 && __result.StartsWith(species, StringComparison.Ordinal))
+            __result = AnimalRename.Sanitize(raw) + __result.Substring(species.Length);
+    }
+
     /// <summary>
     /// Vanilla strips every tag from the name here, and this is what the name label above the animal and the "follows you"
     /// messages show. Keep the colours (when allowed).

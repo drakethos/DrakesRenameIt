@@ -13,7 +13,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 59;
+    private const int ExpectedSyncedEntryCount = 61;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -108,6 +108,8 @@ public static class RenameitConfig
     private static ConfigEntry<string> _printedPaperDescription = default!;
     private static ConfigEntry<bool> _writtenPaperIgnoresRestrictions = default!;
     private static ConfigEntry<bool> _publicRewriteEnabled = default!;
+    private static ConfigEntry<bool> _pieceRenameEnabled = default!;
+    private static ConfigEntry<string> _pieceRenameExcluded = default!;
     private static ConfigEntry<bool> _paperPlaceEnabled = default!;
     private static ConfigEntry<bool> _paperTakePublicEnabled = default!;
     private static ConfigEntry<bool> _paperHoldToTake = default!;
@@ -383,6 +385,12 @@ public static class RenameitConfig
     /// <summary>When true, items with <c>Drake_PublicRewrite</c> allow non-owners to edit name/description.</summary>
     public static bool PublicRewriteEnabled => _publicRewriteEnabled.Value;
 
+    /// <summary>When true, builders can Shift+Use a placed piece (chest, station, door, …) to give it a custom hover name.</summary>
+    public static bool PieceRenameEnabled => _pieceRenameEnabled.Value;
+
+    /// <summary>Comma-separated piece prefab names (e.g. <c>portal_wood</c>) that cannot be renamed.</summary>
+    public static string PieceRenameExcluded => _pieceRenameExcluded.Value;
+
     /// <summary>When true, Blank/Written paper can open place-mode and pin notes in the world.</summary>
     public static bool PaperPlaceEnabled => _paperPlaceEnabled.Value;
 
@@ -563,6 +571,12 @@ public static class RenameitConfig
             true,
             "If true, items flagged Shared (Drake_PublicRewrite) allow non-owners to edit name and description. Crafted-by is never opened by this flag. Default on.");
 
+        _pieceRenameEnabled = _drakeConfigSync.BindSynced(config,
+            SectionFeatures, DisplayFeatures,
+            "PieceRenameEnabled",
+            true,
+            "If true, the player who built a piece that shows a name on hover (chest, workbench, door, bed, portal, …) can Shift+Use it to give it a custom name, when they have access in any ward covering it. Admins/VIP can rename any piece when AdminOverride is on. Off hides existing piece names too. Fireplaces and item stands are skipped (vanilla uses Shift+Use on them). Default on.");
+
         // --- Exclusions ---
         _excludedNames = _drakeConfigSync.BindSynced(config, 
             SectionExclusions, DisplayExclusions,
@@ -581,6 +595,12 @@ public static class RenameitConfig
             "RenameAllowlist",
             "",
             "Comma-separated entries (same format as ExcludedNames). When RenameEnabled / RewriteDescriptionsEnabled are ON, these items bypass ExcludedNames, ExcludedCategory, ExcludeStacks, and the unowned (AllowRenameUnownedItems) rule. Does NOT bypass global Features toggles when those are off. Does not bypass LockToOwner.");
+
+        _pieceRenameExcluded = _drakeConfigSync.BindSynced(config,
+            SectionExclusions, DisplayExclusions,
+            "PieceRenameExcluded",
+            "",
+            "Comma-separated piece prefab names that cannot be renamed (e.g. portal_wood,piece_chest_private). Admins/VIP ignore this when AdminOverride is on.");
 
         // --- Crafted by labels ---
         _craftedByLabelCustomizable = _drakeConfigSync.BindSynced(config, 

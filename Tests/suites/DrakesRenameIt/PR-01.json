@@ -1,0 +1,29 @@
+{
+  "name": "PR-01 rename a placed piece",
+  "description": "1.4 piece rename: the builder renames a chest, everyone sees the name, others and players without ward access cannot rename it.",
+  "steps": [
+    { "do": "playAs", "who": "Alice" },
+    { "do": "spawn", "prefab": "piece_chest_wood", "dz": 2.5, "owner": "Alice", "as": "chest" },
+    { "do": "hook", "name": "renameit.pieceCan", "args": { "target": "chest" }, "expect": true, "label": "builder may rename", "stop": true },
+    { "do": "hook", "name": "renameit.pieceRename", "args": { "target": "chest", "text": "Alice's Loot" }, "expect": true },
+    { "do": "hook", "name": "renameit.pieceName", "args": { "target": "chest" }, "expect": "Alice's Loot" },
+    { "do": "hook", "name": "renameit.pieceHover", "args": { "target": "chest" }, "contains": "Alice's Loot", "label": "hover shows the custom name" },
+    { "do": "hook", "name": "renameit.pieceHover", "args": { "target": "chest" }, "contains": "Rename", "label": "builder sees the Rename hint" },
+
+    { "do": "playAs", "who": "Bob" },
+    { "do": "hook", "name": "renameit.pieceHover", "args": { "target": "chest" }, "contains": "Alice's Loot", "label": "others see the name" },
+    { "do": "hook", "name": "renameit.pieceHover", "args": { "target": "chest" }, "notContains": "Rename", "label": "others get no hint" },
+    { "do": "hook", "name": "renameit.pieceRename", "args": { "target": "chest", "text": "Bob's now" }, "expect": false, "label": "others cannot rename" },
+    { "do": "hook", "name": "renameit.pieceName", "args": { "target": "chest" }, "expect": "Alice's Loot" },
+
+    { "do": "spawn", "prefab": "guard_stone", "dz": -3, "owner": "Bob", "enabled": true, "radius": 15 },
+    { "do": "wait", "seconds": 0.5 },
+    { "do": "playAs", "who": "Alice" },
+    { "do": "hook", "name": "renameit.pieceCan", "args": { "target": "chest" }, "expect": false, "label": "builder without ward access cannot rename" },
+
+    { "do": "playAs", "who": "me" }
+  ],
+  "asserts": [
+    { "check": "noErrors", "source": "DrakesRenameit" }
+  ]
+}

@@ -559,6 +559,58 @@ internal static class RenameItTestHooks
     [TestHook("renameit.standHover")]
     static string StandHover(Dictionary<string, object?> args, GameObject? target = null) => Loc(Stand(args, target).GetHoverText() ?? "");
 
+    // ---------- placed pieces (1.4 piece rename)
+
+    /// <summary>The nameable piece on the tagged target, else the nearest one to the player.</summary>
+    static Piece NameablePiece(GameObject? target)
+    {
+        if (target != null)
+            return Pieces.PieceRename.NameablePiece(target.GetComponentInChildren<Hoverable>() is Component h ? h.gameObject : target)
+                   ?? throw new InvalidOperationException($"{target.name} cannot carry a custom name");
+        Piece? best = null;
+        var bestDist = float.MaxValue;
+        foreach (var piece in UnityEngine.Object.FindObjectsOfType<Piece>())
+        {
+            if (piece.GetComponentInChildren<Hoverable>() is not Component h || Pieces.PieceRename.NameablePiece(h.gameObject) != piece)
+                continue;
+            var d = Vector3.Distance(piece.transform.position, P.transform.position);
+            if (d < bestDist)
+            {
+                bestDist = d;
+                best = piece;
+            }
+        }
+        return best ?? throw new InvalidOperationException("no nameable piece nearby");
+    }
+
+    [TestHook("renameit.pieceCan")]
+    static bool PieceCan(Dictionary<string, object?> args, GameObject? target = null) =>
+        Pieces.PieceRename.CanRename(NameablePiece(target), P, flash: false);
+
+    /// <summary>Renames like Save in the prompt (same permission check); text "" restores the normal name.</summary>
+    [TestHook("renameit.pieceRename")]
+    static bool PieceRenameHook(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = NameablePiece(target);
+        if (!Pieces.PieceRename.CanRename(piece, P, flash: false))
+            return false;
+        Pieces.PieceRename.SetCustomName(piece, S(args, "text"));
+        return true;
+    }
+
+    [TestHook("renameit.pieceName")]
+    static string PieceName(Dictionary<string, object?> args, GameObject? target = null) =>
+        Pieces.PieceRename.GetCustomName(NameablePiece(target));
+
+    /// <summary>Hover text as the HUD shows it to the current player (custom name + Rename hint when allowed).</summary>
+    [TestHook("renameit.pieceHover")]
+    static string PieceHover(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var piece = NameablePiece(target);
+        var hoverable = piece.GetComponentInChildren<Hoverable>();
+        return Loc(Pieces.PieceRename.ApplyToHoverText(piece, hoverable?.GetHoverText() ?? "", P));
+    }
+
     // ---------- paper
 
     [TestHook("renameit.isWritten")]

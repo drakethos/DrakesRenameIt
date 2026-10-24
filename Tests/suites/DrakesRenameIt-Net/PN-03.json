@@ -1,0 +1,15 @@
+{
+  "name": "PN-03 two clients rename, the last write wins",
+  "description": "I rename the chest, then Bjornita's client writes another name. The later write is what everyone sees.",
+  "steps": [
+    { "do": "spawn", "prefab": "piece_chest_wood", "dz": 2.5, "owner": "me", "as": "chest" },
+    { "do": "peerJoin", "name": "Bjornita" },
+    { "do": "hook", "name": "renameit.pieceRename", "args": { "target": "chest", "text": "First" }, "expect": true },
+    { "do": "hook", "name": "renameit.pieceName", "args": { "target": "chest" }, "expect": "First" },
+    { "do": "peerSet", "peer": "Bjornita", "target": "chest", "key": "DrakePiece_Name", "value": "Second" },
+    { "do": "wait", "seconds": 0.3 },
+    { "do": "hook", "name": "renameit.pieceName", "args": { "target": "chest" }, "expect": "Second", "label": "Bjornita's later name wins" },
+    { "do": "check", "check": "zdoOwner", "target": "chest", "expect": "Bjornita" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

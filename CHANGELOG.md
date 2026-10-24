@@ -1,3 +1,14 @@
+- Version 1.4.0-beta.1
+  - Beta. Requires **DrakeModsLibs 1.0.1** or newer.
+  - **New: rename placed pieces.** Any built piece that shows a hover name can be renamed by its builder (with ward access where it stands). Shift+Use opens the piece window: name with the formatting toolbar and hover preview, Reset name, Revert / Save with Undo, quick settings. Free. Admins/VIP can override, as with items.
+  - **Shared pieces:** the builder can let other players (with ward access) rename a piece.
+  - **New synced config section "12 Pieces":** PieceRenameEnabled, PieceRenameAdminOnly, PieceExcludedNames, PieceExcludedCategory (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), PieceRenameAllowlist, PieceNameCharacterLimit, PieceLockToBuilder, PieceRequireWardAccess, PieceSharedEnabled. Replaces the two piece keys under 02/03.
+  - Pieces the world generated (dungeon chests, crypt doors) can only be renamed by admins/VIP.
+  - **Fix: multiplayer.** Renaming or sharing a piece another client owns now asks that owner over RPC instead of taking ownership (which closed chests someone had open).
+  - **Fix: hover text** showed the new name above the old one on pieces whose part name differs from the piece's (iron gate, hot tub seat). Any part of a renamed piece shows the name; Shift+Use stays vanilla on fires, item stands and signs.
+  - `ExcludedCategoryReference.txt` also lists piece categories and, after joining a world, every buildable piece with a hover name.
+  - **Plugin GUID is now `com.drakemods.renameit`.** On first start the old `com.drakesworkshop.renameit.cfg` is copied to the new file and renamed `*.migrated`, so settings carry over.
+  - Automated tests: 133 tests incl. PR-01..PR-15 (pieces) and the two-client DrakesRenameIt-Net suite (PN-01..03). Not part of the release.
 - Version 1.3.0-beta.3
   - Beta. Requires **DrakeModsLibs 1.0.0** (the menu-key fix uses its new `MenuBindingRegistry.LinkTab`).
   - **Fix: your menu key is respected.** With `MenuOpenModifier` set to another key (e.g. Ctrl), Shift + right-click no longer opens RenameIt's window through the shared Libs key.

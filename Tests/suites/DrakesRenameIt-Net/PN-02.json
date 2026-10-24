@@ -1,0 +1,14 @@
+{
+  "name": "PN-02 a name written by another client shows up here",
+  "description": "Bjornita's client owns the chest and writes a piece name on it (what her RenameIt does after she renames it). My hover must show it.",
+  "steps": [
+    { "do": "spawn", "prefab": "piece_chest_wood", "dz": 2.5, "owner": "me", "as": "chest" },
+    { "do": "peerJoin", "name": "Bjornita" },
+    { "do": "peerSet", "peer": "Bjornita", "target": "chest", "key": "DrakePiece_Name", "value": "Bjornita's Stash" },
+    { "do": "wait", "seconds": 0.3 },
+    { "do": "hook", "name": "renameit.pieceName", "args": { "target": "chest" }, "expect": "Bjornita's Stash", "label": "the name arrived" },
+    { "do": "hook", "name": "renameit.pieceHoverTitle", "args": { "target": "chest" }, "contains": "Bjornita's Stash", "label": "and my hover shows it" },
+    { "do": "log", "message": "Note: Bjornita is not the builder; the game accepts any owner's write (piece names are checked on the renaming client only)." }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

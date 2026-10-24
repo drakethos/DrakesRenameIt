@@ -1,0 +1,10 @@
+// Network spike for 1.4 piece names: Bjornita is a virtual player (DrakesTestLab peerJoin), a second client connected to
+// this game. Piece names are written straight onto the piece's ZDO by whichever client owns it, so these tests look at
+// ownership and at what another client's write does. Hand-written; the baseline comes from the main suite.
+{
+  "name": "DrakesRenameIt-Net",
+  "description": "RenameIt 1.4 piece names with a second (virtual) client: ownership taken while someone has a chest open, a name written by another client, last writer wins.",
+  "include": "../DrakesRenameIt/_shared/baseline.json",
+  "requireMods": [ { "guid": "com.drakemods.testlab", "minVersion": "0.2.2" } ],
+  "resetBetweenTests": true
+}

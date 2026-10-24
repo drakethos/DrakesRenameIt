@@ -66,6 +66,15 @@ internal static class WorldHover
             return;
         }
 
+        // A vanilla dialog (rename / tag box, menu, console) or one of our windows is open: our hover is drawn above every canvas,
+        // so it would sit on top of the box. Hide it and leave vanilla's own text alone (it draws beneath the dialog).
+        if (QuickSettingsShortcut.TypingElsewhere())
+        {
+            if (_box != null && _alpha > 0f)
+                Hide();
+            return;
+        }
+
         EnsureCreated();
         var text = vanillaText.text ?? "";
         var target = 0f;

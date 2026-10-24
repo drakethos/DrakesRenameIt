@@ -162,7 +162,7 @@ internal static class QuickSettingsShortcut
     }
 
     /// <summary>Any UI that should keep letter keys for typing / navigation, not open Quick Settings.</summary>
-    static bool TypingElsewhere() =>
+    internal static bool TypingElsewhere() =>
         UkWindow.AnyOpen
         || (Chat.instance != null && Chat.instance.HasFocus())
         || Console.IsVisible()

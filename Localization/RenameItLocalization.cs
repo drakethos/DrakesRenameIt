@@ -115,6 +115,8 @@ public static class RenameItLocalization
     {
         string fileName = SanitizeLanguageFileName(language) + ".json";
         string jsonPath = Path.Combine(locDir, fileName);
+        // Legacy fallback: the language file loose in the plugin folder. Older zips shipped Assets/Localization outside plugins/,
+        // which Gale/r2modman flatten to this layout. Current packages keep Assets/Localization beside the DLL (found above).
         if (!File.Exists(jsonPath))
             jsonPath = Path.Combine(_pluginDir, fileName);
         if (!File.Exists(jsonPath))

@@ -192,14 +192,15 @@
     <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(TargetDir)Assets\Localization" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="PackageMod" AfterTargets="CopyLocalizationToOutput" DependsOnTargets="ResolveThunderstorePaths;WriteThunderstoreManifest" Condition="'$(SkipPackageMod)' != 'true'">
+    <!-- Gale/r2modman keep folder structure only under plugins/ (patchers/ monomod/ core/ config/): DLL and data live there; manifest.json, icon.png, README.md, CHANGELOG.md stay at the zip root. -->
     <MakeDir Directories="$(ThunderstoreFolder)" />
     <!-- Copy the DLL to the Thunderstore folder -->
-    <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ThunderstoreFolder)" />
+    <Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(ThunderstoreFolder)\plugins" />
     <Copy SourceFiles="$(TargetDir)README.md" DestinationFiles="$(ThunderstoreFolder)\README.md" />
     <Copy SourceFiles="$(TargetDir)icon.png" DestinationFiles="$(ThunderstoreFolder)\icon.png" />
     <Copy SourceFiles="$(TargetDir)CHANGELOG.md" DestinationFiles="$(ThunderstoreFolder)\CHANGELOG.md" />
-    <MakeDir Directories="$(ThunderstoreFolder)\Assets\Localization" />
-    <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(ThunderstoreFolder)\Assets\Localization" SkipUnchangedFiles="true" />
+    <MakeDir Directories="$(ThunderstoreFolder)\plugins\Assets\Localization" />
+    <Copy SourceFiles="@(LocalizationJson)" DestinationFolder="$(ThunderstoreFolder)\plugins\Assets\Localization" SkipUnchangedFiles="true" />
     <!-- Zip with forward slashes (Thunderstore / unix). Compress-Archive uses backslashes and Gale flattens folders. -->
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(PosixZipScript)&quot; -SourceDir &quot;$(ThunderstoreFolder)&quot; -ZipPath &quot;$(ZipOutput)&quot;" Condition="'$(CI_SKIP_POST_BUILD)' == '' and '$(PosixZipScript)' != '' and Exists('$(PosixZipScript)')" />
   </Target>

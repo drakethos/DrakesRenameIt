@@ -1,3 +1,6 @@
+- Version 1.4.0-beta.3
+  - Beta. Requires **DrakeModsLibs 1.0.2** or newer.
+  - **Packaging fix:** the zip now ships the DLL and `Assets/Localization` under `plugins/` so Gale and r2modman keep the folder layout (they flatten anything outside `plugins/`); the language files used to land loose in the mod folder and only worked through a fallback. A build guard (`check-gale-layout.py`) fails the release if that regresses. No gameplay change.
 - Version 1.4.0-beta.2
   - Beta. Requires **DrakeModsLibs 1.0.2** (type-ahead suggestions).
   - **New: tamed animals.** Shift+Use opens a rename window (colours, bold, preview, Reset, Undo, Lock name) instead of vanilla's 10-character box. Names keep their colours on the label above the animal (vanilla showed them white); the label can be drawn bigger (`AnimalLabelStyle` Improved / Vanilla, `AnimalLabelScale`, per player). New synced section **13 Animals**: AnimalRenameEnabled, AnimalNameCharacterLimit (30, colour codes not counted), AnimalAllowColour, AnimalRenameAccess (Anyone / Namer / Admin), AnimalAllowLock. The animal's owner applies the limit and colour rules too.
@@ -216,12 +219,3 @@
   - **Valheim 1.0 compatibility** - depends on **DrakeModsLibs 0.9.0** for updated display / item-stand patches (fixes broken / oversized labels after the 1.0 game update).
   - Shared display + ServerSync code moved into **DrakeModsLibs**. Install Libs with RenameIt; no separate ServerSync package.
   - Packaging / docs aligned with **DrakeMods** branding. More customization mods may use Libs later; no full suite release planned right now.
-
-## Unreleased
-
-### Fixed
-
-- Packaging only: the Hexium/Thunderstore zip now puts the DLL and every data folder under `plugins/`, so Gale and r2modman
-  keep the folder structure (they flatten anything outside `plugins/`). A CI guard (`check-gale-layout.py`) fails the build
-  if that ever regresses. No code or behaviour change for players.
-

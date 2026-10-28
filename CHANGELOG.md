@@ -216,3 +216,12 @@
   - **Valheim 1.0 compatibility** - depends on **DrakeModsLibs 0.9.0** for updated display / item-stand patches (fixes broken / oversized labels after the 1.0 game update).
   - Shared display + ServerSync code moved into **DrakeModsLibs**. Install Libs with RenameIt; no separate ServerSync package.
   - Packaging / docs aligned with **DrakeMods** branding. More customization mods may use Libs later; no full suite release planned right now.
+
+## Unreleased
+
+### Fixed
+
+- Packaging only: the Hexium/Thunderstore zip now puts the DLL and every data folder under `plugins/`, so Gale and r2modman
+  keep the folder structure (they flatten anything outside `plugins/`). A CI guard (`check-gale-layout.py`) fails the build
+  if that ever regresses. No code or behaviour change for players.
+

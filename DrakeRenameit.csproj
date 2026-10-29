@@ -133,6 +133,7 @@
     <Compile Include="UI\Toolkit\WorldHover.cs" />
     <Compile Include="Patches\WorldHoverPatches.cs" />
     <Compile Include="Pieces\PieceRename.cs" />
+    <Compile Include="Pieces\PieceNameTab.cs" />
     <Compile Include="UI\Toolkit\PieceWorkshopPanel.cs" />
     <Compile Include="UI\Toolkit\WorkshopPanel.cs" />
     <Compile Include="DrakeRenameit.Workshop.cs" />

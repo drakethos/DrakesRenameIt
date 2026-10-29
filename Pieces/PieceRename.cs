@@ -32,6 +32,10 @@ internal static class PieceRename
         var piece = hovered.GetComponentInParent<Piece>();
         if (piece == null)
             return null;
+        // Another mod owns Shift+Use here (a Team Ward's settings, or LockSmith's Lock menu on a chest or door).
+        // Leave it alone, admins included. Rename for those pieces is a tab in that menu, not this workshop.
+        if (DrakeModsLibs.API.PieceInteractionClaims.IsClaimed(piece))
+            return null;
         // Only pieces that show a name on hover, and only when that hover belongs to this piece.
         if (hovered.GetComponentInParent<Hoverable>() is not Component hoverable || !IsNameableHover(piece, hoverable))
             return null;

@@ -1,3 +1,7 @@
+- Version 1.4.0-beta.4
+  - Beta. Requires **DrakeModsLibs 1.0.5**.
+  - **Name is its own tab.** It sits on the row beside Lock and Shop. A shop still opens on Shop, with Layout visible.
+  - **Shift+E no longer types E** into a piece or animal name. The workshop focuses the name after Use is released.
 - Version 1.4.0-beta.3
   - Beta. Requires **DrakeModsLibs 1.0.2** or newer.
   - **Packaging fix:** the zip now ships the DLL and `Assets/Localization` under `plugins/` so Gale and r2modman keep the folder layout (they flatten anything outside `plugins/`); the language files used to land loose in the mod folder and only worked through a fallback. A build guard (`check-gale-layout.py`) fails the release if that regresses. No gameplay change.

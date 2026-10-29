@@ -217,7 +217,7 @@ internal sealed class AnimalWorkshopPanel
         _open = true;
         ApplyOffset();
         Refresh();
-        _name.Focus();
+        _name.FocusAfterOpen();
     }
 
     void Close()

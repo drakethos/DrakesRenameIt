@@ -638,6 +638,31 @@ internal static class RenameItTestHooks
     static bool PieceIsShared(Dictionary<string, object?> args, GameObject? target = null) =>
         Pieces.PieceRename.IsShared(NameablePiece(target));
 
+    /// <summary>True while the standalone piece workshop is open (not the Name tab inside the Lock menu).</summary>
+    [TestHook("renameit.pieceWindow")]
+    static bool PieceWindow() => global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.IsOpen;
+
+    /// <summary>The next piece workshop open receives one E, the character a held Use key types into the name.</summary>
+    [TestHook("renameit.armPieceOpeningKey")]
+    static bool ArmPieceOpeningKey()
+    {
+        global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.ArmOpeningKey();
+        return true;
+    }
+
+    /// <summary>The name in the open piece workshop. Fails when it is not the piece's own name (a stray E from Shift+E).</summary>
+    [TestHook("renameit.pieceWindowName")]
+    static string PieceWindowName()
+    {
+        if (!global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.IsOpen)
+            throw new InvalidOperationException("piece workshop is not open");
+        var plain = global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.OpenPlainName;
+        var expected = global::DrakeRenameit.UI.Toolkit.PieceWorkshopPanel.OpenDefaultName;
+        if (!string.Equals(plain, expected, StringComparison.Ordinal))
+            throw new InvalidOperationException($"workshop name is '{plain}', the default is '{expected}'");
+        return plain;
+    }
+
     /// <summary>Opens the piece editor as Shift+Use would (when allowed); true when the Workshop window is showing.</summary>
     [TestHook("renameit.pieceOpen")]
     static bool PieceOpen(Dictionary<string, object?> args, GameObject? target = null)

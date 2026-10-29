@@ -110,6 +110,7 @@ namespace DrakeRenameit
             try
             {
                 RenameItLibsBridge.Register();
+                Pieces.PieceNameTab.Register();
             }
             catch (Exception ex)
             {

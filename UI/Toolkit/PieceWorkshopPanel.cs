@@ -52,6 +52,36 @@ internal sealed class PieceWorkshopPanel
 
     public static bool IsOpen => _instance != null && _instance._open;
 
+    /// <summary>The name in the open workshop field (plain words, the way the player reads them).</summary>
+    internal static string OpenPlainName
+    {
+        get
+        {
+            var panel = _instance;
+            if (panel == null || !panel._open || panel._name == null)
+                return "";
+            return panel._name.Input != null ? panel._name.Input.value ?? "" : "";
+        }
+    }
+
+    /// <summary>The piece's own name, before any custom name and before a stray Use key.</summary>
+    internal static string OpenDefaultName
+    {
+        get
+        {
+            var piece = _instance?._piece;
+            return piece ? PieceRename.DefaultName(piece) : "";
+        }
+    }
+
+    static bool _armOpeningKey;
+
+    /// <summary>
+    /// The next open delivers one E once the field focuses, the character Shift+E would type.
+    /// TestLab can hold Use, but it cannot put that character into the box.
+    /// </summary>
+    internal static void ArmOpeningKey() => _armOpeningKey = true;
+
     public static void Show(Piece piece)
     {
         _instance ??= new PieceWorkshopPanel();
@@ -217,7 +247,47 @@ internal sealed class PieceWorkshopPanel
         _open = true;
         ApplyOffset();
         Refresh();
-        _name.Focus();
+        var strike = _armOpeningKey;
+        _armOpeningKey = false;
+        if (strike && _name.Input != null)
+        {
+            _landOpening = LandOpeningOnFocus;
+            _name.Input.RegisterCallback(_landOpening);
+        }
+
+        _name.FocusAfterOpen();
+    }
+
+    EventCallback<FocusInEvent>? _landOpening;
+
+    /// <summary>
+    /// Runs inside the focus that follows a released Use key, before the take-back runs.
+    /// Puts one E in the name the way a held Shift+E does. If nothing takes it back, the test sees it.
+    /// </summary>
+    void LandOpeningOnFocus(FocusInEvent evt)
+    {
+        if (_landOpening != null && _name?.Input != null)
+            _name.Input.UnregisterCallback(_landOpening);
+        _landOpening = null;
+        if (!_open || _name?.Input == null)
+            return;
+        PushUseKey(_name.Input);
+        var plain = _name.Input.value ?? "";
+        var piece = _piece;
+        var expected = piece ? PieceRename.DefaultName(piece) : plain;
+        if (string.Equals(plain, expected, StringComparison.Ordinal))
+            _name.SetValue(plain + "E");
+    }
+
+    static void PushUseKey(TextField field)
+    {
+        if (field == null || field.panel == null)
+            return;
+        using (var ev = KeyDownEvent.GetPooled('E', KeyCode.E, EventModifiers.None))
+        {
+            ev.target = field;
+            field.SendEvent(ev);
+        }
     }
 
     void Close()
@@ -225,6 +295,9 @@ internal sealed class PieceWorkshopPanel
         if (!_open)
             return;
         _open = false;
+        if (_landOpening != null && _name?.Input != null)
+            _name.Input.UnregisterCallback(_landOpening);
+        _landOpening = null;
         _scrim.Show(false);
         _toast.Hide();
         _reset.Cancel();

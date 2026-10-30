@@ -7,6 +7,15 @@
     <WorkshopLibsDll Condition="'$(WorkshopLibsDll)' == '' and '$(R2ModPath)' != '' and '$(ProfileName)' != ''">$(R2ModPath)\$(ProfileName)\BepInEx\plugins\$(WorkshopLibsPluginFolder)\DrakeModsLibs.dll</WorkshopLibsDll>
   </PropertyGroup>
   <Choose>
+    <!-- Release builds stage this DLL (Pre-Release-Check and GitHub CI). It wins over a sibling project, which is not in the git archive. -->
+    <When Condition="Exists('$(MSBuildThisFileDirectory)..\ci_libs\DrakeModsLibs.dll')">
+      <ItemGroup>
+        <Reference Include="DrakeModsLibs">
+          <HintPath>$(MSBuildThisFileDirectory)..\ci_libs\DrakeModsLibs.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
     <When Condition="'$(_WorkshopLibsProj)' != ''">
       <ItemGroup>
         <ProjectReference Include="$(_WorkshopLibsProj)">

@@ -1,0 +1,23 @@
+{
+  "name": "BK-03 wall shelf and bookcase: pieces exist, hold books, draw one spine per book",
+  "description": "Both shelf pieces are in the hammer menu. Books stored in them are drawn as spines (one per book).",
+  "steps": [
+    { "do": "hook", "name": "renameit.hasPrefab", "args": { "name": "Drakes_Bookcase" }, "expect": true, "stop": true, "label": "the bookcase is registered" },
+    { "do": "hook", "name": "renameit.hasPrefab", "args": { "name": "Drakes_WallShelf" }, "expect": true, "stop": true, "label": "the wall shelf is registered" },
+    { "do": "place", "prefab": "Drakes_Bookcase", "dz": 3, "as": "case" },
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 3, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book", "count": 3 },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "store", "target": "case", "prefab": "Drakes_Book", "count": 1 },
+    { "do": "store", "target": "case", "prefab": "Drakes_Book", "count": 1 },
+    { "do": "store", "target": "case", "prefab": "Drakes_Book", "count": 1 },
+    { "do": "wait", "seconds": 1.2 },
+    { "do": "hook", "name": "renameit.shelfSpines", "args": { "target": "case" }, "expect": 3, "label": "three books, three spines" },
+    { "do": "face", "target": "case" },
+    { "do": "lookAt", "target": "case", "distance": 2.2 },
+    { "do": "screenshot", "label": "the bookcase with books" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

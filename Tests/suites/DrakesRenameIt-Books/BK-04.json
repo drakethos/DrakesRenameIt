@@ -1,0 +1,17 @@
+{
+  "name": "BK-04 non-books: refused by default, allowed by the owner, forbidden by the server",
+  "description": "A shelf takes only books until its owner allows others, and the server config can forbid it outright.",
+  "steps": [
+    { "do": "place", "prefab": "Drakes_Bookcase", "dz": 3, "as": "case" },
+    { "do": "give", "prefab": "Stone", "count": 2 },
+    { "do": "hook", "name": "renameit.shelfTryStore", "args": { "target": "case", "prefab": "Stone" }, "expect": false, "label": "a stone is refused by default" },
+    { "do": "hook", "name": "renameit.shelfSetNonBooks", "args": { "target": "case", "on": true }, "expect": true },
+    { "do": "wait", "seconds": 0.4 },
+    { "do": "hook", "name": "renameit.shelfAllowsNonBooks", "args": { "target": "case" }, "expect": true, "label": "the owner switch is on" },
+    { "do": "hook", "name": "renameit.shelfTryStore", "args": { "target": "case", "prefab": "Stone" }, "expect": true, "label": "a stone fits once the owner allows it" },
+    { "do": "setConfig", "values": { "14 Books/ShelfAllowNonBooks": "false" } },
+    { "do": "hook", "name": "renameit.shelfAllowsNonBooks", "args": { "target": "case" }, "expect": false, "label": "the server switch overrides the owner" },
+    { "do": "hook", "name": "renameit.shelfTryStore", "args": { "target": "case", "prefab": "Stone" }, "expect": false, "label": "and refuses again" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

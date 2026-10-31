@@ -129,6 +129,17 @@ namespace DrakeRenameit
                 Logger.LogError($"Paper content register failed: {ex}");
             }
 
+            try
+            {
+                global::DrakeRenameit.Books.BookItem.Register(Logger);
+                global::DrakeRenameit.Books.BookPiece.Register(Logger);
+                global::DrakeRenameit.Books.BookShelfPiece.Register(Logger);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Book content register failed: {ex}");
+            }
+
             harmony.PatchAll();
             CompatibilityManager.Initialize(harmony);
         }

@@ -1,0 +1,9 @@
+// Books, the Book hammer piece, the wall shelf and the bookcase. Hand-written; the baseline comes from the main suite.
+{
+  "name": "DrakesRenameIt-Books",
+  "description": "RenameIt books: craft and write a book, place it with the hammer after picking one, shelves hold books and show spines, non-book rules.",
+  "include": "../DrakesRenameIt/_shared/baseline.json",
+  "requireMods": [ { "guid": "com.drakemods.testlab", "minVersion": "0.2.2" } ],
+  "configOverrides": [ { "guid": "com.drakemods.renameit", "section": "14 Books", "key": "BookCost", "value": "Drakes_PieceOfPaper:8,LeatherScraps:2" } ],
+  "resetBetweenTests": true
+}

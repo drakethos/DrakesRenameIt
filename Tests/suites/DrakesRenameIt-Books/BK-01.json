@@ -1,0 +1,15 @@
+{
+  "name": "BK-01 the book item: registered, crafted from paper and leather, writes and reads back",
+  "description": "A book is crafted at a workbench from paper and leather. Title, pages, colour and size round-trip through its data, and hover shows no description.",
+  "steps": [
+    { "do": "hook", "name": "renameit.hasPrefab", "args": { "name": "Drakes_Book" }, "expect": true, "label": "the book item is registered", "stop": true },
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 3, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "check", "check": "hasItem", "prefab": "Drakes_Book", "label": "crafted from the recipe" },
+    { "do": "hook", "name": "renameit.bookWrite", "args": { "title": "Old Ledger", "pages": "Day 12|Day 13|Day 14", "color": 2, "size": 2 }, "expect": true },
+    { "do": "hook", "name": "renameit.bookInfo", "expect": "Old Ledger|3|2|Day 12", "label": "title, page count, size and first page come back" },
+    { "do": "hook", "name": "renameit.bookTooltip", "equals": "", "label": "no description line: hover is the title only" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

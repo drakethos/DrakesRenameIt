@@ -14,7 +14,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 75;
+    private const int ExpectedSyncedEntryCount = 79;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -33,6 +33,8 @@ public static class RenameitConfig
     private const string SectionPieces = "12 Pieces";
     private const string SectionAnimals = "13 Animals";
     private const string DisplayAnimals = "Animals";
+    private const string SectionBooks = "14 Books";
+    private const string DisplayBooks = "Books";
 
     private const string DisplayAdmin = "Admin";
     private const string DisplayFeatures = "Features";
@@ -132,6 +134,10 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _animalAllowColour = default!;
     private static ConfigEntry<string> _animalRenameAccess = default!;
     private static ConfigEntry<bool> _animalAllowLock = default!;
+    private static ConfigEntry<bool> _booksEnabled = default!;
+    private static ConfigEntry<string> _bookCost = default!;
+    private static ConfigEntry<string> _bookCraftingStation = default!;
+    private static ConfigEntry<bool> _shelfAllowNonBooks = default!;
     private static ConfigEntry<string> _animalLabelStyle = default!;
     private static ConfigEntry<float> _animalLabelScale = default!;
     private static ConfigEntry<string> _pieceCrafterLine = default!;
@@ -421,6 +427,16 @@ public static class RenameitConfig
 
     /// <summary>When true, items with <c>Drake_PublicRewrite</c> allow non-owners to edit name/description.</summary>
     public static bool PublicRewriteEnabled => _publicRewriteEnabled.Value;
+
+    // --- 14 Books ---
+
+    /// <summary>Books (item, reader, hammer piece, shelves). Off hides every book recipe, piece and window. Applied when items register.</summary>
+    public static bool BooksEnabled => _booksEnabled.Value;
+    /// <summary>Recipe for one book: PrefabName:amount list, same format as PaperCost.</summary>
+    public static string BookCost => _bookCost.Value;
+    public static string BookCraftingStation => _bookCraftingStation.Value;
+    /// <summary>Whether any shelf on the server may hold things other than books (each shelf's owner still has to allow it).</summary>
+    public static bool ShelfAllowNonBooks => _shelfAllowNonBooks.Value;
 
     // --- 12 Pieces (rename placed pieces, 1.4) ---
 
@@ -1266,6 +1282,30 @@ public static class RenameitConfig
         _durabilityUnbrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
         _durabilityBrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
         _durabilityTierModifiers.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+
+        _booksEnabled = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "BooksEnabled",
+            true,
+            "Books: craftable book item you read with Use, a hammer piece to place them, and shelves. Off hides all of it. Applied when items register (restart the world/menu).");
+
+        _bookCost = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "BookCost",
+            "Drakes_PieceOfPaper:8,LeatherScraps:2",
+            "Recipe for one book: PrefabName:amount, comma or semicolon separated (same format as PaperCost). Applied when the item registers.");
+
+        _bookCraftingStation = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "BookCraftingStation",
+            "piece_workbench",
+            "Crafting station prefab for books (e.g. piece_workbench). Leave empty to craft anywhere from the inventory craft list.");
+
+        _shelfAllowNonBooks = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "ShelfAllowNonBooks",
+            true,
+            "Whether bookcases may hold things other than books (knick-knacks on display rows). Off: every shelf is books only. When on, each shelf's owner still chooses per shelf (default off).");
 
         MigrateLegacyConfigSections(config);
 

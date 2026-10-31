@@ -1,0 +1,21 @@
+{
+  "name": "BK-02 hammer Book piece: needs a pick, keeps the book's text, costs the book",
+  "description": "The Book piece only places after a book is picked. The placed piece carries the book's data and the book leaves the inventory. Without a pick the piece removes itself.",
+  "steps": [
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 3, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "hook", "name": "renameit.bookWrite", "args": { "title": "Smithing Primer", "pages": "Heat|Hit|Quench", "color": 1, "size": 1 }, "expect": true },
+    { "do": "place", "prefab": "Drakes_BookPiece", "dz": 2.5, "expect": false, "label": "no pick: the piece removes itself, so nothing is left" },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "check", "check": "objectNear", "prefab": "Drakes_BookPiece", "radius": 4, "count": 0, "label": "no pick: the piece removed itself" },
+    { "do": "hook", "name": "renameit.bookPick", "expect": true, "label": "a book is picked" },
+    { "do": "place", "prefab": "Drakes_BookPiece", "dz": 2.5, "as": "book" },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "hook", "name": "renameit.pieceBookData", "args": { "target": "book" }, "contains": "Smithing Primer", "label": "the piece holds the book's title" },
+    { "do": "check", "check": "noItem", "prefab": "Drakes_Book", "label": "the book left the inventory" },
+    { "do": "lookAt", "target": "book", "distance": 1.6 },
+    { "do": "screenshot", "label": "a placed book" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

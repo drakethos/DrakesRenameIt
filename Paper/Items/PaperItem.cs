@@ -1075,7 +1075,7 @@ internal static class PaperItem
     /// Donor clones often keep MeshFilter / MeshRenderer on the root GameObject.
     /// Destroying only children leaves LeatherScraps (etc.) visible forever.
     /// </summary>
-    private static void StripRootAndChildDonorMeshes(GameObject prefab)
+    internal static void StripRootAndChildDonorMeshes(GameObject prefab)
     {
         if (prefab == null)
             return;

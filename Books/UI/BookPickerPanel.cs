@@ -16,6 +16,8 @@ internal sealed class BookPickerPanel
 
     public static bool IsOpen => _instance != null && _instance._window.IsOpen;
 
+    internal static void CloseWindow() => _instance?._window.CloseSilent();
+
     public static void Show(Player player)
     {
         _instance ??= new BookPickerPanel();
@@ -62,6 +64,7 @@ internal sealed class BookPickerPanel
     void Pick(System.Action choose)
     {
         choose();
+        BookPlacementPatches.KeepPick(3f);
         _window.CloseSilent();
     }
 

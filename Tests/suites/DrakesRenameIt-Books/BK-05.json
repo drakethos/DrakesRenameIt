@@ -1,0 +1,24 @@
+{
+  "name": "BK-05 windows: reader, editor, Book tab and picker open and look right",
+  "description": "Opens each book window with a long page of text and takes a picture, so the layout can be judged. Also checks the title/colour/size edits stick.",
+  "steps": [
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 3, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "hook", "name": "renameit.bookWrite", "args": { "title": "Old Ledger", "pages": "Day 12. The fort holds. Three boars in the larder, two logs short of a roof. Mind the east gate, the hinge is loose and the wind has been testing it all week.|Day 13. Raven says the storm comes at dusk. Moved the forge inside and covered the charcoal. Tomorrow we dig for tin, if the ground allows.|Day 14. Quiet.|", "color": 1, "size": 1 }, "expect": true },
+    { "do": "hook", "name": "renameit.bookOpenReader", "args": { "tab": "pages" }, "expect": true, "label": "the reader opens", "stop": true },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "screenshot", "label": "reader" },
+    { "do": "hook", "name": "renameit.bookOpenReader", "args": { "tab": "pages", "edit": true }, "expect": true },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "screenshot", "label": "editor" },
+    { "do": "hook", "name": "renameit.bookOpenReader", "args": { "tab": "book" }, "expect": true },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "screenshot", "label": "book tab" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
+    { "do": "hook", "name": "renameit.bookOpenPicker", "expect": true, "label": "the picker opens" },
+    { "do": "wait", "seconds": 0.6 },
+    { "do": "screenshot", "label": "picker" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

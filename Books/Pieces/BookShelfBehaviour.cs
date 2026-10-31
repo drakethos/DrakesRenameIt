@@ -21,6 +21,10 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
 
     /// <summary>Wall shelf: one board, books stand on y = 0. Bookcase: three rows on a 0.50 pitch.</summary>
     internal bool IsWall;
+    internal float Width = 1.1f;
+    internal int ShelfRows = 1;
+    /// <summary>Inventory rows per shelf row (a long shelf takes two).</summary>
+    internal int InvPerRow = 1;
 
     const float Gap = 0.004f;
     const float RefreshSeconds = 0.5f;
@@ -104,18 +108,19 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
         _items = new GameObject("drake_shelf_items").transform;
         _items.SetParent(transform.Find(BookShelfPiece.FrameName) ?? transform, false);
 
-        var rows = Mathf.Max(1, inventory.GetHeight());
         var depth = IsWall ? BookMesh.ShelfD : BookMesh.CaseD;
-        var usable = IsWall ? BookMesh.ShelfW - 0.12f : BookMesh.CaseW - 2f * BookMesh.CaseTh - 0.06f;
-        for (var y = 0; y < rows; y++)
+        var usable = IsWall ? Width - 0.12f : Width - 2f * BookMesh.CaseTh - 0.06f;
+        var perRow = Mathf.Max(1, InvPerRow);
+        for (var shelfRow = 0; shelfRow < ShelfRows; shelfRow++)
         {
+            // The top shelf row is the inventory's top row(s); inside a shelf row, slots read left to right, row by row.
             var row = new List<ItemDrop.ItemData>();
             foreach (var item in inventory.GetAllItems())
-                if (item != null && item.m_gridPos.y == y)
+                if (item != null && item.m_gridPos.y / perRow == shelfRow)
                     row.Add(item);
-            row.Sort((a, b) => a.m_gridPos.x.CompareTo(b.m_gridPos.x));
+            row.Sort((a, b) => (a.m_gridPos.y, a.m_gridPos.x).CompareTo((b.m_gridPos.y, b.m_gridPos.x)));
 
-            var floor = IsWall ? 0f : BookMesh.RowY(rows - 1 - y);
+            var floor = IsWall ? 0f : BookMesh.RowY(ShelfRows - 1 - shelfRow);
             var cursor = -usable / 2f;
             foreach (var item in row)
             {

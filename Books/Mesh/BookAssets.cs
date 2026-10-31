@@ -12,6 +12,10 @@ internal static class BookAssets
     static Texture2D? _leather;
 
     internal static Sprite? Icon => ForgeTextures.Sprite(typeof(BookAssets).Assembly, "textures/book_icon.png");
+    internal static Sprite? WallShelfIcon => ForgeTextures.Sprite(typeof(BookAssets).Assembly, "textures/wall_shelf_icon.png");
+    internal static Sprite? BookcaseIcon => ForgeTextures.Sprite(typeof(BookAssets).Assembly, "textures/bookcase_icon.png");
+
+    internal static Sprite? PieceIcon(string name) => ForgeTextures.Sprite(typeof(BookAssets).Assembly, $"textures/{name}_icon.png");
 
     static Texture2D? Leather
     {

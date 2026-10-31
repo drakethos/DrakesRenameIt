@@ -65,6 +65,7 @@ internal static class RenameItBookHooks
             BookPlaceState.ChooseBlank();
         else
             BookPlaceState.Choose(FirstBook());
+        BookPlacementPatches.KeepPick(10f);
         return BookPlaceState.HasChoice;
     }
 
@@ -109,6 +110,49 @@ internal static class RenameItBookHooks
         P.GetInventory().RemoveItem(item, 1);
         return true;
     }
+
+    /// <summary>Opens the reader on the first inventory book as its maker: tab "pages" or "book", edit true/false.</summary>
+    [TestHook("renameit.bookOpenReader")]
+    static bool OpenReader(Dictionary<string, object?> args)
+    {
+        BookReaderPanel.Show(FirstBook(), canEdit: true);
+        BookReaderPanel.TestSelect(S(args, "tab", "pages") == "book", B(args, "edit"));
+        return BookReaderPanel.IsOpen;
+    }
+
+    /// <summary>Closes the reader and the picker (the test step closeUi only closes the game's own windows).</summary>
+    [TestHook("renameit.closeBookWindows")]
+    static bool CloseWindows(Dictionary<string, object?> args)
+    {
+        BookReaderPanel.CloseWindow();
+        BookPickerPanel.CloseWindow();
+        return true;
+    }
+
+    [TestHook("renameit.bookOpenPicker")]
+    static bool OpenPicker(Dictionary<string, object?> args)
+    {
+        BookPickerPanel.Show(P);
+        return BookPickerPanel.IsOpen;
+    }
+
+    /// <summary>How far the placed book's collider floats above the piece origin (a ground-touching collider blocks placement).</summary>
+    [TestHook("renameit.pieceColliderLift")]
+    static float ColliderLift(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var box = target != null ? target.GetComponent<BoxCollider>() : null;
+        return box == null ? -1f : box.center.y - box.size.y / 2f;
+    }
+
+    /// <summary>The hover text a placed book shows (its title and Read), without needing to aim at it.</summary>
+    [TestHook("renameit.bookHoverText")]
+    static string BookHoverText(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && target.GetComponent<BookPieceBehaviour>() is { } book ? book.GetHoverText() : "";
+
+    /// <summary>"WxH" of a shelf's container (inventory columns x rows).</summary>
+    [TestHook("renameit.containerSize")]
+    static string ContainerSize(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && target.GetComponent<Container>() is { } c ? $"{c.m_width}x{c.m_height}" : "none";
 
     /// <summary>"true" when a registered prefab with this name exists (pieces and items).</summary>
     [TestHook("renameit.hasPrefab")]

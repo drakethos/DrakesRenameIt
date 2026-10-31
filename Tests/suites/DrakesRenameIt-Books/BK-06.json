@@ -1,0 +1,22 @@
+{
+  "name": "BK-06 shelf sizes: six pieces, each with the right container and look",
+  "description": "Short and long wall shelf, small, standard, large and wide bookcase are all placeable, with the container sizes their rows need. One picture shows them side by side.",
+  "steps": [
+    { "do": "place", "prefab": "Drakes_WallShelf", "dz": 5, "dx": -5.0, "as": "wallshelf" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "wallshelf" }, "expect": "8x1", "label": "Drakes_WallShelf container size" },
+    { "do": "place", "prefab": "Drakes_WallShelfLong", "dz": 5, "dx": -3.2, "as": "wallshelflong" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "wallshelflong" }, "expect": "8x2", "label": "Drakes_WallShelfLong container size" },
+    { "do": "place", "prefab": "Drakes_BookcaseSmall", "dz": 5, "dx": -1.2, "as": "bookcasesmall" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcasesmall" }, "expect": "8x2", "label": "Drakes_BookcaseSmall container size" },
+    { "do": "place", "prefab": "Drakes_Bookcase", "dz": 5, "dx": 0.4, "as": "bookcase" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcase" }, "expect": "8x3", "label": "Drakes_Bookcase container size" },
+    { "do": "place", "prefab": "Drakes_BookcaseLarge", "dz": 5, "dx": 2.2, "as": "bookcaselarge" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcaselarge" }, "expect": "8x4", "label": "Drakes_BookcaseLarge container size" },
+    { "do": "place", "prefab": "Drakes_BookcaseWide", "dz": 5, "dx": 4.6, "as": "bookcasewide" },
+    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcasewide" }, "expect": "8x6", "label": "Drakes_BookcaseWide container size" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
+    { "do": "lookAt", "target": "bookcase", "distance": 9 },
+    { "do": "screenshot", "label": "all shelf sizes" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

@@ -16,6 +16,7 @@
     { "do": "wait", "seconds": 1.2 },
     { "do": "hook", "name": "renameit.shelfSpines", "args": { "target": "case" }, "expect": 3, "label": "three books, three spines" },
     { "do": "face", "target": "case" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
     { "do": "lookAt", "target": "case", "distance": 2.2 },
     { "do": "screenshot", "label": "the bookcase with books" }
   ],

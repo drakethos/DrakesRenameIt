@@ -91,6 +91,13 @@ internal static class BookPiece
             }
 
             BookPieceBehaviour.FitCollider(go, BookSize.Medium);
+            // The ghost (and the prefab) show a medium book floating at the same height as a placed one.
+            var ghost = new GameObject("attach").transform;
+            ghost.SetParent(go.transform, false);
+            var d = BookMesh.Dimensions(BookSize.Medium);
+            ghost.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            ghost.localPosition = new Vector3(d.y / 2f, BookPieceBehaviour.Lift + d.z / 2f, 0f);
+            BookAssets.Build(ghost, BookSize.Medium, BookData.CoverColors[0]);
             go.AddComponent<BookPieceBehaviour>();
             _log?.LogInfo("[Books] Registered the Book hammer piece.");
         }
@@ -133,8 +140,14 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
             var player = Player.m_localPlayer;
             if (player == null || !BookPlaceState.TryTake(player, out var data, out var owner))
             {
-                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, "Pick a book first. Select the Book piece again to choose one.");
+                // No pick (or it no longer holds): take the piece back and ask again, so the next click places.
                 ZNetScene.instance.Destroy(gameObject);
+                if (player != null)
+                {
+                    ValheimHudMessage.Show(player, MessageHud.MessageType.Center, "Pick a book, then place it.");
+                    BookPickerPanel.Show(player);
+                }
+
                 return;
             }
 
@@ -172,16 +185,22 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         attach.SetParent(transform, false);
         // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
         attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
-        attach.localPosition = new Vector3(d.y / 2f, d.z / 2f, 0f);
+        attach.localPosition = new Vector3(d.y / 2f, Lift + d.z / 2f, 0f);
         BookAssets.Build(attach, size, ColorOf(_data));
         FitCollider(gameObject, size);
     }
+
+    /// <summary>
+    /// The book rests this far above the aimed surface. A collider that touches the ground or the table top reads as "blocked" to
+    /// the placement ghost (red, cannot place); paper floats the same way for the same reason.
+    /// </summary>
+    internal const float Lift = 0.03f;
 
     internal static void FitCollider(GameObject go, BookSize size)
     {
         var d = BookMesh.Dimensions(size);
         var box = go.GetComponent<BoxCollider>() ?? go.AddComponent<BoxCollider>();
-        box.center = new Vector3(0f, d.z / 2f, 0f);
+        box.center = new Vector3(0f, Lift + d.z / 2f, 0f);
         box.size = new Vector3(d.y, d.z, d.x);
     }
 

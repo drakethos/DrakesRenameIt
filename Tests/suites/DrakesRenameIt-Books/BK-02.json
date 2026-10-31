@@ -9,12 +9,15 @@
     { "do": "place", "prefab": "Drakes_BookPiece", "dz": 2.5, "expect": false, "label": "no pick: the piece removes itself, so nothing is left" },
     { "do": "wait", "seconds": 0.6 },
     { "do": "check", "check": "objectNear", "prefab": "Drakes_BookPiece", "radius": 4, "count": 0, "label": "no pick: the piece removed itself" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
     { "do": "hook", "name": "renameit.bookPick", "expect": true, "label": "a book is picked" },
     { "do": "place", "prefab": "Drakes_BookPiece", "dz": 2.5, "as": "book" },
     { "do": "wait", "seconds": 0.6 },
     { "do": "hook", "name": "renameit.pieceBookData", "args": { "target": "book" }, "contains": "Smithing Primer", "label": "the piece holds the book's title" },
     { "do": "check", "check": "noItem", "prefab": "Drakes_Book", "label": "the book left the inventory" },
-    { "do": "lookAt", "target": "book", "distance": 1.6 },
+    { "do": "hook", "name": "renameit.pieceColliderLift", "args": { "target": "book" }, "min": 0.01, "label": "the book floats above the surface (a touching collider blocks placement)" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
+    { "do": "hook", "name": "renameit.bookHoverText", "args": { "target": "book" }, "contains": "Smithing Primer", "label": "hover shows the title" },
     { "do": "screenshot", "label": "a placed book" }
   ],
   "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]

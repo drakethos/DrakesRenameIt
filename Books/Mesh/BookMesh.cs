@@ -23,7 +23,7 @@ internal static class BookMesh
     internal const float ShelfW = 0.90f, ShelfD = 0.26f, ShelfTh = 0.03f;
 
     static readonly Dictionary<BookSize, Mesh> Books = new();
-    static Mesh? _wallShelf, _bookcase;
+    static readonly Dictionary<string, Mesh> Shelves = new();
 
     internal static Vector3 Dimensions(BookSize size) => Sizes[(int)size];
 
@@ -48,34 +48,43 @@ internal static class BookMesh
         return mesh;
     }
 
-    /// <summary>One board on two brackets with a back rail. Origin at the top of the board, centred; wall at +Z.</summary>
-    internal static Mesh WallShelf()
+    /// <summary>One board on brackets with a back rail, <paramref name="w"/> wide. Origin at the top of the board, centred; wall at +Z.</summary>
+    internal static Mesh WallShelf(float w = ShelfW)
     {
-        if (_wallShelf != null)
-            return _wallShelf;
-        float w = ShelfW, d = ShelfD, th = ShelfTh;
-        var b = new Boxes();
+        var key = "wall" + w.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        if (Shelves.TryGetValue(key, out var cached) && cached != null)
+            return cached;
+        float d = ShelfD, th = ShelfTh;
+        var b = new Boxes { TileUv = true };
         b.Add(-w / 2, w / 2, -th, 0, -d / 2, d / 2);
         b.Add(-w / 2, w / 2, -th, 0.09f, d / 2 - 0.02f, d / 2);
-        foreach (var x in new[] { -w / 2 + 0.10f, w / 2 - 0.10f })
+        var xs = w > 1.4f ? new[] { -w / 2 + 0.10f, 0f, w / 2 - 0.10f } : new[] { -w / 2 + 0.10f, w / 2 - 0.10f };
+        foreach (var x in xs)
         {
             b.Add(x - 0.015f, x + 0.015f, -th - 0.03f, -th, -d / 2 + 0.03f, d / 2 - 0.02f);
             b.Add(x - 0.015f, x + 0.015f, -th - 0.14f, -th - 0.03f, d / 2 - 0.05f, d / 2 - 0.02f);
         }
 
-        return _wallShelf = Boxes.Combine("drakes_wall_shelf", b);
+        return Shelves[key] = Boxes.Combine("drakes_wall_shelf", b);
     }
 
-    /// <summary>Plinth, three shelves, sides, overhanging cap and back panel. Origin at the floor, centred; wall at +Z.</summary>
-    internal static Mesh Bookcase()
+    /// <summary>Total height of a bookcase with this many rows (plinth, rows, top board).</summary>
+    internal static float CaseHeight(int rows) => CasePlinth + CasePitch * rows + CaseTh;
+
+    /// <summary>
+    /// Plinth, open shelves, left and right sides, overhanging cap and back panel; <paramref name="w"/> wide, <paramref name="rows"/> rows.
+    /// Origin at the floor, centred; wall at +Z.
+    /// </summary>
+    internal static Mesh Bookcase(float w = CaseW, int rows = CaseRows)
     {
-        if (_bookcase != null)
-            return _bookcase;
-        float w = CaseW, d = CaseD, th = CaseTh, plinth = CasePlinth, pitch = CasePitch;
-        float height = plinth + pitch * CaseRows + th;
-        var b = new Boxes();
+        var key = "case" + w.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + "x" + rows;
+        if (Shelves.TryGetValue(key, out var cached) && cached != null)
+            return cached;
+        float d = CaseD, th = CaseTh, plinth = CasePlinth, pitch = CasePitch;
+        var height = CaseHeight(rows);
+        var b = new Boxes { TileUv = true };
         b.Add(-w / 2, w / 2, plinth - th, plinth, -d / 2, d / 2);
-        for (var r = 1; r <= CaseRows; r++)
+        for (var r = 1; r <= rows; r++)
         {
             var y = plinth + pitch * r;
             b.Add(-w / 2, w / 2, y - th, y, -d / 2, d / 2);
@@ -85,7 +94,7 @@ internal static class BookMesh
         b.Add(-w / 2, -w / 2 + th, 0, height, -d / 2, d / 2);
         b.Add(w / 2 - th, w / 2, 0, height, -d / 2, d / 2);
         b.Add(-w / 2, w / 2, 0, height, d / 2 - 0.015f, d / 2);
-        return _bookcase = Boxes.Combine("drakes_bookcase", b);
+        return Shelves[key] = Boxes.Combine("drakes_bookcase", b);
     }
 
     /// <summary>Axis-aligned boxes, 24 verts each, UVs 0..1 per face (same as the Blender cubes).</summary>
@@ -94,6 +103,8 @@ internal static class BookMesh
         internal readonly List<Vector3> V = new();
         internal readonly List<Vector2> Uv = new();
         internal readonly List<int> Tri = new();
+        /// <summary>Shelves: UVs run in metres so the wood grain repeats at its natural size instead of stretching over each board.</summary>
+        internal bool TileUv;
 
         internal void Add(float x0, float x1, float y0, float y1, float z0, float z1)
         {
@@ -115,7 +126,10 @@ internal static class BookMesh
         {
             var i = V.Count;
             V.Add(p[a]); V.Add(p[b]); V.Add(p[c]); V.Add(p[d]);
-            Uv.Add(new Vector2(0, 0)); Uv.Add(new Vector2(0, 1)); Uv.Add(new Vector2(1, 1)); Uv.Add(new Vector2(1, 0));
+            // Corner order a,b,c,d: a-b runs along V, b-c along U.
+            var u = TileUv ? Vector3.Distance(p[c], p[b]) : 1f;
+            var v = TileUv ? Vector3.Distance(p[b], p[a]) : 1f;
+            Uv.Add(new Vector2(0, 0)); Uv.Add(new Vector2(0, v)); Uv.Add(new Vector2(u, v)); Uv.Add(new Vector2(u, 0));
             Tri.Add(i); Tri.Add(i + 1); Tri.Add(i + 2);
             Tri.Add(i); Tri.Add(i + 2); Tri.Add(i + 3);
         }

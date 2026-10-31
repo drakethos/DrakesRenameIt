@@ -26,7 +26,7 @@ internal static class BookData
     /// <summary>Pages are one string joined by this control character (never typed into a text box).</summary>
     const char PageBreak = '\u001f';
     internal const int MaxPages = 40;
-    internal const int MaxPageChars = 900;
+    internal const int MaxPageChars = 2400;
     internal const int MaxTitleChars = 40;
 
     /// <summary>Cover colours the editor offers (also the default pick).</summary>

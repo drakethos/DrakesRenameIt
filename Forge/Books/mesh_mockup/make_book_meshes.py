@@ -142,22 +142,31 @@ def make_book(name, size, color, mats):
 
 
 # ---------------------------------------------------------------- shelves
-def make_wall_shelf(wood):
-    """One board on two brackets with a back rail. 0.9 wide, 0.26 deep; top of the board is z=0, wall at +Y."""
-    w, d, th = 0.90, 0.26, 0.03
+# Variants: (id, width, shelf rows). The ids match the prefab names in Books/Pieces/BookShelfPiece.cs and the icon files.
+WALL_VARIANTS = [("wall_shelf", 0.90), ("wall_shelf_long", 1.80)]
+CASE_VARIANTS = [("bookcase_small", 0.80, 2), ("bookcase", 1.10, 3), ("bookcase_large", 1.40, 4), ("bookcase_wide", 2.00, 3)]
+
+
+def make_wall_shelf(wood, w=0.90):
+    """One board on brackets with a back rail. w wide, 0.26 deep; top of the board is z=0, wall at +Y."""
+    d, th = 0.26, 0.03
     bm = bmesh.new()
     add_box(bm, -w / 2, w / 2, -d / 2, d / 2, -th, 0, 0)
     add_box(bm, -w / 2, w / 2, d / 2 - 0.02, d / 2, -th, 0.09, 0)
-    for x in (-w / 2 + 0.10, w / 2 - 0.10):
+    xs = [-w / 2 + 0.10, w / 2 - 0.10]
+    if w > 1.4:
+        xs.insert(1, 0.0)
+    for x in xs:
         add_box(bm, x - 0.015, x + 0.015, -d / 2 + 0.03, d / 2 - 0.02, -th - 0.03, -th, 0)
         add_box(bm, x - 0.015, x + 0.015, d / 2 - 0.05, d / 2 - 0.02, -th - 0.14, -th - 0.03, 0)
     return finish("WallShelf", bm, [wood], bevel=0.002)
 
 
-def make_bookcase(wood):
-    """1.1 wide, 0.36 deep, three rows on a 0.50 pitch (tallest book is 0.45). Row r stands on z = SHELF_Z[r]; wall at +Y."""
-    w, d, th = 1.10, 0.36, 0.03
-    plinth, pitch, rows = 0.08, 0.50, 3
+def make_bookcase(wood, w=1.10, rows=3):
+    """Open shelves with a left and a right side and a thin back panel: w wide, 0.36 deep, `rows` rows on a 0.50 pitch (tallest
+    book is 0.45). Row r stands on z = plinth + pitch * r; wall at +Y. No dividers between: each row is one open run."""
+    d, th = 0.36, 0.03
+    plinth, pitch = 0.08, 0.50
     height = plinth + pitch * rows + th
     bm = bmesh.new()
     add_box(bm, -w / 2, w / 2, -d / 2, d / 2, plinth - th, plinth, 0)                       # bottom board
@@ -165,9 +174,8 @@ def make_bookcase(wood):
         z = plinth + pitch * r
         add_box(bm, -w / 2, w / 2, -d / 2, d / 2, z - th, z, 0)                             # shelf boards
     add_box(bm, -w / 2 - 0.02, w / 2 + 0.02, -d / 2 - 0.02, d / 2, height, height + 0.03, 0)  # top cap, overhangs
-    for sx in (-1, 1):
-        x0, x1 = (sx * (w / 2 - th), sx * w / 2) if sx > 0 else (-w / 2, -w / 2 + th)
-        add_box(bm, x0, x1, -d / 2, d / 2, 0, height, 0)                                    # sides
+    add_box(bm, -w / 2, -w / 2 + th, -d / 2, d / 2, 0, height, 0)                           # left side
+    add_box(bm, w / 2 - th, w / 2, -d / 2, d / 2, 0, height, 0)                             # right side
     add_box(bm, -w / 2, w / 2, d / 2 - 0.015, d / 2, 0, height, 0)                          # back panel
     return finish("Bookcase", bm, [wood], bevel=0.002), [plinth + pitch * r for r in range(rows)]
 
@@ -236,10 +244,16 @@ def main():
         b = make_book("book_" + size, size, None, mats(COLORS[0]))
         export(b, f"book_{size}.glb")
         bpy.data.objects.remove(b)
+    for vid, vw in WALL_VARIANTS:
+        o = make_wall_shelf(wood, vw)
+        export(o, vid + ".glb")
+        bpy.data.objects.remove(o)
+    for vid, vw, vr in CASE_VARIANTS:
+        o, _ = make_bookcase(wood, vw, vr)
+        export(o, vid + ".glb")
+        bpy.data.objects.remove(o)
     shelf = make_wall_shelf(wood)
-    export(shelf, "wall_shelf.glb")
     case, row_z = make_bookcase(wood)
-    export(case, "bookcase.glb")
 
     # Preview: bookcase with books, wall shelf beside it.
     shelf.location = (1.4, 0.18, 1.2)
@@ -296,6 +310,49 @@ def main():
     aim(cam, (0.0, -1.0, 0.18), (0.0, 0.0, 0.18))
     sc.render.filepath = os.path.join(GAME_TEX, "book_icon.png")
     bpy.ops.render.render(write_still=True)
+
+    # Piece icons for the hammer menu: every shelf size with books on it, 3/4 view, transparent.
+    def icon_of(name, objs, ortho, loc, target):
+        for o in list(bpy.context.scene.objects):
+            if o.type == "MESH":
+                o.hide_render = o not in objs
+        cam.data.ortho_scale = ortho
+        aim(cam, loc, target)
+        sc.render.filepath = os.path.join(GAME_TEX, name)
+        bpy.ops.render.render(write_still=True)
+
+    def stand_books(x0, x1, z, y, offset_x=0.0, offset_y=0.0, offset_z=0.0):
+        out, x, i = [], x0, 0
+        while True:
+            size = ["medium", "small", "large", "medium"][i % 4]
+            t = SIZES[size][2]
+            if x + t > x1:
+                break
+            b = make_book("B", size, None, mats(COLORS[(i + 1) % len(COLORS)]))
+            b.location = (x + t / 2 + offset_x, y + offset_y, z + offset_z)
+            out.append(b)
+            x += t + 0.003
+            i += 1
+        return out
+
+    slot = 0
+    for vid, vw in WALL_VARIANTS:
+        slot += 1
+        ox = slot * 4.0
+        ws = make_wall_shelf(wood, vw)
+        ws.location = (ox, 0, 0)
+        books = stand_books(-vw / 2 + 0.06, vw / 2 - 0.06, 0.0, 0.0, offset_x=ox)
+        icon_of(vid + "_icon.png", [ws] + books, vw * 1.15 + 0.1, (ox + vw * 0.35, -2.2, 0.45), (ox, 0.0, 0.12))
+    for vid, vw, vr in CASE_VARIANTS:
+        slot += 1
+        ox = slot * 4.0
+        c2, rz = make_bookcase(wood, vw, vr)
+        c2.location = (ox, 0, 0)
+        books = []
+        for z in rz:
+            books += stand_books(-vw / 2 + 0.06, vw / 2 - 0.06, z, 0.0, offset_x=ox)
+        h = 0.11 + 0.5 * vr
+        icon_of(vid + "_icon.png", [c2] + books, max(vw, h) * 1.2, (ox + vw * 0.45, -3.6, h * 0.62), (ox, 0.0, h * 0.5))
 
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "books_scene.blend"))
     print("BOOKS DONE")

@@ -173,21 +173,27 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         Redraw();
     }
 
-    void Redraw()
-    {
-        for (var i = transform.childCount - 1; i >= 0; i--)
-            if (transform.GetChild(i).name == "attach")
-                Object.DestroyImmediate(transform.GetChild(i).gameObject);
+    void Redraw() => Dress(transform, _data);
 
-        var size = BookSizeOf(_data);
+    /// <summary>
+    /// Draws a book lying on its back, front cover up, under <paramref name="root"/> (replacing any earlier drawing), and fits the
+    /// collider. Used by the placed piece and by the placement preview.
+    /// </summary>
+    internal static void Dress(Transform root, Dictionary<string, string> data)
+    {
+        for (var i = root.childCount - 1; i >= 0; i--)
+            if (root.GetChild(i).name == "attach")
+                Object.DestroyImmediate(root.GetChild(i).gameObject);
+
+        var size = BookSizeOf(data);
         var d = BookMesh.Dimensions(size);
         var attach = new GameObject("attach").transform;
-        attach.SetParent(transform, false);
+        attach.SetParent(root, false);
         // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
         attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
         attach.localPosition = new Vector3(d.y / 2f, Lift + d.z / 2f, 0f);
-        BookAssets.Build(attach, size, ColorOf(_data));
-        FitCollider(gameObject, size);
+        BookAssets.Build(attach, size, ColorOf(data), data.TryGetValue(BookData.KeyCover, out var cover) ? cover : null);
+        FitCollider(root.gameObject, size);
     }
 
     /// <summary>

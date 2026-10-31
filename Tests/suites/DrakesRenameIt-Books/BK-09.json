@@ -1,0 +1,17 @@
+{
+  "name": "BK-09 cover picture: a book with a picture from the BookCovers folder is placed and shown",
+  "description": "A PNG in BepInEx/config/DrakesRenameIt/BookCovers (test_cover.png, put there by the test setup) is chosen as a book's cover and drawn on the placed book. A picture shows it.",
+  "steps": [
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 3, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "hook", "name": "renameit.bookWrite", "args": { "title": "Picture Book", "pages": "One|Two", "color": 3, "size": 2, "cover": "test_cover" }, "expect": true },
+    { "do": "hook", "name": "renameit.bookPick", "expect": true },
+    { "do": "place", "prefab": "Drakes_BookPiece", "dz": 2, "as": "book" },
+    { "do": "wait", "seconds": 0.8 },
+    { "do": "hook", "name": "renameit.pieceBookData", "args": { "target": "book" }, "contains": "test_cover", "label": "the piece remembers the cover picture" },
+    { "do": "hook", "name": "renameit.coverPictureShown", "args": { "target": "book" }, "expect": true, "label": "a cover picture is drawn on the book" },
+    { "do": "screenshot", "label": "a book with a cover picture" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

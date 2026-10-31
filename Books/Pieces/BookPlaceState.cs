@@ -13,6 +13,10 @@ internal static class BookPlaceState
     internal static bool Blank { get; private set; }
     internal static bool HasChoice => Item != null || Blank;
 
+    /// <summary>The picked book's data (a copy), for the placement preview; a new blank book's defaults when that was picked.</summary>
+    internal static Dictionary<string, string> PreviewData() =>
+        Item != null ? new Dictionary<string, string>(Item.m_customData ?? new Dictionary<string, string>()) : BookData.NewBlank();
+
     internal static void Choose(ItemDrop.ItemData item)
     {
         Item = item;

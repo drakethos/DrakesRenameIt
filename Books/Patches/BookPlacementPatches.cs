@@ -40,7 +40,25 @@ internal static class BookPlacementPatches
                 BookPlaceState.Clear();
         }
 
+        if (isBook && BookPlaceState.HasChoice)
+            DressPreview(__instance);
         _wasBook = isBook;
+    }
+
+    static readonly System.Reflection.FieldInfo? GhostField = AccessTools.Field(typeof(Player), "m_placementGhost");
+    static string _dressedFor = "";
+
+    /// <summary>The placement preview shows the picked book (its colour, size and cover picture), not the default one.</summary>
+    static void DressPreview(Player player)
+    {
+        if (GhostField?.GetValue(player) is not GameObject ghost || ghost == null)
+            return;
+        var data = BookPlaceState.PreviewData();
+        var key = ghost.GetInstanceID() + "|" + BookData.Pack(data);
+        if (key == _dressedFor)
+            return;
+        _dressedFor = key;
+        BookPieceBehaviour.Dress(ghost.transform, data);
     }
 
     static readonly System.Reflection.FieldInfo? BuildPieces = AccessTools.Field(typeof(Player), "m_buildPieces");

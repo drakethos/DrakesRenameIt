@@ -41,6 +41,7 @@ internal sealed class BookReaderPanel
     readonly UkSwitch _readable;
     readonly UkSwitch _takeable;
     readonly VisualElement _placedOptions;
+    readonly VisualElement _pictures;
 
     ItemDrop.ItemData? _item;
     List<string> _pages = new();
@@ -146,6 +147,14 @@ internal sealed class BookReaderPanel
 
         _bookView.Add(sizeRow);
 
+        var pictureLabel = UkControls.Text("Cover picture", 15, UkTheme.Text, heading: true);
+        pictureLabel.style.marginTop = 16;
+        _bookView.Add(pictureLabel);
+        _pictures = new VisualElement().Row();
+        _pictures.style.marginTop = 6;
+        _pictures.style.flexWrap = Wrap.Wrap;
+        _bookView.Add(_pictures);
+
         _placedOptions = new VisualElement().Column();
         _placedOptions.style.marginTop = 16;
         _readable = new UkSwitch("Readers can open", "Others may read it, not only you");
@@ -181,7 +190,7 @@ internal sealed class BookReaderPanel
         _window.ShowFooter(true);
     }
 
-    static VisualElement Page(Texture2D? texture)
+    internal static VisualElement Page(Texture2D? texture)
     {
         var page = new VisualElement().Column().Grow();
         page.style.flexBasis = 0;
@@ -348,6 +357,31 @@ internal sealed class BookReaderPanel
 
         for (var s = 0; s < 3; s++)
             UkControls.SetKind(_sizes[s], (int)size == s ? UkButtonKind.Primary : UkButtonKind.Secondary);
+
+        // Cover pictures: None, then every file in the BookCovers folder (a server or modpack adds them).
+        _pictures.Clear();
+        var chosen = BookData.Get(_item, BookData.KeyCover);
+        void AddPicture(string label, string name)
+        {
+            var button = UkControls.MakeButton(label, () => OnPicture(name), chosen == name ? UkButtonKind.Primary : UkButtonKind.Secondary);
+            button.style.marginBottom = 6;
+            _pictures.Add(button);
+        }
+
+        AddPicture("None", "");
+        foreach (var picture in BookCovers.Names())
+            AddPicture(picture, picture);
+        if (BookCovers.Names().Count == 0)
+            _pictures.Add(UkControls.Text("No pictures yet. Put PNG or JPG files in BepInEx/config/DrakesRenameIt/BookCovers.", 13, UkTheme.TextMuted));
+    }
+
+    void OnPicture(string name)
+    {
+        if (_item == null || !_canEdit)
+            return;
+        BookData.Set(_item, BookData.KeyCover, name);
+        Save();
+        RefreshBookView();
     }
 
     void OnTitleChanged(string value)

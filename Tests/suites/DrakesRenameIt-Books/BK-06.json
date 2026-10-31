@@ -15,7 +15,6 @@
     { "do": "place", "prefab": "Drakes_BookcaseWide", "dz": 5, "dx": 4.6, "as": "bookcasewide" },
     { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcasewide" }, "expect": "8x6", "label": "Drakes_BookcaseWide container size" },
     { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
-    { "do": "lookAt", "target": "bookcase", "distance": 9 },
     { "do": "screenshot", "label": "all shelf sizes" }
   ],
   "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]

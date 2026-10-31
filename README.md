@@ -40,6 +40,18 @@ Craft blank **Piece of Paper** from the inventory craft list (default recipe **1
 
 **Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). Description ink shows on the parchment (portrait or **landscape**). With **PaperWallRenameEnabled** (default on), **Shift+Use** opens **Rename | Paper** on the wall — edit text and Paper options without picking the page up; **Make public**, font size, landscape, immutable stacks, and **Make Copy** live on the Paper tab. Otherwise Shift+Use still toggles take-public when that feature is on. Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, wall rename, page text, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
 
+### Books
+
+Craft a **Book** at a workbench (8 paper and 2 leather scraps by default, `BookCost`). Hover shows only its title.
+
+- **Read:** Use on a book (right-click, or its hotbar key) opens two big pages side by side on the paper texture. The maker gets **Edit** (type straight onto the page, **Add page**) and a **Book** tab for the title, cover colour, size (small, medium, large) and an optional cover picture.
+- **Place:** hammer, Furniture, **Book**. Pick a book from your inventory (or a new blank one) and place it on a table or the floor. A placed book reads on Use; its owner can let others read it or take it, and **Take** puts it back in your inventory with all its text.
+- **Shelves:** wall shelf, long wall shelf, small / standard / large / wide bookcase (Furniture). Books you put in them stand on the shelf with their spines out; use a spine to read it without taking it off. **Shift+Use** opens the shelf settings.
+- **Other things on shelves:** off by default. The server allows it with `ShelfAllowNonBooks`, and the shelf's owner turns it on in the shelf settings. Then each row can be **Books** (packed), **Slots** (one gap per slot) or **Free** (drag things along the shelf, turn, lift and size them).
+- **Cover pictures:** put PNG or JPG files in `BepInEx/config/DrakesRenameIt/BookCovers` on every machine (a server's modpack ships them). A book only remembers the file name.
+- **Paper:** Use on a written page now opens it to read too, with **Edit** and **Place**. `PaperUseReads` (client) turns this off to get the old Use back.
+- **Off switch:** `BooksEnabled` (section 14 Books) hides all of it. Recipe and station: `BookCost`, `BookCraftingStation`.
+
 ### LockSmith integration
 
 With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.11.2+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.

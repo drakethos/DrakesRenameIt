@@ -365,6 +365,12 @@
       "section": "13 Animals",
       "key": "AnimalAllowLock",
       "value": "true"
+    },
+    {
+      "guid": "com.drakemods.renameit",
+      "section": "11 UI-NotSynced",
+      "key": "PaperUseReads",
+      "value": "false"
     }
   ],
   "setup": {

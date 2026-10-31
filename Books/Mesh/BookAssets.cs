@@ -48,11 +48,14 @@ internal static class BookAssets
         return material;
     }
 
+    static readonly Dictionary<string, Material> CoverPictures = new();
+
     /// <summary>
     /// A standing book under <paramref name="parent"/> (spine facing -Z, foot of the spine at the parent's origin).
+    /// <paramref name="coverPicture"/> is an optional file name from <see cref="BookCovers"/>, drawn on the front cover.
     /// Returns null when the textures are missing.
     /// </summary>
-    internal static GameObject? Build(Transform parent, BookSize size, Color color)
+    internal static GameObject? Build(Transform parent, BookSize size, Color color, string? coverPicture = null)
     {
         var cover = Cover(color);
         var pages = PaperMesh.SheetMaterial(false);
@@ -62,6 +65,30 @@ internal static class BookAssets
         go.transform.SetParent(parent, false);
         go.AddComponent<MeshFilter>().sharedMesh = BookMesh.Book(size);
         go.AddComponent<MeshRenderer>().sharedMaterials = new[] { cover, pages };
+
+        var picture = PictureMaterial(coverPicture);
+        if (picture != null)
+        {
+            var quad = new GameObject("cover_picture");
+            quad.transform.SetParent(go.transform, false);
+            quad.AddComponent<MeshFilter>().sharedMesh = BookMesh.CoverQuad(size);
+            quad.AddComponent<MeshRenderer>().sharedMaterial = picture;
+        }
+
         return go;
+    }
+
+    static Material? PictureMaterial(string? name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return null;
+        if (CoverPictures.TryGetValue(name!, out var cached) && cached != null)
+            return cached;
+        var texture = BookCovers.Texture(name);
+        if (texture == null)
+            return null;
+        var material = new Material(ForgeSprites.Material(texture)) { name = "drakes_book_picture_" + name };
+        CoverPictures[name!] = material;
+        return material;
     }
 }

@@ -132,6 +132,9 @@
     <Compile Include="Books\Items\BookItem.cs" />
     <Compile Include="Books\UI\BookReaderPanel.cs" />
     <Compile Include="Books\Patches\BookUsePatch.cs" />
+    <Compile Include="Books\Patches\PaperReadPatch.cs" />
+    <Compile Include="Books\UI\PaperReaderPanel.cs" />
+    <Compile Include="Books\Data\BookCovers.cs" />
     <Compile Include="Books\Patches\BookPlacementPatches.cs" />
     <Compile Include="Books\Patches\BookPiecePatches.cs" />
     <Compile Include="Books\Pieces\BookPlaceState.cs" />

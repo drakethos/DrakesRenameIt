@@ -25,6 +25,26 @@ internal static class BookMesh
     static readonly Dictionary<BookSize, Mesh> Books = new();
     static readonly Dictionary<string, Mesh> Shelves = new();
 
+    static readonly Dictionary<BookSize, Mesh> CoverQuads = new();
+
+    /// <summary>A flat picture on the front cover (+X side), spine on its left; just proud of the board so it never z-fights.</summary>
+    internal static Mesh CoverQuad(BookSize size)
+    {
+        if (CoverQuads.TryGetValue(size, out var cached) && cached != null)
+            return cached;
+        var s = Sizes[(int)size];
+        float d = s.x, h = s.y, t = s.z;
+        var x = t / 2 + 0.0008f;
+        float z0 = -d / 2 + Board, z1 = d / 2 - PageInset / 2f;
+        var mesh = new Mesh { name = "drakes_book_cover_picture" };
+        mesh.SetVertices(new List<Vector3> { new(x, 0.01f, z0), new(x, h - 0.01f, z0), new(x, h - 0.01f, z1), new(x, 0.01f, z1) });
+        mesh.SetUVs(0, new List<Vector2> { new(0, 0), new(0, 1), new(1, 1), new(1, 0) });
+        mesh.SetTriangles(new List<int> { 0, 1, 2, 0, 2, 3 }, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return CoverQuads[size] = mesh;
+    }
+
     internal static Vector3 Dimensions(BookSize size) => Sizes[(int)size];
 
     /// <summary>Height of row <paramref name="row"/>'s standing surface above the bookcase origin.</summary>

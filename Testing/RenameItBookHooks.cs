@@ -37,6 +37,7 @@ internal static class RenameItBookHooks
         BookData.SetPages(book, S(args, "pages", "One|Two|Three").Split('|'));
         BookData.SetColor(book, BookData.CoverColors[Mathf.Clamp(int.Parse(S(args, "color", "0")), 0, BookData.CoverColors.Length - 1)]);
         BookData.SetSize(book, (BookSize)Mathf.Clamp(int.Parse(S(args, "size", "1")), 0, 2));
+        BookData.Set(book, BookData.KeyCover, S(args, "cover"));
         return true;
     }
 
@@ -126,6 +127,8 @@ internal static class RenameItBookHooks
     {
         BookReaderPanel.CloseWindow();
         BookPickerPanel.CloseWindow();
+        ShelfSettingsPanel.CloseWindow();
+        PaperReaderPanel.CloseWindow();
         return true;
     }
 
@@ -148,6 +151,85 @@ internal static class RenameItBookHooks
     [TestHook("renameit.bookHoverText")]
     static string BookHoverText(Dictionary<string, object?> args, GameObject? target = null) =>
         target != null && target.GetComponent<BookPieceBehaviour>() is { } book ? book.GetHoverText() : "";
+
+    /// <summary>Sets a shelf row's mode: row (0 = top), mode books / slots / free.</summary>
+    [TestHook("renameit.shelfSetMode")]
+    static bool SetMode(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<BookShelfBehaviour>() is not { } shelf)
+            return false;
+        var mode = S(args, "mode", "books").ToLowerInvariant() switch { "slots" => ShelfRowMode.Slots, "free" => ShelfRowMode.Free, _ => ShelfRowMode.Books };
+        shelf.SetMode(int.Parse(S(args, "row", "0")), mode);
+        return true;
+    }
+
+    /// <summary>Gives the nth item of a shelf row a Free pose: x (metres from the middle), lift, yaw, scale.</summary>
+    [TestHook("renameit.shelfSetPose")]
+    static bool SetPose(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<BookShelfBehaviour>() is not { } shelf)
+            return false;
+        var items = shelf.RowItems(int.Parse(S(args, "row", "0")));
+        var item = items[int.Parse(S(args, "index", "0"))];
+        float F(string key, float fallback) => float.Parse(S(args, key, fallback.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture);
+        shelf.SetPose(item, new ShelfPose { X = F("x", 0f), Lift = F("lift", 0f), Yaw = F("yaw", 0f), Scale = F("scale", 1f) });
+        return true;
+    }
+
+    /// <summary>The drawn items' local X, left to right, as "x1,x2,..." (3 decimals): what each row mode produced.</summary>
+    [TestHook("renameit.shelfLayout")]
+    static string Layout(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var holder = target != null ? target.transform.Find(BookShelfPiece.FrameName + "/drake_shelf_items") : null;
+        if (holder == null)
+            return "";
+        var xs = new List<float>();
+        foreach (Transform child in holder)
+            xs.Add(child.localPosition.x);
+        xs.Sort();
+        return string.Join(",", xs.ConvertAll(x => x.ToString("0.000", CultureInfo.InvariantCulture)));
+    }
+
+    /// <summary>Opens the shelf settings window on a shelf, for pictures.</summary>
+    [TestHook("renameit.shelfOpenSettings")]
+    static bool OpenSettings(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<BookShelfBehaviour>() is not { } shelf)
+            return false;
+        ShelfSettingsPanel.Show(shelf, P);
+        return true;
+    }
+
+    /// <summary>What a shelf's container holds: "prefab@x,y;prefab@x,y".</summary>
+    [TestHook("renameit.shelfItems")]
+    static string ShelfItems(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<Container>() is not { } c)
+            return "";
+        var parts = new List<string>();
+        foreach (var item in c.GetInventory().GetAllItems())
+            parts.Add($"{(item.m_dropPrefab != null ? item.m_dropPrefab.name : item.m_shared.m_name)}@{item.m_gridPos.x},{item.m_gridPos.y}");
+        return string.Join(";", parts);
+    }
+
+    /// <summary>Opens the paper reader on the first written page in the inventory (prefab Drakes_Paper_Written).</summary>
+    [TestHook("renameit.paperOpenReader")]
+    static bool PaperOpenReader(Dictionary<string, object?> args)
+    {
+        var item = P.GetInventory().GetAllItems().FirstOrDefault(i => i.m_dropPrefab != null && i.m_dropPrefab.name == "Drakes_Paper_Written")
+                   ?? throw new InvalidOperationException("no written page in the inventory");
+        PaperReaderPanel.Show(item);
+        return PaperReaderPanel.IsOpen;
+    }
+
+    /// <summary>True when Use on this written page would open the reader instead of placing it (what the patch decides).</summary>
+    [TestHook("renameit.paperUseReads")]
+    static bool PaperUseReads(Dictionary<string, object?> args) => RenameitConfig.PaperUseReads;
+
+    /// <summary>True when the placed book has a cover picture quad under it.</summary>
+    [TestHook("renameit.coverPictureShown")]
+    static bool CoverPictureShown(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && target.transform.Find("attach/drakes_book_mesh/cover_picture") != null;
 
     /// <summary>"WxH" of a shelf's container (inventory columns x rows).</summary>
     [TestHook("renameit.containerSize")]

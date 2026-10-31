@@ -1,0 +1,33 @@
+{
+  "name": "BK-07 row modes: Books packs, Slots centres in the slot gaps, Free uses saved spots",
+  "description": "With non-books allowed, a bookcase row can be Books, Slots or Free. The drawn positions change with the mode, and a Free pose moves one item. Pictures of the settings window and the shelf.",
+  "steps": [
+    { "do": "place", "prefab": "Drakes_Bookcase", "dz": 4, "as": "case" },
+    { "do": "place", "prefab": "piece_workbench", "dz": 3, "dx": 4, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book", "count": 2 },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "give", "prefab": "Stone", "count": 1 },
+    { "do": "hook", "name": "renameit.shelfSetNonBooks", "args": { "target": "case", "on": true }, "expect": true },
+    { "do": "store", "target": "case", "prefab": "Drakes_Book", "count": 1 },
+    { "do": "store", "target": "case", "prefab": "Drakes_Book", "count": 1 },
+    { "do": "hook", "name": "renameit.shelfTryStore", "args": { "target": "case", "prefab": "Stone" }, "expect": true, "label": "a stone fits" },
+    { "do": "hook", "name": "renameit.shelfItems", "args": { "target": "case" }, "contains": "Stone@", "label": "the stone is on the shelf (the game puts stackables on the bottom row)" },
+    { "do": "wait", "seconds": 1.2 },
+    { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "label": "Books mode: packed against the left end (first book centre -0.465)", "contains": "-0.465" },
+    { "do": "hook", "name": "renameit.shelfSetMode", "args": { "target": "case", "row": 0, "mode": "slots" }, "expect": true },
+    { "do": "wait", "seconds": 1.2 },
+    { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "contains": "-0.429", "label": "Slots mode: the first item is centred in slot 0 (-0.429), not packed" },
+    { "do": "hook", "name": "renameit.shelfSetMode", "args": { "target": "case", "row": 0, "mode": "free" }, "expect": true },
+    { "do": "hook", "name": "renameit.shelfSetPose", "args": { "target": "case", "row": 0, "index": 0, "x": 0.3, "lift": 0.05, "yaw": 20, "scale": 1.2 }, "expect": true },
+    { "do": "wait", "seconds": 1.2 },
+    { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "contains": "0.300", "label": "Free mode: the first item stands where its pose says" },
+    { "do": "hook", "name": "renameit.shelfOpenSettings", "args": { "target": "case" }, "expect": true },
+    { "do": "wait", "seconds": 0.8 },
+    { "do": "screenshot", "label": "shelf settings, a Free row with its board" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
+    { "do": "lookAt", "target": "case", "distance": 2.4 },
+    { "do": "screenshot", "label": "the bookcase with a Free row" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

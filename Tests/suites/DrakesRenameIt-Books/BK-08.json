@@ -1,0 +1,15 @@
+{
+  "name": "BK-08 paper: Use reads a written page, the old placing still reachable",
+  "description": "With PaperUseReads on (the default), the paper reader opens on a written page. A picture shows it. PaperUseReads off restores the old Use.",
+  "steps": [
+    { "do": "setConfig", "values": { "11 UI-NotSynced/PaperUseReads": "true" } },
+    { "do": "hook", "name": "renameit.paperUseReads", "expect": true, "label": "reading is on" },
+    { "do": "give", "prefab": "Drakes_PieceOfPaper", "count": 1 },
+    { "do": "hook", "name": "renameit.edit", "args": { "prefab": "Drakes_PieceOfPaper", "op": "desc", "text": "Shopping list: nails, leather, tin ore as much as raven allows." }, "expect": true, "label": "writing turns the blank sheet into a written page", "stop": true },
+    { "do": "hook", "name": "renameit.paperOpenReader", "expect": true, "label": "the paper reader opens", "stop": true },
+    { "do": "wait", "seconds": 0.8 },
+    { "do": "screenshot", "label": "paper reader" },
+    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

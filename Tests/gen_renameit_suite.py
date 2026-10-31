@@ -1361,6 +1361,7 @@ baseline = {
         '10 Paper/WrittenPaperIgnoresRestrictions': 'false', '10 Paper/BlankPaperPlaceOrientation': 'Both',
         '10 Paper/VerticalPaperPlaceable': 'true', '10 Paper/HorizontalPaperPlaceable': 'true', '10 Paper/StackPaperPlaceable': 'true',
         '11 UI-NotSynced/MenuOpenModifier': '', '11 UI-NotSynced/LogSpam': 'false',
+        '11 UI-NotSynced/PaperUseReads': 'false',   # the paper tests use the old Use (place); the Books suite tests reading
         '12 Pieces/PieceRenameEnabled': 'true', '12 Pieces/PieceRenameAdminOnly': 'false', '12 Pieces/PieceExcludedNames': '',
         '12 Pieces/PieceExcludedCategory': '', '12 Pieces/PieceRenameAllowlist': '', '12 Pieces/PieceNameCharacterLimit': '50',
         '12 Pieces/PieceLockToBuilder': 'true', '12 Pieces/PieceRequireWardAccess': 'true', '12 Pieces/PieceSharedEnabled': 'true',

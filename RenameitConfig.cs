@@ -134,6 +134,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _animalAllowColour = default!;
     private static ConfigEntry<string> _animalRenameAccess = default!;
     private static ConfigEntry<bool> _animalAllowLock = default!;
+    private static ConfigEntry<bool> _paperUseReads = default!;
     private static ConfigEntry<bool> _booksEnabled = default!;
     private static ConfigEntry<string> _bookCost = default!;
     private static ConfigEntry<string> _bookCraftingStation = default!;
@@ -397,6 +398,8 @@ public static class RenameitConfig
 
     /// <summary>Low-poly 3D sheet (Valheim look) instead of the flat sprite. Applied when items/pieces register.</summary>
     public static bool PaperMeshLook => _paperMeshLook.Value;
+    /// <summary>Use on a Written or Printed Page reads it (a one-page reader with Edit and Place). Off: Use places it, as before. Per-client.</summary>
+    public static bool PaperUseReads => _paperUseReads.Value;
 
     /// <summary>Vanilla <see cref="ItemDrop.ItemData.ItemType"/> for Piece of Paper (<c>Material</c> or <c>Misc</c>).</summary>
     public static string PaperItemType => _paperItemType.Value;
@@ -1282,6 +1285,12 @@ public static class RenameitConfig
         _durabilityUnbrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
         _durabilityBrokenLabel.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
         _durabilityTierModifiers.SettingChanged += RefreshStandLabelsOnDurabilityConfigChange;
+
+        _paperUseReads = _drakeConfigSync.BindClientOnly(config,
+            SectionUI, DisplayUI,
+            "PaperUseReads",
+            true,
+            "Use on a Written or Printed Page (right-click, or its hotbar key) opens it to read, with Edit and Place buttons, the same way a book opens. Off: Use places the page, as before. Per-client.");
 
         _booksEnabled = _drakeConfigSync.BindSynced(config,
             SectionBooks, DisplayBooks,

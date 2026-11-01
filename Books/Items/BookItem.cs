@@ -78,7 +78,10 @@ internal static class BookItem
             BuildVisual(book.ItemPrefab);
             ItemManager.Instance.AddItem(book);
             if (book.ItemDrop?.m_itemData != null)
+            {
                 book.ItemDrop.m_itemData.m_dropPrefab = book.ItemPrefab;
+                BookData.SetColor(book.ItemDrop.m_itemData, BookData.CoverColors[0]);
+            }
             _log?.LogInfo($"[Books] Registered {PrefabName} (enabled={RenameitConfig.BooksEnabled}, cost='{RenameitConfig.BookCost}').");
         }
         catch (Exception ex)

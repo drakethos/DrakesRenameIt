@@ -40,6 +40,16 @@ internal sealed class BookReaderPanel
     readonly Button[] _sizes = new Button[3];
     readonly UkSwitch _readable;
     readonly UkSwitch _takeable;
+    readonly UkSwitch _readable2;
+    readonly UkSwitch _takeable2;
+    readonly VisualElement _switchBar;
+    readonly VisualElement _toolbar;
+    readonly VisualElement _spread;
+    readonly VisualElement _coverPreview;
+    readonly Label _coverTitle;
+    readonly Button _delPage;
+    TextField? _tf;
+    int _editPage;
     readonly VisualElement _placedOptions;
     readonly VisualElement _pictures;
 
@@ -97,7 +107,46 @@ internal sealed class BookReaderPanel
 
         // --- Pages tab
         _pagesView = new VisualElement().Column();
+
+        // The owner of a placed book sees who may read / take it right above the pages.
+        _switchBar = new VisualElement().Row();
+        _switchBar.style.marginBottom = 8;
+        _readable = new UkSwitch("Readers can open", "Others may read it, not only you");
+        _readable.Changed = on => OnFlag(BookData.KeyReadable, on);
+        _takeable = new UkSwitch("Allow take", "Others may pick it up");
+        _takeable.Changed = on => OnFlag(BookData.KeyTake, on);
+        _readable.Root.style.marginRight = 40;
+        _switchBar.Add(_readable.Root);
+        _switchBar.Add(_takeable.Root);
+        _pagesView.Add(_switchBar);
+
+        // Edit mode: a small rich-text toolbar. It wraps the selection in the game's own text tags.
+        _toolbar = new VisualElement().Row();
+        _toolbar.style.marginBottom = 8;
+        _toolbar.style.flexWrap = Wrap.Wrap;
+        _toolbar.Add(UkControls.MakeButton("B", () => Tag("<b>", "</b>")));
+        _toolbar.Add(UkControls.MakeButton("I", () => Tag("<i>", "</i>")));
+        _toolbar.Add(UkControls.MakeButton("Bigger", () => Tag("<size=34>", "</size>")));
+        _toolbar.Add(UkControls.MakeButton("Smaller", () => Tag("<size=20>", "</size>")));
+        foreach (var hex in new[] { "9b2d20", "24456e", "2f5a2c", "6b2c82", "1a1a1a" })
+        {
+            ColorUtility.TryParseHtmlString("#" + hex, out var ink);
+            var dot = new VisualElement().Size(width: 34, height: 34).Fill(ink).Border(Color.black, 2).Round(4);
+            dot.style.marginLeft = 10;
+            dot.style.alignSelf = Align.Center;
+            var tag = hex;
+            dot.RegisterCallback<ClickEvent>(_ => Tag("<color=#" + tag + ">", "</color>"));
+            _toolbar.Add(dot);
+        }
+
+        var clear = UkControls.MakeButton("Clear formatting", ClearFormatting);
+        clear.style.marginLeft = 16;
+        _toolbar.Add(clear);
+        _pagesView.Add(_toolbar);
+
         var spread = new VisualElement().Row(Align.Stretch);
+        _spread = spread;
+        spread.style.justifyContent = Justify.Center;
         spread.style.minHeight = PageHeight;
         spread.Round(4).Border(new Color(0.29f, 0.21f, 0.13f), 3);
         var texture = ForgeTextures.Load(typeof(BookReaderPanel).Assembly, "textures/paper_sheet.png");
@@ -110,33 +159,36 @@ internal sealed class BookReaderPanel
         _pagesView.Add(spread);
         body.Add(_pagesView);
 
-        // --- Book tab
-        _bookView = new VisualElement().Column();
+        // --- Book tab: settings on the left, a live cover preview and sharing on the right
+        _bookView = new VisualElement().Row(Align.FlexStart);
+        var settings = new VisualElement().Column().Grow();
+        settings.style.flexBasis = 0;
+        settings.style.marginRight = 40;
         _title = new UkField("Title", multiline: false);
         _title.Changed = OnTitleChanged;
-        _bookView.Add(_title.Root);
+        settings.Add(_title.Root);
 
-        var colorLabel = UkControls.Text("Cover colour", 15, UkTheme.Text, heading: true);
-        colorLabel.style.marginTop = 16;
-        _bookView.Add(colorLabel);
+        var colorLabel = UkControls.Text("Cover colour", 17, UkTheme.Text, heading: true);
+        colorLabel.style.marginTop = 24;
+        settings.Add(colorLabel);
         _swatches = new VisualElement().Row();
-        _swatches.style.marginTop = 6;
+        _swatches.style.marginTop = 8;
         for (var i = 0; i < BookData.CoverColors.Length; i++)
         {
             var color = BookData.CoverColors[i];
-            var swatch = new VisualElement().Size(width: 40, height: 40).Fill(color).Border(Color.black, 2).Round(4);
-            swatch.style.marginRight = 10;
+            var swatch = new VisualElement().Size(width: 64, height: 64).Fill(color).Border(Color.black, 3).Round(6);
+            swatch.style.marginRight = 14;
             swatch.RegisterCallback<ClickEvent>(_ => OnColor(color));
             _swatches.Add(swatch);
         }
 
-        _bookView.Add(_swatches);
+        settings.Add(_swatches);
 
-        var sizeLabel = UkControls.Text("Size", 15, UkTheme.Text, heading: true);
-        sizeLabel.style.marginTop = 16;
-        _bookView.Add(sizeLabel);
+        var sizeLabel = UkControls.Text("Size", 17, UkTheme.Text, heading: true);
+        sizeLabel.style.marginTop = 24;
+        settings.Add(sizeLabel);
         var sizeRow = new VisualElement().Row();
-        sizeRow.style.marginTop = 6;
+        sizeRow.style.marginTop = 8;
         string[] names = { "Small", "Medium", "Large" };
         for (var i = 0; i < 3; i++)
         {
@@ -145,34 +197,50 @@ internal sealed class BookReaderPanel
             sizeRow.Add(_sizes[i]);
         }
 
-        _bookView.Add(sizeRow);
+        settings.Add(sizeRow);
 
-        var pictureLabel = UkControls.Text("Cover picture", 15, UkTheme.Text, heading: true);
-        pictureLabel.style.marginTop = 16;
-        _bookView.Add(pictureLabel);
+        var pictureLabel = UkControls.Text("Cover picture", 17, UkTheme.Text, heading: true);
+        pictureLabel.style.marginTop = 24;
+        settings.Add(pictureLabel);
         _pictures = new VisualElement().Row();
-        _pictures.style.marginTop = 6;
+        _pictures.style.marginTop = 8;
         _pictures.style.flexWrap = Wrap.Wrap;
-        _bookView.Add(_pictures);
+        settings.Add(_pictures);
+        _bookView.Add(settings);
+
+        var side = new VisualElement().Column();
+        side.style.width = 520;
+        side.Add(UkControls.Text("Preview", 17, UkTheme.Text, heading: true));
+        _coverPreview = new VisualElement().Size(width: 280, height: 380).Border(Color.black, 3).Round(8);
+        _coverPreview.style.marginTop = 8;
+        _coverPreview.style.justifyContent = Justify.Center;
+        _coverTitle = UkControls.Text("", 24, new Color(0.96f, 0.90f, 0.72f), wrap: true);
+        _coverTitle.style.unityTextAlign = TextAnchor.MiddleCenter;
+        _coverTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
+        _coverTitle.style.marginLeft = _coverTitle.style.marginRight = 20;
+        _coverPreview.Add(_coverTitle);
+        side.Add(_coverPreview);
 
         _placedOptions = new VisualElement().Column();
-        _placedOptions.style.marginTop = 16;
-        _readable = new UkSwitch("Readers can open", "Others may read it, not only you");
-        _readable.Changed = on => OnFlag(BookData.KeyReadable, on);
-        _takeable = new UkSwitch("Allow take", "Others may pick it up");
-        _takeable.Changed = on => OnFlag(BookData.KeyTake, on);
-        _placedOptions.Add(_readable.Root);
-        _placedOptions.Add(_takeable.Root);
-        _bookView.Add(_placedOptions);
+        _placedOptions.style.marginTop = 24;
+        _readable2 = new UkSwitch("Readers can open", "Others may read it, not only you");
+        _readable2.Changed = on => OnFlag(BookData.KeyReadable, on);
+        _takeable2 = new UkSwitch("Allow take", "Others may pick it up");
+        _takeable2.Changed = on => OnFlag(BookData.KeyTake, on);
+        _placedOptions.Add(_readable2.Root);
+        _placedOptions.Add(_takeable2.Root);
+        side.Add(_placedOptions);
+        _bookView.Add(side);
         body.Add(_bookView);
 
         // --- footer
         var foot = _window.Footer;
-        _prev = UkControls.MakeButton("<", () => Turn(-2));
-        _next = UkControls.MakeButton(">", () => Turn(2));
+        _prev = UkControls.MakeButton("<", () => Turn(-1));
+        _next = UkControls.MakeButton(">", () => Turn(1));
         _count = UkControls.Text("", 15, UkTheme.TextMuted, wrap: false);
         _edit = UkControls.MakeButton("Edit", ToggleEdit);
         _addPage = UkControls.MakeButton("Add page", AddPage);
+        _delPage = UkControls.MakeButton("Delete page", DeletePage);
         _take = UkControls.MakeButton("Take", () =>
         {
             Commit();
@@ -185,6 +253,7 @@ internal sealed class BookReaderPanel
         foot.Add(_next);
         foot.Add(UkControls.Spacer());
         foot.Add(_take);
+        foot.Add(_delPage);
         foot.Add(_addPage);
         foot.Add(_edit);
         _window.ShowFooter(true);
@@ -218,8 +287,12 @@ internal sealed class BookReaderPanel
         _title.Input.value = CustomTitle(item);
         _readable.SetValue(BookData.Readable(item));
         _takeable.SetValue(BookData.GetFlag(item, BookData.KeyTake, false));
+        _readable2.SetValue(BookData.Readable(item));
+        _takeable2.SetValue(BookData.GetFlag(item, BookData.KeyTake, false));
         _loading = false;
+        _editPage = 0;
         _placedOptions.Show(_owner);
+        _switchBar.Show(_owner);
         _tabRow.Show(_canEdit);
         _take.Show(_onTake != null);
         RefreshBookView();
@@ -234,6 +307,8 @@ internal sealed class BookReaderPanel
     void SelectTab(bool book)
     {
         Commit();
+        if (book)
+            _editing = false;
         _pagesView.Show(!book);
         _bookView.Show(book);
         UkControls.SetKind(_pagesTab, book ? UkButtonKind.Secondary : UkButtonKind.Primary);
@@ -244,6 +319,7 @@ internal sealed class BookReaderPanel
         _count.Show(!book);
         _edit.Show(!book && _canEdit);
         _addPage.Show(!book && _canEdit && _editing);
+        _delPage.Show(!book && _canEdit && _editing);
         if (!book)
             Render();
         UpdateHeader();
@@ -255,16 +331,43 @@ internal sealed class BookReaderPanel
     {
         _left.Clear();
         _right.Clear();
-        Fill(_left, _spreadStart);
-        Fill(_right, _spreadStart + 1);
+        _tf = null;
+        _toolbar.Show(_canEdit && _editing);
 
-        var end = Math.Min(_spreadStart + 2, _pages.Count);
-        _count.text = $"Pages {_spreadStart + 1}-{end} of {_pages.Count}";
-        UkControls.SetButtonEnabled(_prev, _spreadStart > 0);
-        UkControls.SetButtonEnabled(_next, _spreadStart + 2 < _pages.Count);
+        if (_editing)
+        {
+            // One page, wide enough to write on, with the toolbar above.
+            _right.Show(false);
+            _left.style.flexGrow = 0;
+            _left.style.flexBasis = StyleKeyword.Auto;
+            _left.style.width = 980;
+            if (_pages.Count == 0)
+                _pages.Add("");
+            _editPage = Mathf.Clamp(_editPage, 0, _pages.Count - 1);
+            Fill(_left, _editPage);
+            _count.text = $"Page {_editPage + 1} of {_pages.Count}";
+            UkControls.SetButtonEnabled(_prev, _editPage > 0);
+            UkControls.SetButtonEnabled(_next, _editPage + 1 < _pages.Count);
+        }
+        else
+        {
+            _right.Show(true);
+            _left.style.flexGrow = 1;
+            _left.style.flexBasis = 0;
+            _left.style.width = StyleKeyword.Auto;
+            Fill(_left, _spreadStart);
+            Fill(_right, _spreadStart + 1);
+            var end = Math.Min(_spreadStart + 2, _pages.Count);
+            _count.text = $"Pages {_spreadStart + 1}-{end} of {_pages.Count}";
+            UkControls.SetButtonEnabled(_prev, _spreadStart > 0);
+            UkControls.SetButtonEnabled(_next, _spreadStart + 2 < _pages.Count);
+        }
+
         _edit.text = _editing ? "Done" : "Edit";
         _addPage.Show(_canEdit && _editing);
+        _delPage.Show(_canEdit && _editing);
         UkControls.SetButtonEnabled(_addPage, _pages.Count < BookData.MaxPages);
+        UkControls.SetButtonEnabled(_delPage, _pages.Count > 0);
         UpdateHeader();
     }
 
@@ -294,11 +397,13 @@ internal sealed class BookReaderPanel
             tf.textSelection.selectionColor = new Color(0.55f, 0.40f, 0.18f, 0.35f);
             UkFonts.ApplyBody(box);
             tf.RegisterValueChangedCallback(e => _pages[index] = e.newValue ?? "");
+            _tf = tf;
             page.Add(tf);
         }
         else
         {
             var text = UkControls.Text(_pages[index], BodyFont, Ink);
+            text.enableRichText = true;
             text.style.whiteSpace = WhiteSpace.Normal;
             text.style.flexGrow = 1;
             text.style.unityTextAlign = TextAnchor.UpperLeft;
@@ -311,11 +416,41 @@ internal sealed class BookReaderPanel
         page.Add(number);
     }
 
-    void Turn(int by)
+    /// <summary>Wrap the selected text (or the caret position) in a tag pair.</summary>
+    void Tag(string open, string close)
+    {
+        var tf = _tf;
+        if (tf == null)
+            return;
+        var v = tf.value ?? "";
+        var a = Mathf.Clamp(Math.Min(tf.cursorIndex, tf.selectIndex), 0, v.Length);
+        var b = Mathf.Clamp(Math.Max(tf.cursorIndex, tf.selectIndex), a, v.Length);
+        tf.value = v.Substring(0, a) + open + v.Substring(a, b - a) + close + v.Substring(b);
+        tf.Focus();
+        tf.SelectRange(a + open.Length, b + open.Length);
+    }
+
+    void ClearFormatting()
+    {
+        if (_tf == null)
+            return;
+        _tf.value = System.Text.RegularExpressions.Regex.Replace(_tf.value ?? "", "</?(b|i|size|color)(=[^>]*)?>", "");
+    }
+
+    /// <summary>Turn the page: two at a time when reading, one at a time when editing.</summary>
+    void Turn(int direction)
     {
         Commit();
-        _spreadStart = Mathf.Clamp(_spreadStart + by, 0, Math.Max(0, _pages.Count - 1));
-        _spreadStart -= _spreadStart % 2;
+        if (_editing)
+        {
+            _editPage = Mathf.Clamp(_editPage + direction, 0, Math.Max(0, _pages.Count - 1));
+        }
+        else
+        {
+            _spreadStart = Mathf.Clamp(_spreadStart + direction * 2, 0, Math.Max(0, _pages.Count - 1));
+            _spreadStart -= _spreadStart % 2;
+        }
+
         Render();
     }
 
@@ -323,8 +458,12 @@ internal sealed class BookReaderPanel
     {
         if (!_canEdit)
             return;
-        _editing = !_editing;
         Commit();
+        _editing = !_editing;
+        if (_editing)
+            _editPage = Mathf.Clamp(_spreadStart, 0, Math.Max(0, _pages.Count - 1));
+        else
+            _spreadStart = _editPage - _editPage % 2;
         Render();
     }
 
@@ -333,7 +472,20 @@ internal sealed class BookReaderPanel
         if (_pages.Count >= BookData.MaxPages)
             return;
         _pages.Add("");
-        _spreadStart = (_pages.Count - 1) - ((_pages.Count - 1) % 2);
+        _editPage = _pages.Count - 1;
+        _spreadStart = _editPage - _editPage % 2;
+        Commit();
+        Render();
+    }
+
+    void DeletePage()
+    {
+        if (_pages.Count == 0)
+            return;
+        _pages.RemoveAt(Mathf.Clamp(_editPage, 0, _pages.Count - 1));
+        if (_pages.Count == 0)
+            _pages.Add("");
+        _editPage = Mathf.Clamp(_editPage, 0, _pages.Count - 1);
         Commit();
         Render();
     }
@@ -357,6 +509,12 @@ internal sealed class BookReaderPanel
 
         for (var s = 0; s < 3; s++)
             UkControls.SetKind(_sizes[s], (int)size == s ? UkButtonKind.Primary : UkButtonKind.Secondary);
+
+        _coverPreview.style.backgroundColor = current;
+        var shown = BookData.Get(_item, BookData.KeyCover);
+        var pic = string.IsNullOrEmpty(shown) ? null : BookCovers.Texture(shown);
+        _coverPreview.style.backgroundImage = pic != null ? new StyleBackground(pic) : new StyleBackground();
+        _coverTitle.text = pic != null ? "" : BookData.DisplayTitle(_item);
 
         // Cover pictures: None, then every file in the BookCovers folder (a server or modpack adds them).
         _pictures.Clear();
@@ -391,6 +549,7 @@ internal sealed class BookReaderPanel
         BookData.SetTitle(_item, value);
         Save();
         UpdateHeader();
+        RefreshBookView();
     }
 
     void OnColor(Color color)
@@ -416,6 +575,10 @@ internal sealed class BookReaderPanel
         if (_loading || _item == null || !_owner)
             return;
         BookData.SetFlag(_item, key, on);
+        _loading = true;
+        (key == BookData.KeyReadable ? _readable : _takeable).SetValue(on);
+        (key == BookData.KeyReadable ? _readable2 : _takeable2).SetValue(on);
+        _loading = false;
         Save();
     }
 

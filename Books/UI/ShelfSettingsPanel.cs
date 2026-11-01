@@ -77,14 +77,7 @@ internal sealed class ShelfSettingsPanel
         _rows.Clear();
         if (_shelf == null)
             return;
-        var allowed = _shelf.AllowsNonBooks();
         _rows.Add(UkControls.Text("Rows", 16, UkTheme.Text, heading: true));
-        if (!allowed)
-        {
-            _rows.Add(UkControls.Text("Every row stands the books side by side. Allow other things above to choose Slots or Free.", 14, UkTheme.TextMuted));
-            return;
-        }
-
         for (var row = 0; row < _shelf.ShelfRows; row++)
             _rows.Add(BuildRow(row));
     }
@@ -102,7 +95,7 @@ internal sealed class ShelfSettingsPanel
         head.Add(UkControls.Text(name, 15, UkTheme.Text, heading: true));
         head.Add(UkControls.Spacer());
         var mode = shelf.GetMode(shelfRow);
-        foreach (var m in new[] { ShelfRowMode.Books, ShelfRowMode.Slots, ShelfRowMode.Free })
+        foreach (var m in new[] { ShelfRowMode.Slots, ShelfRowMode.Free })
         {
             var mm = m;
             var button = UkControls.MakeButton(mm.ToString(), () => ChooseMode(shelfRow, mm), mm == mode ? UkButtonKind.Primary : UkButtonKind.Secondary);
@@ -113,9 +106,8 @@ internal sealed class ShelfSettingsPanel
         box.Add(head);
         var hint = mode switch
         {
-            ShelfRowMode.Slots => "Each thing stands in the gap of its slot. Drag things between slots in the shelf window.",
-            ShelfRowMode.Free => "Drag things along the shelf, then turn, lift or size the selected one.",
-            _ => "Books stand side by side in slot order.",
+            ShelfRowMode.Free => "Place things anywhere along this row: drag them, then turn, lift or size the selected one.",
+            _ => "Each book stands in its own slot.",
         };
         var hintLabel = UkControls.Text(hint, 13, UkTheme.TextMuted);
         hintLabel.style.marginTop = 4;

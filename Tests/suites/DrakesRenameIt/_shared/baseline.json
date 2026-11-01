@@ -266,6 +266,12 @@
     },
     {
       "guid": "com.drakemods.renameit",
+      "section": "11 UI-NotSynced",
+      "key": "PaperUseReads",
+      "value": "false"
+    },
+    {
+      "guid": "com.drakemods.renameit",
       "section": "12 Pieces",
       "key": "PieceRenameEnabled",
       "value": "true"
@@ -365,12 +371,6 @@
       "section": "13 Animals",
       "key": "AnimalAllowLock",
       "value": "true"
-    },
-    {
-      "guid": "com.drakemods.renameit",
-      "section": "11 UI-NotSynced",
-      "key": "PaperUseReads",
-      "value": "false"
     }
   ],
   "setup": {

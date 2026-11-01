@@ -1,5 +1,5 @@
 {
-  "name": "BK-07 row modes: Books packs, Slots centres in the slot gaps, Free uses saved spots",
+  "name": "BK-07 row modes: Slots is the default, Free uses saved spots",
   "description": "With non-books allowed, a bookcase row can be Books, Slots or Free. The drawn positions change with the mode, and a Free pose moves one item. Pictures of the settings window and the shelf.",
   "steps": [
     { "do": "place", "prefab": "Drakes_Bookcase", "dz": 4, "as": "case" },
@@ -14,7 +14,7 @@
     { "do": "hook", "name": "renameit.shelfTryStore", "args": { "target": "case", "prefab": "Stone" }, "expect": true, "label": "a stone fits" },
     { "do": "hook", "name": "renameit.shelfItems", "args": { "target": "case" }, "contains": "Stone@", "label": "the stone is on the shelf (the game puts stackables on the bottom row)" },
     { "do": "wait", "seconds": 1.2 },
-    { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "label": "Books mode: packed against the left end (first book centre -0.465)", "contains": "-0.465" },
+    { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "label": "default is Slots: the first book is centred in slot 0", "contains": "-0.429" },
     { "do": "hook", "name": "renameit.shelfSetMode", "args": { "target": "case", "row": 0, "mode": "slots" }, "expect": true },
     { "do": "wait", "seconds": 1.2 },
     { "do": "hook", "name": "renameit.shelfLayout", "args": { "target": "case" }, "contains": "-0.429", "label": "Slots mode: the first item is centred in slot 0 (-0.429), not packed" },

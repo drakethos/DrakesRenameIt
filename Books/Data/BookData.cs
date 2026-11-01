@@ -26,7 +26,7 @@ internal static class BookData
     /// <summary>Pages are one string joined by this control character (never typed into a text box).</summary>
     const char PageBreak = '\u001f';
     internal const int MaxPages = 40;
-    internal const int MaxPageChars = 2400;
+    internal const int MaxPageChars = 4000;
     internal const int MaxTitleChars = 40;
 
     /// <summary>Cover colours the editor offers (also the default pick).</summary>
@@ -96,7 +96,14 @@ internal static class BookData
         return CoverColors[0];
     }
 
-    internal static void SetColor(ItemDrop.ItemData item, Color color) => Set(item, KeyColor, ColorUtility.ToHtmlStringRGB(color));
+    internal static void SetColor(ItemDrop.ItemData item, Color color)
+    {
+        Set(item, KeyColor, ColorUtility.ToHtmlStringRGB(color));
+        DrakeModsLibs.API.CustomizeLibsAPI.SetIconTint(item, IconTint(color));
+    }
+
+    /// <summary>The inventory icon is a neutral grey book; this tint makes it the cover colour (a little lifted so it reads).</summary>
+    internal static Color IconTint(Color cover) => new(Mathf.Min(1f, cover.r * 1.35f), Mathf.Min(1f, cover.g * 1.35f), Mathf.Min(1f, cover.b * 1.35f), 1f);
 
     /// <summary>Title the way hover shows it (custom name, else the item's own name).</summary>
     internal static string DisplayTitle(ItemDrop.ItemData item)

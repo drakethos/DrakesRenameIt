@@ -111,15 +111,13 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
 
     internal int SlotsPerShelfRow => Columns * Mathf.Max(1, InvPerRow);
 
-    /// <summary>The row's mode; always Books while the shelf only takes books.</summary>
+    /// <summary>The row's mode: Slots unless the owner chose Free. (Books is an old value, read as Slots.)</summary>
     internal ShelfRowMode GetMode(int shelfRow)
     {
-        if (!AllowsNonBooks())
-            return ShelfRowMode.Books;
         var parts = (Zdo?.GetString(ZModes, "") ?? "").Split(',');
         return shelfRow < parts.Length && int.TryParse(parts[shelfRow], NumberStyles.Integer, CultureInfo.InvariantCulture, out var m) && m >= 0 && m <= 2
-            ? (ShelfRowMode)m
-            : ShelfRowMode.Books;
+            ? (m == (int)ShelfRowMode.Free ? ShelfRowMode.Free : ShelfRowMode.Slots)
+            : ShelfRowMode.Slots;
     }
 
     internal void SetMode(int shelfRow, ShelfRowMode mode) => Write(z =>

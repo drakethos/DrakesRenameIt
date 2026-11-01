@@ -33,7 +33,7 @@ internal sealed class ShelfSettingsPanel
 
     ShelfSettingsPanel()
     {
-        _window = new UkWindow("drakes_shelf_settings", 980f);
+        _window = new UkWindow("drakes_shelf_settings", 700f);
         _window.SetHeader("Shelf", "Settings");
         _nonBooks = new UkSwitch("Allow things other than books", "Knick-knacks stand on the shelf too, and rows can be Slots or Free");
         _nonBooks.Changed = on =>
@@ -128,7 +128,7 @@ internal sealed class ShelfSettingsPanel
 
     // ---- the Free board
 
-    const float BoardWidth = 880f;
+    const float BoardWidth = 600f;
     const float BoardHeight = 110f;
     const float TokenSize = 44f;
 
@@ -171,6 +171,7 @@ internal sealed class ShelfSettingsPanel
 
         // Turn, lift and size for the selected thing.
         var controls = new VisualElement().Row();
+        controls.style.flexWrap = Wrap.Wrap;
         controls.style.marginTop = 8;
         void Add(string text, Func<ShelfPose, ShelfPose> change)
         {

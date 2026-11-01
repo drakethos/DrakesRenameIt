@@ -1,0 +1,30 @@
+{
+  "name": "BK-10 shelf look: books sit on the shelf row that matches their grid row, seen from the front",
+  "description": "A small bookcase (2 rows) with books at grid (0,0), (1,0) and (0,1). Pictures from the front with the player hidden.",
+  "steps": [
+    { "do": "place", "prefab": "Drakes_BookcaseSmall", "dz": 4, "as": "case" },
+    { "do": "place", "prefab": "piece_workbench", "dz": 4, "dx": 5, "as": "bench" },
+    { "do": "give", "materialsFor": "Drakes_Book", "count": 3 },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "craft", "prefab": "Drakes_Book", "station": "bench" },
+    { "do": "hook", "name": "renameit.shelfStoreAt", "args": { "target": "case", "x": 0, "y": 0 }, "expect": true },
+    { "do": "hook", "name": "renameit.shelfStoreAt", "args": { "target": "case", "x": 1, "y": 0 }, "expect": true },
+    { "do": "hook", "name": "renameit.shelfStoreAt", "args": { "target": "case", "x": 0, "y": 1 }, "expect": true },
+    { "do": "wait", "seconds": 1.2 },
+    { "do": "hook", "name": "renameit.shelfItems", "args": { "target": "case" }, "contains": "Drakes_Book@0,1", "label": "the third book is in grid row 1" },
+    { "do": "hook", "name": "renameit.shelfClaimed", "args": { "target": "case" }, "expect": true, "label": "RenameIt's piece rename leaves the shelf's Shift+Use alone" },
+    { "do": "hook", "name": "renameit.shelfHover", "args": { "target": "case" }, "contains": "Shelf settings", "label": "hover offers the shelf settings" },
+    { "do": "hook", "name": "renameit.shelfWhere", "args": { "target": "case" }, "contains": "case", "label": "where things are (informational)" },
+    { "do": "hook", "name": "renameit.hidePlayer", "args": { "on": true } },
+    { "do": "hook", "name": "renameit.cameraZoom", "args": { "distance": 0.2 } },
+    { "do": "hook", "name": "renameit.frontView", "args": { "target": "case", "distance": 1.6 } },
+    { "do": "wait", "seconds": 1.0 },
+    { "do": "screenshot", "label": "small bookcase, one side" },
+    { "do": "hook", "name": "renameit.frontView", "args": { "target": "case", "distance": -1.6 } },
+    { "do": "wait", "seconds": 1.0 },
+    { "do": "screenshot", "label": "small bookcase, the other side" },
+    { "do": "hook", "name": "renameit.hidePlayer", "args": { "on": false } }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+}

@@ -93,7 +93,7 @@ internal sealed class BookReaderPanel
 
     BookReaderPanel()
     {
-        _window = new UkWindow("drakes_book_reader", 1780f);
+        _window = new UkWindow("drakes_book_reader", 1240f);
         _window.Closed = Commit;
         var body = _window.Body;
 
@@ -209,7 +209,7 @@ internal sealed class BookReaderPanel
         _bookView.Add(settings);
 
         var side = new VisualElement().Column();
-        side.style.width = 520;
+        side.style.width = 320;
         side.Add(UkControls.Text("Preview", 17, UkTheme.Text, heading: true));
         _coverPreview = new VisualElement().Size(width: 280, height: 380).Border(Color.black, 3).Round(8);
         _coverPreview.style.marginTop = 8;
@@ -340,7 +340,7 @@ internal sealed class BookReaderPanel
             _right.Show(false);
             _left.style.flexGrow = 0;
             _left.style.flexBasis = StyleKeyword.Auto;
-            _left.style.width = 980;
+            _left.style.width = 760;
             if (_pages.Count == 0)
                 _pages.Add("");
             _editPage = Mathf.Clamp(_editPage, 0, _pages.Count - 1);

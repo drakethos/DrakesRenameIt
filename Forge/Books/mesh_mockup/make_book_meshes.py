@@ -31,6 +31,8 @@ SIZES = {"small": (0.21, 0.29, 0.040), "medium": (0.26, 0.36, 0.050), "large": (
 BOARD = 0.005          # cover board thickness
 PAGE_INSET = 0.006     # pages sit this far in from the cover edges
 
+# Shelf icons use these (no brown or gold: they read as wooden dividers between the books).
+ICON_COLORS = [(0.55, 0.16, 0.16), (0.16, 0.29, 0.55), (0.16, 0.42, 0.23), (0.40, 0.16, 0.46), (0.12, 0.40, 0.42)]
 COLORS = [(0.48, 0.16, 0.16), (0.16, 0.29, 0.48), (0.16, 0.42, 0.23), (0.35, 0.23, 0.10), (0.35, 0.16, 0.42), (0.78, 0.64, 0.23)]
 
 
@@ -328,7 +330,7 @@ def main():
             t = SIZES[size][2]
             if x + t > x1:
                 break
-            b = make_book("B", size, None, mats(COLORS[(i + 1) % len(COLORS)]))
+            b = make_book("B", size, None, mats(ICON_COLORS[(i + 1) % len(ICON_COLORS)]))
             b.location = (x + t / 2 + offset_x, y + offset_y, z + offset_z)
             out.append(b)
             x += t + 0.003

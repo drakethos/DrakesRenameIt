@@ -62,6 +62,8 @@ internal static class BookShelfPiece
     internal static void Register(ManualLogSource log)
     {
         _log = log;
+        // Shift+Use on a shelf is the shelf's own settings window: RenameIt's piece workshop must not take it over.
+        DrakeModsLibs.API.PieceInteractionClaims.Register("DrakesRenameIt.shelves", piece => piece != null && piece.GetComponent<BookShelfBehaviour>() != null);
         PrefabManager.OnVanillaPrefabsAvailable -= Add;
         PrefabManager.OnVanillaPrefabsAvailable += Add;
     }

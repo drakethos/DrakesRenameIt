@@ -44,11 +44,11 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
     internal const string ZPoses = "DrakeShelfPoses";
 
     /// <summary>Wall shelf: one board, books stand on y = 0. Bookcase: rows on a 0.50 pitch.</summary>
-    internal bool IsWall;
-    internal float Width = 1.1f;
-    internal int ShelfRows = 1;
+    public bool IsWall;
+    public float Width = 1.1f;
+    public int ShelfRows = 1;
     /// <summary>Inventory rows per shelf row (a long shelf takes two).</summary>
-    internal int InvPerRow = 1;
+    public int InvPerRow = 1;
 
     const float Gap = 0.004f;
     const float RefreshSeconds = 0.5f;

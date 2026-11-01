@@ -231,6 +231,127 @@ internal static class RenameItBookHooks
     static bool CoverPictureShown(Dictionary<string, object?> args, GameObject? target = null) =>
         target != null && target.transform.Find("attach/drakes_book_mesh/cover_picture") != null;
 
+    /// <summary>Where each drawn shelf item is, in the piece's own space (x right, y up, z forward): "x,y,z;..." plus the piece's mesh bounds.</summary>
+    [TestHook("renameit.shelfWhere")]
+    static string ShelfWhere(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null)
+            return "";
+        var holder = target.transform.Find(BookShelfPiece.FrameName + "/drake_shelf_items");
+        var parts = new List<string>();
+        if (holder != null)
+            foreach (Transform child in holder)
+            {
+                var b = new Bounds(); var any = false;
+                foreach (var r in child.GetComponentsInChildren<Renderer>())
+                {
+                    if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+                }
+                if (!any) continue;
+                var c = target.transform.InverseTransformPoint(b.center);
+                parts.Add($"{c.x:0.00},{c.y:0.00},{c.z:0.00}");
+            }
+        var box = new Bounds(); var has = false;
+        foreach (var r in target.GetComponentsInChildren<MeshRenderer>())
+        {
+            if (holder != null && r.transform.IsChildOf(holder)) continue;
+            var lc = target.transform.InverseTransformPoint(r.bounds.center);
+            var e = r.bounds.extents;
+            var local = new Bounds(lc, e * 2f);
+            if (!has) { box = local; has = true; } else box.Encapsulate(local);
+        }
+        return string.Join(";", parts) + " | case " + (has ? $"x{box.min.x:0.00}..{box.max.x:0.00} y{box.min.y:0.00}..{box.max.y:0.00} z{box.min.z:0.00}..{box.max.z:0.00}" : "?");
+    }
+
+    /// <summary>True when the shelf's Shift+Use is claimed (so RenameIt's piece rename leaves it alone).</summary>
+    [TestHook("renameit.shelfClaimed")]
+    static bool ShelfClaimed(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && DrakeModsLibs.API.PieceInteractionClaims.IsClaimed(target.GetComponent<Piece>());
+
+    /// <summary>The hover text of a shelf as the player sees it.</summary>
+    [TestHook("renameit.shelfHover")]
+    static string ShelfHover(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var container = target != null ? target.GetComponent<Container>() : null;
+        return container != null ? Localization.instance.Localize(container.GetHoverText()) : "";
+    }
+
+    /// <summary>Pull the third-person camera in close (metres behind the head; 0 = first person).</summary>
+    [TestHook("renameit.cameraZoom")]
+    static bool CameraZoom(Dictionary<string, object?> args)
+    {
+        var cam = GameCamera.instance;
+        if (cam == null)
+            return false;
+        var d = float.Parse(S(args, "distance", "0.3"), CultureInfo.InvariantCulture);
+        foreach (var name in new[] { "m_distance", "m_minDistance", "m_maxDistance" })
+            HarmonyLib.AccessTools.Field(typeof(GameCamera), name)?.SetValue(cam, name == "m_maxDistance" ? Mathf.Max(d, 0.1f) : d);
+        return true;
+    }
+
+    /// <summary>Hide or show the player's body (so a screenshot shows the piece, not the player standing in front of it).</summary>
+    [TestHook("renameit.hidePlayer")]
+    static bool HidePlayer(Dictionary<string, object?> args)
+    {
+        var hide = B(args, "on", true);
+        foreach (var r in P.GetComponentsInChildren<Renderer>(true))
+            r.enabled = !hide;
+        return true;
+    }
+
+    /// <summary>Stand "distance" metres in front of a piece (the side its front faces), at "side" metres to its left, looking at it.</summary>
+    [TestHook("renameit.frontView")]
+    static bool FrontView(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null)
+            return false;
+        var distance = float.Parse(S(args, "distance", "2.4"), CultureInfo.InvariantCulture);
+        var side = float.Parse(S(args, "side", "0"), CultureInfo.InvariantCulture);
+        var t = target.transform;
+        var spot = t.position + t.forward * distance + t.right * side;
+        var p = P;
+        spot.y = p.transform.position.y;
+        p.transform.position = spot;
+        if (p.GetComponent<Rigidbody>() is { } body)
+        {
+            body.position = spot;
+            body.velocity = Vector3.zero;
+        }
+
+        var look = (t.position + Vector3.up * 0.9f - p.GetEyePoint()).normalized;
+        var flat = new Vector3(look.x, 0f, look.z);
+        var yaw = Quaternion.LookRotation(flat.normalized);
+        p.transform.rotation = yaw;
+        HarmonyLib.AccessTools.Field(typeof(Player), "m_lookYaw")?.SetValue(p, yaw);
+        HarmonyLib.AccessTools.Field(typeof(Player), "m_lookPitch")?.SetValue(p, Mathf.Clamp(-Mathf.Asin(look.y) * Mathf.Rad2Deg, -89f, 89f));
+        p.SetMouseLook(Vector2.zero);
+        return true;
+    }
+
+    /// <summary>Put a copy of the first book in the inventory into the shelf at grid x,y (with its title kept).</summary>
+    [TestHook("renameit.shelfStoreAt")]
+    static bool StoreAt(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var container = target != null ? target.GetComponent<Container>() : null;
+        if (container == null)
+            return false;
+        var item = FirstBook().Clone();
+        item.m_stack = 1;
+        item.m_gridPos = new Vector2i(int.Parse(S(args, "x", "0")), int.Parse(S(args, "y", "0")));
+        var inventory = container.GetInventory();
+        if (!inventory.AddItem(item))
+            return false;
+        // the game picks its own slot; put the new item where the test asked
+        var live = inventory.GetAllItems().Last();
+        var wanted = new Vector2i(int.Parse(S(args, "x", "0")), int.Parse(S(args, "y", "0")));
+        var other = inventory.GetItemAt(wanted.x, wanted.y);
+        if (other != null && other != live)
+            other.m_gridPos = live.m_gridPos;
+        live.m_gridPos = wanted;
+        HarmonyLib.AccessTools.Method(typeof(Container), "Save")?.Invoke(container, null);
+        return true;
+    }
+
     /// <summary>"WxH" of a shelf's container (inventory columns x rows).</summary>
     [TestHook("renameit.containerSize")]
     static string ContainerSize(Dictionary<string, object?> args, GameObject? target = null) =>

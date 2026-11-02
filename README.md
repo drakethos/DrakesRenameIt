@@ -59,10 +59,13 @@ Mods that draw their own equipment slots can write an item's *vanilla* name into
 
 | Mod | Status |
 |---|---|
-| **ExtraSlots** (shudnal) | Supported: renamed items and the *Crafted by* line show in the equipment, food, ammo, quick and misc slots. |
+| **ExtraSlots** (shudnal) | Supported through a compat module: renamed items show their name, description and *Crafted by* in the equipment, food, ammo, quick and misc slots. |
+| **AzuExtendedPlayerInventory** (Azumatt) | Works as is: name, description and *Crafted by* show in its equipment slots and hotbar. |
+| **InventorySlots** (sighsorry) | Works as is: name, description and *Crafted by* show in its slots. |
+| **SeneaL UI** | Supported through a compat module for the name. Its description and *Crafted by* lines also need the next **DrakeModsLibs** (1.0.6), which fixes how Libs hooks `GetTooltip` on Valheim 1.0. |
 | **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
-| **AzuExtendedPlayerInventory** (Azumatt) | Works as is: renamed items show their name in its equipment slots. |
-| InventorySlots (sighsorry), SeneaL UI | Being checked now. |
+
+Each mod is checked by an automated test that fills every slot type with a renamed, described item and reads what the tooltip shows.
 
 We look after the most downloaded mods first, and any mod a running server depends on. If yours is smaller, it is not a judgement on it: we just cannot keep up with every mod, so we would love your help. Making your own module is short, and there is a step-by-step guide: **[Making RenameIt work with another mod](docs/COMPATIBILITY.md)**.
 

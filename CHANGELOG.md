@@ -1,3 +1,9 @@
+- Version 1.4.0-beta.7
+  - Beta. Requires **DrakeModsLibs 1.0.6**. Books are not in this beta: they moved to a separate 1.5 beta line (1.4.0-beta.6 carried an early Books preview).
+  - **Security fix: piece renames are checked by the piece's owner.** The owner's client used to write whatever name or Shared flag it was sent, so a modified client could rename any piece (someone else's, a world-built one, one in a ward it may not touch, or past the name limit). The owner now finds who sent the request and applies the same rules as the rename window to that player (builder or Shared, ward access, admin/VIP, character limit), and refuses senders it cannot identify.
+  - **New: SeneaL UI support.** Renamed items show their name in SeneaL's tooltips and crafting views. Its description and *Crafted by* lines show too, through DrakeModsLibs 1.0.6.
+  - **Docs:** the README lists which equipment and slot mods work (ExtraSlots through a module, AzuExtendedPlayerInventory and InventorySlots as they are, SeneaL UI through a module) and links a guide, `docs/COMPATIBILITY.md`, for adding another mod. Piece screenshots are still to come.
+  - Automated tests added: forged piece requests (PV-01..11), every buildable piece (PR-17, 261 prefabs), three players with one chest and a ward (PR-18), VIP on the host (PR-19), a server suite for a real second client (VS-01..05), and an unattended all-slots check for equipment mods (X-EQ-04, X-EQ-06). Not part of the release.
 - Version 1.4.0-beta.5
   - Beta. Requires **DrakeModsLibs 1.0.5**.
   - **Fix: renamed items in ExtraSlots slots.** With **ExtraSlots** installed, an item's new name and Crafted-by line now show on its tooltip in the equipment (Head, Back, Chest, Legs) and extra slots (food, ammo, quick, misc); they showed the vanilla name before. Nothing changes without ExtraSlots.

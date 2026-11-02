@@ -1,3 +1,6 @@
+- Version 1.4.0-beta.5
+  - Beta. Requires **DrakeModsLibs 1.0.5**.
+  - **Fix: renamed items in ExtraSlots slots.** With **ExtraSlots** installed, an item's new name and Crafted-by line now show on its tooltip in the equipment (Head, Back, Chest, Legs) and extra slots (food, ammo, quick, misc); they showed the vanilla name before. Nothing changes without ExtraSlots.
 - Version 1.4.0-beta.4
   - Beta. Requires **DrakeModsLibs 1.0.5**.
   - **Name is its own tab.** It sits on the row beside Lock and Shop. A shop still opens on Shop, with Layout visible.

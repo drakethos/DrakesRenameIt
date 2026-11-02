@@ -1,3 +1,9 @@
+- Version 1.4.0-beta.6
+  - Beta. Requires **DrakeModsLibs 1.0.5**. **Early Books preview**: it works but is rough, so expect changes and report what feels off. `BooksEnabled` (section 14 Books) turns all of it off.
+  - **New: books.** Craft a Book (paper + leather scraps) and read it in a two-page window; the maker can edit it with rich text and add pages. Place a book on a table or the floor with the hammer (Furniture, Book).
+  - **New: shelves.** Wall shelf, long wall shelf and four bookcase sizes (Furniture). Books stand on them spines out; use a spine to read without taking it. Each row can be Books, Slots or Free; other items on shelves are off by default (`ShelfAllowNonBooks`).
+  - **New: cover pictures** from PNG or JPG files in `BepInEx/config/DrakesRenameIt/BookCovers`.
+  - **Fix: renamed items in ExtraSlots slots** (also in 1.3.1 and beta.5). With ExtraSlots installed, the new name and Crafted-by line show on tooltips in its equipment and extra slots.
 - Version 1.4.0-beta.4
   - Beta. Requires **DrakeModsLibs 1.0.5**.
   - **Name is its own tab.** It sits on the row beside Lock and Shop. A shop still opens on Shop, with Layout visible.

@@ -1,0 +1,37 @@
+{
+  "name": "X-EQ-02 equipped cape: real right-click with the menu key",
+  "description": "Sheet: X-EQ. Probe: a real right-click on the worn cape (itemclick), with Shift. Shows whether the grid handler runs and whether the menu gate allows it.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "CapeDeerHide",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "itemclick",
+      "prefab": "CapeDeerHide",
+      "button": "right",
+      "mods": "Shift"
+    },
+    {
+      "do": "log",
+      "message": "right-clicked the equipped cape with Shift"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.menuOpens",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "expect": true,
+      "label": "menu opens for the worn cape after Shift+right-click"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

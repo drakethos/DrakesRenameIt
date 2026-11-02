@@ -1,0 +1,258 @@
+{
+  "name": "X-EQ-04 every slot filled with a renamed item: no slot shows a vanilla name",
+  "description": "Sheet: X-EQ. Equipment-mod compatibility, all slots: an item for every slot type (armor, cape, utility, shield, weapon, food, ammo), each renamed. Reads every active tooltip topic per item. Tooltips a mod only fills on mouse hover need the manual M-EQ-01.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "HelmetTrollLeather",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "name",
+        "text": "Test Helmet"
+      },
+      "expect": true,
+      "label": "rename the Helmet"
+    },
+    {
+      "do": "give",
+      "prefab": "ArmorTrollLeatherChest",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "name",
+        "text": "Test Chest"
+      },
+      "expect": true,
+      "label": "rename the Chest"
+    },
+    {
+      "do": "give",
+      "prefab": "ArmorTrollLeatherLegs",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "name",
+        "text": "Test Legs"
+      },
+      "expect": true,
+      "label": "rename the Legs"
+    },
+    {
+      "do": "give",
+      "prefab": "CapeDeerHide",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "name",
+        "text": "Test Cape"
+      },
+      "expect": true,
+      "label": "rename the Cape"
+    },
+    {
+      "do": "give",
+      "prefab": "Wishbone",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "name",
+        "text": "Test Utility"
+      },
+      "expect": true,
+      "label": "rename the Utility"
+    },
+    {
+      "do": "give",
+      "prefab": "ShieldWood",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "name",
+        "text": "Test Shield"
+      },
+      "expect": true,
+      "label": "rename the Shield"
+    },
+    {
+      "do": "give",
+      "prefab": "AxeStone",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "Test Weapon"
+      },
+      "expect": true,
+      "label": "rename the Weapon"
+    },
+    {
+      "do": "give",
+      "prefab": "CookedMeat",
+      "crafter": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "name",
+        "text": "Test Food"
+      },
+      "expect": true,
+      "label": "rename the Food"
+    },
+    {
+      "do": "give",
+      "prefab": "ArrowWood",
+      "crafter": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "name",
+        "text": "Test Ammo"
+      },
+      "expect": true,
+      "label": "rename the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.openInventory",
+      "expect": true,
+      "label": "open the inventory"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "HelmetTrollLeather"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Helmet: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Chest: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Legs: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Cape: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "Wishbone"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Utility: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "ShieldWood"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Shield: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Weapon: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "CookedMeat"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Food: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "ArrowWood"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "Ammo: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "screenshot",
+      "name": "all-slots"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

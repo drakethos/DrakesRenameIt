@@ -34,6 +34,7 @@ namespace DrakeRenameit
     [BepInDependency(CompatibilityManager.SoftGuids.ArcaneWard, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.LockSmith, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ExtraSlots, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.SeneaL, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public partial class DrakeRenameit : BaseUnityPlugin
     {

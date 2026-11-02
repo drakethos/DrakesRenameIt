@@ -4,6 +4,7 @@ using DrakeRenameit.Compat.ArcaneWard;
 using DrakeRenameit.Compat.ExtraSlots;
 using DrakeRenameit.Compat.ItemLibs;
 using DrakeRenameit.Compat.ProtectiveWards;
+using DrakeRenameit.Compat.SeneaL;
 using DrakeRenameit.Compat.Vanilla;
 using DrakeRenameit.Compat.WardIsLove;
 using HarmonyLib;
@@ -29,6 +30,7 @@ internal static class CompatibilityManager
         public const string ArcaneWard = ArcaneWardModule.PluginGuid;
         public const string LockSmith = WardHoverAccess.LockSmithGuid;
         public const string ExtraSlots = ExtraSlotsTooltipModule.ExtraSlotsGuid;
+        public const string SeneaL = SeneaLItemNameModule.SeneaLGuid;
     }
 
     private static CompatHost Host =>
@@ -49,6 +51,7 @@ internal static class CompatibilityManager
         Host.Register(new ArcaneWardModule());
         Host.Register(new ItemStandHoverModule());
         Host.Register(new ExtraSlotsTooltipModule());
+        Host.Register(new SeneaLItemNameModule());
         Host.Initialize(harmony);
     }
 

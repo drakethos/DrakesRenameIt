@@ -1,0 +1,12 @@
+{
+  "name": "DrakesRenameIt-Server",
+  "description": "RenameIt 1.4 on a dedicated server with a real second client (Player 2, steps tagged on: player2). VIP cfg cheating, synced piece rules, shared pieces, wards. Needs Target = Server on Player 1 and a Player 2 client; see DrakesTestLab docs/MULTIPLAYER.md.",
+  "include": "../DrakesRenameIt/_shared/baseline.json",
+  "requireMods": [
+    {
+      "guid": "com.drakemods.testlab",
+      "minVersion": "0.4.1"
+    }
+  ],
+  "resetBetweenTests": true
+}

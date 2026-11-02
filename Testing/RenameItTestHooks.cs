@@ -182,6 +182,14 @@ internal static class RenameItTestHooks
     [TestHook("renameit.elevated")]
     static bool Elevated() => RenameitPermission.IsElevatedForOverrides(P);
 
+    /// <summary>Is the local player on the mod VIP list that counts (ignores AllowAdminOverride)? Remote clients trust only what the host pushed.</summary>
+    [TestHook("renameit.isModVip")]
+    static bool IsModVip() => RenameitPermission.IsModVip(P);
+
+    /// <summary>The VipList value this client sees (synced from the server, or the local cfg when not connected).</summary>
+    [TestHook("renameit.vipList")]
+    static string VipListValue() => RenameitConfig.VipList;
+
     // ---------- editing (same apply code as the menus)
 
     /// <summary>

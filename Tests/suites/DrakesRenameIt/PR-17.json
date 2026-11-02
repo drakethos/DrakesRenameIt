@@ -1,0 +1,573 @@
+{
+  "name": "PR-17 more piece kinds: ships, cart, cauldron, oven, furnaces, tables, big chests, gates, second bed",
+  "description": "Second row of kinds for the 1.4 test pass: boats and the cart (pieces that are vehicles), the later stations and processors, the other chests, gates and bed. A prefab that does not exist in this game version fails with its name.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dz": 6,
+      "owner": "me",
+      "as": "raft",
+      "dx": -24.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dz": 6,
+      "owner": "me",
+      "as": "karve",
+      "dx": -17.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "VikingShip",
+      "dz": 6,
+      "owner": "me",
+      "as": "longship",
+      "dx": -10.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dz": 6,
+      "owner": "me",
+      "as": "cart",
+      "dx": -3.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dz": 6,
+      "owner": "me",
+      "as": "cauldron",
+      "dx": 3.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dz": 6,
+      "owner": "me",
+      "as": "oven",
+      "dx": 10.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dz": 6,
+      "owner": "me",
+      "as": "blastfurnace",
+      "dx": 17.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "blackforge",
+      "dz": 6,
+      "owner": "me",
+      "as": "blackforge",
+      "dx": 24.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dz": 16,
+      "owner": "me",
+      "as": "magetable",
+      "dx": -24.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gemcutter",
+      "dz": 16,
+      "owner": "me",
+      "as": "gemcutter",
+      "dx": -17.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dz": 16,
+      "owner": "me",
+      "as": "cartography",
+      "dx": -10.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dz": 16,
+      "owner": "me",
+      "as": "reinforced",
+      "dx": -3.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dz": 16,
+      "owner": "me",
+      "as": "blackmetal",
+      "dx": 3.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dz": 16,
+      "owner": "me",
+      "as": "woodgate",
+      "dx": 10.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "darkwood_gate",
+      "dz": 16,
+      "owner": "me",
+      "as": "darkgate",
+      "dx": 17.5
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dz": 16,
+      "owner": "me",
+      "as": "bed2",
+      "dx": 24.5
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "raft",
+        "text": "My raft"
+      },
+      "expect": true,
+      "label": "Raft can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "raft"
+      },
+      "contains": "My raft",
+      "label": "raft hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "karve",
+        "text": "My karve"
+      },
+      "expect": true,
+      "label": "Karve can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "karve"
+      },
+      "contains": "My karve",
+      "label": "karve hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "longship",
+        "text": "My longship"
+      },
+      "expect": true,
+      "label": "VikingShip can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "longship"
+      },
+      "contains": "My longship",
+      "label": "longship hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "cart",
+        "text": "My cart"
+      },
+      "expect": true,
+      "label": "Cart can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "cart"
+      },
+      "contains": "My cart",
+      "label": "cart hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "cauldron",
+        "text": "My cauldron"
+      },
+      "expect": true,
+      "label": "piece_cauldron can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "cauldron"
+      },
+      "contains": "My cauldron",
+      "label": "cauldron hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "cauldron"
+      },
+      "contains": "Cooking",
+      "label": "piece_cauldron counts as Cooking"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "oven",
+        "text": "My oven"
+      },
+      "expect": true,
+      "label": "piece_oven can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "oven"
+      },
+      "contains": "My oven",
+      "label": "oven hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "oven"
+      },
+      "contains": "Cooking",
+      "label": "piece_oven counts as Cooking"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "blastfurnace",
+        "text": "My blastfurnace"
+      },
+      "expect": true,
+      "label": "blastfurnace can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "blastfurnace"
+      },
+      "contains": "My blastfurnace",
+      "label": "blastfurnace hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "blastfurnace"
+      },
+      "contains": "Smelter",
+      "label": "blastfurnace counts as Smelter"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "blackforge",
+        "text": "My blackforge"
+      },
+      "expect": true,
+      "label": "blackforge can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "blackforge"
+      },
+      "contains": "My blackforge",
+      "label": "blackforge hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "blackforge"
+      },
+      "contains": "Station",
+      "label": "blackforge counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "magetable",
+        "text": "My magetable"
+      },
+      "expect": true,
+      "label": "piece_magetable can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "magetable"
+      },
+      "contains": "My magetable",
+      "label": "magetable hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "magetable"
+      },
+      "contains": "Station",
+      "label": "piece_magetable counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "gemcutter",
+        "text": "My gemcutter"
+      },
+      "expect": true,
+      "label": "piece_gemcutter can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "gemcutter"
+      },
+      "contains": "My gemcutter",
+      "label": "gemcutter hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "gemcutter"
+      },
+      "contains": "Station",
+      "label": "piece_gemcutter counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "cartography",
+        "text": "My cartography"
+      },
+      "expect": true,
+      "label": "piece_cartographytable can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "cartography"
+      },
+      "contains": "My cartography",
+      "label": "cartography hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "cartography"
+      },
+      "contains": "Station",
+      "label": "piece_cartographytable counts as Station"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "reinforced",
+        "text": "My reinforced"
+      },
+      "expect": true,
+      "label": "piece_chest can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "reinforced"
+      },
+      "contains": "My reinforced",
+      "label": "reinforced hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "reinforced"
+      },
+      "contains": "Chest",
+      "label": "piece_chest counts as Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "blackmetal",
+        "text": "My blackmetal"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "blackmetal"
+      },
+      "contains": "My blackmetal",
+      "label": "blackmetal hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "blackmetal"
+      },
+      "contains": "Chest",
+      "label": "piece_chest_blackmetal counts as Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "woodgate",
+        "text": "My woodgate"
+      },
+      "expect": true,
+      "label": "wood_gate can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "woodgate"
+      },
+      "contains": "My woodgate",
+      "label": "woodgate hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "woodgate"
+      },
+      "contains": "Door",
+      "label": "wood_gate counts as Door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "darkgate",
+        "text": "My darkgate"
+      },
+      "expect": true,
+      "label": "darkwood_gate can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "darkgate"
+      },
+      "contains": "My darkgate",
+      "label": "darkgate hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "darkgate"
+      },
+      "contains": "Door",
+      "label": "darkwood_gate counts as Door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "bed2",
+        "text": "My bed2"
+      },
+      "expect": true,
+      "label": "piece_bed02 can be renamed",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "bed2"
+      },
+      "contains": "My bed2",
+      "label": "bed2 hover shows the new name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCategories",
+      "args": {
+        "target": "bed2"
+      },
+      "contains": "Bed",
+      "label": "piece_bed02 counts as Bed"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 240
+}

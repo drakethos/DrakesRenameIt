@@ -1,0 +1,56 @@
+{
+  "name": "PV-01 forged name on someone else's piece is refused",
+  "description": "Bjornita's client sends the SetName RPC for my chest (built by me, PieceLockToBuilder on). A modified client can do this; the owner must refuse.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "as": "chest",
+      "owner": "me"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "chest",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Hacked"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "label": "the forged name was not written",
+      "notContains": "Hacked"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

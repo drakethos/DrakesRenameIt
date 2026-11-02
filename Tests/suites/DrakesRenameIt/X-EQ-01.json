@@ -1,0 +1,34 @@
+{
+  "name": "X-EQ-01 crafted cape: rename menu gate for an equipped item",
+  "description": "Sheet: X-EQ. Repro for the equipment-slot report. Hook-level check: the gate allows the cape. The right-click on the equipment grid itself is not covered here (no click step yet).",
+  "steps": [
+    {
+      "do": "craft",
+      "prefab": "CapeDeerHide"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.menuOpens",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "expect": true,
+      "label": "menu opens for your own crafted cape",
+      "stop": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.tooltip",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "label": "tooltip shows the cape"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

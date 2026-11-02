@@ -1,0 +1,52 @@
+{
+  "name": "VS-01 a client editing its own VipList does not become a VIP",
+  "description": "Player 2 writes her own name into her local VipList cfg (the way a player could edit the file). A remote client trusts only what the host pushed, so she must not count as a VIP, and the server's list must not change.",
+  "steps": [
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.vipList",
+      "label": "Player 2 starts with the server's list",
+      "contains": ""
+    },
+    {
+      "on": "player2",
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipList": "Bjornita"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": false,
+      "label": "Player 2 is not a VIP after editing her own list"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": false,
+      "label": "Player 1 is not one either"
+    },
+    {
+      "do": "check",
+      "check": "config",
+      "guid": "com.drakemods.renameit",
+      "section": "01 Admin",
+      "key": "VipList",
+      "equals": "",
+      "label": "the server's list on Player 1 did not change"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

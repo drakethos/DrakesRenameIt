@@ -1394,6 +1394,65 @@ dump(os.path.join(AUTO, 'suite.json'), suite)
 dump(os.path.join(AUTO, '_shared', 'baseline.json'), baseline)
 for name, block in BLOCKS.items():
     dump(os.path.join(AUTO, '_functions', f'{name}.json'), block)
+# ---------------------------------------------------------------- 1.4 test pass: more piece kinds, several players, wards, VIP
+
+KINDS2 = [
+    ('Raft', 'raft', None), ('Karve', 'karve', None), ('VikingShip', 'longship', None), ('Cart', 'cart', None),
+    ('piece_cauldron', 'cauldron', 'Cooking'), ('piece_oven', 'oven', 'Cooking'), ('blastfurnace', 'blastfurnace', 'Smelter'),
+    ('blackforge', 'blackforge', 'Station'), ('piece_magetable', 'magetable', 'Station'), ('piece_gemcutter', 'gemcutter', 'Station'),
+    ('piece_cartographytable', 'cartography', 'Station'), ('piece_chest', 'reinforced', 'Chest'), ('piece_chest_blackmetal', 'blackmetal', 'Chest'),
+    ('wood_gate', 'woodgate', 'Door'), ('darkwood_gate', 'darkgate', 'Door'), ('piece_bed02', 'bed2', 'Bed'),
+]
+steps2 = kinds_row(KINDS2[:8], dz=6, step=7) + kinds_row(KINDS2[8:], dz=16, step=7) + [wait(0.5)]
+for prefab, tag, cat in KINDS2:
+    steps2 += renames(tag, f'My {tag}', f'{prefab} can be renamed')
+    if cat:
+        steps2.append(H('pieceCategories', label=f'{prefab} counts as {cat}', contains=cat, target=tag))
+T('PR-17', 'more piece kinds: ships, cart, cauldron, oven, furnaces, tables, big chests, gates, second bed', steps2, timeout=240,
+  desc='Second row of kinds for the 1.4 test pass: boats and the cart (pieces that are vehicles), the later stations and processors, the other chests, gates and bed. A prefab that does not exist in this game version fails with its name.')
+
+T('PR-18', 'three players, one chest, one ward', [
+    play('Alice'),
+    spawn('piece_chest_wood', 'chest', 'Alice'),
+    {**ward('Alice'), 'permitted': ['Bob']},
+    wait(0.5),
+    H('pieceCan', True, 'Alice (builder, permitted by her own ward) may rename', stop=True, target='chest'),
+    play('Bob'),
+    H('pieceCan', False, 'Bob is on the ward but did not build it', target='chest'),
+    H('pieceShare', False, 'and cannot turn Shared on', target='chest', on=True),
+    play('Alice'),
+    H('pieceShare', True, 'Alice shares it', target='chest', on=True),
+    play('Bob'),
+    H('pieceCan', True, 'Shared + on the ward: Bob may rename', target='chest'),
+    H('pieceRename', True, target='chest', text='Bob and Alice'),
+    play('Carol'),
+    H('pieceCan', False, 'Carol is not on the ward: shared does not help', target='chest'),
+    H('pieceRename', False, 'Carol cannot rename', target='chest', text='Carol was here'),
+    H('pieceName', 'Bob and Alice', 'the name is still Bob and Alice', target='chest'),
+    C({PC + 'PieceRequireWardAccess': 'false'}),
+    H('pieceCan', True, 'ward rule off: Carol may on a Shared piece', target='chest'),
+    play('Alice'),
+    H('pieceShare', True, 'Alice turns Shared off', target='chest', on=False),
+    play('Carol'),
+    H('pieceCan', False, 'not shared: Carol cannot again', target='chest'),
+    play('me'),
+], desc='Builder, a permitted non-builder and a stranger on one chest under one ward: who may rename and share, with the ward rule on and off.')
+
+T('PR-19', 'VIP on the host: the list counts, other names do not', [
+    C({'01 Admin/VipList': 'Bob;Nacho-VIP'}),
+    H('isModVip', False, 'I am not on the list', stop=True),
+    play('Bob'),
+    H('isModVip', True, 'Bob is on the list (this is the host: the cfg is trusted)'),
+    play('Alice'),
+    H('isModVip', False, 'Alice is not'),
+    play('me'),
+    C({'01 Admin/VipList': 'Bob;Nacho-VIP;' + 'me'}),
+    C({'01 Admin/VipList': ''}),
+    play('Bob'),
+    H('isModVip', False, 'emptied: Bob is no longer a VIP'),
+    play('me'),
+], desc='Host / offline baseline for the VIP check. The cheating case, a remote client editing its own cfg, runs on a real second client in DrakesRenameIt-Server.')
+
 # ---------------------------------------------------------------- equipment slots (ExtraSlots / Backpacks repro)
 
 T('X-EQ-01', 'crafted cape: rename menu gate for an equipped item', [

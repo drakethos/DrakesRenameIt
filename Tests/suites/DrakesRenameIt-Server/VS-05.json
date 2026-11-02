@@ -1,0 +1,91 @@
+{
+  "name": "VS-05 both clients rename the same shared chest, last write wins",
+  "description": "Both rename within a second of each other; both clients end up with the same name.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceRequireWardAccess": "true",
+        "12 Pieces/PieceSharedEnabled": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "chest",
+        "on": true
+      },
+      "expect": true,
+      "label": "shared"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "From One"
+      },
+      "expect": true,
+      "label": "Player 1 renames"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "From Two"
+      },
+      "expect": true,
+      "label": "Player 2 renames"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "From",
+      "label": "Player 1 has a name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "contains": "From",
+      "label": "Player 2 has a name"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

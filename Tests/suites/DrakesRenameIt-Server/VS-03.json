@@ -1,0 +1,115 @@
+{
+  "name": "VS-03 Player 2 and a shared chest",
+  "description": "Not the builder: no. After I share it: yes. After I turn Shared off: no again.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceRequireWardAccess": "true",
+        "12 Pieces/PieceSharedEnabled": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "not shared: Player 2 cannot"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "chest",
+        "on": true
+      },
+      "expect": true,
+      "label": "I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "shared: she can"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "chest",
+        "text": "Both Of Us"
+      },
+      "expect": true,
+      "label": "and renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "expect": "Both Of Us",
+      "label": "I see her name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "chest",
+        "on": false
+      },
+      "expect": true,
+      "label": "I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "not shared again: she cannot"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

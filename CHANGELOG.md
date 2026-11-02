@@ -1,3 +1,7 @@
+- Version 1.3.1
+  - Patch for 1.3.0. Requires **DrakeModsLibs 1.0.0+**.
+  - **Fix: renamed items in ExtraSlots slots.** With **ExtraSlots** installed, an item's new name and Crafted-by line now show on its tooltip in the equipment (Head, Back, Chest, Legs) and extra slots (food, ammo, quick, misc); they showed the vanilla name before. Nothing changes without ExtraSlots.
+
 - Version 1.3.0
   - Stable cut of the 1.3.0 betas below. Requires **DrakeModsLibs 1.0.0+**. Published on Hexium and GitHub.
   - New UI Toolkit Item Workshop (Rename tab) and Paper tab, with Quick Settings (Shift+F1), a preview card, rich text formatting and a styled world hover.

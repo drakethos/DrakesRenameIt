@@ -1394,6 +1394,21 @@ dump(os.path.join(AUTO, 'suite.json'), suite)
 dump(os.path.join(AUTO, '_shared', 'baseline.json'), baseline)
 for name, block in BLOCKS.items():
     dump(os.path.join(AUTO, '_functions', f'{name}.json'), block)
+# ---------------------------------------------------------------- equipment slots (ExtraSlots / Backpacks repro)
+
+T('X-EQ-01', 'crafted cape: rename menu gate for an equipped item', [
+    give('CapeDeerHide', crafter='me'),
+    H('menuOpens', True, 'menu opens for your own crafted cape', prefab='CapeDeerHide', stop=True),
+    H('tooltip', label='tooltip shows the cape', prefab='CapeDeerHide'),
+], sheet='X-EQ', desc='Repro for the equipment-slot report. Hook-level check: the gate allows the cape. The right-click on the equipment grid itself is not covered here (no click step yet).')
+
+T('X-EQ-02', 'equipped cape: real right-click with the menu key', [
+    {'do': 'give', 'prefab': 'CapeDeerHide', 'crafter': 'me', 'equip': True},
+    {'do': 'itemclick', 'prefab': 'CapeDeerHide', 'button': 'right', 'mods': 'Shift'},
+    {'do': 'log', 'message': 'right-clicked the equipped cape with Shift'},
+    H('menuOpens', True, 'menu opens for the worn cape after Shift+right-click', prefab='CapeDeerHide'),
+], sheet='X-EQ', desc='Probe: a real right-click on the worn cape (itemclick), with Shift. Shows whether the grid handler runs and whether the menu gate allows it.')
+
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
         json.dump(t, f, indent=2, ensure_ascii=False)
@@ -1415,6 +1430,10 @@ mtests = {
         {'do': 'checkpoint', 'message': 'A renamed axe (Shared Look / Seen by both / Made by tester) is on the stand in front of you. With a second REAL player joined: they see the same name, description and crafted-by on the stand and after taking it, and they cannot rename it (it is yours). Mark Fail if no second player is available.'}], 'TC-502..504'),
     'M-TC-501': ('server lock and VIP list (dedicated server)', [
         {'do': 'checkpoint', 'message': 'Needs a dedicated server and a non-admin client: the client cannot change synced RenameIt settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested.'}], 'TC-501, ISSUE-019'),
+    'M-EQ-01': ('renamed item in ExtraSlots equipment and extra slots', [
+        {'do': 'give', 'prefab': 'CapeDeerHide', 'crafter': 'me', 'equip': True},
+        H('edit', True, 'rename the worn cape', prefab='CapeDeerHide', op='name', text='Slot Test Cape'),
+        {'do': 'checkpoint', 'message': 'You wear a cape renamed "Slot Test Cape" (crafted by you). Open your inventory (Tab) and hover the cape in its ExtraSlots equipment slot (Back): the tooltip title must say Slot Test Cape, not Deer Hide Cape, with the Crafted-by line. Then drag it into an extra slot (quick / misc) and hover again, and also check the same for a renamed item in the food or ammo slot. Pass only if every slot shows the new name. Mark Fail if not.'}], 'X-EQ'),
     'M-TC-4xx': ('other mods', [
         U('craftRenamed', text='Mod Check', desc='With other mods'),
         {'do': 'checkpoint', 'message': 'With the modpack loaded (VRP, Shrooms, RPChatter, PlanBuild, InfinityHammer, Ward is Love, Protective Wards, Arcane Wards): the renamed axe in your inventory keeps its name and description, no errors, and wards from those mods are respected. PlanBuild losing data on stands/walls is known (ISSUE-003). Mark Fail if not tested.'}], 'TC-401..408'),

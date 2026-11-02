@@ -611,6 +611,67 @@ internal static class RenameItTestHooks
         return Pieces.PieceRename.FirstNameableHover(piece) is Component h && Pieces.PieceRename.NameablePiece(h.gameObject) == piece;
     }
 
+    /// <summary>
+    /// Sweeps buildable prefabs (comma separated): spawns each briefly with me as the builder and reports which can be named.
+    /// Returns "ok=N;missing=[..];notNameable=[..];denied=[..];badName=[..]". notNameable = no hover RenameIt handles (fires, stands, signs),
+    /// denied = the rules refuse the builder, badName = the new name did not become the display name.
+    /// </summary>
+    [TestHook("renameit.pieceSweep")]
+    static string PieceSweep(Dictionary<string, object?> args)
+    {
+        var names = S(args, "prefabs").Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()).Where(n => n.Length > 0).ToList();
+        var missing = new List<string>();
+        var notNameable = new List<string>();
+        var denied = new List<string>();
+        var badName = new List<string>();
+        var ok = 0;
+        foreach (var n in names)
+        {
+            var prefab = ZNetScene.instance.GetPrefab(n);
+            if (prefab == null || prefab.GetComponent<Piece>() == null)
+            {
+                missing.Add(n);
+                continue;
+            }
+
+            var go = UnityEngine.Object.Instantiate(prefab, P.transform.position + P.transform.forward * 3f, Quaternion.identity);
+            try
+            {
+                var piece = go.GetComponent<Piece>();
+                AccessTools.Field(typeof(Piece), "m_creator")?.SetValue(piece, P.GetPlayerID());
+                if (Pieces.PieceRename.FirstNameableHover(piece) is not Component hover || Pieces.PieceRename.NameablePiece(hover.gameObject) != piece)
+                {
+                    notNameable.Add(n);
+                    continue;
+                }
+
+                if (!Pieces.PieceRename.CanRename(piece, P, false))
+                {
+                    denied.Add(n + "{enabled=" + RenameitConfig.PieceRenameEnabled + ",adminOnly=" + RenameitConfig.PieceRenameAdminOnly
+                               + ",excluded=" + Pieces.PieceRename.IsExcluded(piece) + ",built=" + Pieces.PieceRename.IsPlayerBuilt(piece)
+                               + ",builder=" + Pieces.PieceRename.IsBuilder(piece, P) + ",creator=" + piece.GetCreator() + ",me=" + P.GetPlayerID() + "}");
+                    continue;
+                }
+
+                Pieces.PieceRename.SetCustomName(piece, "Sweep Name");
+                if (Pieces.PieceRename.DisplayName(piece) != "Sweep Name")
+                    badName.Add(n);
+                else
+                    ok++;
+            }
+            catch (Exception ex)
+            {
+                badName.Add(n + "(" + ex.GetType().Name + ")");
+            }
+            finally
+            {
+                ZNetScene.instance.Destroy(go);
+            }
+        }
+
+        return $"ok={ok};missing=[{string.Join(",", missing)}];notNameable=[{string.Join(",", notNameable)}];denied=[{string.Join(",", denied)}];badName=[{string.Join(",", badName)}]";
+    }
+
     /// <summary>The categories PieceExcludedCategory matches for this piece, comma separated.</summary>
     [TestHook("renameit.pieceCategories")]
     static string PieceCategories(Dictionary<string, object?> args, GameObject? target = null) =>

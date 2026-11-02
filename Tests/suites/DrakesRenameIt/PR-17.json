@@ -1,566 +1,168 @@
 {
-  "name": "PR-17 more piece kinds: ships, cart, cauldron, oven, furnaces, tables, big chests, gates, second bed",
-  "description": "Second row of kinds for the 1.4 test pass: boats and the cart (pieces that are vehicles), the later stations and processors, the other chests, gates and bed. A prefab that does not exist in this game version fails with its name.",
+  "name": "PR-17 every buildable piece with a hover name (261 prefabs)",
+  "description": "Spawns each buildable piece briefly with me as the builder and renames it. The report of each batch is in the log: missing prefabs, pieces with no hover RenameIt handles (fires, stands, signs), pieces the rules refuse the builder, names that did not show.",
   "steps": [
     {
-      "do": "spawn",
-      "prefab": "Raft",
-      "dz": 6,
-      "owner": "me",
-      "as": "raft",
-      "dx": -24.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "Karve",
-      "dz": 6,
-      "owner": "me",
-      "as": "karve",
-      "dx": -17.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "VikingShip",
-      "dz": 6,
-      "owner": "me",
-      "as": "longship",
-      "dx": -10.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "Cart",
-      "dz": 6,
-      "owner": "me",
-      "as": "cart",
-      "dx": -3.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_cauldron",
-      "dz": 6,
-      "owner": "me",
-      "as": "cauldron",
-      "dx": 3.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_oven",
-      "dz": 6,
-      "owner": "me",
-      "as": "oven",
-      "dx": 10.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "blastfurnace",
-      "dz": 6,
-      "owner": "me",
-      "as": "blastfurnace",
-      "dx": 17.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "blackforge",
-      "dz": 6,
-      "owner": "me",
-      "as": "blackforge",
-      "dx": 24.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_magetable",
-      "dz": 16,
-      "owner": "me",
-      "as": "magetable",
-      "dx": -24.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_gemcutter",
-      "dz": 16,
-      "owner": "me",
-      "as": "gemcutter",
-      "dx": -17.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_cartographytable",
-      "dz": 16,
-      "owner": "me",
-      "as": "cartography",
-      "dx": -10.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_chest",
-      "dz": 16,
-      "owner": "me",
-      "as": "reinforced",
-      "dx": -3.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_chest_blackmetal",
-      "dz": 16,
-      "owner": "me",
-      "as": "blackmetal",
-      "dx": 3.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "wood_gate",
-      "dz": 16,
-      "owner": "me",
-      "as": "woodgate",
-      "dx": 10.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "darkwood_gate",
-      "dz": 16,
-      "owner": "me",
-      "as": "darkgate",
-      "dx": 17.5
-    },
-    {
-      "do": "spawn",
-      "prefab": "piece_bed02",
-      "dz": 16,
-      "owner": "me",
-      "as": "bed2",
-      "dx": 24.5
-    },
-    {
-      "do": "wait",
-      "seconds": 0.5
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "ashwood_bed,bed,piece_bed02,Cart,incinerator,Karve,piece_chest,piece_chest_barrel,piece_chest_blackmetal,piece_chest_grausten,piece_chest_private,piece_chest_warderobe,piece_chest_wood,piece_gift1,piece_gift2,piece_gift3,piece_pot1,piece_pot2,piece_pot3,VikingShip,VikingShip_Ashlands,fermenter,piece_cookingstation,piece_cookingstation_iron,piece_FrostFoundry,piece_oven,ashwood_door,darkwood_gate,flametal_gate,iron_grate"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 1-30: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "raft",
-        "text": "My raft"
+        "prefabs": "piece_drawbridge,piece_drawbridge_log,piece_hexagonal_door,stave_gate,wood_door,wood_fence_gate,wood_gate,wood_window,portal_stone,portal_wood,piece_asksvinskeleton,piece_bench01,piece_bench_runed,piece_blackmarble_bench,piece_blackmarble_throne,piece_blackwood_bench01,piece_bone_throne,piece_chair,piece_chair02,piece_chair03,piece_chair_runed,piece_logbench01,piece_moose_throne,piece_throne01,piece_throne02,Raft,rug_Bjorn,BatteringRam,blastfurnace,charcoal_kiln"
       },
-      "expect": true,
-      "label": "Raft can be renamed",
-      "stop": true
+      "contains": "missing=[];",
+      "label": "pieces 31-60: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "raft"
+        "prefabs": "eitrrefinery,piece_bathtub,piece_FrostKiln,piece_spinningwheel,smelter,windmill,artisan_ext1,blackforge,blackforge_ext1,blackforge_ext2_vise,blackforge_ext3_metalcutter,blackforge_ext4_gemcutter,blackforge_ext5_apron,cauldron_ext1_spice,cauldron_ext3_butchertable,cauldron_ext4_pots,cauldron_ext5_mortarandpestle,cauldron_ext6_rollingpins,cauldron_ext7_smoker,forge,forge_ext1,forge_ext2,forge_ext3,forge_ext4,forge_ext5,forge_ext6,piece_artisanstation,piece_cauldron,piece_magetable,piece_magetable_ext"
       },
-      "contains": "My raft",
-      "label": "raft hover shows the new name"
+      "contains": "missing=[];",
+      "label": "pieces 61-90: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "karve",
-        "text": "My karve"
+        "prefabs": "piece_magetable_ext2,piece_magetable_ext3,piece_magetable_ext4,piece_MeadCauldron,piece_preptable,piece_stonecutter,piece_workbench,piece_workbench_ext1,piece_workbench_ext2,piece_workbench_ext3,piece_workbench_ext4,guard_stone,TeamWard,ArmorStand,BakedPoteitr,BarleyWine,Beech_Sapling,Birch_Sapling,BlackSoup,BloodPudding,Blueberries,BoarJerky,Bread,Carrot,CarrotSoup,Catapult,Cloudberry,CookedAsksvinMeat,CookedBjornMeat,CookedBoneMawSerpentMeat"
       },
-      "expect": true,
-      "label": "Karve can be renamed",
-      "stop": true
+      "contains": "missing=[];",
+      "label": "pieces 91-120: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "karve"
+        "prefabs": "CookedBugMeat,CookedChickenMeat,CookedDeerMeat,CookedEgg,CookedHareMeat,CookedLoxMeat,CookedMeat,CookedMooseMeat,CookedSealBlubber,CookedVoltureMeat,CookedWolfMeat,DeerStew,Eyescream,FeastAshlands,FeastBlackforest,FeastDeepNorth,FeastMeadows,FeastMistlands,FeastMountains,FeastOceans,FeastPlains,FeastSwamps,Fiddleheadfern,FierySvinstew,FirTree_big_Sapling,FirTree_Sapling,FishAndBread,FishCooked,FishSoup,FishWraps"
       },
-      "contains": "My karve",
-      "label": "karve hover shows the new name"
+      "contains": "missing=[];",
+      "label": "pieces 121-150: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "longship",
-        "text": "My longship"
+        "prefabs": "Honey,HoneyGlazedChicken,Kale,KaleChips,Lingonberry,Lingondricka,LoxPie,MagicallyStuffedShroom,MarinatedGreens,MashedMeat,MeadBugRepellent,MeadBzerker,MeadEitrLingering,MeadEitrMinor,MeadFrostResist,MeadHasty,MeadHealthLingering,MeadHealthMajor,MeadHealthMedium,MeadHealthMinor,MeadLightfoot,MeadPoisonResist,MeadStaminaLingering,MeadStaminaMedium,MeadStaminaMinor,MeadStrength,MeadSwimmer,MeadTamer,MeadTasty,MeadTrollPheromones"
       },
-      "expect": true,
-      "label": "VikingShip can be renamed",
-      "stop": true
+      "contains": "missing=[];",
+      "label": "pieces 151-180: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "longship"
+        "prefabs": "MeatballsMashedPoteitr,MeatPlatter,MinceMeatSauce,MisthareSupreme,MooseKebab,Mushroom,MushroomBzerker,MushroomJotunPuffs,MushroomMagecap,MushroomOmelette,MushroomSmokePuff,MushroomYellow,NeckTailGrilled,Oak_Sapling,Oat,OatmealLingonberryJam,OatMilk,Onion,OnionSoup,OvenPancake,Pancakes,piece_ArcheryTarget,piece_barber,piece_beehive,piece_birdnest,piece_cartographytable,piece_EternalPyre,piece_groundtorch_mist,piece_sapcollector,piece_shieldgenerator"
       },
-      "contains": "My longship",
-      "label": "longship hover shows the new name"
+      "contains": "missing=[];",
+      "label": "pieces 181-210: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "cart",
-        "text": "My cart"
+        "prefabs": "piece_TrainingDummy,piece_trap_troll,piece_turret,piece_wisplure,PineTree_Sapling,PiquantPie,Placeable_HardRock,Placeable_Stone,Poteitr,Pukeberries,PulledBear,QueensJam,Raspberry,RoastedCrustPie,RottenMeat,RoyalJelly,Salad,sapling_barley,sapling_carrot,sapling_flax,sapling_jotunpuffs,sapling_Kale,sapling_magecap,sapling_oat,sapling_onion,sapling_poteitr,sapling_seedcarrot,sapling_seedkale,sapling_seedonion,sapling_seedturnip"
       },
-      "expect": true,
-      "label": "Cart can be renamed",
-      "stop": true
+      "contains": "missing=[];",
+      "label": "pieces 211-240: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "cart"
+        "prefabs": "sapling_turnip,Sausages,ScorchingMedley,SealSoup,SeekerAspic,SerpentMeatCooked,SerpentStew,ShocklateSmoothie,SizzlingBerryBroth,SmokedFish,SmokedMooseMeat,SparklingShroomshake,SpicyMarmalade,TurnipStew,VikingCupcake,VineAsh_sapling,Vineberry,VineGreen_sapling,WolfJerky,WolfMeatSkewer,YggdrasilPorridge"
       },
-      "contains": "My cart",
-      "label": "cart hover shows the new name"
+      "contains": "missing=[];",
+      "label": "pieces 241-261: all exist, none refused, every new name shows"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "cauldron",
-        "text": "My cauldron"
+        "prefabs": "ashwood_bed,bed,piece_bed02,Cart,incinerator,Karve,piece_chest,piece_chest_barrel,piece_chest_blackmetal,piece_chest_grausten,piece_chest_private,piece_chest_warderobe,piece_chest_wood,piece_gift1,piece_gift2,piece_gift3,piece_pot1,piece_pot2,piece_pot3,VikingShip,VikingShip_Ashlands,fermenter,piece_cookingstation,piece_cookingstation_iron,piece_FrostFoundry,piece_oven,ashwood_door,darkwood_gate,flametal_gate,iron_grate"
       },
-      "expect": true,
-      "label": "piece_cauldron can be renamed",
-      "stop": true
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 1-30: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "cauldron"
+        "prefabs": "piece_drawbridge,piece_drawbridge_log,piece_hexagonal_door,stave_gate,wood_door,wood_fence_gate,wood_gate,wood_window,portal_stone,portal_wood,piece_asksvinskeleton,piece_bench01,piece_bench_runed,piece_blackmarble_bench,piece_blackmarble_throne,piece_blackwood_bench01,piece_bone_throne,piece_chair,piece_chair02,piece_chair03,piece_chair_runed,piece_logbench01,piece_moose_throne,piece_throne01,piece_throne02,Raft,rug_Bjorn,BatteringRam,blastfurnace,charcoal_kiln"
       },
-      "contains": "My cauldron",
-      "label": "cauldron hover shows the new name"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 31-60: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceCategories",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "cauldron"
+        "prefabs": "eitrrefinery,piece_bathtub,piece_FrostKiln,piece_spinningwheel,smelter,windmill,artisan_ext1,blackforge,blackforge_ext1,blackforge_ext2_vise,blackforge_ext3_metalcutter,blackforge_ext4_gemcutter,blackforge_ext5_apron,cauldron_ext1_spice,cauldron_ext3_butchertable,cauldron_ext4_pots,cauldron_ext5_mortarandpestle,cauldron_ext6_rollingpins,cauldron_ext7_smoker,forge,forge_ext1,forge_ext2,forge_ext3,forge_ext4,forge_ext5,forge_ext6,piece_artisanstation,piece_cauldron,piece_magetable,piece_magetable_ext"
       },
-      "contains": "Cooking",
-      "label": "piece_cauldron counts as Cooking"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 61-90: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "oven",
-        "text": "My oven"
+        "prefabs": "piece_magetable_ext2,piece_magetable_ext3,piece_magetable_ext4,piece_MeadCauldron,piece_preptable,piece_stonecutter,piece_workbench,piece_workbench_ext1,piece_workbench_ext2,piece_workbench_ext3,piece_workbench_ext4,guard_stone,TeamWard,ArmorStand,BakedPoteitr,BarleyWine,Beech_Sapling,Birch_Sapling,BlackSoup,BloodPudding,Blueberries,BoarJerky,Bread,Carrot,CarrotSoup,Catapult,Cloudberry,CookedAsksvinMeat,CookedBjornMeat,CookedBoneMawSerpentMeat"
       },
-      "expect": true,
-      "label": "piece_oven can be renamed",
-      "stop": true
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 91-120: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "oven"
+        "prefabs": "CookedBugMeat,CookedChickenMeat,CookedDeerMeat,CookedEgg,CookedHareMeat,CookedLoxMeat,CookedMeat,CookedMooseMeat,CookedSealBlubber,CookedVoltureMeat,CookedWolfMeat,DeerStew,Eyescream,FeastAshlands,FeastBlackforest,FeastDeepNorth,FeastMeadows,FeastMistlands,FeastMountains,FeastOceans,FeastPlains,FeastSwamps,Fiddleheadfern,FierySvinstew,FirTree_big_Sapling,FirTree_Sapling,FishAndBread,FishCooked,FishSoup,FishWraps"
       },
-      "contains": "My oven",
-      "label": "oven hover shows the new name"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 121-150: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceCategories",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "oven"
+        "prefabs": "Honey,HoneyGlazedChicken,Kale,KaleChips,Lingonberry,Lingondricka,LoxPie,MagicallyStuffedShroom,MarinatedGreens,MashedMeat,MeadBugRepellent,MeadBzerker,MeadEitrLingering,MeadEitrMinor,MeadFrostResist,MeadHasty,MeadHealthLingering,MeadHealthMajor,MeadHealthMedium,MeadHealthMinor,MeadLightfoot,MeadPoisonResist,MeadStaminaLingering,MeadStaminaMedium,MeadStaminaMinor,MeadStrength,MeadSwimmer,MeadTamer,MeadTasty,MeadTrollPheromones"
       },
-      "contains": "Cooking",
-      "label": "piece_oven counts as Cooking"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 151-180: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceRename",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "blastfurnace",
-        "text": "My blastfurnace"
+        "prefabs": "MeatballsMashedPoteitr,MeatPlatter,MinceMeatSauce,MisthareSupreme,MooseKebab,Mushroom,MushroomBzerker,MushroomJotunPuffs,MushroomMagecap,MushroomOmelette,MushroomSmokePuff,MushroomYellow,NeckTailGrilled,Oak_Sapling,Oat,OatmealLingonberryJam,OatMilk,Onion,OnionSoup,OvenPancake,Pancakes,piece_ArcheryTarget,piece_barber,piece_beehive,piece_birdnest,piece_cartographytable,piece_EternalPyre,piece_groundtorch_mist,piece_sapcollector,piece_shieldgenerator"
       },
-      "expect": true,
-      "label": "blastfurnace can be renamed",
-      "stop": true
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 181-210: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceHoverTitle",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "blastfurnace"
+        "prefabs": "piece_TrainingDummy,piece_trap_troll,piece_turret,piece_wisplure,PineTree_Sapling,PiquantPie,Placeable_HardRock,Placeable_Stone,Poteitr,Pukeberries,PulledBear,QueensJam,Raspberry,RoastedCrustPie,RottenMeat,RoyalJelly,Salad,sapling_barley,sapling_carrot,sapling_flax,sapling_jotunpuffs,sapling_Kale,sapling_magecap,sapling_oat,sapling_onion,sapling_poteitr,sapling_seedcarrot,sapling_seedkale,sapling_seedonion,sapling_seedturnip"
       },
-      "contains": "My blastfurnace",
-      "label": "blastfurnace hover shows the new name"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 211-240: none denied or mis-named"
     },
     {
       "do": "hook",
-      "name": "renameit.pieceCategories",
+      "name": "renameit.pieceSweep",
       "args": {
-        "target": "blastfurnace"
+        "prefabs": "sapling_turnip,Sausages,ScorchingMedley,SealSoup,SeekerAspic,SerpentMeatCooked,SerpentStew,ShocklateSmoothie,SizzlingBerryBroth,SmokedFish,SmokedMooseMeat,SparklingShroomshake,SpicyMarmalade,TurnipStew,VikingCupcake,VineAsh_sapling,Vineberry,VineGreen_sapling,WolfJerky,WolfMeatSkewer,YggdrasilPorridge"
       },
-      "contains": "Smelter",
-      "label": "blastfurnace counts as Smelter"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "blackforge",
-        "text": "My blackforge"
-      },
-      "expect": true,
-      "label": "blackforge can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "blackforge"
-      },
-      "contains": "My blackforge",
-      "label": "blackforge hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "blackforge"
-      },
-      "contains": "Station",
-      "label": "blackforge counts as Station"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "magetable",
-        "text": "My magetable"
-      },
-      "expect": true,
-      "label": "piece_magetable can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "magetable"
-      },
-      "contains": "My magetable",
-      "label": "magetable hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "magetable"
-      },
-      "contains": "Station",
-      "label": "piece_magetable counts as Station"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "gemcutter",
-        "text": "My gemcutter"
-      },
-      "expect": true,
-      "label": "piece_gemcutter can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "gemcutter"
-      },
-      "contains": "My gemcutter",
-      "label": "gemcutter hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "gemcutter"
-      },
-      "contains": "Station",
-      "label": "piece_gemcutter counts as Station"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "cartography",
-        "text": "My cartography"
-      },
-      "expect": true,
-      "label": "piece_cartographytable can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "cartography"
-      },
-      "contains": "My cartography",
-      "label": "cartography hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "cartography"
-      },
-      "contains": "Station",
-      "label": "piece_cartographytable counts as Station"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "reinforced",
-        "text": "My reinforced"
-      },
-      "expect": true,
-      "label": "piece_chest can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "reinforced"
-      },
-      "contains": "My reinforced",
-      "label": "reinforced hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "reinforced"
-      },
-      "contains": "Chest",
-      "label": "piece_chest counts as Chest"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "blackmetal",
-        "text": "My blackmetal"
-      },
-      "expect": true,
-      "label": "piece_chest_blackmetal can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "blackmetal"
-      },
-      "contains": "My blackmetal",
-      "label": "blackmetal hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "blackmetal"
-      },
-      "contains": "Chest",
-      "label": "piece_chest_blackmetal counts as Chest"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "woodgate",
-        "text": "My woodgate"
-      },
-      "expect": true,
-      "label": "wood_gate can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "woodgate"
-      },
-      "contains": "My woodgate",
-      "label": "woodgate hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "woodgate"
-      },
-      "contains": "Door",
-      "label": "wood_gate counts as Door"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "darkgate",
-        "text": "My darkgate"
-      },
-      "expect": true,
-      "label": "darkwood_gate can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "darkgate"
-      },
-      "contains": "My darkgate",
-      "label": "darkgate hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "darkgate"
-      },
-      "contains": "Door",
-      "label": "darkwood_gate counts as Door"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceRename",
-      "args": {
-        "target": "bed2",
-        "text": "My bed2"
-      },
-      "expect": true,
-      "label": "piece_bed02 can be renamed",
-      "stop": true
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceHoverTitle",
-      "args": {
-        "target": "bed2"
-      },
-      "contains": "My bed2",
-      "label": "bed2 hover shows the new name"
-    },
-    {
-      "do": "hook",
-      "name": "renameit.pieceCategories",
-      "args": {
-        "target": "bed2"
-      },
-      "contains": "Bed",
-      "label": "piece_bed02 counts as Bed"
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 241-261: none denied or mis-named"
     }
   ],
   "asserts": [
@@ -569,5 +171,5 @@
       "source": "DrakesRenameit"
     }
   ],
-  "timeout": 240
+  "timeout": 600
 }

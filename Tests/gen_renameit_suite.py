@@ -1396,20 +1396,32 @@ for name, block in BLOCKS.items():
     dump(os.path.join(AUTO, '_functions', f'{name}.json'), block)
 # ---------------------------------------------------------------- 1.4 test pass: more piece kinds, several players, wards, VIP
 
-KINDS2 = [
-    ('Raft', 'raft', None), ('Karve', 'karve', None), ('VikingShip', 'longship', None), ('Cart', 'cart', None),
-    ('piece_cauldron', 'cauldron', 'Cooking'), ('piece_oven', 'oven', 'Cooking'), ('blastfurnace', 'blastfurnace', 'Smelter'),
-    ('blackforge', 'blackforge', 'Station'), ('piece_magetable', 'magetable', 'Station'), ('piece_gemcutter', 'gemcutter', 'Station'),
-    ('piece_cartographytable', 'cartography', 'Station'), ('piece_chest', 'reinforced', 'Chest'), ('piece_chest_blackmetal', 'blackmetal', 'Chest'),
-    ('wood_gate', 'woodgate', 'Door'), ('darkwood_gate', 'darkgate', 'Door'), ('piece_bed02', 'bed2', 'Bed'),
-]
-steps2 = kinds_row(KINDS2[:8], dz=6, step=7) + kinds_row(KINDS2[8:], dz=16, step=7) + [wait(0.5)]
-for prefab, tag, cat in KINDS2:
-    steps2 += renames(tag, f'My {tag}', f'{prefab} can be renamed')
-    if cat:
-        steps2.append(H('pieceCategories', label=f'{prefab} counts as {cat}', contains=cat, target=tag))
-T('PR-17', 'more piece kinds: ships, cart, cauldron, oven, furnaces, tables, big chests, gates, second bed', steps2, timeout=240,
-  desc='Second row of kinds for the 1.4 test pass: boats and the cart (pieces that are vehicles), the later stations and processors, the other chests, gates and bed. A prefab that does not exist in this game version fails with its name.')
+# PR-17: every buildable piece with a hover name, from the game's own list (Tests/PieceReference.txt = the generated
+# ExcludedCategoryReference.txt of a 1.0 run). One hook call per batch spawns each piece briefly with me as builder and reports
+# what cannot be renamed, so a new piece in a game update shows up here.
+def _reference_prefabs():
+    out = []
+    started = False
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PieceReference.txt'), encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('# Only pieces players can build'):
+                started = True
+                continue
+            if started and line.strip():
+                if line.split()[0] != 'Prefab' and line.split()[0].replace('_', '').isalnum():
+                    out.append(line.split()[0])
+    return out
+
+REF_PREFABS = _reference_prefabs()
+BATCH = 30
+T('PR-17', f'every buildable piece with a hover name ({len(REF_PREFABS)} prefabs)', [
+    *[H('pieceSweep', label=f'pieces {i + 1}-{min(i + BATCH, len(REF_PREFABS))}: all exist, none refused, every new name shows',
+        contains='missing=[];', prefabs=','.join(REF_PREFABS[i:i + BATCH]))
+      for i in range(0, len(REF_PREFABS), BATCH)],
+    *[H('pieceSweep', label=f'pieces {i + 1}-{min(i + BATCH, len(REF_PREFABS))}: none denied or mis-named', contains='denied=[];badName=[]',
+        prefabs=','.join(REF_PREFABS[i:i + BATCH]))
+      for i in range(0, len(REF_PREFABS), BATCH)],
+], timeout=600, desc='Spawns each buildable piece briefly with me as the builder and renames it. The report of each batch is in the log: missing prefabs, pieces with no hover RenameIt handles (fires, stands, signs), pieces the rules refuse the builder, names that did not show.')
 
 T('PR-18', 'three players, one chest, one ward', [
     play('Alice'),

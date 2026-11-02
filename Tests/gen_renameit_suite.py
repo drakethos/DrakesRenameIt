@@ -1525,6 +1525,21 @@ T('X-EQ-05', 'every slot filled, inventory held open for a look (hover the slots
     wait(300),
 ], timeout=420, sheet='X-EQ', desc='Same as X-EQ-04, then holds the inventory open for five minutes so someone (or Claude with computer use) can hover each slot and look at the tooltip. Not part of the regression.')
 
+T('X-EQ-06', 'unattended: hover every filled slot and read the tooltip (name, description, Crafted-by)', [
+    *full_set_steps(),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    shot('all-slots'),
+    *[step for prefab, slot, _ in FULL_SET for step in (
+        {'do': 'uiHover', 'icon': prefab, 'until': f'Test {slot}', 'wait': 1.0, 'require': False},
+        {'do': 'check', 'check': 'screenText', 'contains': f'Test {slot}', 'label': f'{slot}: the new name is shown'},
+        {'do': 'check', 'check': 'screenText', 'contains': f'Desc {slot}', 'label': f'{slot}: the new description is shown'},
+        {'do': 'check', 'check': 'screenText', 'contains': f'By {slot}', 'label': f'{slot}: the Crafted-by name is shown'},
+        shot(f'hover-{slot.lower()}'),
+    )],
+    {'do': 'uiRelease'},
+], timeout=300, sheet='X-EQ', desc='Fully unattended equipment-mod check (DrakesTestLab 0.4.5 uiHover / screenText): fills every slot type, rests the in-game mouse on each, and reads the tooltip text plus a screenshot. Replaces hovering by hand.')
+
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
         json.dump(t, f, indent=2, ensure_ascii=False)

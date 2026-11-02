@@ -1,0 +1,640 @@
+{
+  "name": "X-EQ-06 unattended: hover every filled slot and read the tooltip (name, description, Crafted-by)",
+  "description": "Sheet: X-EQ. Fully unattended equipment-mod check (DrakesTestLab 0.4.5 uiHover / screenText): fills every slot type, rests the in-game mouse on each, and reads the tooltip text plus a screenshot. Replaces hovering by hand.",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "HelmetTrollLeather",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "name",
+        "text": "Test Helmet"
+      },
+      "expect": true,
+      "label": "rename the Helmet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "desc",
+        "text": "Desc Helmet"
+      },
+      "expect": true,
+      "label": "describe the Helmet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "craftedBy",
+        "text": "By Helmet"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Helmet"
+    },
+    {
+      "do": "give",
+      "prefab": "ArmorTrollLeatherChest",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "name",
+        "text": "Test Chest"
+      },
+      "expect": true,
+      "label": "rename the Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "desc",
+        "text": "Desc Chest"
+      },
+      "expect": true,
+      "label": "describe the Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "craftedBy",
+        "text": "By Chest"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Chest"
+    },
+    {
+      "do": "give",
+      "prefab": "ArmorTrollLeatherLegs",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "name",
+        "text": "Test Legs"
+      },
+      "expect": true,
+      "label": "rename the Legs"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "desc",
+        "text": "Desc Legs"
+      },
+      "expect": true,
+      "label": "describe the Legs"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "craftedBy",
+        "text": "By Legs"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Legs"
+    },
+    {
+      "do": "give",
+      "prefab": "CapeDeerHide",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "name",
+        "text": "Test Cape"
+      },
+      "expect": true,
+      "label": "rename the Cape"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "desc",
+        "text": "Desc Cape"
+      },
+      "expect": true,
+      "label": "describe the Cape"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "craftedBy",
+        "text": "By Cape"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Cape"
+    },
+    {
+      "do": "give",
+      "prefab": "Wishbone",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "name",
+        "text": "Test Utility"
+      },
+      "expect": true,
+      "label": "rename the Utility"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "desc",
+        "text": "Desc Utility"
+      },
+      "expect": true,
+      "label": "describe the Utility"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "craftedBy",
+        "text": "By Utility"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Utility"
+    },
+    {
+      "do": "give",
+      "prefab": "ShieldWood",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "name",
+        "text": "Test Shield"
+      },
+      "expect": true,
+      "label": "rename the Shield"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "desc",
+        "text": "Desc Shield"
+      },
+      "expect": true,
+      "label": "describe the Shield"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "craftedBy",
+        "text": "By Shield"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Shield"
+    },
+    {
+      "do": "give",
+      "prefab": "AxeStone",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "name",
+        "text": "Test Weapon"
+      },
+      "expect": true,
+      "label": "rename the Weapon"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc",
+        "text": "Desc Weapon"
+      },
+      "expect": true,
+      "label": "describe the Weapon"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "By Weapon"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Weapon"
+    },
+    {
+      "do": "give",
+      "prefab": "CookedMeat",
+      "crafter": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "name",
+        "text": "Test Food"
+      },
+      "expect": true,
+      "label": "rename the Food"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "desc",
+        "text": "Desc Food"
+      },
+      "expect": true,
+      "label": "describe the Food"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "craftedBy",
+        "text": "By Food"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Food"
+    },
+    {
+      "do": "give",
+      "prefab": "ArrowWood",
+      "crafter": "me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "name",
+        "text": "Test Ammo"
+      },
+      "expect": true,
+      "label": "rename the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "desc",
+        "text": "Desc Ammo"
+      },
+      "expect": true,
+      "label": "describe the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "craftedBy",
+        "text": "By Ammo"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.openInventory",
+      "expect": true,
+      "label": "open the inventory"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "screenshot",
+      "name": "all-slots"
+    },
+    {
+      "do": "uiHover",
+      "icon": "HelmetTrollLeather",
+      "until": "Test Helmet",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Helmet",
+      "label": "Helmet: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Helmet",
+      "label": "Helmet: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Helmet",
+      "label": "Helmet: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-helmet"
+    },
+    {
+      "do": "uiHover",
+      "icon": "ArmorTrollLeatherChest",
+      "until": "Test Chest",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Chest",
+      "label": "Chest: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Chest",
+      "label": "Chest: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Chest",
+      "label": "Chest: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-chest"
+    },
+    {
+      "do": "uiHover",
+      "icon": "ArmorTrollLeatherLegs",
+      "until": "Test Legs",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Legs",
+      "label": "Legs: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Legs",
+      "label": "Legs: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Legs",
+      "label": "Legs: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-legs"
+    },
+    {
+      "do": "uiHover",
+      "icon": "CapeDeerHide",
+      "until": "Test Cape",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Cape",
+      "label": "Cape: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Cape",
+      "label": "Cape: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Cape",
+      "label": "Cape: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-cape"
+    },
+    {
+      "do": "uiHover",
+      "icon": "Wishbone",
+      "until": "Test Utility",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Utility",
+      "label": "Utility: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Utility",
+      "label": "Utility: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Utility",
+      "label": "Utility: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-utility"
+    },
+    {
+      "do": "uiHover",
+      "icon": "ShieldWood",
+      "until": "Test Shield",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Shield",
+      "label": "Shield: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Shield",
+      "label": "Shield: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Shield",
+      "label": "Shield: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-shield"
+    },
+    {
+      "do": "uiHover",
+      "icon": "AxeStone",
+      "until": "Test Weapon",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Weapon",
+      "label": "Weapon: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Weapon",
+      "label": "Weapon: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Weapon",
+      "label": "Weapon: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-weapon"
+    },
+    {
+      "do": "uiHover",
+      "icon": "CookedMeat",
+      "until": "Test Food",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Food",
+      "label": "Food: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Food",
+      "label": "Food: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Food",
+      "label": "Food: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-food"
+    },
+    {
+      "do": "uiHover",
+      "icon": "ArrowWood",
+      "until": "Test Ammo",
+      "wait": 1.0,
+      "require": false
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Test Ammo",
+      "label": "Ammo: the new name is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "Desc Ammo",
+      "label": "Ammo: the new description is shown"
+    },
+    {
+      "do": "check",
+      "check": "screenText",
+      "contains": "By Ammo",
+      "label": "Ammo: the Crafted-by name is shown"
+    },
+    {
+      "do": "screenshot",
+      "name": "hover-ammo"
+    },
+    {
+      "do": "uiRelease"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 300
+}

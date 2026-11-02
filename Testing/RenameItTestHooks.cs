@@ -762,6 +762,33 @@ internal static class RenameItTestHooks
         return System.Text.RegularExpressions.Regex.Replace(string.Join(" | ", texts), "<[^>]+>", "").Replace('\n', ' ').Trim();
     }
 
+    /// <summary>
+    /// Description and Crafted-by in the tooltips the open inventory has already filled in: how many show the custom description
+    /// (descCustom), still show the vanilla one (descVanilla), and show the custom Crafted-by text (craftedCustom).
+    /// descVanilla must be 0 once the item has a custom description.
+    /// </summary>
+    [TestHook("renameit.slotTexts")]
+    static string SlotTexts(Dictionary<string, object?> args)
+    {
+        var item = Item(args);
+        var loc = Localization.instance;
+        var customDesc = loc.Localize(CustomizeLibsAPI.GetProperDescription(item, item.m_shared.m_description) ?? "");
+        var vanillaDesc = loc.Localize(item.m_shared.m_description ?? "");
+        var crafted = CustomizeLibsAPI.GetCraftedByDisplay(item) ?? "";
+        int dc = 0, dv = 0, cc = 0;
+        foreach (var t in Resources.FindObjectsOfTypeAll<UITooltip>())
+        {
+            if (t == null || !t.gameObject.activeInHierarchy || string.IsNullOrEmpty(t.m_text))
+                continue;
+            var text = loc.Localize(t.m_text);
+            if (customDesc.Length > 0 && text.IndexOf(customDesc, StringComparison.Ordinal) >= 0) dc++;
+            if (vanillaDesc.Length > 0 && vanillaDesc != customDesc && text.IndexOf(vanillaDesc, StringComparison.Ordinal) >= 0) dv++;
+            if (crafted.Length > 0 && text.IndexOf(crafted, StringComparison.Ordinal) >= 0) cc++;
+        }
+
+        return $"descCustom={dc};descVanilla={dv};craftedCustom={cc};desc={customDesc};crafted={crafted}";
+    }
+
     /// <summary>The categories PieceExcludedCategory matches for this piece, comma separated.</summary>
     [TestHook("renameit.pieceCategories")]
     static string PieceCategories(Dictionary<string, object?> args, GameObject? target = null) =>

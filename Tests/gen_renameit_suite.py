@@ -1504,6 +1504,8 @@ def full_set_steps():
     for prefab, slot, equip in FULL_SET:
         steps.append({'do': 'give', 'prefab': prefab, 'crafter': 'me', **({'equip': True} if equip else {})})
         steps.append(H('edit', True, f'rename the {slot}', prefab=prefab, op='name', text=f'Test {slot}'))
+        steps.append(H('edit', True, f'describe the {slot}', prefab=prefab, op='desc', text=f'Desc {slot}'))
+        steps.append(H('edit', True, f'Crafted-by name on the {slot}', prefab=prefab, op='craftedBy', text=f'By {slot}'))
     return steps
 
 T('X-EQ-04', 'every slot filled with a renamed item: no slot shows a vanilla name', [
@@ -1511,8 +1513,17 @@ T('X-EQ-04', 'every slot filled with a renamed item: no slot shows a vanilla nam
     H('openInventory', True, 'open the inventory'),
     wait(1.5),
     *[H('slotTooltips', label=f'{slot}: no vanilla name in any tooltip topic', notContains='result=vanilla-present', prefab=prefab) for prefab, slot, _ in FULL_SET],
+    *[H('slotTexts', label=f'{slot}: the vanilla description is not shown once it has its own', notContains='descVanilla=1', prefab=prefab) for prefab, slot, _ in FULL_SET],
     shot('all-slots'),
 ], sheet='X-EQ', desc='Equipment-mod compatibility, all slots: an item for every slot type (armor, cape, utility, shield, weapon, food, ammo), each renamed. Reads every active tooltip topic per item. Tooltips a mod only fills on mouse hover need the manual M-EQ-01.')
+
+T('X-EQ-05', 'every slot filled, inventory held open for a look (hover the slots)', [
+    *full_set_steps(),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    shot('all-slots-open'),
+    wait(300),
+], timeout=420, sheet='X-EQ', desc='Same as X-EQ-04, then holds the inventory open for five minutes so someone (or Claude with computer use) can hover each slot and look at the tooltip. Not part of the regression.')
 
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
@@ -1537,7 +1548,7 @@ mtests = {
         {'do': 'checkpoint', 'message': 'Needs a dedicated server and a non-admin client: the client cannot change synced RenameIt settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested.'}], 'TC-501, ISSUE-019'),
     'M-EQ-01': ('renamed item in ExtraSlots equipment and extra slots', [
         *full_set_steps(),
-        {'do': 'checkpoint', 'message': 'You wear and carry one item for every slot (helmet, chest, legs, cape, utility, shield, weapon, food, ammo), each renamed Test <slot>. Put every one into the equipment mod slot it belongs in, FILL ALL SLOTS (move food and ammo to its food and ammo slots, others to any quick or extra slots). You wear a cape renamed "Slot Test Cape" (crafted by you). Open your inventory (Tab) and hover EVERY filled slot of the equipment mod you are testing: each tooltip title must be its Test <slot> name, never the vanilla name, with the Crafted-by line. Then move it into any other slot that mod adds (quick, misc, food, ammo, a bag) and hover again. Note in the result what you saw (a different name, no tooltip, a layout problem). Pass only if every slot shows the new name. Mark Fail if not.'}], 'X-EQ'),
+        {'do': 'checkpoint', 'message': 'You wear and carry one item for every slot (helmet, chest, legs, cape, utility, shield, weapon, food, ammo), each renamed Test <slot>, described Desc <slot> and with the Crafted-by name By <slot>. Put every one into the equipment mod slot it belongs in, FILL ALL SLOTS (move food and ammo to its food and ammo slots, others to any quick or extra slots). You wear a cape renamed "Slot Test Cape" (crafted by you). Open your inventory (Tab) and hover EVERY filled slot of the equipment mod you are testing: each tooltip must show its Test <slot> name, its Desc <slot> description and Crafted by: By <slot>, never the vanilla name or description. Then move it into any other slot that mod adds (quick, misc, food, ammo, a bag) and hover again. Note in the result what you saw (a different name, no tooltip, a layout problem). Pass only if every slot shows the new name. Mark Fail if not.'}], 'X-EQ'),
     'M-TC-4xx': ('other mods', [
         U('craftRenamed', text='Mod Check', desc='With other mods'),
         {'do': 'checkpoint', 'message': 'With the modpack loaded (VRP, Shrooms, RPChatter, PlanBuild, InfinityHammer, Ward is Love, Protective Wards, Arcane Wards): the renamed axe in your inventory keeps its name and description, no errors, and wards from those mods are respected. PlanBuild losing data on stands/walls is known (ISSUE-003). Mark Fail if not tested.'}], 'TC-401..408'),

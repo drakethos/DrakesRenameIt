@@ -20,6 +20,28 @@
       "label": "rename the Helmet"
     },
     {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "desc",
+        "text": "Desc Helmet"
+      },
+      "expect": true,
+      "label": "describe the Helmet"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "HelmetTrollLeather",
+        "op": "craftedBy",
+        "text": "By Helmet"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Helmet"
+    },
+    {
       "do": "give",
       "prefab": "ArmorTrollLeatherChest",
       "crafter": "me",
@@ -35,6 +57,28 @@
       },
       "expect": true,
       "label": "rename the Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "desc",
+        "text": "Desc Chest"
+      },
+      "expect": true,
+      "label": "describe the Chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest",
+        "op": "craftedBy",
+        "text": "By Chest"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Chest"
     },
     {
       "do": "give",
@@ -54,6 +98,28 @@
       "label": "rename the Legs"
     },
     {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "desc",
+        "text": "Desc Legs"
+      },
+      "expect": true,
+      "label": "describe the Legs"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs",
+        "op": "craftedBy",
+        "text": "By Legs"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Legs"
+    },
+    {
       "do": "give",
       "prefab": "CapeDeerHide",
       "crafter": "me",
@@ -69,6 +135,28 @@
       },
       "expect": true,
       "label": "rename the Cape"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "desc",
+        "text": "Desc Cape"
+      },
+      "expect": true,
+      "label": "describe the Cape"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "craftedBy",
+        "text": "By Cape"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Cape"
     },
     {
       "do": "give",
@@ -88,6 +176,28 @@
       "label": "rename the Utility"
     },
     {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "desc",
+        "text": "Desc Utility"
+      },
+      "expect": true,
+      "label": "describe the Utility"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "Wishbone",
+        "op": "craftedBy",
+        "text": "By Utility"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Utility"
+    },
+    {
       "do": "give",
       "prefab": "ShieldWood",
       "crafter": "me",
@@ -103,6 +213,28 @@
       },
       "expect": true,
       "label": "rename the Shield"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "desc",
+        "text": "Desc Shield"
+      },
+      "expect": true,
+      "label": "describe the Shield"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ShieldWood",
+        "op": "craftedBy",
+        "text": "By Shield"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Shield"
     },
     {
       "do": "give",
@@ -122,6 +254,28 @@
       "label": "rename the Weapon"
     },
     {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "desc",
+        "text": "Desc Weapon"
+      },
+      "expect": true,
+      "label": "describe the Weapon"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "AxeStone",
+        "op": "craftedBy",
+        "text": "By Weapon"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Weapon"
+    },
+    {
       "do": "give",
       "prefab": "CookedMeat",
       "crafter": "me"
@@ -138,6 +292,28 @@
       "label": "rename the Food"
     },
     {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "desc",
+        "text": "Desc Food"
+      },
+      "expect": true,
+      "label": "describe the Food"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CookedMeat",
+        "op": "craftedBy",
+        "text": "By Food"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Food"
+    },
+    {
       "do": "give",
       "prefab": "ArrowWood",
       "crafter": "me"
@@ -152,6 +328,28 @@
       },
       "expect": true,
       "label": "rename the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "desc",
+        "text": "Desc Ammo"
+      },
+      "expect": true,
+      "label": "describe the Ammo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "ArrowWood",
+        "op": "craftedBy",
+        "text": "By Ammo"
+      },
+      "expect": true,
+      "label": "Crafted-by name on the Ammo"
     },
     {
       "do": "hook",
@@ -243,6 +441,87 @@
       },
       "notContains": "result=vanilla-present",
       "label": "Ammo: no vanilla name in any tooltip topic"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "HelmetTrollLeather"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Helmet: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "ArmorTrollLeatherChest"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Chest: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "ArmorTrollLeatherLegs"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Legs: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Cape: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "Wishbone"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Utility: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "ShieldWood"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Shield: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Weapon: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "CookedMeat"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Food: the vanilla description is not shown once it has its own"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTexts",
+      "args": {
+        "prefab": "ArrowWood"
+      },
+      "notContains": "descVanilla=1",
+      "label": "Ammo: the vanilla description is not shown once it has its own"
     },
     {
       "do": "screenshot",

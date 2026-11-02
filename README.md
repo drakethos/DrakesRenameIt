@@ -22,6 +22,22 @@ Craft blank **Piece of Paper** from the inventory craft list (default recipe **1
 
 With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.11.2+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
 
+### Works with equipment and slot mods
+
+Mods that draw their own equipment slots can write an item's *vanilla* name into their tooltip, so a renamed item would show its old name there. RenameIt carries small **compat modules** that fix this, and they only load when the other mod is installed.
+
+| Mod | Status |
+|---|---|
+| **ExtraSlots** (shudnal) | Supported through a compat module: renamed items show their name, description and *Crafted by* in the equipment, food, ammo, quick and misc slots. |
+| **AzuExtendedPlayerInventory** (Azumatt) | Works as is: name, description and *Crafted by* show in its equipment slots and hotbar. |
+| **InventorySlots** (sighsorry) | Works as is: name, description and *Crafted by* show in its slots. |
+| **SeneaL UI** | Supported through a compat module for the name. Its description and *Crafted by* lines also need the next **DrakeModsLibs** (1.0.6), which fixes how Libs hooks `GetTooltip` on Valheim 1.0. |
+| **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
+
+Each mod is checked by an automated test that fills every slot type with a renamed, described item and reads what the tooltip shows.
+
+We look after the most downloaded mods first, and any mod a running server depends on. If yours is smaller, it is not a judgement on it: we just cannot keep up with every mod, so we would love your help. Making your own module is short, and there is a step-by-step guide: **[Making RenameIt work with another mod](docs/COMPATIBILITY.md)**.
+
 ### How to use
 
 Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item. With only RenameIt usable you get the rename action menu; with LockSmith (or another tab) also usable you get the shared tab strip first. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
@@ -200,7 +216,9 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 **Admin/VIP override** (and unlock-cost skip when elevated) → **Features toggles** (rename, description, crafted-by) → **LockToOwner** (once an owner exists) → **RenameAllowlist** → **excluded names**, **excluded category**, **ExcludeStacks**, and **AllowRenameUnownedItems** for raw resources → **unlock cost** (if enabled) for the stack.
 
 ### Known Issues:
-- None currently but please report if you find any!
+- **Equipment and slot mods.** A mod that draws its own equipment-slot or inventory UI may show an item's old name until a small compatibility module exists for it. ExtraSlots is covered (see *Works with equipment and slot mods*). If you find one that does not work, please drop us a line with the mod's name and version: a thread on the Hexium page or a GitHub issue is perfect. Thank you!
+- **How we choose which mods to support.** There are a lot of mods out there and we cannot keep up with all of them, so we start with the most downloaded ones and with any mod a running server relies on and needs support for. If a mod is below that, it is nothing personal, we simply cannot promise it. You are very welcome to write your own module and send a pull request: [Making RenameIt work with another mod](docs/COMPATIBILITY.md) shows how.
+- Otherwise none known, but please report anything you find!
 
 #### Wishlist for future
 - If there is high demand: renamable pieces that have hover names.

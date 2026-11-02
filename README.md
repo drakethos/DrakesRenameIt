@@ -61,7 +61,8 @@ Mods that draw their own equipment slots can write an item's *vanilla* name into
 |---|---|
 | **ExtraSlots** (shudnal) | Supported: renamed items and the *Crafted by* line show in the equipment, food, ammo, quick and misc slots. |
 | **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
-| AzuExtendedPlayerInventory, InventorySlots (sighsorry), SeneaL UI | Being checked now. |
+| **AzuExtendedPlayerInventory** (Azumatt) | Works as is: renamed items show their name in its equipment slots. |
+| InventorySlots (sighsorry), SeneaL UI | Being checked now. |
 
 We look after the most downloaded mods first, and any mod a running server depends on. If yours is smaller, it is not a judgement on it: we just cannot keep up with every mod, so we would love your help. Making your own module is short, and there is a step-by-step guide: **[Making RenameIt work with another mod](docs/COMPATIBILITY.md)**.
 

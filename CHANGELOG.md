@@ -1,3 +1,6 @@
+- Unreleased (1.4.0 candidate, not tagged: waiting on the two-player test)
+  - **Fix: Name tab in the Lock menu** (chests, doors) had no formatting toolbar. It now has the same bold / italic / size / colour bar as the piece and animal windows.
+  - **Docs:** README piece, animal and pin screenshots added (`docs/images/`); Libs requirement shown as 1.0.6.
 - Version 1.4.0-beta.7
   - Beta. Requires **DrakeModsLibs 1.0.6**. Books are not in this beta: they moved to a separate 1.5 beta line (1.4.0-beta.6 carried an early Books preview).
   - **Security fix: piece renames are checked by the piece's owner.** The owner's client used to write whatever name or Shared flag it was sent, so a modified client could rename any piece (someone else's, a world-built one, one in a ward it may not touch, or past the name limit). The owner now finds who sent the request and applies the same rules as the rename window to that player (builder or Shared, ward access, admin/VIP, character limit), and refuses senders it cannot identify.

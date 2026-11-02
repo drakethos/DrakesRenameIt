@@ -10,7 +10,7 @@
 
 Rename items, **placed pieces, tamed animals and map pins**, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay, labelling gear, and naming the things that make your base and your boats yours. **1.4** adds renaming placed pieces (chests, doors, beds, stations, boats, portals and more), a proper animal rename window, editable map pins, saved-name suggestions and a builder line. **1.3** moved the menus to the new UI and added the Piece of Paper notes with shared inventory tabs with **LockSmith** via **DrakeModsLibs**. It also works with equipment-slot mods such as **ExtraSlots** (see below), and with the soft ward bridges for WardIsLove, ProtectiveWards and Arcane Ward.
 
-**Requires [DrakeModsLibs 1.0.5+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.6+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Rename placed pieces (1.4)
 
@@ -20,12 +20,17 @@ Any built piece that shows a hover name (chests, doors, beds, stations, signs, f
 
 **Checked where it counts.** The piece's owner checks who is asking (builder, Shared, ward access, admin/VIP, name length) before it writes anything, so a modified client cannot rename a piece it may not. Pieces the world generated (dungeon chests, crypt doors) stay admin/VIP only.
 
-<!-- PIECE IMAGES (add yours here). Suggested files in docs/images/:
-![A renamed chest, hover name and Crafted by line](docs/images/piece-chest-hover.png)
-![The piece window: name, toolbar, Shared switch](docs/images/piece-window.png)
-![A renamed boat and a renamed portal](docs/images/piece-boat-portal.png)
-![Shared piece renamed by a second player](docs/images/piece-shared.png)
--->
+<img width="520" alt="A renamed boat: coloured name, Use, Crafted by and the Rename hint" src="docs/images/piece-boat-hover.webp" />
+
+The piece window (name, formatting toolbar, hover preview, Shared switch):
+
+<img width="420" alt="The piece window for a chest" src="docs/images/piece-window.png" />
+
+A renamed portal keeps its `Tag:` line:
+
+<img width="420" alt="A renamed portal hover" src="docs/images/piece-portal-hover.png" />
+
+When **LockSmith** is installed, chests and doors get a **Name** tab beside **Lock** (Shift+Use opens the Lock menu there), with the same formatting toolbar.
 
 Synced config section **12 Pieces:** `PieceRenameEnabled`, `PieceRenameAdminOnly`, `PieceExcludedNames` (prefab, token or shown name), `PieceExcludedCategory` (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), `PieceRenameAllowlist`, `PieceNameCharacterLimit`, `PieceLockToBuilder`, `PieceRequireWardAccess`, `PieceSharedEnabled`. `ExcludedCategoryReference.txt` lists the categories and every buildable piece with a hover name once you have joined a world.
 
@@ -33,9 +38,13 @@ Synced config section **12 Pieces:** `PieceRenameEnabled`, `PieceRenameAdminOnly
 
 **Shift+Use** on a tamed animal opens a proper rename window instead of vanilla's 10-character box: name with colours and bold, a label preview, Reset, Revert / Save with Undo, and a **Lock name** switch. Vanilla showed every animal name in white; colours now show on the label above the animal, and an **Improved** label style makes it bigger (`AnimalLabelStyle`, `AnimalLabelScale`, per player). Synced config section **13 Animals:** `AnimalRenameEnabled`, `AnimalNameCharacterLimit` (30, colour codes not counted), `AnimalAllowColour`, `AnimalRenameAccess` (Anyone / Namer / Admin) and `AnimalAllowLock`. The animal's owner applies the limit and colour rules again, so a modified client cannot get around them.
 
+<img width="520" alt="A tamed animal with a coloured, longer name" src="docs/images/animal-colored-name.png" />
+
 ### Map pins (1.4)
 
 **Shift + click a pin** on the map to edit it after placing: rename with colours, tint the pin, change its icon, cross it off or remove it. A small hint follows the pointer when it is over a pin you can edit. Colours and styled names are kept on your character, per world (the map file only saves the plain name). Per-player config: `MapPinEditEnabled`, `MapPinEditKey` (Shift, Ctrl, Alt or None). Pins shared by other players can't be edited.
+
+<img width="420" alt="The map pin editor" src="docs/images/map-pin-editor.png" />
 
 ### Saved names and the builder line (1.4)
 

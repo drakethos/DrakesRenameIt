@@ -1480,6 +1480,18 @@ T('X-EQ-02', 'equipped cape: real right-click with the menu key', [
     H('menuOpens', True, 'menu opens for the worn cape after Shift+right-click', prefab='CapeDeerHide'),
 ], sheet='X-EQ', desc='Probe: a real right-click on the worn cape (itemclick), with Shift. Shows whether the grid handler runs and whether the menu gate allows it.')
 
+T('X-EQ-03', 'renamed worn cape: slot tooltips show the new name', [
+    {'do': 'give', 'prefab': 'CapeDeerHide', 'crafter': 'me', 'equip': True},
+    H('edit', True, 'rename the worn cape', prefab='CapeDeerHide', op='name', text='Slot Test Cape'),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    H('slotTooltips', label='eager tooltip topics: the new name or none yet, never the vanilla one', notContains='result=vanilla-present', prefab='CapeDeerHide'),
+    H('hoverSlot', label='hover the slot that shows the cape', contains='hovered=', prefab='CapeDeerHide'),
+    wait(1.0),
+    H('shownTooltip', label='the tooltip the game shows names the cape Slot Test Cape', contains='Slot Test Cape'),
+    shot('equipment-slots'),
+], sheet='X-EQ', desc='Equipment-mod compatibility probe: reads every active UITooltip topic after opening the inventory, and takes a screenshot. result=none means the UI draws names some other way (check the picture).')
+
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
         json.dump(t, f, indent=2, ensure_ascii=False)

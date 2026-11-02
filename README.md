@@ -8,15 +8,24 @@
 > Both share the same Shift + right-click menu (Rename, Paper, Reskin tabs), so you can name *and* style a piece of gear in one place.
 > 👉 **[DrakesReskinIt on Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesReskinIt)**
 
-Rename items **and placed pieces**, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
+Rename items, **placed pieces, tamed animals and map pins**, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay, labelling gear, and naming the things that make your base and your boats yours. **1.4** adds renaming placed pieces (chests, doors, beds, stations, boats, portals and more), a proper animal rename window, editable map pins, saved-name suggestions and a builder line. **1.3** moved the menus to the new UI and added the Piece of Paper notes with shared inventory tabs with **LockSmith** via **DrakeModsLibs**. It also works with equipment-slot mods such as **ExtraSlots** (see below), and with the soft ward bridges for WardIsLove, ProtectiveWards and Arcane Ward.
 
-**Requires [DrakeModsLibs 1.0.2+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Requires [DrakeModsLibs 1.0.5+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
 
 ### Rename placed pieces (1.4)
 
 Any built piece that shows a hover name (chests, doors, beds, stations, signs, furniture, mod pieces) can be renamed. Look at the piece and press **Shift+Use** (your **MenuOpenModifier** + Use) to open the piece window: name field with the rich-text toolbar and a hover preview, **Reset name**, **Revert / Save** with Undo, and quick settings. It is free, and only the **builder** can rename it, with ward access where it stands (admins and VIP can override, as with items). Pieces the world generated (dungeon chests, crypt doors) are admin/VIP only.
 
 **Shared:** the builder can tick **Shared** so other players (with ward access) may rename the piece too.
+
+**Checked where it counts.** The piece's owner checks who is asking (builder, Shared, ward access, admin/VIP, name length) before it writes anything, so a modified client cannot rename a piece it may not. Pieces the world generated (dungeon chests, crypt doors) stay admin/VIP only.
+
+<!-- PIECE IMAGES (add yours here). Suggested files in docs/images/:
+![A renamed chest, hover name and Crafted by line](docs/images/piece-chest-hover.png)
+![The piece window: name, toolbar, Shared switch](docs/images/piece-window.png)
+![A renamed boat and a renamed portal](docs/images/piece-boat-portal.png)
+![Shared piece renamed by a second player](docs/images/piece-shared.png)
+-->
 
 Synced config section **12 Pieces:** `PieceRenameEnabled`, `PieceRenameAdminOnly`, `PieceExcludedNames` (prefab, token or shown name), `PieceExcludedCategory` (Chest, Door, Bed, Station, Smelter, Cooking, Portal, Ward, Seat, or a build-menu category), `PieceRenameAllowlist`, `PieceNameCharacterLimit`, `PieceLockToBuilder`, `PieceRequireWardAccess`, `PieceSharedEnabled`. `ExcludedCategoryReference.txt` lists the categories and every buildable piece with a hover name once you have joined a world.
 
@@ -42,7 +51,19 @@ Craft blank **Piece of Paper** from the inventory craft list (default recipe **1
 
 ### LockSmith integration
 
-With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.11.2+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+With **[LockSmith](https://valheim.hexium.gg/mods/DrakeMods/LockSmith)** (or any other DrakeMods tab) and **DrakeModsLibs 0.11.2+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+
+### Works with equipment and slot mods
+
+Mods that draw their own equipment slots can write an item's *vanilla* name into their tooltip, so a renamed item would show its old name there. RenameIt carries small **compat modules** that fix this, and they only load when the other mod is installed.
+
+| Mod | Status |
+|---|---|
+| **ExtraSlots** (shudnal) | Supported: renamed items and the *Crafted by* line show in the equipment, food, ammo, quick and misc slots. |
+| **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
+| AzuExtendedPlayerInventory, InventorySlots (sighsorry), SeneaL UI | Being checked now. |
+
+We look after the most downloaded mods first, and any mod a running server depends on. If yours is smaller, it is not a judgement on it: we just cannot keep up with every mod, so we would love your help. Making your own module is short, and there is a step-by-step guide: **[Making RenameIt work with another mod](docs/COMPATIBILITY.md)**.
 
 ### How to use
 
@@ -222,14 +243,17 @@ Settings live in `BepInEx/config/` (e.g. `com.drakemods.renameit.cfg`; older ins
 **Admin/VIP override** (and unlock-cost skip when elevated) → **Features toggles** (rename, description, crafted-by) → **LockToOwner** (once an owner exists) → **RenameAllowlist** → **excluded names**, **excluded category**, **ExcludeStacks**, and **AllowRenameUnownedItems** for raw resources → **unlock cost** (if enabled) for the stack.
 
 ### Known Issues:
-- None currently but please report if you find any!
+- **Equipment and slot mods.** A mod that draws its own equipment-slot or inventory UI may show an item's old name until a small compatibility module exists for it. ExtraSlots is covered (see *Works with equipment and slot mods*). If you find one that does not work, please drop us a line with the mod's name and version: a thread on the Hexium page or a GitHub issue is perfect. Thank you!
+- **How we choose which mods to support.** There are a lot of mods out there and we cannot keep up with all of them, so we start with the most downloaded ones and with any mod a running server relies on and needs support for. If a mod is below that, it is nothing personal, we simply cannot promise it. You are very welcome to write your own module and send a pull request: [Making RenameIt work with another mod](docs/COMPATIBILITY.md) shows how.
+- Otherwise none known, but please report anything you find!
 
 #### Wishlist for future
-- If there is high demand: renamable pieces that have hover names.
 - **Reskin** (custom item visuals) is something we want to look into when priorities allow — no timeline promised.
 - Other customization ideas may show up later as separate DrakeMods that share **DrakeModsLibs**; we are **not** shipping a full customization suite right now.
 
 #### API Docs:
+Writing a compatibility module for another mod? See [Making RenameIt work with another mod](docs/COMPATIBILITY.md).
+
 Types live in namespace `DrakeRenameit.API`.
 
 **Events** (`RenameEvents`):

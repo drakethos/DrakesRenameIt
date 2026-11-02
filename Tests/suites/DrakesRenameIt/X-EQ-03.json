@@ -1,0 +1,71 @@
+{
+  "name": "X-EQ-03 renamed worn cape: slot tooltips show the new name",
+  "description": "Sheet: X-EQ. Equipment-mod compatibility probe: reads every active UITooltip topic after opening the inventory, and takes a screenshot. result=none means the UI draws names some other way (check the picture).",
+  "steps": [
+    {
+      "do": "give",
+      "prefab": "CapeDeerHide",
+      "crafter": "me",
+      "equip": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "CapeDeerHide",
+        "op": "name",
+        "text": "Slot Test Cape"
+      },
+      "expect": true,
+      "label": "rename the worn cape"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.openInventory",
+      "expect": true,
+      "label": "open the inventory"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.slotTooltips",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "notContains": "result=vanilla-present",
+      "label": "eager tooltip topics: the new name or none yet, never the vanilla one"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hoverSlot",
+      "args": {
+        "prefab": "CapeDeerHide"
+      },
+      "contains": "hovered=",
+      "label": "hover the slot that shows the cape"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shownTooltip",
+      "contains": "Slot Test Cape",
+      "label": "the tooltip the game shows names the cape Slot Test Cape"
+    },
+    {
+      "do": "screenshot",
+      "name": "equipment-slots"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

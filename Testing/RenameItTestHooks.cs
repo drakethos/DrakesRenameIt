@@ -672,6 +672,96 @@ internal static class RenameItTestHooks
         return $"ok={ok};missing=[{string.Join(",", missing)}];notNameable=[{string.Join(",", notNameable)}];denied=[{string.Join(",", denied)}];badName=[{string.Join(",", badName)}]";
     }
 
+    /// <summary>Opens the inventory window (the equipment mods draw their slots when it is open).</summary>
+    [TestHook("renameit.openInventory")]
+    static bool OpenInventory(Dictionary<string, object?> args)
+    {
+        var gui = InventoryGui.instance ?? throw new InvalidOperationException("no InventoryGui");
+        if (!InventoryGui.IsVisible())
+            gui.Show(null);
+        return InventoryGui.IsVisible();
+    }
+
+    /// <summary>
+    /// What the open inventory's tooltips call this item: scans every active UITooltip topic. "result=custom-only" is what
+    /// we want (the renamed name, never the vanilla one); "vanilla-present" is the equipment-slot bug; "none" means the UI
+    /// does not use UITooltip topics for it (screenshot / manual check).
+    /// </summary>
+    [TestHook("renameit.slotTooltips")]
+    static string SlotTooltips(Dictionary<string, object?> args)
+    {
+        var item = Item(args);
+        var custom = Shown(item);
+        var vanilla = Localization.instance.Localize(item.m_shared.m_name);
+        int c = 0, v = 0;
+        var where = new List<string>();
+        foreach (var t in Resources.FindObjectsOfTypeAll<UITooltip>())
+        {
+            if (t == null || !t.gameObject.activeInHierarchy || string.IsNullOrEmpty(t.m_topic))
+                continue;
+            var topic = Localization.instance.Localize(t.m_topic);
+            var kind = topic.Equals(custom, StringComparison.OrdinalIgnoreCase) ? "custom" : topic.Equals(vanilla, StringComparison.OrdinalIgnoreCase) ? "vanilla" : null;
+            if (kind == null)
+                continue;
+            if (kind == "custom") c++; else v++;
+            if (where.Count < 6)
+            {
+                var path = t.name;
+                for (var tr = t.transform.parent; tr != null && path.Length < 90; tr = tr.parent)
+                    path = tr.name + "/" + path;
+                where.Add(kind + "@" + path);
+            }
+        }
+
+        var result = v > 0 ? "vanilla-present" : c > 0 ? "custom-only" : "none";
+        return $"result={result};custom={c};vanilla={v};name={custom};at=[{string.Join(" | ", where)}]";
+    }
+
+    /// <summary>
+    /// Hovers the slot that shows this item: finds the visible UI images that draw the item's icon (any mod's slot UI) and sends
+    /// them pointer-enter, like a mouse resting on it. Returns how many it hovered and where. Read the result with renameit.shownTooltip.
+    /// </summary>
+    [TestHook("renameit.hoverSlot")]
+    static string HoverSlot(Dictionary<string, object?> args)
+    {
+        var item = Item(args);
+        var icon = item.GetIcon();
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        var n = 0;
+        var where = new List<string>();
+        foreach (var img in Resources.FindObjectsOfTypeAll<UnityEngine.UI.Image>())
+        {
+            if (img == null || img.sprite == null || img.sprite != icon || !img.gameObject.activeInHierarchy || img.canvas == null)
+                continue;
+            var ped = new UnityEngine.EventSystems.PointerEventData(es)
+            {
+                position = UnityEngine.RectTransformUtility.WorldToScreenPoint(null, img.rectTransform.position)
+            };
+            UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(img.gameObject, ped, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+            n++;
+            if (where.Count < 4)
+            {
+                var path = img.name;
+                for (var tr = img.transform.parent; tr != null && path.Length < 80; tr = tr.parent)
+                    path = tr.name + "/" + path;
+                where.Add(path);
+            }
+        }
+
+        return $"hovered={n};at=[{string.Join(" | ", where)}]";
+    }
+
+    /// <summary>The tooltip the game is showing right now, texts joined by " | " (rich text stripped); "" when none.</summary>
+    [TestHook("renameit.shownTooltip")]
+    static string ShownTooltip(Dictionary<string, object?> args)
+    {
+        var go = AccessTools.Field(typeof(UITooltip), "m_tooltip")?.GetValue(null) as GameObject;
+        if (go == null || !go.activeInHierarchy)
+            return "";
+        var texts = go.GetComponentsInChildren<TMPro.TMP_Text>(false).Select(t => t.text).Where(t => !string.IsNullOrWhiteSpace(t)).Take(3);
+        return System.Text.RegularExpressions.Regex.Replace(string.Join(" | ", texts), "<[^>]+>", "").Replace('\n', ' ').Trim();
+    }
+
     /// <summary>The categories PieceExcludedCategory matches for this piece, comma separated.</summary>
     [TestHook("renameit.pieceCategories")]
     static string PieceCategories(Dictionary<string, object?> args, GameObject? target = null) =>

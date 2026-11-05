@@ -1,4 +1,5 @@
 - Unreleased (1.4.0 candidate, not tagged: waiting on the two-player test)
+  - **Icon.** Brass knot on the workshop brown. DrakeMods, Rename it, the written page, and the portrait. Version stays put until the next release.
   - **Fix: Name tab in the Lock menu** (chests, doors) had no formatting toolbar. It now has the same bold / italic / size / colour bar as the piece and animal windows.
   - **Docs:** README piece, animal and pin screenshots added (`docs/images/`); Libs requirement shown as 1.0.6.
 - Version 1.4.0-beta.7

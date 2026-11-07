@@ -1,5 +1,7 @@
-- Unreleased (1.4.0 candidate, not tagged: waiting on the two-player test)
-  - **Icon.** Brass knot on the workshop brown. DrakeMods, Rename it, the written page, and the portrait. Version stays put until the next release.
+- Version 1.4.0-beta.8
+  - Beta. Requires **DrakeModsLibs 1.0.6**.
+  - **Faster start-up (about 2.2 s down to 0.6 s).** The 76 settings are saved to the config file once instead of once each, and the optional ward and equipment-mod checks no longer scan every loaded type when that mod is not installed. No change to behaviour.
+  - **Icon.** Brass knot on the workshop brown. DrakeMods, Rename it, the written page, and the portrait.
   - **Fix: Name tab in the Lock menu** (chests, doors) had no formatting toolbar. It now has the same bold / italic / size / colour bar as the piece and animal windows.
   - **Docs:** README piece, animal and pin screenshots added (`docs/images/`); Libs requirement shown as 1.0.6.
 - Version 1.4.0-beta.7

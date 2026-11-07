@@ -45,13 +45,23 @@ internal static class CompatibilityManager
         if (harmony == null)
             return;
 
-        Host.Register(new VanillaPrivateAreaModule());
-        Host.Register(new WardIsLoveModule());
-        Host.Register(new ProtectiveWardsModule());
-        Host.Register(new ArcaneWardModule());
-        Host.Register(new ItemStandHoverModule());
-        Host.Register(new ExtraSlotsTooltipModule());
-        Host.Register(new SeneaLItemNameModule());
+        // Soft dependencies load first (BepInDependency), so an absent mod is simply not in PluginInfos. Skipping it avoids
+        // each module's AccessTools.TypeByName probe, which scans every type of every loaded assembly (~100 ms each).
+        void Reg(ICompatModule module)
+        {
+            var guid = module.SoftDependencyGuid;
+            if (guid != null && !BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(guid))
+                return;
+            Host.Register(module);
+        }
+
+        Reg(new VanillaPrivateAreaModule());
+        Reg(new WardIsLoveModule());
+        Reg(new ProtectiveWardsModule());
+        Reg(new ArcaneWardModule());
+        Reg(new ItemStandHoverModule());
+        Reg(new ExtraSlotsTooltipModule());
+        Reg(new SeneaLItemNameModule());
         Host.Initialize(harmony);
     }
 

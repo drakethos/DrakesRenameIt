@@ -106,7 +106,12 @@ namespace DrakeRenameit
         {
             RenameitConfig.Log = Logger;
             MigrateConfigFromOldGuid();
-            Bind(Config);
+            // BepInEx rewrites the whole .cfg on every Bind by default (76 entries here): batch into one save.
+            var saveOnSet = Config.SaveOnConfigSet;
+            Config.SaveOnConfigSet = false;
+            try { Bind(Config); }
+            finally { Config.SaveOnConfigSet = saveOnSet; }
+            Config.Save();
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             try

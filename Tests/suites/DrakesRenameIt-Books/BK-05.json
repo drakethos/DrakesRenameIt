@@ -115,6 +115,30 @@
     {
       "do": "screenshot",
       "label": "picker"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows",
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookOpenHost",
+      "expect": true,
+      "label": "Shift+right-click on your own book opens the Book tab"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "label": "Shift+right-click menu, Book tab"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows",
+      "expect": true
     }
   ],
   "asserts": [

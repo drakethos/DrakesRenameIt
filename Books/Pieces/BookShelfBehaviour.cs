@@ -45,12 +45,13 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
 
     /// <summary>Wall shelf: one board, books stand on y = 0. Bookcase: rows on a 0.50 pitch.</summary>
     public bool IsWall;
-    public float Width = 1.1f;
+    public float Width = 1f;
+    /// <summary>Outer height of a bookcase (1 or 2 m); rows share it evenly.</summary>
+    public float Height = 2f;
     public int ShelfRows = 1;
     /// <summary>Inventory rows per shelf row (a long shelf takes two).</summary>
     public int InvPerRow = 1;
 
-    const float Gap = 0.004f;
     const float RefreshSeconds = 0.5f;
     const int Columns = 8;
     internal const float MaxLift = 0.30f;
@@ -107,7 +108,32 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
     // ---- row modes and poses
 
     /// <summary>Usable length of a row (inside the sides, or between the wall shelf's ends).</summary>
-    internal float Usable => IsWall ? Width - 0.12f : Width - 2f * BookMesh.CaseTh - 0.06f;
+    internal float Usable => IsWall ? Width - 0.06f : Width - 2f * BookMesh.CaseTh - 0.02f;
+
+    /// <summary>Room above a row's board for books to stand in.</summary>
+    internal float Clear => IsWall ? BookMesh.WallClear : BookMesh.Pitch(ShelfRows, Height) - BookMesh.CaseTh;
+
+    internal float Depth => IsWall ? BookMesh.ShelfD : BookMesh.CaseD;
+
+    /// <summary>Height of a shelf row's standing surface (row 0 is the top row).</summary>
+    internal float RowFloor(int shelfRow) => IsWall ? 0f : BookMesh.CasePlinth + BookMesh.Pitch(ShelfRows, Height) * (ShelfRows - 1 - shelfRow);
+
+    internal float SlotWidth => Usable / SlotsPerShelfRow;
+
+    /// <summary>
+    /// A shelved book's size, fitted to this shelf: height from the book's size (small / medium / large) as a share of the row's room,
+    /// thickness from its page count (a one-page book is a little thinner than its slot, a full one a little fatter; packed rows are
+    /// squeezed to fit). Depth follows the height, within the shelf.
+    /// </summary>
+    internal (float Depth, float Height, float Thickness) ShelfDims(ItemDrop.ItemData book)
+    {
+        var share = BookData.GetSize(book) switch { BookSize.Small => 0.74f, BookSize.Large => 0.94f, _ => 0.84f };
+        var h = (Clear - 0.01f) * share;
+        var d = Mathf.Min(h * 0.74f, Depth - 0.06f);
+        var pages = BookData.GetPages(book).Count;
+        var fill = Mathf.Clamp01((pages - 1f) / Mathf.Max(1f, BookData.MaxPages - 1f));
+        return (d, h, SlotWidth * Mathf.Lerp(0.82f, 1.15f, fill));
+    }
 
     internal int SlotsPerShelfRow => Columns * Mathf.Max(1, InvPerRow);
 
@@ -301,39 +327,44 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
         _items = new GameObject("drake_shelf_items").transform;
         _items.SetParent(transform.Find(BookShelfPiece.FrameName) ?? transform, false);
 
-        var depth = IsWall ? BookMesh.ShelfD : BookMesh.CaseD;
+        var depth = Depth;
         var usable = Usable;
+        var slot = SlotWidth;
         for (var shelfRow = 0; shelfRow < ShelfRows; shelfRow++)
         {
             var row = RowItems(shelfRow);
-            var floor = IsWall ? 0f : BookMesh.RowY(ShelfRows - 1 - shelfRow);
+            var floor = RowFloor(shelfRow);
             switch (GetMode(shelfRow))
             {
                 case ShelfRowMode.Slots:
-                {
-                    var slotWidth = usable / SlotsPerShelfRow;
                     foreach (var item in row)
-                        PlaceAt(item, SlotCentreX(item), floor, depth, 0f, 0f, 1f, Mathf.Min(0.16f, slotWidth * 0.95f));
+                        PlaceAt(item, SlotCentreX(item), floor, depth, 0f, 0f, 1f, slot * 0.92f, slot * 0.92f);
                     break;
-                }
                 case ShelfRowMode.Free:
                     foreach (var item in row)
                     {
                         var pose = GetPose(item);
-                        PlaceAt(item, pose.X, floor, depth, pose.Lift, pose.Yaw, pose.Scale, 0.16f);
+                        PlaceAt(item, pose.X, floor, depth, pose.Lift, pose.Yaw, pose.Scale, slot * 1.5f, float.MaxValue);
                     }
 
                     break;
                 default:
                 {
-                    var cursor = -usable / 2f;
+                    // Side by side from the left. When the row would overflow, every book and gap is squeezed by the same share.
+                    var widths = new List<float>();
                     foreach (var item in row)
+                        widths.Add(BookItem.IsBook(item) ? ShelfDims(item).Thickness : slot);
+                    var gap = slot * 0.05f;
+                    var total = gap * Mathf.Max(0, row.Count - 1);
+                    foreach (var w in widths)
+                        total += w;
+                    var squeeze = total > usable ? usable / total : 1f;
+                    var cursor = -usable / 2f;
+                    for (var i = 0; i < row.Count; i++)
                     {
-                        var thick = BookItem.IsBook(item) ? BookMesh.Dimensions(BookData.GetSize(item)).z : 0.12f;
-                        var width = PlaceAt(item, cursor + thick / 2f, floor, depth, 0f, 0f, 1f, 0.16f, packed: true);
-                        cursor += width + Gap;
-                        if (cursor > usable / 2f)
-                            break;
+                        var w = widths[i] * squeeze;
+                        PlaceAt(row[i], cursor + w / 2f, floor, depth, 0f, 0f, 1f, w, w);
+                        cursor += w + gap * squeeze;
                     }
 
                     break;
@@ -357,40 +388,41 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
     }
 
     /// <summary>
-    /// Puts one item on the shelf with its middle at <paramref name="centreX"/>. Returns the width it takes (for packing rows).
-    /// <paramref name="packed"/> lets a non-book in a Books row take the width of its own model.
+    /// Puts one item on the shelf with its middle at <paramref name="centreX"/>. A book is at most <paramref name="bookWidth"/> thick;
+    /// anything else is shrunk to <paramref name="maxWidth"/> across.
     /// </summary>
-    float PlaceAt(ItemDrop.ItemData item, float centreX, float floor, float shelfDepth, float lift, float yaw, float scale, float maxWidth, bool packed = false)
+    void PlaceAt(ItemDrop.ItemData item, float centreX, float floor, float shelfDepth, float lift, float yaw, float scale, float maxWidth, float bookWidth)
     {
-        return BookItem.IsBook(item)
-            ? PlaceBook(item, centreX, floor, shelfDepth, lift, yaw, scale)
-            : PlaceOther(item, centreX, floor, shelfDepth, lift, yaw, scale, maxWidth, packed);
+        if (BookItem.IsBook(item))
+            PlaceBook(item, centreX, floor, shelfDepth, lift, yaw, scale, bookWidth);
+        else
+            PlaceOther(item, centreX, floor, shelfDepth, lift, yaw, scale, maxWidth, false);
     }
 
-    float PlaceBook(ItemDrop.ItemData item, float centreX, float floor, float shelfDepth, float lift, float yaw, float scale)
+    void PlaceBook(ItemDrop.ItemData item, float centreX, float floor, float shelfDepth, float lift, float yaw, float scale, float maxThickness)
     {
-        var size = BookData.GetSize(item);
-        var d = BookMesh.Dimensions(size);
+        var (d, h, t) = ShelfDims(item);
+        t = Mathf.Min(t, maxThickness);
         var holder = new GameObject("book").transform;
         holder.SetParent(_items, false);
         holder.localScale = Vector3.one * scale;
         holder.localRotation = Quaternion.Euler(0f, yaw, 0f);
-        holder.localPosition = new Vector3(centreX, floor + lift, -shelfDepth / 2f + 0.015f + d.x * scale / 2f);
-        BookAssets.Build(holder, size, BookData.GetColor(item), BookData.Get(item, BookData.KeyCover));
+        // Spines line up near the front edge of the shelf.
+        holder.localPosition = new Vector3(centreX, floor + lift, -shelfDepth / 2f + 0.02f + d * scale / 2f);
+        BookAssets.Build(holder, d, h, t, item.m_customData, BookData.DisplayTitle(item));
 
         var box = holder.gameObject.AddComponent<BoxCollider>();
-        box.center = new Vector3(0f, d.y / 2f, 0f);
-        box.size = new Vector3(d.z, d.y, d.x);
+        box.center = new Vector3(0f, h / 2f, 0f);
+        box.size = new Vector3(t, h, d);
         var layer = LayerMask.NameToLayer("piece");
         if (layer >= 0)
             holder.gameObject.layer = layer;
         holder.gameObject.AddComponent<BookSpineTag>().Item = item;
-        return d.z * scale;
     }
 
     float PlaceOther(ItemDrop.ItemData item, float centreX, float floor, float shelfDepth, float lift, float yaw, float scale, float maxWidth, bool packed)
     {
-        var maxHeight = IsWall ? 0.30f : BookMesh.CasePitch - BookMesh.CaseTh - 0.05f;
+        var maxHeight = Clear - 0.03f;
         var model = item.m_dropPrefab != null ? ShelfItemModel.StillCopy(item.m_dropPrefab) : null;
         if (model == null || !ShelfItemModel.LocalBounds(model.transform, out var bounds))
         {

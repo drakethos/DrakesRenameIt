@@ -26,6 +26,12 @@ internal sealed class BookReaderPanel
     const int FullFont = 21;
     static BookReaderPanel? _instance;
 
+    /// <summary>The Book tab in the inventory tab host (Shift+right-click), beside Rename.</summary>
+    internal const string HostTabId = "renameit.book";
+
+    /// <summary>The full editor was opened as the tab host's Book tab: closing it ends the host session, and its tab row shows.</summary>
+    bool _hosted;
+
     // ---- read view
     readonly UkWindow _read;
     readonly Label _readTitle;
@@ -57,6 +63,9 @@ internal sealed class BookReaderPanel
     readonly Button _fullTake;
     readonly UkField _title;
     readonly VisualElement _swatches;
+    readonly VisualElement _patterns;
+    readonly VisualElement _accents;
+    readonly VisualElement _inks;
     readonly Button[] _sizes = new Button[3];
     readonly VisualElement _pictures;
     readonly VisualElement _coverPreview;
@@ -114,6 +123,24 @@ internal sealed class BookReaderPanel
             _instance.OpenFull(bookTab: false);
         else
             _instance.OpenRead();
+    }
+
+    /// <summary>The tab host opened the Book tab (Shift+right-click on a book): straight to the Book settings, Pages one click away.</summary>
+    internal static void ShowFromHost(ItemDrop.ItemData item)
+    {
+        _instance ??= new BookReaderPanel();
+        _instance.Load(item, BookAccess.CanEditItem(item), null, false, null);
+        _instance._hosted = true;
+        _instance.OpenFull(bookTab: true);
+    }
+
+    /// <summary>The tab host switched to another tab: keep the session, just hide.</summary>
+    internal static void HideFromHost()
+    {
+        if (_instance == null || !_instance._full.IsOpen)
+            return;
+        _instance.Commit();
+        _instance._full.CloseSilent();
     }
 
     /// <summary>Test hooks: the Book tab (full editor), or Edit in the read view.</summary>
@@ -203,14 +230,21 @@ internal sealed class BookReaderPanel
 
         // ------------------------------------------------------------ full editor: the suite's window, Pages and Book tabs
         _full = new UkWindow("drakes_book_editor", 1240f);
-        _full.Closed = Commit;
+        _full.Closed = () =>
+        {
+            Commit();
+            if (!_hosted)
+                return;
+            _hosted = false;
+            DrakeModsLibs.UI.DrakeTabHost.Close();
+        };
         _full.EscapeHandler = () => _fullEditors.Toolbar.PickerOpen && Do(_fullEditors.Toolbar.ClosePicker);
         var fbody = _full.Body;
 
         var tabs = new VisualElement().Row();
         tabs.style.marginBottom = 12;
         _pagesTab = UkControls.MakeButton("Pages", () => SelectTab(book: false), UkButtonKind.Ghost);
-        _bookTab = UkControls.MakeButton("Book", () => SelectTab(book: true), UkButtonKind.Ghost);
+        _bookTab = UkControls.MakeButton("Cover", () => SelectTab(book: true), UkButtonKind.Ghost);
         _pagesTab.style.height = _bookTab.style.height = 40;
         _pagesTab.style.marginRight = 6;
         tabs.Add(_pagesTab);
@@ -260,17 +294,32 @@ internal sealed class BookReaderPanel
         settings.Add(_title.Root);
 
         settings.Add(Heading("Cover colour"));
-        _swatches = new VisualElement().Row();
-        for (var i = 0; i < BookData.CoverColors.Length; i++)
+        _swatches = Swatches(BookData.CoverColors, 40f, OnColor);
+        settings.Add(_swatches);
+
+        settings.Add(Heading("Pattern"));
+        _patterns = new VisualElement().Row();
+        _patterns.style.flexWrap = Wrap.Wrap;
+        for (var p = 0; p <= (int)BookPattern.Studs; p++)
         {
-            var color = BookData.CoverColors[i];
-            var swatch = new VisualElement().Size(width: 52, height: 52).Fill(color).Border(Color.black, 3).Round(8);
-            swatch.style.marginRight = 10;
-            swatch.RegisterCallback<ClickEvent>(_ => OnColor(color));
-            _swatches.Add(swatch);
+            var pattern = (BookPattern)p;
+            var tile = new VisualElement().Size(width: 46, height: 62).Round(4).Border(Color.black, 2);
+            tile.style.marginRight = 8;
+            tile.style.marginBottom = 8;
+            tile.tooltip = pattern.ToString();
+            tile.RegisterCallback<ClickEvent>(_ => OnPattern(pattern));
+            _patterns.Add(tile);
         }
 
-        settings.Add(_swatches);
+        settings.Add(_patterns);
+        var accentHead = Heading("Pattern colour");
+        settings.Add(accentHead);
+        _accents = Swatches(BookLook.Accents, 32f, OnAccent);
+        settings.Add(_accents);
+        settings.Add(Heading("Spine lettering"));
+        _inks = Swatches(BookLook.Inks, 32f, OnInk);
+        settings.Add(_inks);
+
         settings.Add(Heading("Size"));
         var sizeRow = new VisualElement().Row();
         string[] names = { "Small", "Medium", "Large" };
@@ -324,7 +373,7 @@ internal sealed class BookReaderPanel
         _spinePreview.style.justifyContent = Justify.Center;
         _spinePreview.style.overflow = Overflow.Hidden;
         _spineTitle = UkControls.Text("", 17, new Color(0.96f, 0.90f, 0.72f), wrap: false);
-        _spineTitle.style.rotate = new Rotate(90f);
+        _spineTitle.style.rotate = new Rotate(-90f); // reads bottom to top, like the spines on a shelf
         _spineTitle.style.width = 320;
         _spineTitle.style.flexShrink = 0;
         _spineTitle.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -337,6 +386,34 @@ internal sealed class BookReaderPanel
         side.Add(spineNote);
         _bookView.Add(side);
         fbody.Add(_bookView);
+    }
+
+    static VisualElement Swatches(Color[] colors, float size, Action<Color> pick)
+    {
+        var row = new VisualElement().Row();
+        row.style.flexWrap = Wrap.Wrap;
+        foreach (var color in colors)
+        {
+            var c = color;
+            var swatch = new VisualElement().Size(width: size, height: size).Fill(c).Border(Color.black, 3).Round(6);
+            swatch.style.marginRight = 8;
+            swatch.style.marginBottom = 8;
+            swatch.RegisterCallback<ClickEvent>(_ => pick(c));
+            row.Add(swatch);
+        }
+
+        return row;
+    }
+
+    static void MarkSwatches(VisualElement row, Color[] colors, Color current)
+    {
+        var i = 0;
+        foreach (var child in row.Children())
+        {
+            var on = i < colors.Length && ColorUtility.ToHtmlStringRGB(colors[i]) == ColorUtility.ToHtmlStringRGB(current);
+            child.Border(on ? UkTheme.Gold : Color.black, 3);
+            i++;
+        }
     }
 
     static Label Heading(string text)
@@ -361,6 +438,7 @@ internal sealed class BookReaderPanel
             Commit();
         _read.CloseSilent();
         _full.CloseSilent();
+        _hosted = false;
         _item = item;
         _canEdit = canEdit;
         _owner = owner;
@@ -393,6 +471,10 @@ internal sealed class BookReaderPanel
         _fullTake.Show(_onTake != null);
         RefreshBookView();
         SelectTab(bookTab);
+        if (_hosted)
+            _full.ShowTabs(HostTabId);
+        else
+            _full.HideTabs();
         _full.Open();
     }
 
@@ -570,29 +652,39 @@ internal sealed class BookReaderPanel
             return;
         var current = BookData.GetColor(_item);
         var size = BookData.GetSize(_item);
-        var i = 0;
-        foreach (var child in _swatches.Children())
+        var pattern = BookLook.GetPattern(_item);
+        var accent = BookLook.GetAccent(_item);
+        var ink = BookLook.GetInk(_item);
+        MarkSwatches(_swatches, BookData.CoverColors, current);
+        MarkSwatches(_accents, BookLook.Accents, accent);
+        MarkSwatches(_inks, BookLook.Inks, ink);
+        var p = 0;
+        foreach (var tile in _patterns.Children())
         {
-            var on = ColorUtility.ToHtmlStringRGB(BookData.CoverColors[i]) == ColorUtility.ToHtmlStringRGB(current);
-            child.Border(on ? UkTheme.Gold : Color.black, 3);
-            i++;
+            tile.style.backgroundImage = new StyleBackground(BookLook.Cover(current, (BookPattern)p, accent));
+            tile.Border((BookPattern)p == pattern ? UkTheme.Gold : Color.black, (BookPattern)p == pattern ? 3 : 2);
+            p++;
         }
 
         for (var s = 0; s < 3; s++)
             UkControls.SetKind(_sizes[s], (int)size == s ? UkButtonKind.Selected : UkButtonKind.Secondary);
 
         var rim = Color.Lerp(current, Color.black, 0.55f);
-        _coverPreview.Fill(current).Border(rim, 3);
-        _spinePreview.Fill(Color.Lerp(current, Color.black, 0.12f)).Border(rim, 3);
+        _coverPreview.Border(rim, 3);
+        _spinePreview.Border(rim, 3);
+        _spinePreview.style.backgroundImage = new StyleBackground(BookLook.Spine(current, pattern, accent));
         var shown = BookData.Get(_item, BookData.KeyCover);
         var pic = string.IsNullOrEmpty(shown) ? null : BookCovers.Texture(shown);
-        _coverPreview.style.backgroundImage = pic != null ? new StyleBackground(pic) : new StyleBackground();
+        _coverPreview.style.backgroundImage = new StyleBackground(pic != null ? pic : BookLook.Cover(current, pattern, accent));
         _coverTitle.text = pic != null ? "" : BookData.DisplayTitle(_item);
+        _coverTitle.style.color = ink;
         _spineTitle.text = BookData.DisplayTitle(_item);
+        _spineTitle.style.color = ink;
         // Size shows as the preview's height, the way the three books stand on a shelf.
         var height = size switch { BookSize.Small => 270f, BookSize.Large => 340f, _ => 305f };
         _coverPreview.style.height = _spinePreview.style.height = height;
         _coverPreview.style.width = height * 0.73f;
+        _spineTitle.style.width = height - 20f;
 
         _pictures.Clear();
         var chosen = BookData.Get(_item, BookData.KeyCover);
@@ -638,6 +730,33 @@ internal sealed class BookReaderPanel
         Save();
         RefreshBookView();
         Render();
+    }
+
+    void OnPattern(BookPattern pattern)
+    {
+        if (_item == null || !_canEdit)
+            return;
+        BookLook.SetPattern(_item, pattern);
+        Save();
+        RefreshBookView();
+    }
+
+    void OnAccent(Color color)
+    {
+        if (_item == null || !_canEdit)
+            return;
+        BookLook.SetAccent(_item, color);
+        Save();
+        RefreshBookView();
+    }
+
+    void OnInk(Color color)
+    {
+        if (_item == null || !_canEdit)
+            return;
+        BookLook.SetInk(_item, color);
+        Save();
+        RefreshBookView();
     }
 
     void OnSize(BookSize size)
@@ -691,6 +810,10 @@ internal sealed class BookReaderPanel
         readonly BookReaderPanel _owner;
         readonly UkField _left;
         readonly UkField _right;
+        UkField? _active;
+
+        /// <summary>Text sizes A− / A+ step through, one per click (100% is no size tag).</summary>
+        static readonly int[] Ladder = { 60, 70, 80, 90, 100, 115, 130, 150, 175, 200 };
         int _leftIndex;
         int _rightIndex;
         bool _filling;
@@ -711,13 +834,66 @@ internal sealed class BookReaderPanel
             {
                 leftFocus?.Invoke();
                 LastFocused = _leftIndex;
+                _active = _left;
             };
             var rightFocus = _right.GotFocus;
             _right.GotFocus = () =>
             {
                 rightFocus?.Invoke();
                 LastFocused = _rightIndex;
+                _active = _right;
             };
+            ReplaceSizeButtons();
+        }
+
+        /// <summary>
+        /// The shared toolbar's two size buttons switch between one small and one large size. On a page you want to click A+ a few times,
+        /// so they are swapped for buttons that step through <see cref="Ladder"/>.
+        /// </summary>
+        void ReplaceSizeButtons()
+        {
+            if (Toolbar.Root.childCount == 0)
+                return;
+            var styles = Toolbar.Root[0];
+            var buttons = styles.Query<Button>().ToList();
+            if (buttons.Count < 4)
+                return;
+            var smaller = buttons[2];
+            var larger = buttons[3];
+            var at = styles.IndexOf(smaller);
+            smaller.Show(false);
+            larger.Show(false);
+            var down = UkControls.MakeButton("A−", () => Step(-1), UkButtonKind.Ghost);
+            var up = UkControls.MakeButton("A+", () => Step(1), UkButtonKind.Ghost);
+            down.tooltip = "Smaller (click again for smaller still)";
+            up.tooltip = "Bigger (click again for bigger still)";
+            foreach (var b in new[] { down, up })
+            {
+                b.style.height = 34;
+                b.style.paddingLeft = b.style.paddingRight = 8;
+            }
+
+            down.style.fontSize = 13;
+            up.style.fontSize = 18;
+            styles.Insert(at, up);
+            styles.Insert(at, down);
+        }
+
+        void Step(int direction)
+        {
+            var field = _active ?? _left;
+            var current = 100;
+            var size = field.CurrentSelection.Size;
+            if (!string.IsNullOrEmpty(size) && size!.EndsWith("%")
+                && int.TryParse(size.TrimEnd('%'), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                current = pct;
+            var index = 0;
+            for (var i = 0; i < Ladder.Length; i++)
+                if (Math.Abs(Ladder[i] - current) < Math.Abs(Ladder[index] - current))
+                    index = i;
+            index = Mathf.Clamp(index + direction, 0, Ladder.Length - 1);
+            var next = Ladder[index];
+            field.ApplyRich(RichOp.Size, next == 100 ? null : next.ToString(System.Globalization.CultureInfo.InvariantCulture) + "%");
         }
 
         UkField Make(int fontSize, float pageHeight, Func<int> index)
@@ -745,12 +921,24 @@ internal sealed class BookReaderPanel
 
             field.Input.textSelection.cursorColor = BookSpread.Ink;
             field.Input.textSelection.selectionColor = new Color(0.55f, 0.40f, 0.18f, 0.35f);
+            var ink = field.Line.Q<Label>();
             field.Changed = _ =>
             {
+                ShowStyles(field, ink);
                 if (!_filling)
                     _owner.OnPageTyped(index(), field.Value);
             };
             return field;
+        }
+
+        /// <summary>
+        /// The shared field draws only colours while you type. A page shows sizes and bold too, so you can see what A− / A+ did; the
+        /// caret can sit a little off on a line with resized words.
+        /// </summary>
+        static void ShowStyles(UkField field, Label? ink)
+        {
+            if (ink != null)
+                ink.text = field.Value;
         }
 
         /// <summary>Put the fields on <paramref name="spread"/>'s pages for the spread starting at <paramref name="first"/>.</summary>
@@ -761,6 +949,8 @@ internal sealed class BookReaderPanel
             _filling = true;
             _left.SetValue(first < pages.Count ? pages[first] : "");
             _right.SetValue(first + 1 < pages.Count ? pages[first + 1] : "");
+            ShowStyles(_left, _left.Line.Q<Label>());
+            ShowStyles(_right, _right.Line.Q<Label>());
             _filling = false;
             Place(spread.Left, _left, first + 1, leftPage: true);
             Place(spread.Right, _right, first + 2, leftPage: false);

@@ -129,10 +129,12 @@
     <Compile Include="Books\Mesh\BookMesh.cs" />
     <Compile Include="Books\Mesh\BookAssets.cs" />
     <Compile Include="Books\Data\BookData.cs" />
+    <Compile Include="Books\Data\BookLook.cs" />
     <Compile Include="Books\Items\BookItem.cs" />
     <Compile Include="Books\UI\BookReaderPanel.cs" />
     <Compile Include="Books\UI\BookSpread.cs" />
     <Compile Include="Books\Patches\BookUsePatch.cs" />
+    <Compile Include="Books\Patches\BookDefaultsPatch.cs" />
     <Compile Include="Books\Patches\PaperReadPatch.cs" />
     <Compile Include="Books\UI\PaperReaderPanel.cs" />
     <Compile Include="Books\Data\BookCovers.cs" />

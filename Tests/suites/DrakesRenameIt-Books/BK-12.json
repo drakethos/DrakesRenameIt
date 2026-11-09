@@ -1,0 +1,177 @@
+{
+  "name": "BK-12 floor fit: bookcases sit on wood floors in half-metre steps",
+  "description": "Two small bookcases share one 2x2 floor, a tall one stands on its far edge, a wide one spans a whole floor edge. Each is set corner-on-corner to the floor's snap points; the footprint must stay on the floor and on its half-metre grid.",
+  "steps": [
+    {
+      "do": "place",
+      "prefab": "wood_floor",
+      "dz": 4,
+      "dx": -1.1,
+      "as": "floorA"
+    },
+    {
+      "do": "place",
+      "prefab": "wood_floor",
+      "dz": 4,
+      "dx": 1.1,
+      "as": "floorB"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseSmall",
+      "dz": 7,
+      "dx": -2,
+      "as": "small1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapToFloor",
+      "args": {
+        "target": "small1",
+        "along": 0
+      },
+      "contains": "inside=True grid=True footprint=1.00x0.50",
+      "label": "a small bookcase sits on the first half of a floor, on the grid"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseSmall",
+      "dz": 7,
+      "dx": -0.5,
+      "as": "small2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapToFloor",
+      "args": {
+        "target": "small2",
+        "along": 1
+      },
+      "contains": "inside=True grid=True",
+      "label": "a second small bookcase fills the other half"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_Bookcase",
+      "dz": 7,
+      "dx": -2,
+      "as": "tall"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapToFloor",
+      "args": {
+        "target": "tall",
+        "along": 0,
+        "across": 1.5
+      },
+      "contains": "inside=True grid=True",
+      "label": "a tall bookcase on the far edge of the same floor"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseWide",
+      "dz": 7,
+      "dx": 2,
+      "as": "wide"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapToFloor",
+      "args": {
+        "target": "wide",
+        "along": 0
+      },
+      "contains": "inside=True grid=True footprint=2.00x0.50",
+      "label": "a wide bookcase spans one whole floor edge"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "small1",
+        "count": 12,
+        "seed": 3
+      },
+      "expect": 12
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "small2",
+        "count": 10,
+        "seed": 5
+      },
+      "expect": 10
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "tall",
+        "count": 26,
+        "seed": 9
+      },
+      "expect": 26
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "wide",
+        "count": 24,
+        "seed": 13
+      },
+      "expect": 24
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "small2",
+        "distance": 3.4,
+        "side": -1
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "label": "bookcases on two wood floors"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

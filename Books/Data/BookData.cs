@@ -29,12 +29,8 @@ internal static class BookData
     internal const int MaxPageChars = 4000;
     internal const int MaxTitleChars = 40;
 
-    /// <summary>Cover colours the editor offers (also the default pick).</summary>
-    internal static readonly Color[] CoverColors =
-    {
-        new(0.48f, 0.16f, 0.16f), new(0.16f, 0.29f, 0.48f), new(0.16f, 0.42f, 0.23f),
-        new(0.35f, 0.23f, 0.10f), new(0.35f, 0.16f, 0.42f), new(0.78f, 0.64f, 0.23f),
-    };
+    /// <summary>Cover colours the editor offers; the first (red) is the default. See <see cref="BookLook.Covers"/>.</summary>
+    internal static Color[] CoverColors => BookLook.Covers;
 
     internal static string Get(ItemDrop.ItemData item, string key, string fallback = "") =>
         item.m_customData != null && item.m_customData.TryGetValue(key, out var v) ? v : fallback;

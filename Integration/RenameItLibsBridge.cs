@@ -186,6 +186,18 @@ internal static class RenameItLibsBridge
 
                 getTitle: () => "Paper");
 
+            // Books: the Book tab (pages, title, cover). Whoever may write in the book lands on it.
+            DrakeTabHost.Register(
+                id: Books.BookReaderPanel.HostTabId,
+                title: "Book",
+                priority: PaperTabPriority + 1,
+                isAvailable: item => RenameitConfig.BooksEnabled && Books.BookItem.IsBook(item) && Books.BookAccess.CanEditItem(item),
+                show: ctx => Books.BookReaderPanel.ShowFromHost(ctx.Item),
+                claimDefault: item => Books.BookItem.IsBook(item) && Books.BookAccess.CanEditItem(item),
+                hide: Books.BookReaderPanel.HideFromHost,
+                getHintPhrase: () => "open the book editor",
+                getTitle: () => "Book");
+
         }
 
         catch (Exception ex)

@@ -5,5 +5,7 @@
   "include": "../DrakesRenameIt/_shared/baseline.json",
   "requireMods": [ { "guid": "com.drakemods.testlab", "minVersion": "0.2.2" } ],
   "configOverrides": [ { "guid": "com.drakemods.renameit", "section": "14 Books", "key": "BookCost", "value": "Drakes_PieceOfPaper:8,LeatherScraps:2" } ],
-  "resetBetweenTests": true
+  "resetBetweenTests": true,
+  // TestLab 0.6+: clear trees, bushes and rocks around the player before every test, so pictures show the shelves (older TestLab ignores it).
+  "clearArea": { "radius": 30 }
 }

@@ -1,21 +1,110 @@
 {
-  "name": "BK-06 shelf sizes: six pieces, each with the right container and look",
-  "description": "Short and long wall shelf, small, standard, large and wide bookcase are all placeable, with the container sizes their rows need. One picture shows them side by side.",
+  "name": "BK-06 shelf sizes: five pieces on the build grid, each with the right container and look",
+  "description": "1 m and 2 m wall shelves, small (1x1 m), tall (1x2 m) and wide (2x1 m) bookcases are placeable with the container sizes their rows need; the old large bookcase is gone. One picture shows them side by side.",
   "steps": [
-    { "do": "place", "prefab": "Drakes_WallShelf", "dz": 5, "dx": -5.0, "as": "wallshelf" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "wallshelf" }, "expect": "8x1", "label": "Drakes_WallShelf container size" },
-    { "do": "place", "prefab": "Drakes_WallShelfLong", "dz": 5, "dx": -3.2, "as": "wallshelflong" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "wallshelflong" }, "expect": "8x2", "label": "Drakes_WallShelfLong container size" },
-    { "do": "place", "prefab": "Drakes_BookcaseSmall", "dz": 5, "dx": -1.2, "as": "bookcasesmall" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcasesmall" }, "expect": "8x2", "label": "Drakes_BookcaseSmall container size" },
-    { "do": "place", "prefab": "Drakes_Bookcase", "dz": 5, "dx": 0.4, "as": "bookcase" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcase" }, "expect": "8x3", "label": "Drakes_Bookcase container size" },
-    { "do": "place", "prefab": "Drakes_BookcaseLarge", "dz": 5, "dx": 2.2, "as": "bookcaselarge" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcaselarge" }, "expect": "8x4", "label": "Drakes_BookcaseLarge container size" },
-    { "do": "place", "prefab": "Drakes_BookcaseWide", "dz": 5, "dx": 4.6, "as": "bookcasewide" },
-    { "do": "hook", "name": "renameit.containerSize", "args": { "target": "bookcasewide" }, "expect": "8x6", "label": "Drakes_BookcaseWide container size" },
-    { "do": "hook", "name": "renameit.closeBookWindows", "expect": true },
-    { "do": "screenshot", "label": "all shelf sizes" }
+    {
+      "do": "place",
+      "prefab": "Drakes_WallShelf",
+      "dz": 5,
+      "dx": -5.0,
+      "as": "wallshelf"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.containerSize",
+      "args": {
+        "target": "wallshelf"
+      },
+      "expect": "8x1",
+      "label": "Wall Shelf (1 m): 8 books"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_WallShelfLong",
+      "dz": 5,
+      "dx": -3.0,
+      "as": "wallshelflong"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.containerSize",
+      "args": {
+        "target": "wallshelflong"
+      },
+      "expect": "8x2",
+      "label": "Long Wall Shelf (2 m): 16 books"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseSmall",
+      "dz": 5,
+      "dx": -0.8,
+      "as": "bookcasesmall"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.containerSize",
+      "args": {
+        "target": "bookcasesmall"
+      },
+      "expect": "8x2",
+      "label": "Small Bookcase (1x1 m, 2 rows)"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_Bookcase",
+      "dz": 5,
+      "dx": 0.6,
+      "as": "bookcase"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.containerSize",
+      "args": {
+        "target": "bookcase"
+      },
+      "expect": "8x4",
+      "label": "Tall Bookcase (1x2 m, 4 rows)"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseWide",
+      "dz": 5,
+      "dx": 2.8,
+      "as": "bookcasewide"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.containerSize",
+      "args": {
+        "target": "bookcasewide"
+      },
+      "expect": "8x4",
+      "label": "Wide Bookcase (2x1 m, 2 long rows)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hasPrefab",
+      "args": {
+        "name": "Drakes_BookcaseLarge"
+      },
+      "expect": false,
+      "label": "the old large bookcase is gone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows",
+      "expect": true
+    },
+    {
+      "do": "screenshot",
+      "label": "all shelf sizes"
+    }
   ],
-  "asserts": [ { "check": "noErrors", "source": "DrakesRenameit" } ]
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
 }

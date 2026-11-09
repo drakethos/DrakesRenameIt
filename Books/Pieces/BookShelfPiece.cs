@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BepInEx.Logging;
 using Jotunn.Configs;
 using Jotunn.Entities;
@@ -35,26 +36,31 @@ internal static class BookShelfPiece
         public string Description = "";
         public bool Wall;
         public float Width;
+        /// <summary>Bookcases: outer height in metres (1 or 2, like a half or full wall).</summary>
+        public float Height = 2f;
         public int ShelfRows = 1;
         public int InvPerRow = 1;
         public string Cost = "";
         public Func<Sprite?> Icon = () => null;
     }
 
+    /// <summary>
+    /// Sized on the build grid so they sit flush with floors and walls and with each other: wall shelves 1 m and 2 m long, bookcases
+    /// 1 x 1 m (small), 1 x 2 m (tall, the standard) and 2 x 1 m (wide), all 0.4 m deep. 8 books per metre of row.
+    /// </summary>
     internal static readonly Variant[] Variants =
     {
-        new() { Prefab = WallName, Token = WallToken, English = "Wall Shelf", Spanish = "Estante de pared", Wall = true, Width = 0.90f, Cost = "FineWood:4",
-                Description = "A shelf for books on a wall. Books stand on it; use a spine to read it in place.", Icon = () => BookAssets.WallShelfIcon },
-        new() { Prefab = "Drakes_WallShelfLong", Token = "$piece_drakes_wall_shelf_long", English = "Long Wall Shelf", Spanish = "Estante de pared largo", Wall = true, Width = 1.80f,
-                InvPerRow = 2, Cost = "FineWood:8", Description = "A long wall shelf that holds twice as many books.", Icon = () => BookAssets.PieceIcon("wall_shelf_long") },
-        new() { Prefab = "Drakes_BookcaseSmall", Token = "$piece_drakes_bookcase_small", English = "Small Bookcase", Spanish = "Librería pequeña", Width = 0.80f, ShelfRows = 2,
-                Cost = "FineWood:8", Description = "A small bookcase with two rows.", Icon = () => BookAssets.PieceIcon("bookcase_small") },
-        new() { Prefab = CaseName, Token = CaseToken, English = "Bookcase", Spanish = "Librería", Width = 1.10f, ShelfRows = 3, Cost = "FineWood:14",
-                Description = "A bookcase with three open rows. Books stand on the shelves; use a spine to read it in place.", Icon = () => BookAssets.BookcaseIcon },
-        new() { Prefab = "Drakes_BookcaseLarge", Token = "$piece_drakes_bookcase_large", English = "Large Bookcase", Spanish = "Librería grande", Width = 1.40f, ShelfRows = 4,
-                Cost = "FineWood:20", Description = "A tall bookcase with four rows.", Icon = () => BookAssets.PieceIcon("bookcase_large") },
-        new() { Prefab = "Drakes_BookcaseWide", Token = "$piece_drakes_bookcase_wide", English = "Wide Bookcase", Spanish = "Librería ancha", Width = 2.00f, ShelfRows = 3, InvPerRow = 2,
-                Cost = "FineWood:24", Description = "A wide bookcase with three long rows that hold twice as many books.", Icon = () => BookAssets.PieceIcon("bookcase_wide") },
+        new() { Prefab = WallName, Token = WallToken, English = "Wall Shelf", Spanish = "Estante de pared", Wall = true, Width = 1.00f, Cost = "FineWood:4",
+                Description = "A 1 m shelf for books on a wall. Use a spine to read it in place.", Icon = () => BookAssets.WallShelfIcon },
+        new() { Prefab = "Drakes_WallShelfLong", Token = "$piece_drakes_wall_shelf_long", English = "Long Wall Shelf", Spanish = "Estante de pared largo", Wall = true, Width = 2.00f,
+                InvPerRow = 2, Cost = "FineWood:8", Description = "A 2 m wall shelf that holds twice as many books.", Icon = () => BookAssets.PieceIcon("wall_shelf_long") },
+        new() { Prefab = "Drakes_BookcaseSmall", Token = "$piece_drakes_bookcase_small", English = "Small Bookcase", Spanish = "Librería pequeña", Width = 1.00f, Height = 1.00f,
+                ShelfRows = 2, Cost = "FineWood:8", Description = "A 1 x 1 m bookcase with two rows, as tall as a half wall.", Icon = () => BookAssets.PieceIcon("bookcase_small") },
+        new() { Prefab = CaseName, Token = CaseToken, English = "Tall Bookcase", Spanish = "Librería alta", Width = 1.00f, Height = 2.00f, ShelfRows = 4, Cost = "FineWood:14",
+                Description = "A 1 x 2 m bookcase with four rows, as tall as a wall. Use a spine to read it in place.", Icon = () => BookAssets.BookcaseIcon },
+        new() { Prefab = "Drakes_BookcaseWide", Token = "$piece_drakes_bookcase_wide", English = "Wide Bookcase", Spanish = "Librería ancha", Width = 2.00f, Height = 1.00f,
+                ShelfRows = 2, InvPerRow = 2, Cost = "FineWood:14", Description = "A 2 x 1 m bookcase with two long rows, under a window or along a wall.",
+                Icon = () => BookAssets.PieceIcon("bookcase_wide") },
     };
 
     static ManualLogSource? _log;
@@ -169,7 +175,7 @@ internal static class BookShelfPiece
         var cost = v.Cost;
         var cols = 8;
         var rows = v.ShelfRows * v.InvPerRow;
-        var mesh = wall ? BookMesh.WallShelf(v.Width) : BookMesh.Bookcase(v.Width, v.ShelfRows);
+        var mesh = wall ? BookMesh.WallShelf(v.Width) : BookMesh.Bookcase(v.Width, v.ShelfRows, v.Height);
         var pieceIcon = v.Icon();
         var config = new PieceConfig
         {
@@ -224,6 +230,7 @@ internal static class BookShelfPiece
         look.AddComponent<MeshRenderer>().sharedMaterial = wood;
 
         Colliders(frame.gameObject, v);
+        SnapPoints(go, v);
         var p = go.GetComponent<Piece>();
         if (p != null)
         {
@@ -235,6 +242,7 @@ internal static class BookShelfPiece
         var behaviour = go.AddComponent<BookShelfBehaviour>();
         behaviour.IsWall = wall;
         behaviour.Width = v.Width;
+        behaviour.Height = v.Height;
         behaviour.ShelfRows = v.ShelfRows;
         behaviour.InvPerRow = v.InvPerRow;
     }
@@ -260,12 +268,65 @@ internal static class BookShelfPiece
 
         var cd = BookMesh.CaseD;
         var th = BookMesh.CaseTh;
-        var height = BookMesh.CaseHeight(v.ShelfRows);
+        var height = v.Height;
+        var pitch = BookMesh.Pitch(v.ShelfRows, height);
         Box(-w / 2f + th / 2f, height / 2f, 0f, th, height, cd);
         Box(w / 2f - th / 2f, height / 2f, 0f, th, height, cd);
         Box(0f, height / 2f, cd / 2f - 0.0075f, w, height, 0.015f);
-        Box(0f, height + 0.015f, 0f, w + 0.04f, 0.03f, cd + 0.02f);
-        for (var r = 0; r <= v.ShelfRows; r++)
-            Box(0f, BookMesh.CasePlinth + BookMesh.CasePitch * r - th / 2f, 0f, w, th, cd);
+        Box(0f, height - BookMesh.CapTh / 2f, 0f, w, BookMesh.CapTh, cd);
+        for (var r = 0; r < v.ShelfRows; r++)
+            Box(0f, BookMesh.CasePlinth + pitch * r - th / 2f, 0f, w, th, cd);
+    }
+
+    /// <summary>
+    /// Snap points on the half-metre grid, the same way the shop's crates tile: along every footprint edge every 0.5 m (so a 1 m case
+    /// lines up with half a floor, a 2 m one with a whole floor, and cases sit side by side or back to back), repeated every 0.5 m up
+    /// the height (stacking a small case on another, lining up with a wall). Wall shelves: along the back edge, top and underside.
+    /// </summary>
+    static void SnapPoints(GameObject root, Variant v)
+    {
+        var points = new System.Collections.Generic.List<Vector3>();
+        var hw = v.Width / 2f;
+        IEnumerable<float> Steps(float from, float to)
+        {
+            for (var x = from; x <= to + 0.001f; x += 0.5f)
+                yield return x;
+        }
+
+        // The mesh is turned half way round in its frame, so the back (wall) side is -Z here.
+        if (v.Wall)
+        {
+            var back = -BookMesh.ShelfD / 2f;
+            foreach (var x in Steps(-hw, hw))
+            {
+                points.Add(new Vector3(x, 0f, back));
+                points.Add(new Vector3(x, -BookMesh.ShelfTh, back));
+            }
+        }
+        else
+        {
+            var hd = BookMesh.CaseD / 2f;
+            foreach (var y in Steps(0f, v.Height))
+            {
+                foreach (var x in Steps(-hw, hw))
+                {
+                    points.Add(new Vector3(x, y, -hd));
+                    points.Add(new Vector3(x, y, hd));
+                }
+
+                foreach (var z in Steps(-hd, hd))
+                {
+                    points.Add(new Vector3(-hw, y, z));
+                    points.Add(new Vector3(hw, y, z));
+                }
+            }
+        }
+
+        // Libs makes them like the game's own (tagged, inactive until the build ghost wants them) and drops duplicates' clutter.
+        var unique = new System.Collections.Generic.List<Vector3>();
+        foreach (var p in points)
+            if (!unique.Exists(u => (u - p).sqrMagnitude < 0.0001f))
+                unique.Add(p);
+        DrakeModsLibs.Forge.ForgeLook.SnapPoints(root, true, unique.ToArray());
     }
 }

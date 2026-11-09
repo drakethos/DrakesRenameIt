@@ -1,0 +1,133 @@
+{
+  "name": "BK-11 full shelves: a tall and a wide bookcase filled with varied books, seen from the front",
+  "description": "Seeded made-up books (colours, patterns, sizes, page counts, spine titles) fill a Tall Bookcase and a Wide Bookcase. Pictures show how full rows look and that every spine has its title.",
+  "steps": [
+    {
+      "do": "place",
+      "prefab": "Drakes_Bookcase",
+      "dz": 4,
+      "as": "tall"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "tall",
+        "count": 30,
+        "seed": 7
+      },
+      "expect": 30,
+      "label": "30 books go into the tall bookcase"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfSpines",
+      "args": {
+        "target": "tall"
+      },
+      "expect": 30,
+      "label": "30 spines drawn"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "tall",
+        "distance": 2.2
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "label": "tall bookcase, full"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "tall",
+        "distance": 1.0
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "label": "tall bookcase, close: spine titles"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookcaseWide",
+      "dz": 4,
+      "dx": 3,
+      "as": "wide"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "wide",
+        "count": 28,
+        "seed": 11
+      },
+      "expect": 28,
+      "label": "28 books go into the wide bookcase"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "wide",
+        "distance": 2.4
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "screenshot",
+      "label": "wide bookcase, full"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

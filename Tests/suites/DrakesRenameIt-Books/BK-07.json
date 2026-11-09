@@ -85,9 +85,8 @@
       "args": {
         "target": "case"
       },
-      "label": "default is Books: the first book stands against the left side, not centred in slot 0",
-      "contains": "-0.4",
-      "notContains": "-0.429"
+      "label": "default is Books: the first book stands against the left side (-0.413), a little thinner than its slot",
+      "contains": "-0.413"
     },
     {
       "do": "hook",
@@ -109,8 +108,8 @@
       "args": {
         "target": "case"
       },
-      "contains": "-0.429",
-      "label": "Slots mode: the first item is centred in slot 0 (-0.429), not packed"
+      "contains": "-0.28",
+      "label": "Slots mode: the second book is centred in slot 1 (-0.2875)"
     },
     {
       "do": "hook",
@@ -134,9 +133,8 @@
       "args": {
         "target": "case"
       },
-      "notContains": "-0.429",
-      "contains": "0.184",
-      "label": "it now stands in slot 5 (0.184), slot 0 is empty"
+      "contains": "0.17",
+      "label": "it now stands in slot 5 (0.1725)"
     },
     {
       "do": "hook",

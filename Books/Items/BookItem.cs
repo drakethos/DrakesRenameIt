@@ -27,6 +27,10 @@ internal static class BookItem
 
     internal static void Register(ManualLogSource log)
     {
+        // A book's look is its cover; ReskinIt stays off books unless the server turns BookReskin on.
+        if (!RenameitConfig.BookReskin)
+            DrakeModsLibs.API.CustomizeLibsAPI.RegisterItemExclusion(PrefabName,
+                DrakeModsLibs.API.CustomizeOperation.ReskinIcon | DrakeModsLibs.API.CustomizeOperation.ReskinModel | DrakeModsLibs.API.CustomizeOperation.ReskinColor);
         _log = log;
         PrefabManager.OnVanillaPrefabsAvailable -= AddBook;
         PrefabManager.OnVanillaPrefabsAvailable += AddBook;
@@ -115,7 +119,7 @@ internal static class BookItem
         // The mesh stands (spine -Z, up +Y); lay it so the front cover faces up.
         attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
         attach.localPosition = new Vector3(d.y / 2f, d.z / 2f, 0f);
-        BookAssets.Build(attach, BookSize.Medium, BookData.CoverColors[0]);
+        BookAssets.Build(attach, BookSize.Medium, null);
     }
 
     internal static bool IsBook(ItemDrop.ItemData? item)

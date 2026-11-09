@@ -14,7 +14,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 79;
+    private const int ExpectedSyncedEntryCount = 80;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -139,6 +139,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _bookCost = default!;
     private static ConfigEntry<string> _bookCraftingStation = default!;
     private static ConfigEntry<bool> _shelfAllowNonBooks = default!;
+    private static ConfigEntry<bool> _bookReskin = default!;
     private static ConfigEntry<string> _animalLabelStyle = default!;
     private static ConfigEntry<float> _animalLabelScale = default!;
     private static ConfigEntry<string> _pieceCrafterLine = default!;
@@ -440,6 +441,8 @@ public static class RenameitConfig
     public static string BookCraftingStation => _bookCraftingStation.Value;
     /// <summary>Whether any shelf on the server may hold things other than books (each shelf's owner still has to allow it).</summary>
     public static bool ShelfAllowNonBooks => _shelfAllowNonBooks.Value;
+    /// <summary>Whether ReskinIt may restyle books (icon, model, tint). Off by default: a book's look is its cover. Applied at start-up.</summary>
+    public static bool BookReskin => _bookReskin.Value;
 
     // --- 12 Pieces (rename placed pieces, 1.4) ---
 
@@ -1315,6 +1318,12 @@ public static class RenameitConfig
             "ShelfAllowNonBooks",
             true,
             "Whether bookcases may hold things other than books (knick-knacks on display rows). Off: every shelf is books only. When on, each shelf's owner still chooses per shelf (default off).");
+
+        _bookReskin = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "BookReskin",
+            false,
+            "Whether ReskinIt's Reskin tab works on books (icon, model and tint). Off by default: a book's look comes from its cover colour and pattern in the Book tab. Admins and VIPs keep their usual override. Applied at start-up.");
 
         MigrateLegacyConfigSections(config);
 

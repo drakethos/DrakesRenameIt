@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DrakeModsLibs.Forge;
 using DrakeRenameit.Paper.Items;
+using TMPro;
 using UnityEngine;
 
 namespace DrakeRenameit.Books;
@@ -51,31 +52,90 @@ internal static class BookAssets
     static readonly Dictionary<string, Material> CoverPictures = new();
 
     /// <summary>
-    /// A standing book under <paramref name="parent"/> (spine facing -Z, foot of the spine at the parent's origin).
-    /// <paramref name="coverPicture"/> is an optional file name from <see cref="BookCovers"/>, drawn on the front cover.
-    /// Returns null when the textures are missing.
+    /// A standing book under <paramref name="parent"/> (spine facing -Z, foot of the spine at the parent's origin) in one of the
+    /// three stock sizes, with its look and picture from <paramref name="data"/> (the item's custom data or a placed book's).
     /// </summary>
-    internal static GameObject? Build(Transform parent, BookSize size, Color color, string? coverPicture = null)
+    internal static GameObject? Build(Transform parent, BookSize size, IDictionary<string, string>? data, string? spineTitle = null)
     {
-        var cover = Cover(color);
+        var d = BookMesh.Dimensions(size);
+        return Build(parent, d.x, d.y, d.z, data, spineTitle);
+    }
+
+    /// <summary>Same, at any depth / height / thickness (shelves size their books to the row).</summary>
+    internal static GameObject? Build(Transform parent, float depth, float height, float thickness, IDictionary<string, string>? data, string? spineTitle)
+    {
+        var color = BookLook.ColorOf(data, BookData.KeyColor, BookData.CoverColors[0]);
+        var pattern = BookLook.PatternOf(data);
+        var accent = BookLook.ColorOf(data, BookLook.KeyAccent, BookLook.Accents[0]);
+        var cover = BookLook.CoverMaterial(color, pattern, accent) ?? Cover(color);
+        var spine = BookLook.SpineMaterial(color, pattern, accent) ?? cover;
         var pages = PaperMesh.SheetMaterial(false);
         if (cover == null || pages == null)
             return null;
         var go = new GameObject("drakes_book_mesh");
         go.transform.SetParent(parent, false);
-        go.AddComponent<MeshFilter>().sharedMesh = BookMesh.Book(size);
-        go.AddComponent<MeshRenderer>().sharedMaterials = new[] { cover, pages };
+        go.AddComponent<MeshFilter>().sharedMesh = BookMesh.Custom(depth, height, thickness);
+        go.AddComponent<MeshRenderer>().sharedMaterials = new[] { cover, pages, spine };
 
-        var picture = PictureMaterial(coverPicture);
+        var picture = PictureMaterial(data != null && data.TryGetValue(BookData.KeyCover, out var pic) ? pic : null);
         if (picture != null)
         {
             var quad = new GameObject("cover_picture");
             quad.transform.SetParent(go.transform, false);
-            quad.AddComponent<MeshFilter>().sharedMesh = BookMesh.CoverQuad(size);
+            quad.AddComponent<MeshFilter>().sharedMesh = BookMesh.CoverQuadFor(depth, height, thickness);
             quad.AddComponent<MeshRenderer>().sharedMaterial = picture;
         }
 
+        if (!string.IsNullOrEmpty(spineTitle))
+            SpineText(go.transform, depth, height, thickness, spineTitle!, BookLook.ColorOf(data, BookLook.KeyInk, BookLook.Inks[0]));
         return go;
+    }
+
+    static TMP_FontAsset? _font;
+
+    /// <summary>The game's own serif (the one the hover names use), found once.</summary>
+    static TMP_FontAsset? Font()
+    {
+        if (_font != null)
+            return _font;
+        TMP_FontAsset? fallback = null;
+        foreach (var f in Resources.FindObjectsOfTypeAll<TMP_FontAsset>())
+        {
+            if (f == null)
+                continue;
+            fallback ??= f;
+            if (f.name.IndexOf("Averia", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                _font = f;
+                break;
+            }
+        }
+
+        return _font ??= fallback;
+    }
+
+    /// <summary>The title on the spine, reading bottom to top, sized to fit (world-space TextMeshPro, shares the game's font atlas).</summary>
+    static void SpineText(Transform book, float depth, float height, float thickness, string title, Color ink)
+    {
+        var font = Font();
+        if (font == null)
+            return;
+        var go = new GameObject("spine_title");
+        go.transform.SetParent(book, false);
+        go.transform.localPosition = new Vector3(0f, height / 2f, -depth / 2f - 0.0015f);
+        go.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+        var text = go.AddComponent<TextMeshPro>();
+        text.font = font;
+        text.text = title;
+        text.color = ink;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Ellipsis;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 0.05f;
+        text.fontSizeMax = Mathf.Clamp(thickness * 6f, 0.15f, 0.5f);
+        text.fontStyle = FontStyles.Bold;
+        text.rectTransform.sizeDelta = new Vector2(height * 0.66f, thickness * 0.72f);
     }
 
     static Material? PictureMaterial(string? name)

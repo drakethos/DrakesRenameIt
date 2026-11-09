@@ -133,6 +133,7 @@ internal static class RenameItBookHooks
     static bool CloseWindows(Dictionary<string, object?> args)
     {
         BookReaderPanel.CloseWindow();
+        DrakeModsLibs.UI.DrakeTabHost.Close();
         BookPickerPanel.CloseWindow();
         ShelfSettingsPanel.CloseWindow();
         PaperReaderPanel.CloseWindow();
@@ -193,6 +194,125 @@ internal static class RenameItBookHooks
     {
         LockMenuType?.GetMethod("Close", System.Type.EmptyTypes)?.Invoke(null, null);
         return true;
+    }
+
+    /// <summary>
+    /// Puts "count" made-up books straight into the target shelf (seeded, so every run looks the same): varied titles, cover colours,
+    /// patterns, accents, spine inks, sizes (mostly medium) and page counts (1 to the limit). Returns how many went in.
+    /// </summary>
+    [TestHook("renameit.fillShelf")]
+    static int FillShelf(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var container = target != null ? target.GetComponent<Container>() : null;
+        var proto = ObjectDB.instance != null ? ObjectDB.instance.GetItemPrefab(BookItem.PrefabName) : null;
+        if (container == null || proto == null || proto.GetComponent<ItemDrop>() is not { } drop)
+            return 0;
+        string[] titles =
+        {
+            "Old Ledger", "Ravens Notes", "Smithing Primer", "Sagas of the North", "Herbs and Roots", "Tides", "Map Book", "Trolls",
+            "Bronze and Tin", "Songs", "The Black Forest", "Recipes", "Runes", "Letters Home", "Swamp Journal", "Stars",
+        };
+        var rng = new System.Random(int.Parse(S(args, "seed", "7"), CultureInfo.InvariantCulture));
+        var count = int.Parse(S(args, "count", "16"), CultureInfo.InvariantCulture);
+        var added = 0;
+        for (var i = 0; i < count; i++)
+        {
+            var item = drop.m_itemData.Clone();
+            item.m_dropPrefab = proto;
+            item.m_stack = 1;
+            item.m_customData = new Dictionary<string, string>();
+            BookData.SetTitle(item, titles[rng.Next(titles.Length)]);
+            BookData.SetColor(item, BookLook.Covers[rng.Next(BookLook.Covers.Length)]);
+            BookLook.SetPattern(item, (BookPattern)rng.Next((int)BookPattern.Studs + 1));
+            BookLook.SetAccent(item, BookLook.Accents[rng.Next(BookLook.Accents.Length)]);
+            BookLook.SetInk(item, BookLook.Inks[rng.Next(2)]);
+            var roll = rng.Next(10);
+            BookData.SetSize(item, roll < 2 ? BookSize.Small : roll > 7 ? BookSize.Large : BookSize.Medium);
+            var pages = new List<string>();
+            for (var p = rng.Next(1, BookData.MaxPages + 1); p > 0; p--)
+                pages.Add("Page.");
+            BookData.SetPages(item, pages);
+            if (!container.GetInventory().AddItem(item))
+                break;
+            added++;
+        }
+
+        target!.GetComponent<BookShelfBehaviour>()?.SaveContents();
+        return added;
+    }
+
+    /// <summary>Opens the inventory tab host (Shift+right-click) on the first book. True when the book editor is what opened.</summary>
+    [TestHook("renameit.bookOpenHost")]
+    static bool OpenHost(Dictionary<string, object?> args) =>
+        DrakeModsLibs.UI.DrakeTabHost.OpenForItem(FirstBook()) && BookReaderPanel.IsOpen;
+
+    /// <summary>
+    /// Sets the target shelf onto the nearest wood floor the way snapping would: same turn as the floor, the shelf's corner snap point on
+    /// the floor's top corner snap point, then "along" metres along the floor's X (and "across" along its Z). Reports whether the whole
+    /// footprint lies on the floor and every footprint corner sits on the floor's half-metre grid, e.g. "inside=True grid=True".
+    /// </summary>
+    [TestHook("renameit.snapToFloor")]
+    static string SnapToFloor(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<BookShelfBehaviour>() is not { } shelf)
+            return "no shelf";
+        Piece? floor = null;
+        var best = 6f;
+        foreach (var piece in UnityEngine.Object.FindObjectsOfType<Piece>())
+        {
+            if (!Utils.GetPrefabName(piece.gameObject).StartsWith("wood_floor", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var d = Vector3.Distance(piece.transform.position, target.transform.position);
+            if (d < best)
+            {
+                best = d;
+                floor = piece;
+            }
+        }
+
+        if (floor == null)
+            return "no floor";
+        var floorPoints = new List<Vector3>();
+        foreach (Transform child in floor.transform)
+            if (child.CompareTag("snappoint"))
+                floorPoints.Add(child.localPosition);
+        if (floorPoints.Count == 0)
+            return "floor has no snap points";
+        var top = floorPoints.Max(p => p.y);
+        var minX = floorPoints.Min(p => p.x);
+        var maxX = floorPoints.Max(p => p.x);
+        var minZ = floorPoints.Min(p => p.z);
+        var maxZ = floorPoints.Max(p => p.z);
+
+        var shelfPoints = new List<Vector3>();
+        foreach (Transform child in target.transform)
+            if (child.CompareTag("snappoint"))
+                shelfPoints.Add(child.localPosition);
+        var sMinX = shelfPoints.Min(p => p.x);
+        var sMaxX = shelfPoints.Max(p => p.x);
+        var sMinZ = shelfPoints.Min(p => p.z);
+        var sMaxZ = shelfPoints.Max(p => p.z);
+        var along = float.Parse(S(args, "along", "0"), CultureInfo.InvariantCulture);
+        var across = float.Parse(S(args, "across", "0"), CultureInfo.InvariantCulture);
+
+        // Shelf corner (sMinX, 0, sMinZ) onto floor corner (minX, top, minZ) + offset, both in the floor's frame.
+        var local = new Vector3(minX + along - sMinX, top, minZ + across - sMinZ);
+        target.transform.rotation = floor.transform.rotation;
+        target.transform.position = floor.transform.TransformPoint(local);
+        if (target.GetComponent<ZNetView>() is { } nview && nview.IsValid())
+        {
+            nview.ClaimOwnership();
+            nview.GetZDO().SetPosition(target.transform.position);
+            nview.GetZDO().SetRotation(target.transform.rotation);
+        }
+
+        const float eps = 0.01f;
+        float[] xs = { local.x + sMinX, local.x + sMaxX };
+        float[] zs = { local.z + sMinZ, local.z + sMaxZ };
+        var inside = xs.All(x => x >= minX - eps && x <= maxX + eps) && zs.All(z => z >= minZ - eps && z <= maxZ + eps);
+        bool OnHalf(float v, float origin) => Mathf.Abs((v - origin) / 0.5f - Mathf.Round((v - origin) / 0.5f)) < 0.02f;
+        var grid = xs.All(x => OnHalf(x, minX)) && zs.All(z => OnHalf(z, minZ));
+        return $"inside={inside} grid={grid} footprint={(sMaxX - sMinX).ToString("0.00", CultureInfo.InvariantCulture)}x{(sMaxZ - sMinZ).ToString("0.00", CultureInfo.InvariantCulture)} floor={(maxX - minX).ToString("0.00", CultureInfo.InvariantCulture)}x{(maxZ - minZ).ToString("0.00", CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>Moves the nth item of a shelf row to slot "to" of that row (swapping), as dragging on the layout board does.</summary>

@@ -79,6 +79,11 @@ internal static class BookPiece
 
             foreach (var sign in go.GetComponentsInChildren<Sign>(true))
                 Object.DestroyImmediate(sign);
+            // The sign's wear keeps a list of its renderers; the book swaps its model after placing (Dress), and wear then read
+            // bounds off a destroyed renderer (NullReferenceException in WearNTear.UpdateBiome). A book needs no wear or damage:
+            // it can't be hammer-removed either, and breaking it would lose its text.
+            foreach (var wear in go.GetComponentsInChildren<WearNTear>(true))
+                Object.DestroyImmediate(wear);
 
             var p = go.GetComponent<Piece>();
             if (p != null)
@@ -97,7 +102,7 @@ internal static class BookPiece
             var d = BookMesh.Dimensions(BookSize.Medium);
             ghost.localRotation = Quaternion.Euler(0f, 0f, 90f);
             ghost.localPosition = new Vector3(d.y / 2f, BookPieceBehaviour.Lift + d.z / 2f, 0f);
-            BookAssets.Build(ghost, BookSize.Medium, BookData.CoverColors[0]);
+            BookAssets.Build(ghost, BookSize.Medium, null);
             go.AddComponent<BookPieceBehaviour>();
             _log?.LogInfo("[Books] Registered the Book hammer piece.");
         }
@@ -192,7 +197,7 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
         attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
         attach.localPosition = new Vector3(d.y / 2f, Lift + d.z / 2f, 0f);
-        BookAssets.Build(attach, size, ColorOf(data), data.TryGetValue(BookData.KeyCover, out var cover) ? cover : null);
+        BookAssets.Build(attach, size, data);
         FitCollider(root.gameObject, size);
     }
 

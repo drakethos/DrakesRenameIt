@@ -230,7 +230,10 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
     {
         var player = Player.m_localPlayer;
         var canRead = IsOwner(player) || Flag(BookData.KeyReadable, true);
-        return Title() + (canRead ? "\n[<color=yellow><b>$KEY_Use</b></color>] Read" : "");
+        var text = Title() + (canRead ? "\n[<color=yellow><b>$KEY_Use</b></color>] Read" : "");
+        if (IsOwner(player))
+            text += "\n[<color=yellow><b>Shift</b></color>+<color=yellow><b>$KEY_Use</b></color>] Edit";
+        return text;
     }
 
     public bool Interact(Humanoid user, bool hold, bool alt)
@@ -252,7 +255,11 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         temp.m_customData = new Dictionary<string, string>(_data);
         temp.m_crafterID = OwnerId();
         var canTake = owner || Flag(BookData.KeyTake, false);
-        BookReaderPanel.Show(temp, canEdit: owner, onSave: Save, owner: owner, onTake: canTake ? () => Take(player) : null);
+        // E reads (with Edit on the strip for the owner); Shift+E opens the full editor.
+        if (alt && owner)
+            BookReaderPanel.ShowFull(temp, canEdit: true, onSave: Save, owner: true, onTake: canTake ? () => Take(player) : null);
+        else
+            BookReaderPanel.Show(temp, canEdit: owner, onSave: Save, owner: owner, onTake: canTake ? () => Take(player) : null);
         return true;
     }
 

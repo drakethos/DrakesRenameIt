@@ -131,6 +131,7 @@
     <Compile Include="Books\Data\BookData.cs" />
     <Compile Include="Books\Items\BookItem.cs" />
     <Compile Include="Books\UI\BookReaderPanel.cs" />
+    <Compile Include="Books\UI\BookSpread.cs" />
     <Compile Include="Books\Patches\BookUsePatch.cs" />
     <Compile Include="Books\Patches\PaperReadPatch.cs" />
     <Compile Include="Books\UI\PaperReaderPanel.cs" />

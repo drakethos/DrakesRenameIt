@@ -64,6 +64,8 @@ internal static class BookShelfPiece
         _log = log;
         // Shift+Use on a shelf is the shelf's own settings window: RenameIt's piece workshop must not take it over.
         DrakeModsLibs.API.PieceInteractionClaims.Register("DrakesRenameIt.shelves", piece => piece != null && piece.GetComponent<BookShelfBehaviour>() != null);
+        // The layout shows as a Shelf tab in LockSmith's Shift+E menu (Libs keeps the list; nothing happens without LockSmith).
+        ShelfLayout.RegisterTab();
         PrefabManager.OnVanillaPrefabsAvailable -= Add;
         PrefabManager.OnVanillaPrefabsAvailable += Add;
     }

@@ -41,8 +41,7 @@ internal sealed class PaperReaderPanel
     PaperReaderPanel()
     {
         _window = new UkWindow("drakes_paper_reader", 860f);
-        var texture = ForgeTextures.Load(typeof(PaperReaderPanel).Assembly, "textures/paper_sheet.png");
-        _page = BookReaderPanel.Page(texture);
+        _page = BookReaderPanel.Page();
         _page.style.minHeight = 560;
         _page.Round(4).Border(new Color(0.29f, 0.21f, 0.13f), 3);
         _text = UkControls.Text("", 25, new Color(0.23f, 0.16f, 0.10f));

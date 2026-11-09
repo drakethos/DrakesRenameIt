@@ -112,12 +112,19 @@ internal static class RenameItBookHooks
         return true;
     }
 
-    /// <summary>Opens the reader on the first inventory book as its maker: tab "pages" or "book", edit true/false.</summary>
+    /// <summary>Opens the reader on the first inventory book as its maker: tab "pages" (read view), "full" (full editor) or "book", edit true/false.</summary>
     [TestHook("renameit.bookOpenReader")]
     static bool OpenReader(Dictionary<string, object?> args)
     {
+        var tab = S(args, "tab", "pages");
+        if (tab == "full")
+        {
+            BookReaderPanel.ShowFull(FirstBook(), canEdit: true);
+            return BookReaderPanel.IsOpen;
+        }
+
         BookReaderPanel.Show(FirstBook(), canEdit: true);
-        BookReaderPanel.TestSelect(S(args, "tab", "pages") == "book", B(args, "edit"));
+        BookReaderPanel.TestSelect(tab == "book", B(args, "edit"));
         return BookReaderPanel.IsOpen;
     }
 
@@ -161,6 +168,43 @@ internal static class RenameItBookHooks
         var mode = S(args, "mode", "books").ToLowerInvariant() switch { "slots" => ShelfRowMode.Slots, "free" => ShelfRowMode.Free, _ => ShelfRowMode.Books };
         shelf.SetMode(int.Parse(S(args, "row", "0")), mode);
         return true;
+    }
+
+    static System.Type? LockMenuType => HarmonyLib.AccessTools.TypeByName("LockSmith.UI.PieceAccessMenu");
+
+    /// <summary>Opens LockSmith's Shift+E menu on the target chest (as its key would), through reflection: release LockSmith has no hooks.</summary>
+    [TestHook("renameit.lockMenuOpen")]
+    static bool LockMenuOpen(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var container = target != null ? target.GetComponentInChildren<Container>() : null;
+        var open = LockMenuType?.GetMethod("TryOpenLockMenu", new[] { typeof(Container), typeof(Humanoid), HarmonyLib.AccessTools.TypeByName("LockSmith.UI.LockTab") });
+        if (container == null || open == null)
+            return false;
+        var tab = open.GetParameters()[2];
+        return (bool)open.Invoke(null, new[] { container, P, tab.HasDefaultValue ? tab.DefaultValue : System.Activator.CreateInstance(tab.ParameterType) })!;
+    }
+
+    /// <summary>The open LockSmith menu's tab labels ("" when closed).</summary>
+    [TestHook("renameit.lockMenuTabs")]
+    static string LockMenuTabs() => LockMenuType?.GetProperty("TabOrder")?.GetValue(null) as string ?? "";
+
+    [TestHook("renameit.lockMenuClose")]
+    static bool LockMenuClose()
+    {
+        LockMenuType?.GetMethod("Close", System.Type.EmptyTypes)?.Invoke(null, null);
+        return true;
+    }
+
+    /// <summary>Moves the nth item of a shelf row to slot "to" of that row (swapping), as dragging on the layout board does.</summary>
+    [TestHook("renameit.shelfMove")]
+    static bool ShelfMove(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null || target.GetComponent<BookShelfBehaviour>() is not { } shelf)
+            return false;
+        var row = int.Parse(S(args, "row", "0"));
+        var items = shelf.RowItems(row);
+        var index = int.Parse(S(args, "index", "0"));
+        return index < items.Count && shelf.MoveTo(items[index], row, int.Parse(S(args, "to", "0")));
     }
 
     /// <summary>Gives the nth item of a shelf row a Free pose: x (metres from the middle), lift, yaw, scale.</summary>

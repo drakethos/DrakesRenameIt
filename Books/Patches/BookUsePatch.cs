@@ -13,10 +13,19 @@ internal static class BookUsePatch
         if (!RenameitConfig.BooksEnabled || __instance != Player.m_localPlayer || item == null || !BookItem.IsBook(item))
             return true;
 
-        // The maker (or a book nobody made, such as one from a trader) may edit; everyone else reads.
-        var player = Player.m_localPlayer;
-        var canEdit = item.m_crafterID == 0L || item.m_crafterID == player.GetPlayerID();
-        BookReaderPanel.Show(item, canEdit);
+        BookReaderPanel.Show(item, BookAccess.CanEditItem(item));
         return false;
+    }
+}
+
+/// <summary>Who may write in a book: its maker (or nobody, for one from a trader), and admins / VIPs.</summary>
+internal static class BookAccess
+{
+    internal static bool CanEditItem(ItemDrop.ItemData item)
+    {
+        var player = Player.m_localPlayer;
+        if (player == null)
+            return false;
+        return item.m_crafterID == 0L || item.m_crafterID == player.GetPlayerID() || API.RenameitPermission.IsAdminOrVIP(player);
     }
 }

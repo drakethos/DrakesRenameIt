@@ -39,6 +39,13 @@ public static class RenameItInventoryPatches
 
                 if (item != null && MenuBindingRegistry.IsHeld(MenuBindingRegistry.InventoryContextScope, RenameItLibsBridge.InventoryMenuBindingId))
                 {
+                    // A book opens its full editor (pages, title, cover) rather than the item menu.
+                    if (RenameitConfig.BooksEnabled && Books.BookItem.IsBook(item))
+                    {
+                        Books.BookReaderPanel.ShowFull(item, Books.BookAccess.CanEditItem(item));
+                        return;
+                    }
+
                     if (DrakeTabHost.OpenForItem(item))
                         return;
 

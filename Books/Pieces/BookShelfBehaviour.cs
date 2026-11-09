@@ -111,13 +111,65 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
 
     internal int SlotsPerShelfRow => Columns * Mathf.Max(1, InvPerRow);
 
-    /// <summary>The row's mode: Slots unless the owner chose Free. (Books is an old value, read as Slots.)</summary>
+    /// <summary>The row's mode: Books (spines side by side, like a real shelf) unless the owner chose Slots or Free.</summary>
     internal ShelfRowMode GetMode(int shelfRow)
     {
         var parts = (Zdo?.GetString(ZModes, "") ?? "").Split(',');
         return shelfRow < parts.Length && int.TryParse(parts[shelfRow], NumberStyles.Integer, CultureInfo.InvariantCulture, out var m) && m >= 0 && m <= 2
-            ? (m == (int)ShelfRowMode.Free ? ShelfRowMode.Free : ShelfRowMode.Slots)
-            : ShelfRowMode.Slots;
+            ? (ShelfRowMode)m
+            : ShelfRowMode.Books;
+    }
+
+    /// <summary>Private in the live game: tells the container its contents changed (it saves to the ZDO when we own it).</summary>
+    static readonly System.Reflection.MethodInfo? InventoryChangedMethod = HarmonyLib.AccessTools.Method(typeof(Inventory), "Changed");
+
+    /// <summary>
+    /// Calls the game's Inventory.Changed with its own defaults. Valheim 1.0 has Changed(bool success = false, bool
+    /// cheatedStateChanged = false); the stubs have no parameters, so the argument list comes from the live method.
+    /// </summary>
+    internal static void NotifyInventoryChanged(Inventory inventory)
+    {
+        var method = InventoryChangedMethod;
+        if (method == null)
+            return;
+        var parameters = method.GetParameters();
+        var args = new object?[parameters.Length];
+        for (var i = 0; i < parameters.Length; i++)
+            args[i] = parameters[i].HasDefaultValue ? parameters[i].DefaultValue
+                : parameters[i].ParameterType.IsValueType ? Activator.CreateInstance(parameters[i].ParameterType) : null;
+        method.Invoke(inventory, args);
+    }
+
+    /// <summary>
+    /// Move <paramref name="item"/> to slot <paramref name="slot"/> of shelf row <paramref name="shelfRow"/>, swapping with whatever is
+    /// there, and save. False while someone else has the shelf open as a chest.
+    /// </summary>
+    internal bool MoveTo(ItemDrop.ItemData item, int shelfRow, int slot)
+    {
+        if (_container?.GetInventory() is not { } inventory || slot < 0 || slot >= SlotsPerShelfRow)
+            return false;
+        if (_container.IsInUse() && !InventoryGui.IsVisible())
+            return false;
+        var perRow = Mathf.Max(1, InvPerRow);
+        var to = new Vector2i(slot % Columns, shelfRow * perRow + slot / Columns);
+        var other = inventory.GetItemAt(to.x, to.y);
+        var from = item.m_gridPos;
+        item.m_gridPos = to;
+        if (other != null && other != item)
+            other.m_gridPos = from;
+        SaveContents();
+        return true;
+    }
+
+    /// <summary>Take the shelf's ownership and save its inventory, so every client draws the new order.</summary>
+    internal void SaveContents()
+    {
+        var nview = GetComponent<ZNetView>();
+        if (nview == null || !nview.IsValid() || _container?.GetInventory() is not { } inventory)
+            return;
+        nview.ClaimOwnership();
+        NotifyInventoryChanged(inventory);
+        _shown = "";
     }
 
     internal void SetMode(int shelfRow, ShelfRowMode mode) => Write(z =>

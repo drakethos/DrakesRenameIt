@@ -1,0 +1,276 @@
+{
+  "name": "BK-13 secret bookcase door: only the handle opens it, it swings like a door, wards apply",
+  "description": "A Secret Bookcase Door passes for a Tall Bookcase. Hover and E do nothing except on the handle book, which shows its label and opens the door (shared door state, hinge swing). The owner can move the handle and rename it. A ward keeps strangers out as for any door.",
+  "steps": [
+    {
+      "do": "place",
+      "prefab": "Drakes_SecretBookcase",
+      "dz": 4,
+      "as": "door"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.clearAround",
+      "args": {
+        "radius": 20
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "notContains": "Rename",
+      "label": "piece rename leaves the secret door alone"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "contains": "Tall Bookcase",
+      "notContains": "Open",
+      "label": "on the case it passes for a bookcase: no Open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "0"
+      },
+      "notContains": "Open",
+      "label": "an ordinary fake book shows a title, no Open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "contains": "Sagas of the North",
+      "label": "the handle shows its label"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "contains": "Open",
+      "label": "and offers Open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "0"
+      },
+      "expect": false,
+      "label": "E on an ordinary book does nothing"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "expect": true,
+      "label": "E on the handle opens it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "the door stands open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.clearAround",
+      "args": {
+        "radius": 20
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": 2.4,
+        "side": 1.6
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "label": "secret bookcase swung open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "expect": true,
+      "label": "the handle closes it again"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "closed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretConfigure",
+      "args": {
+        "target": "door",
+        "slot": 5,
+        "label": "Hidden Ways"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "5"
+      },
+      "contains": "Hidden Ways",
+      "label": "the owner moved the handle to slot 5 and renamed it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretOpenSettings",
+      "args": {
+        "target": "door"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "label": "secret door settings"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows",
+      "expect": true
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": -3,
+      "owner": "Alice",
+      "enabled": true,
+      "radius": 15
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "5"
+      },
+      "label": "inside Alice's ward, Bob pulls the handle"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "the ward keeps it shut, like any door"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

@@ -63,6 +63,9 @@ internal static class BookShelfPiece
                 Icon = () => BookAssets.PieceIcon("bookcase_wide") },
     };
 
+    /// <summary>The Tall Bookcase, which the secret door copies.</summary>
+    internal static Variant TallVariant => Array.Find(Variants, v => v.Prefab == CaseName);
+
     static ManualLogSource? _log;
 
     internal static void Register(ManualLogSource log)
@@ -72,6 +75,8 @@ internal static class BookShelfPiece
         DrakeModsLibs.API.PieceInteractionClaims.Register("DrakesRenameIt.shelves", piece => piece != null && piece.GetComponent<BookShelfBehaviour>() != null);
         // The layout shows as a Shelf tab in LockSmith's Shift+E menu (Libs keeps the list; nothing happens without LockSmith).
         ShelfLayout.RegisterTab();
+        SecretDoorSettings.RegisterTab();
+        SecretBookcase.Claim();
         PrefabManager.OnVanillaPrefabsAvailable -= Add;
         PrefabManager.OnVanillaPrefabsAvailable += Add;
     }
@@ -105,6 +110,7 @@ internal static class BookShelfPiece
 
             foreach (var v in Variants)
                 One(v, chestContainer, wood);
+            SecretBookcase.Add(_log, wood);
             _log?.LogInfo($"[Books] Registered {Variants.Length} shelf pieces (wall shelves and bookcases).");
         }
         catch (Exception ex)
@@ -117,7 +123,7 @@ internal static class BookShelfPiece
     /// The chest's own wood material when one can be told apart by name (the first renderer can be a glow or ghost material, which
     /// drew the shelves as white slabs); otherwise a plain brown one. What was chosen is logged.
     /// </summary>
-    static Material WoodMaterial(GameObject? chest)
+    internal static Material WoodMaterial(GameObject? chest)
     {
         Material? pick = null;
         string from = "";
@@ -230,7 +236,7 @@ internal static class BookShelfPiece
         look.AddComponent<MeshRenderer>().sharedMaterial = wood;
 
         Colliders(frame.gameObject, v);
-        SnapPoints(go, v);
+        AddSnapPoints(go, v);
         var p = go.GetComponent<Piece>();
         if (p != null)
         {
@@ -248,7 +254,7 @@ internal static class BookShelfPiece
     }
 
     /// <summary>Wood parts only: the middle stays open so the crosshair can reach the spines.</summary>
-    static void Colliders(GameObject frame, Variant v)
+    internal static void Colliders(GameObject frame, Variant v)
     {
         void Box(float cx, float cy, float cz, float sx, float sy, float sz)
         {
@@ -283,7 +289,7 @@ internal static class BookShelfPiece
     /// lines up with half a floor, a 2 m one with a whole floor, and cases sit side by side or back to back), repeated every 0.5 m up
     /// the height (stacking a small case on another, lining up with a wall). Wall shelves: along the back edge, top and underside.
     /// </summary>
-    static void SnapPoints(GameObject root, Variant v)
+    internal static void AddSnapPoints(GameObject root, Variant v)
     {
         var points = new System.Collections.Generic.List<Vector3>();
         var hw = v.Width / 2f;

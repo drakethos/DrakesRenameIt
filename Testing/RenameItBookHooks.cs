@@ -136,6 +136,7 @@ internal static class RenameItBookHooks
         DrakeModsLibs.UI.DrakeTabHost.Close();
         BookPickerPanel.CloseWindow();
         ShelfSettingsPanel.CloseWindow();
+        SecretDoorSettings.CloseWindow();
         PaperReaderPanel.CloseWindow();
         return true;
     }
@@ -313,6 +314,102 @@ internal static class RenameItBookHooks
         bool OnHalf(float v, float origin) => Mathf.Abs((v - origin) / 0.5f - Mathf.Round((v - origin) / 0.5f)) < 0.02f;
         var grid = xs.All(x => OnHalf(x, minX)) && zs.All(z => OnHalf(z, minZ));
         return $"inside={inside} grid={grid} footprint={(sMaxX - sMinX).ToString("0.00", CultureInfo.InvariantCulture)}x{(sMaxZ - sMinZ).ToString("0.00", CultureInfo.InvariantCulture)} floor={(maxX - minX).ToString("0.00", CultureInfo.InvariantCulture)}x{(maxZ - minZ).ToString("0.00", CultureInfo.InvariantCulture)}";
+    }
+
+    /// <summary>
+    /// Removes trees, logs, bushes and rocks within "radius" metres of the player, for clean pictures (stand-in until TestLab's own
+    /// clearArea step is in the deployed TestLab). Returns how many went.
+    /// </summary>
+    [TestHook("renameit.clearAround")]
+    static int ClearAround(Dictionary<string, object?> args)
+    {
+        var radius = float.Parse(S(args, "radius", "15"), CultureInfo.InvariantCulture);
+        var centre = P.transform.position;
+        var doomed = new List<ZNetView>();
+        foreach (var nview in UnityEngine.Object.FindObjectsOfType<ZNetView>())
+        {
+            if (nview == null || !nview.IsValid() || Vector3.Distance(nview.transform.position, centre) > radius)
+                continue;
+            var go = nview.gameObject;
+            if (go.GetComponent<TreeBase>() != null || go.GetComponent<TreeLog>() != null || go.GetComponent<MineRock>() != null
+                || go.GetComponent<MineRock5>() != null || go.GetComponent<Destructible>() != null && go.GetComponent<Piece>() == null)
+                doomed.Add(nview);
+        }
+
+        foreach (var nview in doomed)
+        {
+            nview.ClaimOwnership();
+            ZNetScene.instance.Destroy(nview.gameObject);
+        }
+
+        return doomed.Count;
+    }
+
+    static SecretBookcaseBehaviour? Secret(GameObject? target) => target != null ? target.GetComponent<SecretBookcaseBehaviour>() : null;
+
+    /// <summary>Aim slot for the secret-door hooks: "handle", a slot number, or "case" (the bookcase, no book).</summary>
+    static int AimSlot(Dictionary<string, object?> args, SecretBookcaseBehaviour secret)
+    {
+        var at = S(args, "at", "handle");
+        return at == "handle" ? secret.Handle : at == "case" ? -1 : int.Parse(at, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>The secret door's hover text while aiming at "at" (handle / a slot / case).</summary>
+    [TestHook("renameit.secretHover")]
+    static string SecretHover(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (Secret(target) is not { } secret)
+            return "no secret door";
+        SecretBookcaseBehaviour.TestAim = AimSlot(args, secret);
+        try
+        {
+            return Localization.instance.Localize(target!.GetComponent<Door>().GetHoverText());
+        }
+        finally
+        {
+            SecretBookcaseBehaviour.TestAim = null;
+        }
+    }
+
+    /// <summary>Presses Use (E) on the secret door while aiming at "at"; returns what Interact answered.</summary>
+    [TestHook("renameit.secretUse")]
+    static bool SecretUse(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (Secret(target) is not { } secret)
+            return false;
+        SecretBookcaseBehaviour.TestAim = AimSlot(args, secret);
+        try
+        {
+            return target!.GetComponent<Door>().Interact(P, false, false);
+        }
+        finally
+        {
+            SecretBookcaseBehaviour.TestAim = null;
+        }
+    }
+
+    /// <summary>True while the secret door stands open (its shared door state is not 0).</summary>
+    [TestHook("renameit.secretIsOpen")]
+    static bool SecretIsOpen(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && target.GetComponent<ZNetView>() is { } nview && nview.IsValid() && nview.GetZDO().GetInt(ZDOVars.s_state) != 0;
+
+    /// <summary>Sets the handle slot and its title, as the Secret door tab does.</summary>
+    [TestHook("renameit.secretConfigure")]
+    static bool SecretConfigure(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (Secret(target) is not { } secret)
+            return false;
+        secret.Configure(int.Parse(S(args, "slot", secret.Handle.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture), S(args, "label", secret.Label));
+        return true;
+    }
+
+    [TestHook("renameit.secretOpenSettings")]
+    static bool SecretOpenSettings(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (Secret(target) is not { } secret)
+            return false;
+        SecretDoorSettings.Show(secret);
+        return true;
     }
 
     /// <summary>Moves the nth item of a shelf row to slot "to" of that row (swapping), as dragging on the layout board does.</summary>

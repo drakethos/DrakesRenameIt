@@ -1,0 +1,175 @@
+{
+  "name": "PR-17 every buildable piece with a hover name (261 prefabs)",
+  "description": "Spawns each buildable piece briefly with me as the builder and renames it. The report of each batch is in the log: missing prefabs, pieces with no hover RenameIt handles (fires, stands, signs), pieces the rules refuse the builder, names that did not show.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "ashwood_bed,bed,piece_bed02,Cart,incinerator,Karve,piece_chest,piece_chest_barrel,piece_chest_blackmetal,piece_chest_grausten,piece_chest_private,piece_chest_warderobe,piece_chest_wood,piece_gift1,piece_gift2,piece_gift3,piece_pot1,piece_pot2,piece_pot3,VikingShip,VikingShip_Ashlands,fermenter,piece_cookingstation,piece_cookingstation_iron,piece_FrostFoundry,piece_oven,ashwood_door,darkwood_gate,flametal_gate,iron_grate"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 1-30: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_drawbridge,piece_drawbridge_log,piece_hexagonal_door,stave_gate,wood_door,wood_fence_gate,wood_gate,wood_window,portal_stone,portal_wood,piece_asksvinskeleton,piece_bench01,piece_bench_runed,piece_blackmarble_bench,piece_blackmarble_throne,piece_blackwood_bench01,piece_bone_throne,piece_chair,piece_chair02,piece_chair03,piece_chair_runed,piece_logbench01,piece_moose_throne,piece_throne01,piece_throne02,Raft,rug_Bjorn,BatteringRam,blastfurnace,charcoal_kiln"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 31-60: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "eitrrefinery,piece_bathtub,piece_FrostKiln,piece_spinningwheel,smelter,windmill,artisan_ext1,blackforge,blackforge_ext1,blackforge_ext2_vise,blackforge_ext3_metalcutter,blackforge_ext4_gemcutter,blackforge_ext5_apron,cauldron_ext1_spice,cauldron_ext3_butchertable,cauldron_ext4_pots,cauldron_ext5_mortarandpestle,cauldron_ext6_rollingpins,cauldron_ext7_smoker,forge,forge_ext1,forge_ext2,forge_ext3,forge_ext4,forge_ext5,forge_ext6,piece_artisanstation,piece_cauldron,piece_magetable,piece_magetable_ext"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 61-90: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_magetable_ext2,piece_magetable_ext3,piece_magetable_ext4,piece_MeadCauldron,piece_preptable,piece_stonecutter,piece_workbench,piece_workbench_ext1,piece_workbench_ext2,piece_workbench_ext3,piece_workbench_ext4,guard_stone,TeamWard,ArmorStand,BakedPoteitr,BarleyWine,Beech_Sapling,Birch_Sapling,BlackSoup,BloodPudding,Blueberries,BoarJerky,Bread,Carrot,CarrotSoup,Catapult,Cloudberry,CookedAsksvinMeat,CookedBjornMeat,CookedBoneMawSerpentMeat"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 91-120: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "CookedBugMeat,CookedChickenMeat,CookedDeerMeat,CookedEgg,CookedHareMeat,CookedLoxMeat,CookedMeat,CookedMooseMeat,CookedSealBlubber,CookedVoltureMeat,CookedWolfMeat,DeerStew,Eyescream,FeastAshlands,FeastBlackforest,FeastDeepNorth,FeastMeadows,FeastMistlands,FeastMountains,FeastOceans,FeastPlains,FeastSwamps,Fiddleheadfern,FierySvinstew,FirTree_big_Sapling,FirTree_Sapling,FishAndBread,FishCooked,FishSoup,FishWraps"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 121-150: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "Honey,HoneyGlazedChicken,Kale,KaleChips,Lingonberry,Lingondricka,LoxPie,MagicallyStuffedShroom,MarinatedGreens,MashedMeat,MeadBugRepellent,MeadBzerker,MeadEitrLingering,MeadEitrMinor,MeadFrostResist,MeadHasty,MeadHealthLingering,MeadHealthMajor,MeadHealthMedium,MeadHealthMinor,MeadLightfoot,MeadPoisonResist,MeadStaminaLingering,MeadStaminaMedium,MeadStaminaMinor,MeadStrength,MeadSwimmer,MeadTamer,MeadTasty,MeadTrollPheromones"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 151-180: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "MeatballsMashedPoteitr,MeatPlatter,MinceMeatSauce,MisthareSupreme,MooseKebab,Mushroom,MushroomBzerker,MushroomJotunPuffs,MushroomMagecap,MushroomOmelette,MushroomSmokePuff,MushroomYellow,NeckTailGrilled,Oak_Sapling,Oat,OatmealLingonberryJam,OatMilk,Onion,OnionSoup,OvenPancake,Pancakes,piece_ArcheryTarget,piece_barber,piece_beehive,piece_birdnest,piece_cartographytable,piece_EternalPyre,piece_groundtorch_mist,piece_sapcollector,piece_shieldgenerator"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 181-210: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_TrainingDummy,piece_trap_troll,piece_turret,piece_wisplure,PineTree_Sapling,PiquantPie,Placeable_HardRock,Placeable_Stone,Poteitr,Pukeberries,PulledBear,QueensJam,Raspberry,RoastedCrustPie,RottenMeat,RoyalJelly,Salad,sapling_barley,sapling_carrot,sapling_flax,sapling_jotunpuffs,sapling_Kale,sapling_magecap,sapling_oat,sapling_onion,sapling_poteitr,sapling_seedcarrot,sapling_seedkale,sapling_seedonion,sapling_seedturnip"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 211-240: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "sapling_turnip,Sausages,ScorchingMedley,SealSoup,SeekerAspic,SerpentMeatCooked,SerpentStew,ShocklateSmoothie,SizzlingBerryBroth,SmokedFish,SmokedMooseMeat,SparklingShroomshake,SpicyMarmalade,TurnipStew,VikingCupcake,VineAsh_sapling,Vineberry,VineGreen_sapling,WolfJerky,WolfMeatSkewer,YggdrasilPorridge"
+      },
+      "contains": "missing=[];",
+      "label": "pieces 241-261: all exist, none refused, every new name shows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "ashwood_bed,bed,piece_bed02,Cart,incinerator,Karve,piece_chest,piece_chest_barrel,piece_chest_blackmetal,piece_chest_grausten,piece_chest_private,piece_chest_warderobe,piece_chest_wood,piece_gift1,piece_gift2,piece_gift3,piece_pot1,piece_pot2,piece_pot3,VikingShip,VikingShip_Ashlands,fermenter,piece_cookingstation,piece_cookingstation_iron,piece_FrostFoundry,piece_oven,ashwood_door,darkwood_gate,flametal_gate,iron_grate"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 1-30: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_drawbridge,piece_drawbridge_log,piece_hexagonal_door,stave_gate,wood_door,wood_fence_gate,wood_gate,wood_window,portal_stone,portal_wood,piece_asksvinskeleton,piece_bench01,piece_bench_runed,piece_blackmarble_bench,piece_blackmarble_throne,piece_blackwood_bench01,piece_bone_throne,piece_chair,piece_chair02,piece_chair03,piece_chair_runed,piece_logbench01,piece_moose_throne,piece_throne01,piece_throne02,Raft,rug_Bjorn,BatteringRam,blastfurnace,charcoal_kiln"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 31-60: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "eitrrefinery,piece_bathtub,piece_FrostKiln,piece_spinningwheel,smelter,windmill,artisan_ext1,blackforge,blackforge_ext1,blackforge_ext2_vise,blackforge_ext3_metalcutter,blackforge_ext4_gemcutter,blackforge_ext5_apron,cauldron_ext1_spice,cauldron_ext3_butchertable,cauldron_ext4_pots,cauldron_ext5_mortarandpestle,cauldron_ext6_rollingpins,cauldron_ext7_smoker,forge,forge_ext1,forge_ext2,forge_ext3,forge_ext4,forge_ext5,forge_ext6,piece_artisanstation,piece_cauldron,piece_magetable,piece_magetable_ext"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 61-90: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_magetable_ext2,piece_magetable_ext3,piece_magetable_ext4,piece_MeadCauldron,piece_preptable,piece_stonecutter,piece_workbench,piece_workbench_ext1,piece_workbench_ext2,piece_workbench_ext3,piece_workbench_ext4,guard_stone,TeamWard,ArmorStand,BakedPoteitr,BarleyWine,Beech_Sapling,Birch_Sapling,BlackSoup,BloodPudding,Blueberries,BoarJerky,Bread,Carrot,CarrotSoup,Catapult,Cloudberry,CookedAsksvinMeat,CookedBjornMeat,CookedBoneMawSerpentMeat"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 91-120: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "CookedBugMeat,CookedChickenMeat,CookedDeerMeat,CookedEgg,CookedHareMeat,CookedLoxMeat,CookedMeat,CookedMooseMeat,CookedSealBlubber,CookedVoltureMeat,CookedWolfMeat,DeerStew,Eyescream,FeastAshlands,FeastBlackforest,FeastDeepNorth,FeastMeadows,FeastMistlands,FeastMountains,FeastOceans,FeastPlains,FeastSwamps,Fiddleheadfern,FierySvinstew,FirTree_big_Sapling,FirTree_Sapling,FishAndBread,FishCooked,FishSoup,FishWraps"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 121-150: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "Honey,HoneyGlazedChicken,Kale,KaleChips,Lingonberry,Lingondricka,LoxPie,MagicallyStuffedShroom,MarinatedGreens,MashedMeat,MeadBugRepellent,MeadBzerker,MeadEitrLingering,MeadEitrMinor,MeadFrostResist,MeadHasty,MeadHealthLingering,MeadHealthMajor,MeadHealthMedium,MeadHealthMinor,MeadLightfoot,MeadPoisonResist,MeadStaminaLingering,MeadStaminaMedium,MeadStaminaMinor,MeadStrength,MeadSwimmer,MeadTamer,MeadTasty,MeadTrollPheromones"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 151-180: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "MeatballsMashedPoteitr,MeatPlatter,MinceMeatSauce,MisthareSupreme,MooseKebab,Mushroom,MushroomBzerker,MushroomJotunPuffs,MushroomMagecap,MushroomOmelette,MushroomSmokePuff,MushroomYellow,NeckTailGrilled,Oak_Sapling,Oat,OatmealLingonberryJam,OatMilk,Onion,OnionSoup,OvenPancake,Pancakes,piece_ArcheryTarget,piece_barber,piece_beehive,piece_birdnest,piece_cartographytable,piece_EternalPyre,piece_groundtorch_mist,piece_sapcollector,piece_shieldgenerator"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 181-210: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "piece_TrainingDummy,piece_trap_troll,piece_turret,piece_wisplure,PineTree_Sapling,PiquantPie,Placeable_HardRock,Placeable_Stone,Poteitr,Pukeberries,PulledBear,QueensJam,Raspberry,RoastedCrustPie,RottenMeat,RoyalJelly,Salad,sapling_barley,sapling_carrot,sapling_flax,sapling_jotunpuffs,sapling_Kale,sapling_magecap,sapling_oat,sapling_onion,sapling_poteitr,sapling_seedcarrot,sapling_seedkale,sapling_seedonion,sapling_seedturnip"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 211-240: none denied or mis-named"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceSweep",
+      "args": {
+        "prefabs": "sapling_turnip,Sausages,ScorchingMedley,SealSoup,SeekerAspic,SerpentMeatCooked,SerpentStew,ShocklateSmoothie,SizzlingBerryBroth,SmokedFish,SmokedMooseMeat,SparklingShroomshake,SpicyMarmalade,TurnipStew,VikingCupcake,VineAsh_sapling,Vineberry,VineGreen_sapling,WolfJerky,WolfMeatSkewer,YggdrasilPorridge"
+      },
+      "contains": "denied=[];badName=[]",
+      "label": "pieces 241-261: none denied or mis-named"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 600
+}

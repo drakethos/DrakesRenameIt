@@ -1,9 +1,25 @@
-- Version 1.4.0-beta.6
-  - Beta. Requires **DrakeModsLibs 1.0.5**. **Early Books preview**: it works but is rough, so expect changes and report what feels off. `BooksEnabled` (section 14 Books) turns all of it off.
+- 1.5 line (books, unreleased)
+  - Beta line on top of 1.4.0-beta.8. `BooksEnabled` (section 14 Books) turns all of it off.
   - **New: books.** Craft a Book (paper + leather scraps) and read it in a two-page window; the maker can edit it with rich text and add pages. Place a book on a table or the floor with the hammer (Furniture, Book).
   - **New: shelves.** Wall shelf, long wall shelf and four bookcase sizes (Furniture). Books stand on them spines out; use a spine to read without taking it. Each row can be Books, Slots or Free; other items on shelves are off by default (`ShelfAllowNonBooks`).
   - **New: cover pictures** from PNG or JPG files in `BepInEx/config/DrakesRenameIt/BookCovers`.
-  - **Fix: renamed items in ExtraSlots slots** (also in 1.3.1 and beta.5). With ExtraSlots installed, the new name and Crafted-by line show on tooltips in its equipment and extra slots.
+- Version 1.4.0-beta.8
+  - Beta. Requires **DrakeModsLibs 1.0.6**.
+  - **Faster start-up (about 2.2 s down to 0.6 s).** The 76 settings are saved to the config file once instead of once each, and the optional ward and equipment-mod checks no longer scan every loaded type when that mod is not installed. No change to behaviour.
+  - **Icon.** Brass knot on the workshop brown. DrakeMods, Rename it, the written page, and the portrait.
+  - **Fix: Name tab in the Lock menu** (chests, doors) had no formatting toolbar. It now has the same bold / italic / size / colour bar as the piece and animal windows.
+  - **Docs:** README piece, animal and pin screenshots added (`docs/images/`); Libs requirement shown as 1.0.6.
+- Version 1.4.0-beta.7
+  - Beta. Requires **DrakeModsLibs 1.0.6**. Books are not in this beta: they moved to a separate 1.5 beta line (1.4.0-beta.6 carried an early Books preview).
+  - **Security fix: piece renames are checked by the piece's owner.** The owner's client used to write whatever name or Shared flag it was sent, so a modified client could rename any piece (someone else's, a world-built one, one in a ward it may not touch, or past the name limit). The owner now finds who sent the request and applies the same rules as the rename window to that player (builder or Shared, ward access, admin/VIP, character limit), and refuses senders it cannot identify.
+  - **New: SeneaL UI support.** Renamed items show their name in SeneaL's tooltips and crafting views. Its description and *Crafted by* lines show too, through DrakeModsLibs 1.0.6.
+  - **Docs:** the README lists which equipment and slot mods work (ExtraSlots through a module, AzuExtendedPlayerInventory and InventorySlots as they are, SeneaL UI through a module) and links a guide, `docs/COMPATIBILITY.md`, for adding another mod. Piece screenshots are still to come.
+  - Automated tests added: forged piece requests (PV-01..11), every buildable piece (PR-17, 261 prefabs), three players with one chest and a ward (PR-18), VIP on the host (PR-19), a server suite for a real second client (VS-01..05), and an unattended all-slots check for equipment mods (X-EQ-04, X-EQ-06). Not part of the release.
+- Version 1.4.0-beta.6
+  - Beta. Early Books preview (books moved to the 1.5 line after this).
+- Version 1.4.0-beta.5
+  - Beta. Requires **DrakeModsLibs 1.0.5**.
+  - **Fix: renamed items in ExtraSlots slots.** With **ExtraSlots** installed, an item's new name and Crafted-by line now show on its tooltip in the equipment (Head, Back, Chest, Legs) and extra slots (food, ammo, quick, misc); they showed the vanilla name before. Nothing changes without ExtraSlots.
 - Version 1.4.0-beta.4
   - Beta. Requires **DrakeModsLibs 1.0.5**.
   - **Name is its own tab.** It sits on the row beside Lock and Shop. A shop still opens on Shop, with Layout visible.

@@ -34,6 +34,7 @@ namespace DrakeRenameit
     [BepInDependency(CompatibilityManager.SoftGuids.ArcaneWard, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.LockSmith, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ExtraSlots, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(CompatibilityManager.SoftGuids.SeneaL, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
     public partial class DrakeRenameit : BaseUnityPlugin
     {
@@ -105,7 +106,12 @@ namespace DrakeRenameit
         {
             RenameitConfig.Log = Logger;
             MigrateConfigFromOldGuid();
-            Bind(Config);
+            // BepInEx rewrites the whole .cfg on every Bind by default (76 entries here): batch into one save.
+            var saveOnSet = Config.SaveOnConfigSet;
+            Config.SaveOnConfigSet = false;
+            try { Bind(Config); }
+            finally { Config.SaveOnConfigSet = saveOnSet; }
+            Config.Save();
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
             try
@@ -128,17 +134,6 @@ namespace DrakeRenameit
             catch (Exception ex)
             {
                 Logger.LogError($"Paper content register failed: {ex}");
-            }
-
-            try
-            {
-                global::DrakeRenameit.Books.BookItem.Register(Logger);
-                global::DrakeRenameit.Books.BookPiece.Register(Logger);
-                global::DrakeRenameit.Books.BookShelfPiece.Register(Logger);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Book content register failed: {ex}");
             }
 
             harmony.PatchAll();

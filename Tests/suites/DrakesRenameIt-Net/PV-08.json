@@ -1,0 +1,66 @@
+{
+  "name": "PV-08 forged name inside a ward she is not permitted in",
+  "description": "My ward covers the chest. Bjornita built it but is not on the ward's list, and PieceRequireWardAccess is on: refused.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceRequireWardAccess": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": 0,
+      "owner": "me",
+      "enabled": true,
+      "as": "ward"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "as": "chest",
+      "owner": "Bjornita"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "chest",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Mine"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "label": "refused: not permitted in the ward",
+      "notContains": "Mine"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

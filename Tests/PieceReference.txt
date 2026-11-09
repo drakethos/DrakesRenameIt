@@ -1,0 +1,365 @@
+﻿# DrakeRenameit 1.4.0-beta.5
+# Pieces listed from a loaded world.
+# Auto-generated. Valid tokens for ExcludedCategory (items) and PieceExcludedCategory / PieceExcludedNames (pieces).
+# Matching ignores upper/lower case. Separate several with commas.
+
+# ================================================================ ITEMS: ExcludedCategory
+
+## Skills.SkillType
+All
+Axes
+Blocking
+BloodMagic
+Bows
+Clubs
+Cooking
+Crafting
+Crossbows
+Dodge
+ElementalMagic
+Farming
+Fishing
+Jump
+Knives
+None
+Pickaxes
+Polearms
+Ride
+Run
+Sneak
+Spears
+Swim
+Swords
+Unarmed
+WoodCutting
+
+## ItemDrop.ItemData.ItemType
+Ammo
+AmmoNonEquipable
+Attach_Atgeir
+Bow
+Chest
+Consumable
+Customization
+Fish
+Hands
+Helmet
+Legs
+Material
+Misc
+None
+OneHandedWeapon
+Shield
+Shoulder
+Tool
+Torch
+Trinket
+Trophy
+TwoHandedWeapon
+TwoHandedWeaponLeft
+Utility
+
+## Aliases (see ExcludedCategoryAliases)
+ammo
+armor
+fish
+melee
+paper
+ranged
+shields
+tools
+weapons
+
+# ================================================================ PIECES: PieceExcludedCategory
+
+## What the piece does
+Chest      anything with storage (chests, barrels, carts)
+Door       doors and gates
+Bed        beds
+Station    crafting stations and their upgrades (workbench, forge, chopping block, ...)
+Smelter    smelters, kilns, furnaces, windmill, spinning wheel, eitr refinery
+Cooking    cooking stations and fermenters
+Portal     portals
+Ward       wards (guard stone)
+Seat       chairs, benches, thrones, the hot tub seat
+
+## Build menu category (Piece.PieceCategory)
+Misc
+Crafting
+BuildingWorkbench
+BuildingStonecutter
+Furniture
+DeepNorth
+Feasts
+Food
+Meads
+
+# ================================================================ PIECES: PieceExcludedNames / PieceRenameAllowlist
+# Any of the first three columns works: prefab name, $token, or the name players see.
+# Only pieces that show a name on hover are listed (fires, item stands and signs keep vanilla Shift+Use).
+# Only pieces players can build are listed. Pieces the world generated (dungeon chests, crypt doors) only admins can rename.
+
+Prefab                         Token                                 Name                             Categories
+ashwood_bed                    $piece_ashwood_bed                    Ashwood Bed                      Furniture, Bed
+bed                            $piece_bed                            Bed                              Furniture, Bed
+piece_bed02                    $piece_bed02                          Dragon Bed                       Furniture, Bed
+Cart                           $tool_cart                            Cart                             Misc, Chest
+incinerator                    $piece_incinerator                    Obliterator                      Crafting, Chest
+Karve                          $ship_karve                           Karve                            Misc, Chest, Seat
+piece_chest                    $piece_chest                          Reinforced Chest                 Furniture, Chest
+piece_chest_barrel             $piece_chestbarrel                    Barrel                           Furniture, Chest
+piece_chest_blackmetal         $piece_chestblackmetal                Black Metal Chest                Furniture, Chest
+piece_chest_grausten           $piece_chestgrausten                  Grausten Chest                   DeepNorth, Chest
+piece_chest_private            $piece_chestprivate                   Personal Chest                   Furniture, Chest
+piece_chest_warderobe          $piece_chestwarderobe                 Wardrobe                         DeepNorth, Chest
+piece_chest_wood               $piece_chestwood                      Chest                            Furniture, Chest
+piece_gift1                    $piece_yuleklapp                      Yuleklapp                        Furniture, Chest
+piece_gift2                    $piece_yuleklapp                      Yuleklapp                        Furniture, Chest
+piece_gift3                    $piece_yuleklapp                      Yuleklapp                        Furniture, Chest
+piece_pot1                     $piece_pot_medium_green               Medium Green Pot                 Furniture, Chest
+piece_pot2                     $piece_pot_large_green                Large Green Pot                  Furniture, Chest
+piece_pot3                     $piece_pot_small_green                Small Green Pot                  Furniture, Chest
+VikingShip                     $ship_longship                        Longship                         Misc, Chest, Seat
+VikingShip_Ashlands            $ship_longship_ashlands               Drakkar                          Misc, Chest, Seat
+fermenter                      $piece_fermenter                      Fermenter                        Crafting, Cooking
+piece_cookingstation           $piece_cookingstation                 Cooking Station                  Crafting, Cooking
+piece_cookingstation_iron      $piece_cookingstation_iron            Iron Cooking Station             Crafting, Cooking
+piece_FrostFoundry             $piece_frostfoundry                   Frost Foundry                    Crafting, Cooking
+piece_oven                     $piece_oven                           Stone Oven                       Crafting, Cooking
+ashwood_door                   $piece_ashwood_door                   Ashwood Door                     BuildingWorkbench, Door
+darkwood_gate                  $piece_darkwoodgate                   Darkwood Gate                    BuildingWorkbench, Door
+flametal_gate                  $piece_flametalgate                   Flametal Gate                    BuildingStonecutter, Door
+iron_grate                     $piece_irongate                       Iron Gate                        BuildingStonecutter, Door
+piece_drawbridge               $piece_drawbridge_dn                  Timberwood Drawbridge            BuildingWorkbench, Door
+piece_drawbridge_log           $piece_drawbridge_log                 Rustic Drawbridge                BuildingWorkbench, Door
+piece_hexagonal_door           $piece_hexagonalgate                  Hexagonal Gate                   BuildingWorkbench, Door
+stave_gate                     $piece_stavegate                      Timberwood Gate                  BuildingWorkbench, Door
+wood_door                      $piece_wooddoor                       Wood Door                        BuildingWorkbench, Door
+wood_fence_gate                $piece_woodfencegate                  Roundpole Gate                   Misc, Door
+wood_gate                      $piece_woodgate                       Wood Gate                        BuildingWorkbench, Door
+wood_window                    $piece_woodwindowshutter              Wood Shutter                     BuildingWorkbench, Door
+portal_stone                   $piece_portal_stone                   Portal – Stone                   Misc, Portal
+portal_wood                    $piece_portal                         Portal                           Misc, Portal
+piece_asksvinskeleton          $piece_asksvinskeleton                Asksvin Skeleton                 Furniture, Seat
+piece_bench01                  $piece_bench01                        Wood Bench                       Furniture, Seat
+piece_bench_runed              $piece_bench_runed                    Carved Bench                     DeepNorth, Seat
+piece_blackmarble_bench        $piece_blackmarble_bench              Black Marble Bench               Furniture, Seat
+piece_blackmarble_throne       $piece_blackmarble_throne             Black Marble Throne              Furniture, Seat
+piece_blackwood_bench01        $piece_blackwoodbench01               Ashwood Bench                    Furniture, Seat
+piece_bone_throne              $piece_bone_throne                    Bone Throne                      Furniture, Seat
+piece_chair                    $piece_stool                          Stool                            Furniture, Seat
+piece_chair02                  $piece_chair                          Wood Chair                       Furniture, Seat
+piece_chair03                  $piece_darkwoodchair                  Darkwood Chair                   Furniture, Seat
+piece_chair_runed              $piece_chair_runed                    Carved Chair                     DeepNorth, Seat
+piece_logbench01               $piece_benchlog                       Sitting Log                      Furniture, Seat
+piece_moose_throne             $piece_moose_throne                   Antler Throne                    Furniture, Seat
+piece_throne01                 $piece_throne01                       Raven Throne                     Furniture, Seat
+piece_throne02                 $piece_stonethrone                    Stone Throne                     Furniture, Seat
+Raft                           $ship_raft                            Raft                             Misc, Seat
+rug_Bjorn                      $piece_rug_bjorn                      Bearskin Rug                     Furniture, Seat
+BatteringRam                   $tool_batteringram                    Battering Ram                    Misc, Smelter
+blastfurnace                   $piece_blastfurnace                   Blast Furnace                    Crafting, Smelter
+charcoal_kiln                  $piece_charcoalkiln                   Charcoal Kiln                    Crafting, Smelter
+eitrrefinery                   $piece_eitrrefinery                   Eitr Refinery                    Crafting, Smelter
+piece_bathtub                  $piece_bathtub                        Hot Tub                          Furniture, Smelter, Seat
+piece_FrostKiln                $piece_frostkiln                      Frigid Kiln                      Crafting, Smelter
+piece_spinningwheel            $piece_spinningwheel                  Spinning Wheel                   Crafting, Smelter
+smelter                        $piece_smelter                        Smelter                          Crafting, Smelter
+windmill                       $piece_windmill                       Windmill                         Crafting, Smelter
+artisan_ext1                   $piece_artisan_ext1                   Artisan Press                    Crafting, Station
+blackforge                     $piece_blackforge                     Black Forge                      Crafting, Station
+blackforge_ext1                $piece_blackforge_ext1                Black Forge Cooler               Crafting, Station
+blackforge_ext2_vise           $piece_blackforge_ext2                Vice                             Crafting, Station
+blackforge_ext3_metalcutter    $piece_blackforge_ext3                Metal Cutter                     Crafting, Station
+blackforge_ext4_gemcutter      $piece_blackforge_ext4                Gem Cutter                       Crafting, Station
+blackforge_ext5_apron          $piece_blackforge_ext5                Smith's Aprons                   Crafting, Station
+cauldron_ext1_spice            $piece_cauldron_ext1_spice            Spice Rack                       Crafting, Station
+cauldron_ext3_butchertable     $piece_cauldron_ext3_butchertable     Butcher's Table                  Crafting, Station
+cauldron_ext4_pots             $piece_cauldron_ext4_pans             Pots and Pans                    Crafting, Station
+cauldron_ext5_mortarandpestle  $piece_cauldron_ext5_mortarandpestle  Mortar and Pestle                Crafting, Station
+cauldron_ext6_rollingpins      $piece_cauldron_ext6_rollingpins      Rolling Pins and Cutting Boards  Crafting, Station
+cauldron_ext7_smoker           $piece_cauldron_ext7_smoker           Smoker                           Crafting, Station
+forge                          $piece_forge                          Forge                            Crafting, Station
+forge_ext1                     $piece_forge_ext1                     Forge Bellows                    Crafting, Station
+forge_ext2                     $piece_forge_ext2                     Anvils                           Crafting, Station
+forge_ext3                     $piece_forge_ext3                     Grinding Wheel                   Crafting, Station
+forge_ext4                     $piece_forge_ext4                     Smith's Anvil                    Crafting, Station
+forge_ext5                     $piece_forge_ext5                     Forge Cooler                     Crafting, Station
+forge_ext6                     $piece_forge_ext6                     Forge Tool Rack                  Crafting, Station
+piece_artisanstation           $piece_artisanstation                 Artisan Table                    Crafting, Station
+piece_cauldron                 $piece_cauldron                       Cauldron                         Crafting, Station
+piece_magetable                $piece_magetable                      Galdr Table                      Crafting, Station
+piece_magetable_ext            $piece_magetable_ext                  Rune Table                       Crafting, Station
+piece_magetable_ext2           $piece_magetable_ext2                 Unfading Candles                 Crafting, Station
+piece_magetable_ext3           $piece_magetable_ext3                 Feathery Wreath                  Crafting, Station
+piece_magetable_ext4           $piece_magetable_ext4                 Standing Loom                    Crafting, Station
+piece_MeadCauldron             $piece_meadcauldron                   Mead Ketill                      Crafting, Station
+piece_preptable                $piece_preptable                      Food Preparation Table           Crafting, Station
+piece_stonecutter              $piece_stonecutter                    Stonecutter                      Crafting, Station
+piece_workbench                $piece_workbench                      Workbench                        Crafting, Station
+piece_workbench_ext1           $piece_workbench_ext1                 Chopping Block                   Crafting, Station
+piece_workbench_ext2           $piece_workbench_ext2                 Tanning Rack                     Crafting, Station
+piece_workbench_ext3           $piece_workbench_ext3                 Adze                             Crafting, Station
+piece_workbench_ext4           $piece_workbench_ext4                 Tool Shelf                       Crafting, Station
+guard_stone                    $piece_guardstone                     Ward                             Misc, Ward
+TeamWard                       $piece_drakesteamward                 Team Ward                        Misc, Ward
+ArmorStand                     $piece_armorstand                     Armour Stand                     Furniture
+BakedPoteitr                   $item_bakedpoteitr                    Baked Poteitr                    Feasts
+BarleyWine                     $item_barleywine                      Fire Resistance Barley Wine      Food
+Beech_Sapling                  $prop_beech_sapling                   Beech sapling                    Misc
+Birch_Sapling                  $prop_birch_sapling                   Birch Sapling                    Misc
+BlackSoup                      $item_blacksoup                       Black Soup                       Feasts
+BloodPudding                   $item_bloodpudding                    Blood Pudding                    Feasts
+Blueberries                    $item_blueberries                     Blueberries                      Feasts
+BoarJerky                      $item_boarjerky                       Boar Jerky                       Feasts
+Bread                          $item_bread                           Bread                            Feasts
+Carrot                         $item_carrot                          Carrot                           Feasts
+CarrotSoup                     $item_carrotsoup                      Carrot Soup                      Feasts
+Catapult                       $tool_catapult                        Catapult                         Misc
+Cloudberry                     $item_cloudberries                    Cloudberries                     Feasts
+CookedAsksvinMeat              $item_asksvin_meat_cooked             Cooked Asksvin Tail              Feasts
+CookedBjornMeat                $item_bjorn_meat_cooked               Cooked Bear Meat                 Feasts
+CookedBoneMawSerpentMeat       $item_bonemawmeat_cooked              Cooked Bonemaw Meat              Feasts
+CookedBugMeat                  $item_bug_meat_cooked                 Cooked Seeker Meat               Feasts
+CookedChickenMeat              $item_chicken_meat_cooked             Cooked Chicken Meat              Feasts
+CookedDeerMeat                 $item_deer_meat_cooked                Cooked Deer Meat                 Feasts
+CookedEgg                      $item_egg_cooked                      Cooked Egg                       Feasts
+CookedHareMeat                 $item_hare_meat_cooked                Cooked Hare Meat                 Feasts
+CookedLoxMeat                  $item_loxmeat_cooked                  Cooked Lox Meat                  Feasts
+CookedMeat                     $item_boar_meat_cooked                Cooked Boar Meat                 Feasts
+CookedMooseMeat                $item_moose_meat_cooked               Cooked Moose Meat                Feasts
+CookedSealBlubber              $item_blubber_cooked                  Cooked Seal Blubber              Feasts
+CookedVoltureMeat              $item_volture_meat_cooked             Cooked Volture Meat              Feasts
+CookedWolfMeat                 $item_wolf_meat_cooked                Cooked Wolf Meat                 Feasts
+DeerStew                       $item_deerstew                        Deer Stew                        Feasts
+Eyescream                      $item_eyescream                       Eyescream                        Feasts
+FeastAshlands                  $item_feastashlands                   Ashlands Gourmet Bowl            DeepNorth
+FeastBlackforest               $item_feastblackforest                Black Forest Buffet Platter      DeepNorth
+FeastDeepNorth                 $item_feastdeepnorth                  Northern Morning Fare            DeepNorth
+FeastMeadows                   $item_feastmeadows                    Whole Roasted Meadow Boar        DeepNorth
+FeastMistlands                 $item_feastmistlands                  Mushrooms Galore á la Mistlands  DeepNorth
+FeastMountains                 $item_feastmountains                  Hearty Mountain Logger's Stew    DeepNorth
+FeastOceans                    $item_feastoceans                     Sailor's Bounty                  DeepNorth
+FeastPlains                    $item_feastplains                     Plains Pie Picnic                DeepNorth
+FeastSwamps                    $item_feastswamps                     Swamp Dweller's Delight          DeepNorth
+Fiddleheadfern                 $item_fiddleheadfern                  Fiddlehead                       Feasts
+FierySvinstew                  $item_fierysvinstew                   Fiery Svinstew                   Feasts
+FirTree_big_Sapling            $prop_fir_big_sapling                 Timberwood Sapling               Misc
+FirTree_Sapling                $prop_fir_sapling                     Fir Sapling                      Misc
+FishAndBread                   $item_fishandbread                    Fish 'n' Bread                   Feasts
+FishCooked                     $item_fish_cooked                     Cooked Fish                      Feasts
+FishSoup                       $item_fishsoup                        Fish Soup                        Feasts
+FishWraps                      $item_fishwraps                       Fish Wraps                       Feasts
+Honey                          $item_honey                           Honey                            Feasts
+HoneyGlazedChicken             $item_honeyglazedchicken              Honey Glazed Chicken             Feasts
+Kale                           $item_kale                            Kale                             Feasts
+KaleChips                      $item_kalechips                       Kale Chips                       Feasts
+Lingonberry                    $item_lingonberries                   Lingonberries                    Feasts
+Lingondricka                   $item_lingondricka                    Lingonberry Juice                Feasts
+LoxPie                         $item_loxpie                          Lox Meat Pie                     Feasts
+MagicallyStuffedShroom         $item_magicallystuffedmushroom        Stuffed Mushroom                 Feasts
+MarinatedGreens                $item_marinatedgreens                 Marinated Greens                 Feasts
+MashedMeat                     $item_mashedmeat                      Mashed Meat                      Feasts
+MeadBugRepellent               $item_mead_bugrepellent               Anti-Sting Concoction            Food
+MeadBzerker                    $item_mead_bzerker                    Berserkir Mead                   Food
+MeadEitrLingering              $item_mead_eitr_lingering             Lingering Eitr Mead              Food
+MeadEitrMinor                  $item_mead_eitr_minor                 Minor Eitr Mead                  Food
+MeadFrostResist                $item_mead_frostres                   Frost Resistance Mead            Food
+MeadHasty                      $item_mead_hasty                      Tonic of Ratatosk                Food
+MeadHealthLingering            $item_mead_hp_lingering               Lingering Healing Mead           Food
+MeadHealthMajor                $item_mead_hp_major                   Major Healing Mead               Food
+MeadHealthMedium               $item_mead_hp_medium                  Medium Healing Mead              Food
+MeadHealthMinor                $item_mead_hp_minor                   Minor Healing Mead               Food
+MeadLightfoot                  $item_mead_lightfoot                  Lightfoot Mead                   Food
+MeadPoisonResist               $item_mead_poisonres                  Poison Resistance Mead           Food
+MeadStaminaLingering           $item_mead_stamina_lingering          Lingering Stamina Mead           Food
+MeadStaminaMedium              $item_mead_stamina_medium             Medium Stamina Mead              Food
+MeadStaminaMinor               $item_mead_stamina_minor              Minor Stamina Mead               Food
+MeadStrength                   $item_mead_strength                   Mead of Troll Endurance          Food
+MeadSwimmer                    $item_mead_swimmer                    Draught of Vananidir             Food
+MeadTamer                      $item_mead_tamer                      Brew of Animal Whispers          Food
+MeadTasty                      $item_mead_tasty                      Tasty Mead                       Food
+MeadTrollPheromones            $item_mead_trollpheromones            Love Potion                      Food
+MeatballsMashedPoteitr         $item_meatballsmashedpoteitr          Meatballs and Poteitr            Feasts
+MeatPlatter                    $item_meatplatter                     Meat Platter                     Feasts
+MinceMeatSauce                 $item_mincemeatsauce                  Minced Meat Sauce                Feasts
+MisthareSupreme                $item_mistharesupreme                 Misthare Supreme                 Feasts
+MooseKebab                     $item_moosekebab                      Meat In Bread                    Feasts
+Mushroom                       $item_mushroomcommon                  Mushroom                         Feasts
+MushroomBzerker                $item_mushroom_bzerker                Toadstool                        Feasts
+MushroomJotunPuffs             $item_jotunpuffs                      Jotun Puffs                      Feasts
+MushroomMagecap                $item_magecap                         Magecap                          Feasts
+MushroomOmelette               $item_mushroomomelette                Mushroom Omelette                Feasts
+MushroomSmokePuff              $item_smokepuff                       Smoke Puff                       Feasts
+MushroomYellow                 $item_mushroomyellow                  Yellow Mushroom                  Feasts
+NeckTailGrilled                $item_necktailgrilled                 Grilled Neck Tail                Feasts
+Oak_Sapling                    $prop_oak_sapling                     Oak Sapling                      Misc
+Oat                            $item_oat                             Oats                             Feasts
+OatmealLingonberryJam          $item_oatmeallingonberryjam           Oatmeal                          Feasts
+OatMilk                        $item_oatmilk                         Oat Milk                         Feasts
+Onion                          $item_onion                           Onion                            Feasts
+OnionSoup                      $item_onionsoup                       Onion Soup                       Feasts
+OvenPancake                    $item_ovenpancake                     Oven Pancake                     Feasts
+Pancakes                       $item_pancakes                        Pancakes                         Feasts
+piece_ArcheryTarget            $piece_archerytarget                  Archery Target                   Misc
+piece_barber                   $piece_barber                         Barber Station                   Furniture
+piece_beehive                  $piece_beehive                        Beehive                          Crafting
+piece_birdnest                 $piece_birdnest                       Birds' Nest                      Crafting
+piece_cartographytable         $piece_cartographytable               Cartography Table                Misc
+piece_EternalPyre              $piece_faderember                     Eternal Pyre                     Crafting
+piece_groundtorch_mist         $piece_groundtorchdemister            Wisp Torch                       Furniture
+piece_sapcollector             $piece_sapcollector                   Sap Extractor                    Crafting
+piece_shieldgenerator          $piece_shieldgenerator                Shield Generator                 Misc
+piece_TrainingDummy            $piece_trainingdummy                  T.W.I.G.                         Misc
+piece_trap_troll               $piece_trap                           Trap                             Misc
+piece_turret                   $piece_turret                         Ballista                         Misc
+piece_wisplure                 $piece_wisplure                       Wisp Fountain                    Crafting
+PineTree_Sapling               $prop_pine_sapling                    Pine Sapling                     Misc
+PiquantPie                     $item_piquantpie                      Piquant Pie                      Feasts
+Placeable_HardRock             $item_hardrock                        Mysterious Rock                  Misc
+Placeable_Stone                $item_stone                           Stone                            Misc
+Poteitr                        $item_poteitr                         Poteitr                          Feasts
+Pukeberries                    $item_pukeberries                     Bukeperries                      Feasts
+PulledBear                     $item_pulledbear                      Pulled Bear                      Feasts
+QueensJam                      $item_queensjam                       Queen's Jam                      Feasts
+Raspberry                      $item_raspberries                     Raspberries                      Feasts
+RoastedCrustPie                $item_roastedcrustpie                 Roasted Crust Pie                Feasts
+RottenMeat                     $item_meat_rotten                     Rotten Meat                      Feasts
+RoyalJelly                     $item_royaljelly                      Royal Jelly                      Feasts
+Salad                          $item_salad                           Salad                            Feasts
+sapling_barley                 $piece_sapling_barley                 Barley                           Misc
+sapling_carrot                 $piece_sapling_carrot                 Carrot                           Misc
+sapling_flax                   $piece_sapling_flax                   Flax                             Misc
+sapling_jotunpuffs             $item_jotunpuffs                      Jotun Puffs                      Misc
+sapling_Kale                   $piece_sapling_kale                   Kale                             Misc
+sapling_magecap                $item_magecap                         Magecap                          Misc
+sapling_oat                    $piece_sapling_oat                    Oat Straw                        Misc
+sapling_onion                  $piece_sapling_onion                  Onion                            Misc
+sapling_poteitr                $piece_sapling_poteitr                Poteitr                          Misc
+sapling_seedcarrot             $piece_sapling_seedcarrot             Seed-carrot                      Misc
+sapling_seedkale               $piece_sapling_seedkale               Seed Kale                        Misc
+sapling_seedonion              $piece_sapling_seedonion              Seed-onion                       Misc
+sapling_seedturnip             $piece_sapling_seedturnip             Seed-turnip                      Misc
+sapling_turnip                 $piece_sapling_turnip                 Turnip                           Misc
+Sausages                       $item_sausages                        Sausages                         Feasts
+ScorchingMedley                $item_scorchingmedley                 Scorching Medley                 Feasts
+SealSoup                       $item_sealsoup                        Seal Meat Soup                   Feasts
+SeekerAspic                    $item_seekeraspic                     Seeker Aspic                     Feasts
+SerpentMeatCooked              $item_serpentmeatcooked               Cooked Serpent Meat              Feasts
+SerpentStew                    $item_serpentstew                     Serpent Stew                     Feasts
+ShocklateSmoothie              $item_shocklatesmoothie               Muckshake                        Feasts
+SizzlingBerryBroth             $item_sizzlingberrybroth              Sizzling Berry Broth             Feasts
+SmokedFish                     $item_smokedfish                      Smoked Fish                      Feasts
+SmokedMooseMeat                $item_smokedmoosemeat                 Smoked Moose Meat                Feasts
+SparklingShroomshake           $item_sparklingshroomshake            Sparkling Shroomshake            Feasts
+SpicyMarmalade                 $item_spicymarmalade                  Spicy Marmalade                  Feasts
+TurnipStew                     $item_turnipstew                      Turnip Stew                      Feasts
+VikingCupcake                  $item_vikingcupcake                   Frosted Sweetbread               Feasts
+VineAsh_sapling                $piece_sapling_vineash                Ashvine                          Misc
+Vineberry                      $item_vineberry                       Vineberry Cluster                Feasts
+VineGreen_sapling              $piece_sapling_vinegreen              Ivy                              Misc
+WolfJerky                      $item_wolfjerky                       Wolf Jerky                       Feasts
+WolfMeatSkewer                 $item_wolf_skewer                     Wolf Skewer                      Feasts
+YggdrasilPorridge              $item_yggdrasilporridge               Yggdrasil Porridge               Feasts
+
+(261 pieces)

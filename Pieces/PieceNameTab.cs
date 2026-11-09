@@ -65,7 +65,14 @@ internal static class PieceNameTab
         {
             name.SetValue(PieceRename.DefaultName(piece));
         };
+        name.Root.style.marginBottom = 10;
         ctx.Body.Add(name.Root);
+
+        // Same formatting bar as the standalone workshop and the animal window.
+        var richBar = new UkRichToolbar(null, ctx.Body, () => RenameitConfig.RecentColors, value => RenameitConfig.RecentColors = value,
+            ("Name", name));
+        richBar.Root.SetEnabled(can);
+        ctx.Body.Add(richBar.Root);
 
         var showShared = RenameitConfig.PieceSharedEnabled && RenameitConfig.PieceLockToBuilder;
         if (showShared)

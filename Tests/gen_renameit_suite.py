@@ -1395,6 +1395,77 @@ dump(os.path.join(AUTO, 'suite.json'), suite)
 dump(os.path.join(AUTO, '_shared', 'baseline.json'), baseline)
 for name, block in BLOCKS.items():
     dump(os.path.join(AUTO, '_functions', f'{name}.json'), block)
+# ---------------------------------------------------------------- 1.4 test pass: more piece kinds, several players, wards, VIP
+
+# PR-17: every buildable piece with a hover name, from the game's own list (Tests/PieceReference.txt = the generated
+# ExcludedCategoryReference.txt of a 1.0 run). One hook call per batch spawns each piece briefly with me as builder and reports
+# what cannot be renamed, so a new piece in a game update shows up here.
+def _reference_prefabs():
+    out = []
+    started = False
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PieceReference.txt'), encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('# Only pieces players can build'):
+                started = True
+                continue
+            if started and line.strip():
+                if line.split()[0] != 'Prefab' and line.split()[0].replace('_', '').isalnum():
+                    out.append(line.split()[0])
+    return out
+
+REF_PREFABS = _reference_prefabs()
+BATCH = 30
+T('PR-17', f'every buildable piece with a hover name ({len(REF_PREFABS)} prefabs)', [
+    *[H('pieceSweep', label=f'pieces {i + 1}-{min(i + BATCH, len(REF_PREFABS))}: all exist, none refused, every new name shows',
+        contains='missing=[];', prefabs=','.join(REF_PREFABS[i:i + BATCH]))
+      for i in range(0, len(REF_PREFABS), BATCH)],
+    *[H('pieceSweep', label=f'pieces {i + 1}-{min(i + BATCH, len(REF_PREFABS))}: none denied or mis-named', contains='denied=[];badName=[]',
+        prefabs=','.join(REF_PREFABS[i:i + BATCH]))
+      for i in range(0, len(REF_PREFABS), BATCH)],
+], timeout=600, desc='Spawns each buildable piece briefly with me as the builder and renames it. The report of each batch is in the log: missing prefabs, pieces with no hover RenameIt handles (fires, stands, signs), pieces the rules refuse the builder, names that did not show.')
+
+T('PR-18', 'three players, one chest, one ward', [
+    play('Alice'),
+    spawn('piece_chest_wood', 'chest', 'Alice'),
+    {**ward('Alice'), 'permitted': ['Bob']},
+    wait(0.5),
+    H('pieceCan', True, 'Alice (builder, permitted by her own ward) may rename', stop=True, target='chest'),
+    play('Bob'),
+    H('pieceCan', False, 'Bob is on the ward but did not build it', target='chest'),
+    H('pieceShare', False, 'and cannot turn Shared on', target='chest', on=True),
+    play('Alice'),
+    H('pieceShare', True, 'Alice shares it', target='chest', on=True),
+    play('Bob'),
+    H('pieceCan', True, 'Shared + on the ward: Bob may rename', target='chest'),
+    H('pieceRename', True, target='chest', text='Bob and Alice'),
+    play('Carol'),
+    H('pieceCan', False, 'Carol is not on the ward: shared does not help', target='chest'),
+    H('pieceRename', False, 'Carol cannot rename', target='chest', text='Carol was here'),
+    H('pieceName', 'Bob and Alice', 'the name is still Bob and Alice', target='chest'),
+    C({PC + 'PieceRequireWardAccess': 'false'}),
+    H('pieceCan', True, 'ward rule off: Carol may on a Shared piece', target='chest'),
+    play('Alice'),
+    H('pieceShare', True, 'Alice turns Shared off', target='chest', on=False),
+    play('Carol'),
+    H('pieceCan', False, 'not shared: Carol cannot again', target='chest'),
+    play('me'),
+], desc='Builder, a permitted non-builder and a stranger on one chest under one ward: who may rename and share, with the ward rule on and off.')
+
+T('PR-19', 'VIP on the host: the list counts, other names do not', [
+    C({'01 Admin/VipList': 'Bob;Nacho-VIP'}),
+    H('isModVip', False, 'I am not on the list', stop=True),
+    play('Bob'),
+    H('isModVip', True, 'Bob is on the list (this is the host: the cfg is trusted)'),
+    play('Alice'),
+    H('isModVip', False, 'Alice is not'),
+    play('me'),
+    C({'01 Admin/VipList': 'Bob;Nacho-VIP;' + 'me'}),
+    C({'01 Admin/VipList': ''}),
+    play('Bob'),
+    H('isModVip', False, 'emptied: Bob is no longer a VIP'),
+    play('me'),
+], desc='Host / offline baseline for the VIP check. The cheating case, a remote client editing its own cfg, runs on a real second client in DrakesRenameIt-Server.')
+
 # ---------------------------------------------------------------- equipment slots (ExtraSlots / Backpacks repro)
 
 T('X-EQ-01', 'crafted cape: rename menu gate for an equipped item', [
@@ -1409,6 +1480,66 @@ T('X-EQ-02', 'equipped cape: real right-click with the menu key', [
     {'do': 'log', 'message': 'right-clicked the equipped cape with Shift'},
     H('menuOpens', True, 'menu opens for the worn cape after Shift+right-click', prefab='CapeDeerHide'),
 ], sheet='X-EQ', desc='Probe: a real right-click on the worn cape (itemclick), with Shift. Shows whether the grid handler runs and whether the menu gate allows it.')
+
+T('X-EQ-03', 'renamed worn cape: slot tooltips show the new name', [
+    {'do': 'give', 'prefab': 'CapeDeerHide', 'crafter': 'me', 'equip': True},
+    H('edit', True, 'rename the worn cape', prefab='CapeDeerHide', op='name', text='Slot Test Cape'),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    H('slotTooltips', label='eager tooltip topics: the new name or none yet, never the vanilla one', notContains='result=vanilla-present', prefab='CapeDeerHide'),
+    H('hoverSlot', label='hover the slot that shows the cape', contains='hovered=', prefab='CapeDeerHide'),
+    wait(1.0),
+    H('shownTooltip', label='the tooltip the game shows names the cape Slot Test Cape', contains='Slot Test Cape'),
+    shot('equipment-slots'),
+], sheet='X-EQ', desc='Equipment-mod compatibility probe: reads every active UITooltip topic after opening the inventory, and takes a screenshot. result=none means the UI draws names some other way (check the picture).')
+
+# every slot type, so a slot UI that fixes one slot but not another is caught
+FULL_SET = [
+    ('HelmetTrollLeather', 'Helmet', True), ('ArmorTrollLeatherChest', 'Chest', True), ('ArmorTrollLeatherLegs', 'Legs', True),
+    ('CapeDeerHide', 'Cape', True), ('Wishbone', 'Utility', True), ('ShieldWood', 'Shield', True), ('AxeStone', 'Weapon', True),
+    ('CookedMeat', 'Food', False), ('ArrowWood', 'Ammo', False),
+]
+
+def full_set_steps():
+    steps = []
+    for prefab, slot, equip in FULL_SET:
+        steps.append({'do': 'give', 'prefab': prefab, 'crafter': 'me', **({'equip': True} if equip else {})})
+        steps.append(H('edit', True, f'rename the {slot}', prefab=prefab, op='name', text=f'Test {slot}'))
+        steps.append(H('edit', True, f'describe the {slot}', prefab=prefab, op='desc', text=f'Desc {slot}'))
+        steps.append(H('edit', True, f'Crafted-by name on the {slot}', prefab=prefab, op='craftedBy', text=f'By {slot}'))
+    return steps
+
+T('X-EQ-04', 'every slot filled with a renamed item: no slot shows a vanilla name', [
+    *full_set_steps(),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    *[H('slotTooltips', label=f'{slot}: no vanilla name in any tooltip topic', notContains='result=vanilla-present', prefab=prefab) for prefab, slot, _ in FULL_SET],
+    *[H('slotTexts', label=f'{slot}: the vanilla description is not shown once it has its own', notContains='descVanilla=1', prefab=prefab) for prefab, slot, _ in FULL_SET],
+    shot('all-slots'),
+], sheet='X-EQ', desc='Equipment-mod compatibility, all slots: an item for every slot type (armor, cape, utility, shield, weapon, food, ammo), each renamed. Reads every active tooltip topic per item. Tooltips a mod only fills on mouse hover need the manual M-EQ-01.')
+
+T('X-EQ-05', 'every slot filled, inventory held open for a look (hover the slots)', [
+    *full_set_steps(),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    shot('all-slots-open'),
+    wait(300),
+], timeout=420, sheet='X-EQ', desc='Same as X-EQ-04, then holds the inventory open for five minutes so someone (or Claude with computer use) can hover each slot and look at the tooltip. Not part of the regression.')
+
+T('X-EQ-06', 'unattended: hover every filled slot and read the tooltip (name, description, Crafted-by)', [
+    *full_set_steps(),
+    H('openInventory', True, 'open the inventory'),
+    wait(1.5),
+    shot('all-slots'),
+    *[step for prefab, slot, _ in FULL_SET for step in (
+        {'do': 'uiHover', 'icon': prefab, 'until': f'Test {slot}', 'wait': 1.0, 'require': False},
+        {'do': 'check', 'check': 'screenText', 'contains': f'Test {slot}', 'label': f'{slot}: the new name is shown'},
+        {'do': 'check', 'check': 'screenText', 'contains': f'Desc {slot}', 'label': f'{slot}: the new description is shown'},
+        {'do': 'check', 'check': 'screenText', 'contains': f'By {slot}', 'label': f'{slot}: the Crafted-by name is shown'},
+        shot(f'hover-{slot.lower()}'),
+    )],
+    {'do': 'uiRelease'},
+], timeout=300, sheet='X-EQ', desc='Fully unattended equipment-mod check (DrakesTestLab 0.4.5 uiHover / screenText): fills every slot type, rests the in-game mouse on each, and reads the tooltip text plus a screenshot. Replaces hovering by hand.')
 
 for tid, t in tests.items():
     with open(os.path.join(AUTO, f'{tid}.json'), 'w', encoding='utf-8') as f:
@@ -1432,9 +1563,8 @@ mtests = {
     'M-TC-501': ('server lock and VIP list (dedicated server)', [
         {'do': 'checkpoint', 'message': 'Needs a dedicated server and a non-admin client: the client cannot change synced RenameIt settings (LockSyncedConfig) and cannot add itself to VipList (ISSUE-019, open). Mark Fail if not tested.'}], 'TC-501, ISSUE-019'),
     'M-EQ-01': ('renamed item in ExtraSlots equipment and extra slots', [
-        {'do': 'give', 'prefab': 'CapeDeerHide', 'crafter': 'me', 'equip': True},
-        H('edit', True, 'rename the worn cape', prefab='CapeDeerHide', op='name', text='Slot Test Cape'),
-        {'do': 'checkpoint', 'message': 'You wear a cape renamed "Slot Test Cape" (crafted by you). Open your inventory (Tab) and hover the cape in its ExtraSlots equipment slot (Back): the tooltip title must say Slot Test Cape, not Deer Hide Cape, with the Crafted-by line. Then drag it into an extra slot (quick / misc) and hover again, and also check the same for a renamed item in the food or ammo slot. Pass only if every slot shows the new name. Mark Fail if not.'}], 'X-EQ'),
+        *full_set_steps(),
+        {'do': 'checkpoint', 'message': 'You wear and carry one item for every slot (helmet, chest, legs, cape, utility, shield, weapon, food, ammo), each renamed Test <slot>, described Desc <slot> and with the Crafted-by name By <slot>. Put every one into the equipment mod slot it belongs in, FILL ALL SLOTS (move food and ammo to its food and ammo slots, others to any quick or extra slots). You wear a cape renamed "Slot Test Cape" (crafted by you). Open your inventory (Tab) and hover EVERY filled slot of the equipment mod you are testing: each tooltip must show its Test <slot> name, its Desc <slot> description and Crafted by: By <slot>, never the vanilla name or description. Then move it into any other slot that mod adds (quick, misc, food, ammo, a bag) and hover again. Note in the result what you saw (a different name, no tooltip, a layout problem). Pass only if every slot shows the new name. Mark Fail if not.'}], 'X-EQ'),
     'M-TC-4xx': ('other mods', [
         U('craftRenamed', text='Mod Check', desc='With other mods'),
         {'do': 'checkpoint', 'message': 'With the modpack loaded (VRP, Shrooms, RPChatter, PlanBuild, InfinityHammer, Ward is Love, Protective Wards, Arcane Wards): the renamed axe in your inventory keeps its name and description, no errors, and wards from those mods are respected. PlanBuild losing data on stands/walls is known (ISSUE-003). Mark Fail if not tested.'}], 'TC-401..408'),

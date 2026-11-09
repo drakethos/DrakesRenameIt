@@ -1,0 +1,67 @@
+{
+  "name": "PV-09 forged name on a world-built piece",
+  "description": "A piece with no builder (dungeon chest, crypt door) can only be renamed by admins/VIP.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceLockToBuilder": "false",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "TreasureChest_meadows",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceWorldBuilt",
+      "args": {
+        "target": "chest"
+      },
+      "expect": true,
+      "label": "the chest has no builder"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "chest",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Mine"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "label": "refused: no builder",
+      "notContains": "Mine"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

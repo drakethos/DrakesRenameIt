@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DrakeModsLibs.UI;
+using DrakeModsLibs.UI.Toolkit;
 using DrakeRenameit.API;
 using DrakeRenameit.Paper.Pieces;
 using HarmonyLib;
@@ -194,8 +195,38 @@ internal static class PieceRename
     /// <summary>False for pieces the world generated (no builder): dungeon chests, crypt doors, village props.</summary>
     internal static bool IsPlayerBuilt(Piece piece) => piece.GetCreator() != 0;
 
-    static bool HasWardAccess(Piece piece, bool flash) =>
-        !RenameitConfig.PieceRequireWardAccess || PrivateArea.CheckAccess(piece.transform.position, 0f, flash, false);
+    static bool HasWardAccess(Piece piece, bool flash, Player? who = null)
+    {
+        if (!RenameitConfig.PieceRequireWardAccess)
+            return true;
+        // the local player: the game's own check (also covers modded wards that patch it)
+        if (who == null || who == Player.m_localPlayer)
+            return PrivateArea.CheckAccess(piece.transform.position, 0f, flash, false);
+        return WardsPermit(piece.transform.position, who.GetPlayerID());
+    }
+
+    static readonly System.Reflection.FieldInfo? AllAreasField = AccessTools.Field(typeof(PrivateArea), "m_allAreas");
+    static readonly System.Reflection.MethodInfo? AreaIsEnabled = AccessTools.Method(typeof(PrivateArea), "IsEnabled");
+    static readonly System.Reflection.MethodInfo? AreaIsInside = AccessTools.Method(typeof(PrivateArea), "IsInside", new[] { typeof(Vector3), typeof(float) });
+    static readonly System.Reflection.MethodInfo? AreaIsPermitted = AccessTools.Method(typeof(PrivateArea), "IsPermitted", new[] { typeof(long) });
+
+    /// <summary>Another player's access, for the owner side of an RPC: every enabled vanilla ward covering the spot must list them.</summary>
+    static bool WardsPermit(Vector3 position, long playerId)
+    {
+        if (AllAreasField?.GetValue(null) is not System.Collections.IEnumerable areas || AreaIsEnabled == null || AreaIsInside == null || AreaIsPermitted == null)
+            return false; // cannot tell: refuse
+        foreach (var area in areas)
+        {
+            if (area == null)
+                continue;
+            if (AreaIsEnabled.Invoke(area, null) is true
+                && AreaIsInside.Invoke(area, new object[] { position, 0f }) is true
+                && AreaIsPermitted.Invoke(area, new object[] { playerId }) is not true)
+                return false;
+        }
+
+        return true;
+    }
 
     /// <summary>
     /// Admins/VIP (AllowAdminOverride) always can while the feature is on. Everyone else: not admin-only, not excluded,
@@ -215,7 +246,7 @@ internal static class PieceRename
             return false;
         var mayEdit = !RenameitConfig.PieceLockToBuilder || IsBuilder(piece, player)
                       || (RenameitConfig.PieceSharedEnabled && IsShared(piece));
-        return mayEdit && HasWardAccess(piece, flash);
+        return mayEdit && HasWardAccess(piece, flash, player);
     }
 
     /// <summary>Only the builder (with ward access when required) or an admin/VIP may turn Shared on or off.</summary>
@@ -226,7 +257,7 @@ internal static class PieceRename
         if (RenameitPermission.IsElevatedForOverrides(player))
             return true;
         return !RenameitConfig.PieceRenameAdminOnly && !IsExcluded(piece) && IsBuilder(piece, player)
-               && HasWardAccess(piece, false);
+               && HasWardAccess(piece, false, player);
     }
 
     internal static bool IsShared(Piece piece)
@@ -290,15 +321,61 @@ internal static class PieceRename
         nview.Unregister(RpcSetName);
         nview.Register<string>(RpcSetName, (sender, name) =>
         {
-            if (nview.IsValid() && nview.IsOwner())
-                nview.GetZDO().Set(ZdoHash, name ?? "");
+            if (!nview.IsValid() || !nview.IsOwner())
+                return;
+            // the sender's own client already checked; the owner never trusts that (a modified client can send this RPC)
+            var piece = nview.GetComponent<Piece>();
+            if (piece == null || !SenderMay(piece, sender, shareChange: false))
+            {
+                RenameitConfig.Log?.LogWarning($"[PieceRename] Refused a name for '{nview.name}' from peer {sender}.");
+                return;
+            }
+
+            nview.GetZDO().Set(ZdoHash, CleanName(name));
         });
         nview.Unregister(RpcSetShared);
         nview.Register<bool>(RpcSetShared, (sender, on) =>
         {
-            if (nview.IsValid() && nview.IsOwner())
-                nview.GetZDO().Set(ZdoSharedHash, on);
+            if (!nview.IsValid() || !nview.IsOwner())
+                return;
+            var piece = nview.GetComponent<Piece>();
+            if (piece == null || !SenderMay(piece, sender, shareChange: true))
+            {
+                RenameitConfig.Log?.LogWarning($"[PieceRename] Refused a Shared change for '{nview.name}' from peer {sender}.");
+                return;
+            }
+
+            nview.GetZDO().Set(ZdoSharedHash, on);
         });
+    }
+
+    /// <summary>Owner side: may the client that sent this RPC rename (or change Shared on) this piece? Unknown senders are refused.</summary>
+    static bool SenderMay(Piece piece, long sender, bool shareChange)
+    {
+        Player? who = null;
+        foreach (var p in Player.GetAllPlayers())
+        {
+            if (p != null && p.GetOwner() == sender)
+            {
+                who = p;
+                break;
+            }
+        }
+
+        if (who == null)
+            return false;
+        return shareChange ? CanChangeShared(piece, who) : CanRename(piece, who, false);
+    }
+
+    /// <summary>Same limits as the window (visible characters, raw length), applied where the name is written.</summary>
+    static string CleanName(string? raw)
+    {
+        var value = (raw ?? "").Trim();
+        if (value.Length > MaxRawLength)
+            value = value.Substring(0, MaxRawLength);
+        return RichText.VisibleLength(value) > RenameitConfig.PieceNameCharLimit
+            ? RichText.Truncate(value, RenameitConfig.PieceNameCharLimit, MaxRawLength)
+            : value;
     }
 
     /// <summary>Custom name if set (and the feature is on), else null.</summary>

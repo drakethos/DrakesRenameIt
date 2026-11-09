@@ -1,0 +1,75 @@
+{
+  "name": "PR-19 VIP on the host: the list counts, other names do not",
+  "description": "Host / offline baseline for the VIP check. The cheating case, a remote client editing its own cfg, runs on a real second client in DrakesRenameIt-Server.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipList": "Bob;Nacho-VIP"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": false,
+      "label": "I am not on the list",
+      "stop": true
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": true,
+      "label": "Bob is on the list (this is the host: the cfg is trusted)"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": false,
+      "label": "Alice is not"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipList": "Bob;Nacho-VIP;me"
+      }
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/VipList": ""
+      }
+    },
+    {
+      "do": "playAs",
+      "who": "Bob"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.isModVip",
+      "expect": false,
+      "label": "emptied: Bob is no longer a VIP"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

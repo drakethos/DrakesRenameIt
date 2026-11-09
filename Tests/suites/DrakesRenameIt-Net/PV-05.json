@@ -1,0 +1,55 @@
+{
+  "name": "PV-05 forged name when the feature is off",
+  "description": "PieceRenameEnabled off: nothing may be written.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "false",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "as": "chest",
+      "owner": "Bjornita"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "chest",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Mine"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "chest"
+      },
+      "label": "refused: feature off",
+      "notContains": "Mine"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

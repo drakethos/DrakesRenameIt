@@ -1,0 +1,54 @@
+{
+  "name": "VS-02 a client cannot loosen the synced piece rules",
+  "description": "Player 2 sets PieceLockToBuilder to false in her own cfg. The server's value wins, so she still cannot rename Player 1's chest.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceRequireWardAccess": "true",
+        "12 Pieces/PieceSharedEnabled": "true"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dz": 2.5,
+      "owner": "me",
+      "as": "chest"
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceLockToBuilder": "false"
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 1
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "chest"
+      },
+      "expect": false,
+      "label": "Player 2 still cannot rename my chest"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

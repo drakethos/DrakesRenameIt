@@ -1,0 +1,372 @@
+{
+  "name": "BK-15 secret door from both sides: the handle from the front, plain Use from behind, closes from either side once open",
+  "description": "From the room behind, the secret door is plainly a door: Use opens and closes it without the handle. From the front only the handle opens it; once open it closes from either side. Another client's open shows here. A stranger's ward keeps it shut from behind too.",
+  "steps": [
+    {
+      "do": "place",
+      "prefab": "Drakes_SecretBookcase",
+      "dz": 4,
+      "as": "door"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": 1.8
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "notContains": "Open",
+      "label": "front, closed: the case offers no Open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "expect": false,
+      "label": "front, closed: Use on the case does nothing"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "still shut"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": -1.8
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "contains": "Secret Bookcase Door",
+      "label": "behind: it shows its real name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "contains": "Open",
+      "label": "behind: and offers Open"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "expect": true,
+      "label": "behind: Use opens it without the handle"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "open from behind"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "secret door opened from behind (the room side)",
+      "label": "secret door opened from behind (the room side)",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "contains": "Close",
+      "label": "behind, open: offers Close"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "expect": true,
+      "label": "behind: Use closes it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "closed from behind"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": 1.8
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "expect": true,
+      "label": "front: the handle opens it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "open from the front"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "contains": "Close",
+      "label": "front, open: the case offers Close (it is plainly a door now)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door",
+        "at": "case"
+      },
+      "expect": true,
+      "label": "front, open: Use on the case closes it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "closed from the front"
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerSet",
+      "peer": "Bjornita",
+      "target": "door",
+      "key": "state",
+      "value": 1
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": true,
+      "label": "Bjornita opened it on her client: it is open here too"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": 2.6
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "screenshot",
+      "name": "secret door opened by Player 2, seen from the front",
+      "label": "secret door opened by Player 2, seen from the front",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "peerSet",
+      "peer": "Bjornita",
+      "target": "door",
+      "key": "state",
+      "value": 0
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door"
+      },
+      "expect": false,
+      "label": "and her close shows here too"
+    },
+    {
+      "do": "peerLeave",
+      "name": "Bjornita"
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": 2,
+      "owner": "Amy",
+      "enabled": true,
+      "as": "ward"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Drakes_SecretBookcase",
+      "dx": 4,
+      "dz": 4,
+      "owner": "Amy",
+      "as": "door2"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door2",
+        "distance": -1.8
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretUse",
+      "args": {
+        "target": "door2",
+        "at": "case"
+      },
+      "label": "behind, in Amy's ward: Use is refused (informational)"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretIsOpen",
+      "args": {
+        "target": "door2"
+      },
+      "expect": false,
+      "label": "Amy's ward keeps it shut from behind too"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

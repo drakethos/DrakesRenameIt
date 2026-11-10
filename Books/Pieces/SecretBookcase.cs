@@ -33,7 +33,7 @@ internal static class SecretBookcase
     /// <summary>Seed for the made-up books, picked once when the door is built, so every client draws the same shelves.</summary>
     internal const string ZSeed = "DrakeSecretSeed";
     internal const int DefaultHandle = 2 * 16 + 3;
-    internal const string DefaultLabel = "Sagas of the North";
+    internal static string DefaultLabel => BookNames.SecretHandle;
 
     internal static void Add(ManualLogSource? log, Material wood)
     {
@@ -41,8 +41,9 @@ internal static class SecretBookcase
         {
             var loc = LocalizationManager.Instance.GetLocalization();
             loc.AddTranslation("English", Token.TrimStart('$'), "Secret Bookcase Door");
+            loc.AddTranslation("Spanish", Token.TrimStart('$'), "Puerta librería secreta");
             loc.AddTranslation("English", Token.TrimStart('$') + "_desc",
-                "A tall bookcase that is really a door. One book on it is the handle: pull it to swing the case open. Shift+E sets which book and its title.");
+                "A tall bookcase that is really a door. One book on it is the handle: pull it to swing the case open. From behind, or once it stands open, it opens and closes like any door. Shift+E sets which book and its title.");
 
             var config = new PieceConfig
             {
@@ -149,13 +150,6 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
 {
     const float SwingDegreesPerSecond = 160f;
     const int Columns = 8;
-
-    static readonly string[] Titles =
-    {
-        "Old Ledger", "Ravens Notes", "Smithing Primer", "Sagas of the North", "Herbs and Roots", "Tides", "Map Book", "Trolls",
-        "Bronze and Tin", "Songs", "The Black Forest", "Recipes", "Runes", "Letters Home", "Swamp Journal", "Stars", "Kings",
-        "Hunting", "Old Roads", "Weather",
-    };
 
     /// <summary>The door state the sounds last played for (int.MinValue before the first one, so loading plays nothing).</summary>
     internal int LastState = int.MinValue;
@@ -272,7 +266,8 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
                 var roll = rng.Next(10);
                 var share = roll < 2 ? 0.74f : roll > 7 ? 0.94f : 0.84f;
                 var thickness = slotWidth * Mathf.Lerp(0.82f, 1.15f, (float)rng.NextDouble());
-                var title = Titles[rng.Next(Titles.Length)];
+                var titles = BookNames.SecretTitles;
+                var title = titles[rng.Next(titles.Length)];
                 books.Add(new FakeBook
                 {
                     Slot = slot, Title = handle ? Label : title, Data = data, Height = (clear - 0.01f) * share, Thickness = thickness,
@@ -381,6 +376,18 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
     }
 
     internal bool AimingAtHandle() => Aimed() is { } tag && tag.Slot == Handle;
+
+    /// <summary>True while it stands open (the shared door state is not 0).</summary>
+    internal bool IsOpen => _nview != null && _nview.IsValid() && _nview.GetZDO().GetInt(ZDOVars.s_state) != 0;
+
+    /// <summary>The books face +Z; behind is the plain back, the room side of a hidden door.</summary>
+    internal bool IsBehind(Vector3 position) => Vector3.Dot(position - transform.position, transform.forward) < 0f;
+
+    /// <summary>
+    /// Use works without the handle from behind (inside the hidden room it is plainly a door) and while it stands open (anyone
+    /// can see it is a door then, so it closes from either side). From the front, closed, only the handle opens it.
+    /// </summary>
+    internal bool OpensWithoutHandle(Humanoid? who) => IsOpen || who != null && IsBehind(who.transform.position);
 }
 
 /// <summary>
@@ -452,6 +459,25 @@ internal static class SecretBookcasePatches
             return;
         var aimed = secret.Aimed();
         var name = Localization.instance != null ? Localization.instance.Localize(__instance.m_name) : __instance.m_name;
+        var player = Player.m_localPlayer;
+        if (player != null && secret.IsBehind(player.transform.position) && !secret.IsOpen)
+        {
+            // From the hidden room it is plainly a door: its real name and the door's own line.
+            var piece = __instance.GetComponent<Piece>();
+            var real = piece != null && Localization.instance != null ? Localization.instance.Localize(piece.m_name) : name;
+            var cut = __result.IndexOf('\n');
+            __result = real + (cut >= 0 ? __result.Substring(cut) : "");
+            return;
+        }
+
+        if (secret.IsOpen && (aimed == null || aimed.Slot != secret.Handle))
+        {
+            // Standing open it is plainly a door from either side: the door's own line (Close).
+            var cut = __result.IndexOf('\n');
+            __result = name + (cut >= 0 ? __result.Substring(cut) : "");
+            return;
+        }
+
         if (aimed != null && aimed.Slot == secret.Handle)
         {
             // The handle: its label in place of the bookcase's name, then the door's own line (open / close / no access).
@@ -484,7 +510,7 @@ internal static class SecretBookcasePatches
             return false;
         }
 
-        if (secret.AimingAtHandle())
+        if (secret.AimingAtHandle() || secret.OpensWithoutHandle(character))
             return true;
         __result = false;
         return false;
@@ -536,8 +562,11 @@ internal static class SecretDoorSettings
 
     internal static void CloseWindow() => _window?.CloseSilent();
 
+    internal static VisualElement? TestCard => _window != null && _window.IsOpen ? _window.Card : null;
+
     static void Build(VisualElement body, SecretBookcaseBehaviour secret, Action rebuild)
     {
+        body = ShelfLayout.Scrolled(body);
         var label = new UkField("Handle title", multiline: false);
         label.SetMax(40);
         label.SetValue(secret.Label);

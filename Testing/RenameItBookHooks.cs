@@ -8,7 +8,7 @@ using UnityEngine;
 namespace DrakeRenameit.Testing;
 
 /// <summary>Test hooks for books, shelves and the Book hammer piece (same convention as <see cref="RenameItTestHooks"/>).</summary>
-internal static class RenameItBookHooks
+internal static partial class RenameItBookHooks
 {
     static Player P => Player.m_localPlayer ?? throw new InvalidOperationException("no local player");
 

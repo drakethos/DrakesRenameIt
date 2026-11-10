@@ -1,0 +1,174 @@
+{
+  "name": "BK-16 names file: BookNames.yml renames the book, the pieces and the secret door's books",
+  "description": "BepInEx/config/DrakesRenameIt/BookNames.yml is written with every name the first time. Changing a name there renames it in the game (hover, build menu); the secret door's made-up titles and handle come from it too. The test puts the real file back at the end.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.namesFileHas",
+      "contains": "bookcase_tall: ",
+      "label": "the file lists every name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.namesFileHas",
+      "contains": "secret_door_titles: ",
+      "label": "and the secret door's titles"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.namesSet",
+      "args": {
+        "values": {
+          "bookcase_tall": "Library Case",
+          "book": "Tome",
+          "book_piece_standing": "Standing Tome",
+          "secret_door_handle": "Pull Me",
+          "secret_door_titles": "Alpha Saga, Beta Saga"
+        }
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.localize",
+      "args": {
+        "text": "$piece_drakes_bookcase"
+      },
+      "expect": "Library Case",
+      "label": "Tall Bookcase is now Library Case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.localize",
+      "args": {
+        "text": "$item_drakes_book"
+      },
+      "expect": "Tome",
+      "label": "the book item is now Tome"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.localize",
+      "args": {
+        "text": "$piece_drakes_book_upright"
+      },
+      "expect": "Standing Tome",
+      "label": "the standing piece too"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.localize",
+      "args": {
+        "text": "$piece_drakes_wall_shelf"
+      },
+      "expect": "Wall Shelf",
+      "label": "names not in the file keep their default"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_Bookcase",
+      "dz": 3,
+      "as": "case"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfHover",
+      "args": {
+        "target": "case"
+      },
+      "contains": "Library Case",
+      "label": "the bookcase hover uses it"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_SecretBookcase",
+      "dx": 2,
+      "dz": 3,
+      "as": "door"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "handle"
+      },
+      "contains": "Pull Me",
+      "label": "a new secret door's handle uses the file's title"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretHover",
+      "args": {
+        "target": "door",
+        "at": "0"
+      },
+      "contains": "Saga",
+      "label": "and its made-up books the file's titles"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "door",
+        "distance": 1.3
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "screenshot",
+      "name": "secret door with titles from BookNames.yml",
+      "label": "secret door with titles from BookNames.yml",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.namesRestore",
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.localize",
+      "args": {
+        "text": "$piece_drakes_bookcase"
+      },
+      "expect": "Tall Bookcase",
+      "label": "restored: Tall Bookcase again"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

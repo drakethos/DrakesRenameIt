@@ -45,7 +45,8 @@
     },
     {
       "do": "screenshot",
-      "label": "reader"
+      "label": "reader",
+      "name": "reader"
     },
     {
       "do": "hook",
@@ -62,7 +63,8 @@
     },
     {
       "do": "screenshot",
-      "label": "edit in place"
+      "label": "edit in place",
+      "name": "edit in place"
     },
     {
       "do": "hook",
@@ -79,7 +81,8 @@
     },
     {
       "do": "screenshot",
-      "label": "full editor"
+      "label": "full editor",
+      "name": "full editor"
     },
     {
       "do": "hook",
@@ -95,7 +98,8 @@
     },
     {
       "do": "screenshot",
-      "label": "book tab"
+      "label": "book tab",
+      "name": "book tab"
     },
     {
       "do": "hook",
@@ -114,7 +118,8 @@
     },
     {
       "do": "screenshot",
-      "label": "picker"
+      "label": "picker",
+      "name": "picker"
     },
     {
       "do": "hook",
@@ -133,7 +138,8 @@
     },
     {
       "do": "screenshot",
-      "label": "Shift+right-click menu, Book tab"
+      "label": "Shift+right-click menu, Book tab",
+      "name": "Shift+right-click menu, Book tab"
     },
     {
       "do": "hook",

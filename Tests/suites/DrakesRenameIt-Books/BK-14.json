@@ -106,7 +106,8 @@
     },
     {
       "do": "screenshot",
-      "label": "a placed book: flush, titled"
+      "label": "a placed book: flush, titled",
+      "name": "a placed book: flush, titled"
     },
     {
       "do": "hook",
@@ -171,7 +172,8 @@
     },
     {
       "do": "screenshot",
-      "label": "edit: selection on the big word"
+      "label": "edit: selection on the big word",
+      "name": "edit: selection on the big word"
     },
     {
       "do": "hook",
@@ -188,7 +190,8 @@
     },
     {
       "do": "screenshot",
-      "label": "edit: caret after book"
+      "label": "edit: caret after book",
+      "name": "edit: caret after book"
     },
     {
       "do": "hook",
@@ -205,7 +208,8 @@
     },
     {
       "do": "screenshot",
-      "label": "edit: caret on the empty line after Enter"
+      "label": "edit: caret on the empty line after Enter",
+      "name": "edit: caret on the empty line after Enter"
     },
     {
       "do": "hook",

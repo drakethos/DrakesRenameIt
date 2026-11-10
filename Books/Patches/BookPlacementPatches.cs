@@ -58,7 +58,34 @@ internal static class BookPlacementPatches
         if (key == _dressedFor)
             return;
         _dressedFor = key;
-        BookPieceBehaviour.Dress(ghost.transform, data);
+        BookPieceBehaviour.Dress(ghost.transform, data, BookPiece.IsUpright(ghost));
+    }
+
+    /// <summary>
+    /// A click with no book picked used to place the piece, which then took itself away again (a flash, then the picker). Now the
+    /// click places nothing and opens the picker. The piece still checks on its own (<see cref="BookPieceBehaviour"/>), for safety.
+    /// </summary>
+    [HarmonyPatch]
+    static class NoPickNoPlace
+    {
+        static System.Reflection.MethodBase? TargetMethod()
+        {
+            foreach (var method in AccessTools.GetDeclaredMethods(typeof(Player)))
+                if (method.Name == "PlacePiece" && method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType == typeof(Piece))
+                    return method;
+            return null;
+        }
+
+        static bool Prepare() => TargetMethod() != null;
+
+        static bool Prefix(Player __instance, Piece piece)
+        {
+            if (__instance != Player.m_localPlayer || !RenameitConfig.BooksEnabled || !BookPiece.IsBookPiece(piece) || BookPlaceState.HasChoice)
+                return true;
+            if (!BookPickerPanel.IsOpen)
+                BookPickerPanel.Show(__instance);
+            return false;
+        }
     }
 
     static readonly System.Reflection.FieldInfo? BuildPieces = AccessTools.Field(typeof(Player), "m_buildPieces");

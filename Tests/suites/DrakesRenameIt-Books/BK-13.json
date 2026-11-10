@@ -141,7 +141,8 @@
     },
     {
       "do": "screenshot",
-      "label": "secret bookcase swung open"
+      "label": "secret bookcase swung open",
+      "name": "secret bookcase swung open"
     },
     {
       "do": "hook",
@@ -211,7 +212,8 @@
     },
     {
       "do": "screenshot",
-      "label": "secret door settings"
+      "label": "secret door settings",
+      "name": "secret door settings"
     },
     {
       "do": "hook",

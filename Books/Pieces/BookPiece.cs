@@ -18,8 +18,27 @@ namespace DrakeRenameit.Books;
 internal static class BookPiece
 {
     internal const string PrefabName = "Drakes_BookPiece";
+    internal const string UprightPrefab = "Drakes_BookPieceUpright";
     const string NameToken = "$piece_drakes_book";
     const string DescToken = "$piece_drakes_book_desc";
+    internal const string UprightToken = "$piece_drakes_book_upright";
+
+    /// <summary>
+    /// A Gizmo mod (ComfyGizmo, Gizmo Reloaded...) turns pieces on every axis, so one Book piece is enough. Without one there is
+    /// a second piece that stands the book up, since the hammer alone only turns it flat on the table.
+    /// </summary>
+    internal static bool GizmoInstalled()
+    {
+        foreach (var info in BepInEx.Bootstrap.Chainloader.PluginInfos.Values)
+        {
+            var guid = info?.Metadata?.GUID ?? "";
+            var name = info?.Metadata?.Name ?? "";
+            if (guid.IndexOf("gizmo", StringComparison.OrdinalIgnoreCase) >= 0 || name.IndexOf("gizmo", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+
+        return false;
+    }
 
     static ManualLogSource? _log;
 
@@ -46,11 +65,31 @@ internal static class BookPiece
             loc.AddTranslation("English", "piece_drakes_book_desc", "Set a book down to read. Pick which book (or a new one) before you place it.");
             loc.AddTranslation("Spanish", "piece_drakes_book", "Libro");
             loc.AddTranslation("Spanish", "piece_drakes_book_desc", "Deja un libro para leerlo. Elige cuál antes de colocarlo.");
+            loc.AddTranslation("English", UprightToken.TrimStart('$'), "Book, standing");
+            loc.AddTranslation("English", UprightToken.TrimStart('$') + "_desc", "Stand a book up on a table or floor, cover to the front. Pick which book (or a new one) before you place it.");
+            loc.AddTranslation("Spanish", UprightToken.TrimStart('$'), "Libro de pie");
+            loc.AddTranslation("Spanish", UprightToken.TrimStart('$') + "_desc", "Pon un libro de pie. Elige cuál antes de colocarlo.");
+
+            One(PrefabName, NameToken, DescToken, upright: false);
+            if (GizmoInstalled())
+                _log?.LogInfo("[Books] A Gizmo mod is loaded: one Book piece (turn it with Gizmo to stand it up).");
+            else
+                One(UprightPrefab, UprightToken, UprightToken + "_desc", upright: true);
+            BookNames.Apply();
+        }
+        catch (Exception ex)
+        {
+            _log?.LogError($"[Books] Failed to register the book piece: {ex}");
+        }
+    }
+
+    static void One(string prefabName, string nameToken, string descToken, bool upright)
+    {
 
             var config = new PieceConfig
             {
-                Name = NameToken,
-                Description = DescToken,
+                Name = nameToken,
+                Description = descToken,
                 Enabled = true,
                 PieceTable = "Hammer",
                 Category = "Furniture",
@@ -60,7 +99,7 @@ internal static class BookPiece
             if (BookAssets.Icon is { } icon)
                 config.Icon = icon;
 
-            var piece = new CustomPiece(PrefabName, "sign", config);
+            var piece = new CustomPiece(prefabName, "sign", config);
             PieceManager.Instance.AddPiece(piece);
             var go = piece.PiecePrefab;
             if (go == null)
@@ -77,6 +116,12 @@ internal static class BookPiece
                 }
             }
 
+            // No snap points: the paper's were sheet-sized, and any point pulls the ghost onto a table's or floor's own points, so
+            // it jumped about under the crosshair. Books go where you aim.
+            for (var i = go.transform.childCount - 1; i >= 0; i--)
+                if (go.transform.GetChild(i).CompareTag("snappoint"))
+                    Object.DestroyImmediate(go.transform.GetChild(i).gameObject);
+
             foreach (var sign in go.GetComponentsInChildren<Sign>(true))
                 Object.DestroyImmediate(sign);
             // The sign's wear keeps a list of its renderers; the book swaps its model after placing (Dress), and wear then read
@@ -88,29 +133,20 @@ internal static class BookPiece
             var p = go.GetComponent<Piece>();
             if (p != null)
             {
-                p.m_name = NameToken;
+                p.m_name = nameToken;
                 p.m_category = Piece.PieceCategory.Furniture;
                 p.m_craftingStation = null;
                 // Hammer removal would lose the book's text. It comes back through Take on the book window.
                 p.m_canBeRemoved = false;
             }
 
-            BookPieceBehaviour.FitCollider(go, BookSize.Medium);
-            // The ghost (and the prefab) show a medium book floating at the same height as a placed one.
-            var ghost = new GameObject("attach").transform;
-            ghost.SetParent(go.transform, false);
-            var d = BookMesh.Dimensions(BookSize.Medium);
-            ghost.localRotation = Quaternion.Euler(0f, 0f, 90f);
-            ghost.localPosition = new Vector3(d.y / 2f, BookPieceBehaviour.Lift + d.z / 2f, 0f);
-            BookAssets.Build(ghost, BookSize.Medium, null);
-            go.AddComponent<BookPieceBehaviour>();
-            _log?.LogInfo("[Books] Registered the Book hammer piece.");
-        }
-        catch (Exception ex)
-        {
-            _log?.LogError($"[Books] Failed to register the book piece: {ex}");
-        }
+            // The prefab (and the ghost until a book is picked) shows a medium book in the same pose as a placed one.
+            BookPieceBehaviour.Dress(go.transform, new Dictionary<string, string>(), upright);
+            go.AddComponent<BookPieceBehaviour>().Upright = upright;
+            _log?.LogInfo($"[Books] Registered the Book hammer piece{(upright ? " (standing)" : "")}.");
     }
+
+    internal static bool IsUpright(GameObject? go) => go != null && go.GetComponent<BookPieceBehaviour>() is { Upright: true };
 
     internal static bool IsBookPiece(Piece? piece) =>
         piece != null && piece.gameObject.name.StartsWith(PrefabName, StringComparison.OrdinalIgnoreCase);
@@ -126,6 +162,9 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
     const string ZData = "DrakeBookData";
     const string ZInit = "DrakeBookInit";
     const string ZOwner = "DrakeBookOwner";
+
+    /// <summary>The standing piece: the book stands on its bottom edge, front cover forward, instead of lying on its back.</summary>
+    public bool Upright;
 
     ZNetView? _nview;
     string _shown = "";
@@ -178,13 +217,13 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         Redraw();
     }
 
-    void Redraw() => Dress(transform, _data);
+    void Redraw() => Dress(transform, _data, Upright);
 
     /// <summary>
     /// Draws a book lying on its back, front cover up, under <paramref name="root"/> (replacing any earlier drawing), and fits the
     /// collider. Used by the placed piece and by the placement preview.
     /// </summary>
-    internal static void Dress(Transform root, Dictionary<string, string> data)
+    internal static void Dress(Transform root, Dictionary<string, string> data, bool upright = false)
     {
         for (var i = root.childCount - 1; i >= 0; i--)
             if (root.GetChild(i).name == "attach")
@@ -194,13 +233,26 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         var d = BookMesh.Dimensions(size);
         var attach = new GameObject("attach").transform;
         attach.SetParent(root, false);
-        // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
-        attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
-        // The book itself lies flush on the surface; only the collider floats (see Lift), so the build ghost isn't "blocked".
-        attach.localPosition = new Vector3(d.y / 2f, d.z / 2f, 0f);
+        if (upright)
+        {
+            // Standing on its bottom edge, front cover to the piece's front (+Z), spine to the right.
+            attach.localRotation = Quaternion.Euler(0f, -90f, 0f);
+            attach.localPosition = Vector3.zero;
+        }
+        else
+        {
+            // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
+            attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            // The book itself lies flush on the surface; only the collider floats (see Lift), so the build ghost isn't "blocked".
+            attach.localPosition = new Vector3(d.y / 2f, d.z / 2f, 0f);
+        }
+
         var title = data.TryGetValue(DrakeModsLibs.Data.DrakeCustomDataKeys.Rename, out var t) && t.Length > 0 ? t : null;
         BookAssets.Build(attach, size, data, title, frontTitle: true);
-        FitCollider(root.gameObject, size);
+        // The build ghost sits on the ghost layer, which the placement ray skips. A fresh drawing on another layer was hit by
+        // that ray, so the ghost climbed onto itself and jittered.
+        SetLayer(attach, root.gameObject.layer);
+        FitCollider(root.gameObject, size, upright);
     }
 
     /// <summary>
@@ -209,12 +261,26 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
     /// </summary>
     internal const float Lift = 0.03f;
 
-    internal static void FitCollider(GameObject go, BookSize size)
+    internal static void FitCollider(GameObject go, BookSize size, bool upright = false)
     {
         var d = BookMesh.Dimensions(size);
         var box = go.GetComponent<BoxCollider>() ?? go.AddComponent<BoxCollider>();
+        if (upright)
+        {
+            box.center = new Vector3(0f, Lift + d.y / 2f, 0f);
+            box.size = new Vector3(d.x, d.y, d.z);
+            return;
+        }
+
         box.center = new Vector3(0f, Lift + d.z / 2f, 0f);
         box.size = new Vector3(d.y, d.z, d.x);
+    }
+
+    static void SetLayer(Transform t, int layer)
+    {
+        t.gameObject.layer = layer;
+        foreach (Transform child in t)
+            SetLayer(child, layer);
     }
 
     static BookSize BookSizeOf(Dictionary<string, string> data) =>

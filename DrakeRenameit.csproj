@@ -106,6 +106,7 @@
     <Compile Include="API\RenameEvents.cs" />
     <Compile Include="Testing\RenameItTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="Testing\RenameItBookHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
+    <Compile Include="Testing\RenameItBookHooks.More.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="API\RenameItPermision.cs" />
     <Compile Include="extensions\ButtonExtensions.cs" />
     <Compile Include="Localization\LKeys.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Books\Mesh\BookAssets.cs" />
     <Compile Include="Books\Data\BookData.cs" />
     <Compile Include="Books\Data\BookLook.cs" />
+    <Compile Include="Books\Data\BookNames.cs" />
     <Compile Include="Books\Data\BookIcons.cs" />
     <Compile Include="Books\Items\BookItem.cs" />
     <Compile Include="Books\UI\BookReaderPanel.cs" />
@@ -149,6 +151,7 @@
     <Compile Include="Books\Patches\BookShelfPatches.cs" />
     <Compile Include="Books\UI\ShelfSettingsPanel.cs" />
     <Compile Include="Books\UI\BookPickerPanel.cs" />
+    <Compile Include="Books\UI\BookScroll.cs" />
     <!-- UI Toolkit layer + the Item Workshop panel (config PaperMeshLook-style toggle: UseToolkitUi). -->
     <Compile Include="UI\Toolkit\WorkshopPreview.cs" />
     <Compile Include="UI\Toolkit\QuickSettingsContent.cs" />

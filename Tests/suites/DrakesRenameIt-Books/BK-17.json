@@ -1,0 +1,241 @@
+{
+  "name": "BK-17 shelf settings: name the shelf, a scroll bar for tall cases, read-only for someone else's shelf",
+  "description": "Without LockSmith the shelf's Shift+E window has the shelf's name at the top (hover and chest window use it) and scrolls with a bar when a tall bookcase's rows don't fit. Someone else's shelf opens read-only. The secret door's window scrolls too.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "false"
+      }
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_Bookcase",
+      "dz": 3,
+      "as": "case"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "hook",
+      "name": "renameit.fillShelf",
+      "args": {
+        "target": "case",
+        "count": 30
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapPoints",
+      "args": {
+        "target": "case"
+      },
+      "expect": "count=8 corners=True",
+      "label": "eight snap points, all footprint corners (no middle point)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfHover",
+      "args": {
+        "target": "case"
+      },
+      "contains": "Tall Bookcase",
+      "label": "the hover names the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfOpenSettings",
+      "args": {
+        "target": "case"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "shelf"
+      },
+      "contains": "Name",
+      "label": "the window has a Name field"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiScroll",
+      "args": {
+        "window": "shelf",
+        "name": "drakes_shelf_scroll"
+      },
+      "contains": "scrolls=True bar=True",
+      "label": "four rows don't fit: it scrolls, with a bar"
+    },
+    {
+      "do": "screenshot",
+      "name": "shelf settings: name and scroll bar",
+      "label": "shelf settings: name and scroll bar",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfRename",
+      "args": {
+        "target": "case",
+        "name": "History"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfHover",
+      "args": {
+        "target": "case"
+      },
+      "contains": "History",
+      "label": "the shelf's own name shows on hover"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfOpenSettings",
+      "args": {
+        "target": "case"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "shelf"
+      },
+      "contains": "History",
+      "label": "and in its window"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Drakes_BookcaseSmall",
+      "dx": 2.5,
+      "dz": 3,
+      "owner": "Amy",
+      "as": "amys"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.shelfOpenSettings",
+      "args": {
+        "target": "amys"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "shelf"
+      },
+      "contains": "Only the shelf's owner can change the layout",
+      "label": "Amy's shelf: the layout is read-only for me"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "shelf"
+      },
+      "contains": "Only the shelf's builder can rename it",
+      "label": "and I can't rename it"
+    },
+    {
+      "do": "screenshot",
+      "name": "someone else's shelf: read-only",
+      "label": "someone else's shelf: read-only",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_SecretBookcase",
+      "dx": -2.5,
+      "dz": 3,
+      "as": "door"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.secretOpenSettings",
+      "args": {
+        "target": "door"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiScroll",
+      "args": {
+        "window": "secret",
+        "name": "drakes_shelf_scroll"
+      },
+      "contains": "bar=",
+      "label": "the secret door window has its scroll area (informational)"
+    },
+    {
+      "do": "screenshot",
+      "name": "secret door settings window",
+      "label": "secret door settings window",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

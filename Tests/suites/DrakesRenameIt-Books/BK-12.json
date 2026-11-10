@@ -158,7 +158,8 @@
     },
     {
       "do": "screenshot",
-      "label": "bookcases on two wood floors"
+      "label": "bookcases on two wood floors",
+      "name": "bookcases on two wood floors"
     },
     {
       "do": "hook",

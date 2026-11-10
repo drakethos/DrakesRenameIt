@@ -1,0 +1,294 @@
+{
+  "name": "BK-18 book picker: New book, or one you carry from a dropdown; a new book stays picked",
+  "description": "Picking a book for the hammer: a New book button (paid from the recipe) and a dropdown of the books in your inventory, so a full inventory is not a long list. A new book stays picked while you can pay for another.",
+  "steps": [
+    {
+      "do": "place",
+      "prefab": "piece_workbench",
+      "dz": 3,
+      "dx": 3,
+      "as": "bench"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookCount",
+      "expect": 3,
+      "label": "three books in the inventory"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 0,
+        "title": "Alpha",
+        "color": 0
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 1,
+        "title": "Bravo",
+        "color": 3,
+        "size": 2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 2,
+        "title": "Charlie",
+        "color": 5,
+        "size": 0
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookOpenPicker",
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickerCount",
+      "expect": 3,
+      "label": "the dropdown offers all three"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "picker"
+      },
+      "contains": "New book",
+      "label": "a New book button"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "picker"
+      },
+      "contains": "A book you carry",
+      "label": "and the books you carry"
+    },
+    {
+      "do": "screenshot",
+      "name": "picker: new book, or one from the dropdown",
+      "label": "picker: new book, or one from the dropdown",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickerList",
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiScroll",
+      "args": {
+        "window": "picker",
+        "name": "drakes_book_picker_list"
+      },
+      "contains": "bar=",
+      "label": "the list of carried books is a scroll area (informational)"
+    },
+    {
+      "do": "screenshot",
+      "name": "picker: the list of carried books open",
+      "label": "picker: the list of carried books open",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickerPick",
+      "args": {
+        "index": 1
+      },
+      "expect": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickState",
+      "expect": "item:Bravo",
+      "label": "Bravo is picked"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPiece",
+      "dz": 2.0,
+      "as": "bravo"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceBookData",
+      "args": {
+        "target": "bravo"
+      },
+      "contains": "Bravo",
+      "label": "the placed book is Bravo"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookCount",
+      "expect": 2,
+      "label": "Bravo left the inventory"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickState",
+      "expect": "none",
+      "label": "a carried book is placed once: nothing picked after"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.removeItems",
+      "args": {
+        "prefab": "Drakes_PieceOfPaper,LeatherScraps"
+      },
+      "label": "start from no paper or leather (the lab's craft step leaves the materials)"
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookOpenPicker",
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickerPickNew",
+      "expect": true
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPiece",
+      "dx": 0.6,
+      "dz": 2.0,
+      "as": "new1"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickState",
+      "expect": "blank",
+      "label": "after one new book the next click makes another"
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPiece",
+      "dx": 1.2,
+      "dz": 2.0,
+      "as": "new2"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "check",
+      "check": "objectNear",
+      "prefab": "Drakes_BookPiece",
+      "radius": 6,
+      "count": 3,
+      "label": "three books placed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickState",
+      "expect": "none",
+      "label": "out of materials: the pick is let go"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookOpenPicker",
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pickerPickNew",
+      "expect": false,
+      "label": "New book is refused without the materials"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiText",
+      "args": {
+        "window": "picker"
+      },
+      "contains": "not enough",
+      "label": "and says why"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.closeBookWindows"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

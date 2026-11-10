@@ -1,0 +1,195 @@
+{
+  "name": "BK-19 the standing Book piece: stands on its edge, flush, titled; the flat one lies flush; no snap points on books",
+  "description": "Without a Gizmo mod there is a second hammer piece that stands the book up. Both book pieces have no snap points (they made the build ghost jump onto table and floor points).",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.hasPrefab",
+      "args": {
+        "name": "Drakes_BookPieceUpright"
+      },
+      "expect": true,
+      "label": "the standing piece is registered (no Gizmo loaded)"
+    },
+    {
+      "do": "place",
+      "prefab": "piece_workbench",
+      "dz": 3,
+      "dx": 3,
+      "as": "bench"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 0,
+        "title": "Standing Saga",
+        "color": 2,
+        "size": 2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 1,
+        "title": "Lying Ledger",
+        "color": 7,
+        "size": 1
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookPick",
+      "expect": true
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPieceUpright",
+      "dz": 2.0,
+      "as": "stand"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookPose",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "upright=True flush=True",
+      "label": "it stands on its edge, flush with the ground"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookRest",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "titles=2",
+      "label": "titles on spine and cover"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Standing Saga",
+      "label": "hover shows its title"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapPoints",
+      "args": {
+        "target": "stand"
+      },
+      "expect": "count=0",
+      "label": "no snap points on the standing book"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookPick",
+      "expect": true
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPiece",
+      "dx": 0.7,
+      "dz": 2.0,
+      "as": "flat"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookPose",
+      "args": {
+        "target": "flat"
+      },
+      "contains": "upright=False flush=True",
+      "label": "the flat one lies flush"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.snapPoints",
+      "args": {
+        "target": "flat"
+      },
+      "expect": "count=0",
+      "label": "no snap points on the flat book"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "stand",
+        "distance": 1.2,
+        "side": 0.3
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "a standing book and a lying one",
+      "label": "a standing book and a lying one",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

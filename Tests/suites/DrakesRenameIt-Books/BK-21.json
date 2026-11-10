@@ -1,0 +1,313 @@
+{
+  "name": "BK-21 who may do what with a placed book: owner, another player, the book's switches, the ward option, Player 2's edit",
+  "description": "A placed book that is someone else's: no Edit; Read follows its Readers switch; Take follows its Allow take switch, and inside a ward I may use it when BookTakeWardAccess is on (off: no). An edit made on another client shows here.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "01 Admin/AllowAdminOverride": "false"
+      }
+    },
+    {
+      "do": "place",
+      "prefab": "piece_workbench",
+      "dz": 3,
+      "dx": 3,
+      "as": "bench"
+    },
+    {
+      "do": "clearArea",
+      "radius": 20
+    },
+    {
+      "do": "give",
+      "materialsFor": "Drakes_Book"
+    },
+    {
+      "do": "craft",
+      "prefab": "Drakes_Book",
+      "station": "bench"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookWriteAt",
+      "args": {
+        "index": 0,
+        "title": "Shared Notes",
+        "pages": "Hello"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookPick",
+      "expect": true
+    },
+    {
+      "do": "place",
+      "prefab": "Drakes_BookPiece",
+      "dz": 2.0,
+      "as": "book"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Edit",
+      "label": "mine: Edit"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Take",
+      "label": "mine: hold to take"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookSetOwner",
+      "args": {
+        "target": "book",
+        "owner": "other"
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "notContains": "Edit",
+      "label": "someone else's: no Edit"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Read",
+      "label": "readable by default"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "notContains": "Take",
+      "label": "no Take outside a ward"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookSetFlag",
+      "args": {
+        "target": "book",
+        "flag": "readable",
+        "on": false
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 2.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "notContains": "Read",
+      "label": "Readers switch off: no Read"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookSetFlag",
+      "args": {
+        "target": "book",
+        "flag": "take",
+        "on": true
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 2.4
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Take",
+      "label": "Allow take on: anyone may take it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookSetFlag",
+      "args": {
+        "target": "book",
+        "flag": "take",
+        "on": false
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 2.4
+    },
+    {
+      "do": "spawn",
+      "prefab": "guard_stone",
+      "dz": 1,
+      "owner": "me",
+      "enabled": true,
+      "as": "ward"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "14 Books/BookTakeWardAccess": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Take",
+      "label": "in my ward with BookTakeWardAccess on: I may take it"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "14 Books/BookTakeWardAccess": "false"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "notContains": "Take",
+      "label": "BookTakeWardAccess off: no"
+    },
+    {
+      "do": "setConfig",
+      "values": {
+        "14 Books/BookTakeWardAccess": "true"
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookSetOwner",
+      "args": {
+        "target": "book",
+        "owner": "me"
+      },
+      "expect": true
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "peerSet",
+      "peer": "Bjornita",
+      "target": "book",
+      "key": "DrakeBookData",
+      "value": "Drake_Rename\u001dBjornita's Edit\u001eDrakeBook_Pages\u001dShe wrote this\u001eDrakeBook_Color\u001d2F6F9F"
+    },
+    {
+      "do": "wait",
+      "seconds": 2.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookHoverText",
+      "args": {
+        "target": "book"
+      },
+      "contains": "Bjornita's Edit",
+      "label": "her edit shows here (title)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookRest",
+      "args": {
+        "target": "book"
+      },
+      "contains": "titles=2",
+      "label": "and the book is redrawn with it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": true
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.cameraZoom",
+      "args": {
+        "distance": 0.2
+      }
+    },
+    {
+      "do": "hook",
+      "name": "renameit.frontView",
+      "args": {
+        "target": "book",
+        "distance": 1.1
+      }
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "name": "a placed book edited by Player 2",
+      "label": "a placed book edited by Player 2",
+      "clean": true
+    },
+    {
+      "do": "hook",
+      "name": "renameit.hidePlayer",
+      "args": {
+        "on": false
+      }
+    },
+    {
+      "do": "peerLeave",
+      "name": "Bjornita"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

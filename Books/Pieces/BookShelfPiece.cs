@@ -111,6 +111,7 @@ internal static class BookShelfPiece
             foreach (var v in Variants)
                 One(v, chestContainer, wood);
             SecretBookcase.Add(_log, wood);
+            BookNames.Apply();
             _log?.LogInfo($"[Books] Registered {Variants.Length} shelf pieces (wall shelves and bookcases).");
         }
         catch (Exception ex)
@@ -285,9 +286,8 @@ internal static class BookShelfPiece
     }
 
     /// <summary>
-    /// Snap points like the shop's crates: the footprint corners at the floor and at the top (plus the middle of the long edges on a
-    /// 2 m case), so a case snaps to floor corners and half-floor edges, beside another case, or on top of one. Only a handful: many
-    /// points make the build ghost jump between them. Wall shelves: the two back corners of the board.
+    /// Snap points like the shop's crates: the footprint corners at the floor and at the top, so a case snaps to floor corners,
+    /// beside another case, or on top of one. Only those eight: more points make the build ghost jump between them. Wall shelves: the two back corners of the board.
     /// </summary>
     internal static void AddSnapPoints(GameObject root, Variant v)
     {
@@ -303,7 +303,8 @@ internal static class BookShelfPiece
         else
         {
             var hd = BookMesh.CaseD / 2f;
-            var xs = v.Width > 1.5f ? new[] { -hw, 0f, hw } : new[] { -hw, hw };
+            // Corners only, like the shop crates: a middle point on the 2 m cases pulled the ghost half a case off the grid.
+            var xs = new[] { -hw, hw };
             foreach (var y in new[] { 0f, v.Height })
             foreach (var x in xs)
             {

@@ -98,7 +98,8 @@
     },
     {
       "do": "screenshot",
-      "label": "all shelf sizes"
+      "label": "all shelf sizes",
+      "name": "all shelf sizes"
     }
   ],
   "asserts": [

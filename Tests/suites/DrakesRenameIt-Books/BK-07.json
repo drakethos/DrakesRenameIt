@@ -187,7 +187,8 @@
     },
     {
       "do": "screenshot",
-      "label": "shelf settings, a Free row with its board"
+      "label": "shelf settings, a Free row with its board",
+      "name": "shelf settings, a Free row with its board"
     },
     {
       "do": "hook",
@@ -227,7 +228,8 @@
     },
     {
       "do": "screenshot",
-      "label": "LockSmith menu, Shelf tab"
+      "label": "LockSmith menu, Shelf tab",
+      "name": "LockSmith menu, Shelf tab"
     },
     {
       "do": "hook",
@@ -255,7 +257,8 @@
     },
     {
       "do": "screenshot",
-      "label": "the bookcase with a Free row"
+      "label": "the bookcase with a Free row",
+      "name": "the bookcase with a Free row"
     }
   ],
   "asserts": [

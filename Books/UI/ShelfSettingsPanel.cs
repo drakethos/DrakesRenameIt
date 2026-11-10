@@ -28,7 +28,7 @@ internal static class ShelfLayout
             {
                 var shelf = ctx.Piece != null ? ctx.Piece.GetComponent<BookShelfBehaviour>() : null;
                 if (shelf != null)
-                    Build(ctx.Body, shelf, ctx.CanManage || IsOwner(shelf), ctx.Rebuild);
+                    Build(Scrolled(ctx.Body), shelf, ctx.CanManage || IsOwner(shelf), ctx.Rebuild);
             }, group: "renameit.shelf", isRoot: true));
 
     internal static bool IsOwner(BookShelfBehaviour shelf)
@@ -36,6 +36,53 @@ internal static class ShelfLayout
         var piece = shelf.GetComponent<Piece>();
         var player = Player.m_localPlayer;
         return piece != null && (piece.IsCreator() || player != null && API.RenameitPermission.IsAdminOrVIP(player));
+    }
+
+    /// <summary>
+    /// A scroll area inside <paramref name="parent"/>, with a visible bar: a tall bookcase has four rows of spines, more than fits
+    /// on a small screen.
+    /// </summary>
+    internal static VisualElement Scrolled(VisualElement parent, float maxHeight = 620f)
+    {
+        return BookScroll.Add(parent, maxHeight, "drakes_shelf_scroll");
+    }
+
+    /// <summary>
+    /// The shelf's own name, for the window without LockSmith (with LockSmith it is the Name tab beside Shelf). The same name
+    /// RenameIt gives any piece, so the hover and the chest window show it.
+    /// </summary>
+    internal static void BuildName(VisualElement body, BookShelfBehaviour shelf, Action rebuild)
+    {
+        var piece = shelf.GetComponent<Piece>();
+        if (piece == null || !RenameitConfig.PieceRenameEnabled)
+            return;
+        var can = Pieces.PieceRename.CanRename(piece, Player.m_localPlayer, flash: false);
+        var custom = Pieces.PieceRename.GetCustomName(piece);
+        var row = new VisualElement().Row(Align.FlexEnd);
+        row.style.marginBottom = 14;
+        var field = new UkField("Name", multiline: false, resetTooltip: "Back to the original name");
+        field.SetMax(Math.Max(1, RenameitConfig.PieceNameCharLimit));
+        field.SetEditable(can);
+        field.SetValue(custom.Length > 0 ? custom : Pieces.PieceRename.DefaultName(piece));
+        field.Root.style.flexGrow = 1;
+        field.Root.style.marginRight = 10;
+        void Save()
+        {
+            if (piece == null || !Pieces.PieceRename.CanRename(piece, Player.m_localPlayer, flash: false))
+                return;
+            Pieces.PieceRename.SetCustomName(piece, field.Value == Pieces.PieceRename.DefaultName(piece) ? "" : field.Value);
+            body.schedule.Execute(rebuild).StartingIn(150);
+        }
+
+        field.ResetClicked = () => field.SetValue(Pieces.PieceRename.DefaultName(piece));
+        field.SubmitPressed = Save;
+        row.Add(field.Root);
+        var save = UkControls.MakeButton("Save name", Save, UkButtonKind.Primary);
+        UkControls.SetButtonEnabled(save, can);
+        row.Add(save);
+        body.Add(row);
+        if (!can)
+            body.Add(UkControls.Text("Only the shelf's builder can rename it.", 13, UkTheme.TextMuted));
     }
 
     /// <summary>Fill <paramref name="body"/> with the layout. <paramref name="rebuild"/> redraws it after a change has been saved.</summary>
@@ -380,6 +427,9 @@ internal sealed class ShelfSettingsPanel
 
     internal static void CloseWindow() => _instance?._window.CloseSilent();
 
+    /// <summary>Test hook: the window's card while it is open.</summary>
+    internal static VisualElement? TestCard => _instance != null && _instance._window.IsOpen ? _instance._window.Card : null;
+
     ShelfSettingsPanel()
     {
         _window = new UkWindow("drakes_shelf_settings", 760f);
@@ -393,13 +443,15 @@ internal sealed class ShelfSettingsPanel
         if (shelf == null)
             return;
         var container = shelf.GetComponent<Container>();
-        var title = container != null && Localization.instance != null ? Localization.instance.Localize(container.m_name) : "Shelf";
+        var title = container != null && Localization.instance != null ? Localization.instance.Localize(container.GetHoverName()) : "Shelf";
         var books = 0;
         for (var row = 0; row < shelf.ShelfRows; row++)
             foreach (var item in shelf.RowItems(row))
                 if (BookItem.IsBook(item))
                     books++;
         _window.SetHeader(title, books == 1 ? "1 book" : books + " books");
-        ShelfLayout.Build(_window.Body, shelf, ShelfLayout.IsOwner(shelf), Rebuild);
+        var body = ShelfLayout.Scrolled(_window.Body);
+        ShelfLayout.BuildName(body, shelf, Rebuild);
+        ShelfLayout.Build(body, shelf, ShelfLayout.IsOwner(shelf), Rebuild);
     }
 }

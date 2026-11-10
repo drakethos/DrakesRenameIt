@@ -62,10 +62,10 @@ internal sealed class BookReaderPanel
     readonly Button _fullDelete;
     readonly Button _fullTake;
     readonly UkField _title;
-    readonly VisualElement _swatches;
+    readonly ColourRow _swatches;
     readonly VisualElement _patterns;
-    readonly VisualElement _accents;
-    readonly VisualElement _inks;
+    readonly ColourRow _accents;
+    readonly ColourRow _inks;
     readonly Button[] _sizes = new Button[3];
     readonly VisualElement _pictures;
     readonly VisualElement _coverPreview;
@@ -150,6 +150,27 @@ internal sealed class BookReaderPanel
         if (panel == null || !panel._editing)
             return false;
         panel._readEditors.TestSet(raw, cursor, anchor);
+        return true;
+    }
+
+    /// <summary>Test hooks: the open window's card (for text and scroll checks), and opening a colour row's picker.</summary>
+    internal static VisualElement? TestCard => _instance == null ? null : _instance._full.IsOpen ? _instance._full.Card : _instance._read.IsOpen ? _instance._read.Card : null;
+
+    /// <summary>Test hook: picks <paramref name="hex"/> on the cover / pattern / lettering row ("cover", "accent", "ink").</summary>
+    internal static bool TestColour(string row, string hex, bool openPicker)
+    {
+        var panel = _instance;
+        if (panel == null || !panel._full.IsOpen || !UkColorPicker.TryParse(hex, out var colour))
+            return false;
+        var target = row == "accent" ? panel._accents : row == "ink" ? panel._inks : panel._swatches;
+        if (row == "accent")
+            panel.OnAccent(colour);
+        else if (row == "ink")
+            panel.OnInk(colour);
+        else
+            panel.OnColor(colour);
+        if (openPicker && !target.IsOpen)
+            target.TestOpen();
         return true;
     }
 
@@ -248,7 +269,13 @@ internal sealed class BookReaderPanel
             _hosted = false;
             DrakeModsLibs.UI.DrakeTabHost.Close();
         };
-        _full.EscapeHandler = () => _fullEditors.Toolbar.PickerOpen && Do(_fullEditors.Toolbar.ClosePicker);
+        _full.EscapeHandler = () =>
+        {
+            foreach (var row in new[] { _swatches, _accents, _inks })
+                if (row != null && row.IsOpen)
+                    return Do(row.Close);
+            return _fullEditors.Toolbar.PickerOpen && Do(_fullEditors.Toolbar.ClosePicker);
+        };
         var fbody = _full.Body;
 
         var tabs = new VisualElement().Row();
@@ -295,17 +322,20 @@ internal sealed class BookReaderPanel
 
         // Book: settings on the left, the book as it will look (cover and spine) on the right.
         _bookView = new VisualElement().Row(Align.FlexStart);
-        var settings = new VisualElement().Column().Grow();
-        settings.style.flexBasis = 0;
-        settings.style.marginRight = 36;
+        // The settings scroll (with a bar) when they are taller than the window; the preview stays put beside them.
+        var settings = BookScroll.Make(660f, "drakes_book_settings_scroll", out var settingsScroll);
+        settingsScroll.style.flexGrow = 1;
+        settingsScroll.style.flexShrink = 1;
+        settingsScroll.style.flexBasis = 0;
+        settingsScroll.style.marginRight = 36;
         _title = new UkField("Title", multiline: false);
         _title.SetMax(BookData.MaxTitleChars);
         _title.Changed = OnTitleChanged;
         settings.Add(_title.Root);
 
         settings.Add(Heading("Cover colour"));
-        _swatches = Swatches(BookData.CoverColors, 40f, OnColor);
-        settings.Add(_swatches);
+        _swatches = new ColourRow(_full.Card, _full.Tips, Suggest(BookData.CoverColors, 10), 40f, OnColor);
+        settings.Add(_swatches.Root);
 
         settings.Add(Heading("Pattern"));
         _patterns = new VisualElement().Row();
@@ -324,11 +354,11 @@ internal sealed class BookReaderPanel
         settings.Add(_patterns);
         var accentHead = Heading("Pattern colour");
         settings.Add(accentHead);
-        _accents = Swatches(BookLook.Accents, 32f, OnAccent);
-        settings.Add(_accents);
+        _accents = new ColourRow(_full.Card, _full.Tips, BookLook.Accents, 32f, OnAccent);
+        settings.Add(_accents.Root);
         settings.Add(Heading("Spine lettering"));
-        _inks = Swatches(BookLook.Inks, 32f, OnInk);
-        settings.Add(_inks);
+        _inks = new ColourRow(_full.Card, _full.Tips, BookLook.Inks, 32f, OnInk);
+        settings.Add(_inks.Root);
 
         settings.Add(Heading("Size"));
         var sizeRow = new VisualElement().Row();
@@ -362,7 +392,14 @@ internal sealed class BookReaderPanel
         _fullTake.style.alignSelf = Align.FlexStart;
         _placedOptions.Add(_fullTake);
         settings.Add(_placedOptions);
-        _bookView.Add(settings);
+        _bookView.Add(settingsScroll);
+        // A click anywhere else closes an open colour picker.
+        _full.Card.RegisterCallback<PointerDownEvent>(e =>
+        {
+            var target = e.target as VisualElement;
+            foreach (var row in new[] { _swatches, _accents, _inks })
+                row.CloseIfOutside(target);
+        }, TrickleDown.TrickleDown);
 
         var side = new VisualElement().Column();
         side.style.width = 380;
@@ -396,6 +433,87 @@ internal sealed class BookReaderPanel
         side.Add(spineNote);
         _bookView.Add(side);
         fbody.Add(_bookView);
+    }
+
+    /// <summary>The first <paramref name="count"/> colours: a few suggestions, the picker does the rest.</summary>
+    static Color[] Suggest(Color[] colors, int count)
+    {
+        var list = new List<Color>();
+        for (var i = 0; i < colors.Length && i < count; i++)
+            list.Add(colors[i]);
+        return list.ToArray();
+    }
+
+    /// <summary>
+    /// A row of suggested colours plus "Any colour", which opens the suite's colour picker (square, hue strip, hex box) under it.
+    /// The chosen swatch is outlined in gold; a colour from the picker shows on the button instead.
+    /// </summary>
+    internal sealed class ColourRow
+    {
+        readonly Color[] _presets;
+        readonly VisualElement _swatches;
+        readonly Button _any;
+        readonly VisualElement _anyDot;
+        readonly UkPopover _popover;
+        readonly UkColorPicker _picker;
+
+        public VisualElement Root { get; }
+
+        public ColourRow(VisualElement popoverHost, UkTooltip tips, Color[] presets, float size, Action<Color> pick)
+        {
+            _presets = presets;
+            Root = new VisualElement().Row();
+            Root.style.flexWrap = Wrap.Wrap;
+            Root.style.alignItems = Align.FlexStart;
+            _swatches = Swatches(presets, size, pick);
+            _swatches.style.flexShrink = 1;
+            Root.Add(_swatches);
+            _picker = new UkColorPicker();
+            _picker.Picked = hex =>
+            {
+                if (UkColorPicker.TryParse(hex, out var colour))
+                    pick(colour);
+            };
+            _popover = new UkPopover(popoverHost, 310f);
+            _popover.Content.Add(_picker.Root);
+            _any = UkControls.MakeButton("", () => _popover.Toggle(_any!), UkButtonKind.Secondary);
+            _any.style.height = size;
+            _any.style.flexDirection = FlexDirection.Row;
+            _any.style.alignItems = Align.Center;
+            _anyDot = new VisualElement().Size(width: 18, height: 18).Round(9).Border(Color.black, 1);
+            _anyDot.style.marginRight = 8;
+            _anyDot.pickingMode = PickingMode.Ignore;
+            _any.Add(_anyDot);
+            var label = UkControls.Text("Any colour", 14, UkTheme.Text, wrap: false);
+            label.pickingMode = PickingMode.Ignore;
+            _any.Add(label);
+            tips.Attach(_any, () => "Pick any colour");
+            Root.Add(_any);
+        }
+
+        public void Mark(Color current)
+        {
+            var hex = ColorUtility.ToHtmlStringRGB(current);
+            var preset = false;
+            foreach (var c in _presets)
+                preset |= ColorUtility.ToHtmlStringRGB(c) == hex;
+            MarkSwatches(_swatches, _presets, current);
+            _anyDot.Fill(current);
+            _any.Border(preset ? UkTheme.Line : UkTheme.Gold, preset ? 1 : 3);
+            _picker.SetColor("#" + hex);
+        }
+
+        public void CloseIfOutside(VisualElement? target)
+        {
+            if (_popover.IsOpen && !_popover.Contains(target) && (target == null || !_any.Contains(target)))
+                _popover.Close();
+        }
+
+        public bool IsOpen => _popover.IsOpen;
+
+        public void Close() => _popover.Close();
+
+        internal void TestOpen() => _popover.Toggle(_any);
     }
 
     static VisualElement Swatches(Color[] colors, float size, Action<Color> pick)
@@ -665,9 +783,9 @@ internal sealed class BookReaderPanel
         var pattern = BookLook.GetPattern(_item);
         var accent = BookLook.GetAccent(_item);
         var ink = BookLook.GetInk(_item);
-        MarkSwatches(_swatches, BookData.CoverColors, current);
-        MarkSwatches(_accents, BookLook.Accents, accent);
-        MarkSwatches(_inks, BookLook.Inks, ink);
+        _swatches.Mark(current);
+        _accents.Mark(accent);
+        _inks.Mark(ink);
         var p = 0;
         foreach (var tile in _patterns.Children())
         {

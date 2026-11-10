@@ -64,6 +64,15 @@ internal static class BookShelfInteract
         var book = shelf.AimedBook();
         if (book == null)
         {
+            // The shelf's own name (RenameIt's piece rename) on the title line, as the chest window shows it.
+            if (Pieces.PieceRename.DisplayName(__instance) is { } custom && Localization.instance != null)
+            {
+                var plain = Localization.instance.Localize(__instance.m_name);
+                var at = __result.IndexOf(plain, StringComparison.Ordinal);
+                if (at >= 0)
+                    __result = __result.Substring(0, at) + custom + __result.Substring(at + plain.Length);
+            }
+
             // Inside a ward LockSmith's Shift+E menu opens instead, with the Shelf tab in it (its own hover line says so).
             if (!LockSmithMenuOpens(__instance))
                 __result += Localize("\n[<color=yellow><b>Shift</b></color>+<color=yellow><b>$KEY_Use</b></color>] Shelf settings");
@@ -71,7 +80,8 @@ internal static class BookShelfInteract
         }
 
         // Like a shop case: the thing you point at, then what it stands in.
-        var where = Localization.instance != null ? Localization.instance.Localize(__instance.m_name) : __instance.m_name;
+        // GetHoverName carries the shelf's own name when it has one (RenameIt's piece rename).
+        var where = Localization.instance != null ? Localization.instance.Localize(__instance.GetHoverName()) : __instance.m_name;
         var keys = "\n[<color=yellow><b>$KEY_Use</b></color>] Read";
         if (CanEdit(__instance, book))
             keys += "\n[<color=yellow><b>Shift</b></color>+<color=yellow><b>$KEY_Use</b></color>] Edit";

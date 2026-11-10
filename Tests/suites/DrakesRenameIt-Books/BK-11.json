@@ -60,7 +60,8 @@
     },
     {
       "do": "screenshot",
-      "label": "tall bookcase, full"
+      "label": "tall bookcase, full",
+      "name": "tall bookcase, full"
     },
     {
       "do": "hook",
@@ -76,7 +77,8 @@
     },
     {
       "do": "screenshot",
-      "label": "tall bookcase, close: spine titles"
+      "label": "tall bookcase, close: spine titles",
+      "name": "tall bookcase, close: spine titles"
     },
     {
       "do": "place",
@@ -114,7 +116,8 @@
     },
     {
       "do": "screenshot",
-      "label": "wide bookcase, full"
+      "label": "wide bookcase, full",
+      "name": "wide bookcase, full"
     },
     {
       "do": "hook",

@@ -13,6 +13,9 @@ internal static class BookPlaceState
     internal static bool Blank { get; private set; }
     internal static bool HasChoice => Item != null || Blank;
 
+    /// <summary>Tests: "item", "blank" or "none".</summary>
+    internal static string Describe() => Item != null ? "item:" + BookData.DisplayTitle(Item) : Blank ? "blank" : "none";
+
     /// <summary>The picked book's data (a copy), for the placement preview; a new blank book's defaults when that was picked.</summary>
     internal static Dictionary<string, string> PreviewData() =>
         Item != null ? new Dictionary<string, string>(Item.m_customData ?? new Dictionary<string, string>()) : BookData.NewBlank();
@@ -87,7 +90,9 @@ internal static class BookPlaceState
             foreach (var (_, shared, amount) in Cost())
                 inv.RemoveItem(shared, amount);
             data = BookData.NewBlank();
-            Clear();
+            // A new book stays picked while you can pay for another, so a row of new books is click, click, click.
+            if (!CanAffordBlank(player))
+                Clear();
             return true;
         }
 

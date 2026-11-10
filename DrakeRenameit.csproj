@@ -130,6 +130,7 @@
     <Compile Include="Books\Mesh\BookAssets.cs" />
     <Compile Include="Books\Data\BookData.cs" />
     <Compile Include="Books\Data\BookLook.cs" />
+    <Compile Include="Books\Data\BookIcons.cs" />
     <Compile Include="Books\Items\BookItem.cs" />
     <Compile Include="Books\UI\BookReaderPanel.cs" />
     <Compile Include="Books\UI\BookSpread.cs" />

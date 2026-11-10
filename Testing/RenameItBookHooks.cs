@@ -412,6 +412,40 @@ internal static class RenameItBookHooks
         return true;
     }
 
+    /// <summary>Puts "text" (rich tags allowed) on the open editor's left page, caret at "cursor", selection from "anchor".</summary>
+    [TestHook("renameit.bookCaret")]
+    static bool BookCaret(Dictionary<string, object?> args)
+    {
+        var cursor = int.Parse(S(args, "cursor", "0"), CultureInfo.InvariantCulture);
+        var anchorAt = int.Parse(S(args, "anchor", cursor.ToString(CultureInfo.InvariantCulture)), CultureInfo.InvariantCulture);
+        return BookReaderPanel.TestCaret(S(args, "text", ""), cursor, anchorAt);
+    }
+
+    /// <summary>The icon the game shows for the first inventory book (its sprite name).</summary>
+    [TestHook("renameit.bookIcon")]
+    static string BookIcon(Dictionary<string, object?> args) => FirstBook().GetIcon() is { } sprite ? sprite.name : "none";
+
+    /// <summary>Hold Use on the target placed book (hold=true), as the game sends it after the hold delay. True when it acted.</summary>
+    [TestHook("renameit.bookHoldUse")]
+    static bool BookHoldUse(Dictionary<string, object?> args, GameObject? target = null) =>
+        target != null && target.GetComponent<BookPieceBehaviour>() is { } book && book.Interact(P, true, false);
+
+    /// <summary>Height above the piece origin of the placed book's lowest drawn point (0 = flush), and whether it has titles.</summary>
+    [TestHook("renameit.bookRest")]
+    static string BookRest(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        if (target == null)
+            return "none";
+        var low = float.MaxValue;
+        foreach (var r in target.GetComponentsInChildren<MeshRenderer>())
+            if (r.GetComponent<TMPro.TextMeshPro>() == null)
+                low = Mathf.Min(low, r.bounds.min.y);
+        var rest = low - target.transform.position.y;
+        var titles = target.GetComponentsInChildren<TMPro.TextMeshPro>().Length;
+        var where = Mathf.Abs(rest) < 0.006f ? "flush" : "rest=" + rest.ToString("0.000", CultureInfo.InvariantCulture);
+        return $"{where} titles={titles}";
+    }
+
     /// <summary>Moves the nth item of a shelf row to slot "to" of that row (swapping), as dragging on the layout board does.</summary>
     [TestHook("renameit.shelfMove")]
     static bool ShelfMove(Dictionary<string, object?> args, GameObject? target = null)

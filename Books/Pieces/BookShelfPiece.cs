@@ -285,54 +285,34 @@ internal static class BookShelfPiece
     }
 
     /// <summary>
-    /// Snap points on the half-metre grid, the same way the shop's crates tile: along every footprint edge every 0.5 m (so a 1 m case
-    /// lines up with half a floor, a 2 m one with a whole floor, and cases sit side by side or back to back), repeated every 0.5 m up
-    /// the height (stacking a small case on another, lining up with a wall). Wall shelves: along the back edge, top and underside.
+    /// Snap points like the shop's crates: the footprint corners at the floor and at the top (plus the middle of the long edges on a
+    /// 2 m case), so a case snaps to floor corners and half-floor edges, beside another case, or on top of one. Only a handful: many
+    /// points make the build ghost jump between them. Wall shelves: the two back corners of the board.
     /// </summary>
     internal static void AddSnapPoints(GameObject root, Variant v)
     {
-        var points = new System.Collections.Generic.List<Vector3>();
+        var points = new List<Vector3>();
         var hw = v.Width / 2f;
-        IEnumerable<float> Steps(float from, float to)
-        {
-            for (var x = from; x <= to + 0.001f; x += 0.5f)
-                yield return x;
-        }
-
         // The mesh is turned half way round in its frame, so the back (wall) side is -Z here.
         if (v.Wall)
         {
             var back = -BookMesh.ShelfD / 2f;
-            foreach (var x in Steps(-hw, hw))
-            {
-                points.Add(new Vector3(x, 0f, back));
-                points.Add(new Vector3(x, -BookMesh.ShelfTh, back));
-            }
+            points.Add(new Vector3(-hw, 0f, back));
+            points.Add(new Vector3(hw, 0f, back));
         }
         else
         {
             var hd = BookMesh.CaseD / 2f;
-            foreach (var y in Steps(0f, v.Height))
+            var xs = v.Width > 1.5f ? new[] { -hw, 0f, hw } : new[] { -hw, hw };
+            foreach (var y in new[] { 0f, v.Height })
+            foreach (var x in xs)
             {
-                foreach (var x in Steps(-hw, hw))
-                {
-                    points.Add(new Vector3(x, y, -hd));
-                    points.Add(new Vector3(x, y, hd));
-                }
-
-                foreach (var z in Steps(-hd, hd))
-                {
-                    points.Add(new Vector3(-hw, y, z));
-                    points.Add(new Vector3(hw, y, z));
-                }
+                points.Add(new Vector3(x, y, -hd));
+                points.Add(new Vector3(x, y, hd));
             }
         }
 
-        // Libs makes them like the game's own (tagged, inactive until the build ghost wants them) and drops duplicates' clutter.
-        var unique = new System.Collections.Generic.List<Vector3>();
-        foreach (var p in points)
-            if (!unique.Exists(u => (u - p).sqrMagnitude < 0.0001f))
-                unique.Add(p);
-        DrakeModsLibs.Forge.ForgeLook.SnapPoints(root, true, unique.ToArray());
+        // Libs makes them like the game's own (tagged, inactive until the build ghost wants them).
+        DrakeModsLibs.Forge.ForgeLook.SnapPoints(root, true, points.ToArray());
     }
 }

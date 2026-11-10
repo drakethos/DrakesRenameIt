@@ -95,7 +95,8 @@ internal static class BookData
     internal static void SetColor(ItemDrop.ItemData item, Color color)
     {
         Set(item, KeyColor, ColorUtility.ToHtmlStringRGB(color));
-        DrakeModsLibs.API.CustomizeLibsAPI.SetIconTint(item, IconTint(color));
+        // The icon is drawn from the cover (BookIcons); a tint on top would colour it twice.
+        DrakeModsLibs.API.CustomizeLibsAPI.SetIconTint(item, null);
     }
 
     /// <summary>The inventory icon is a neutral grey book; this tint makes it the cover colour (a little lifted so it reads).</summary>

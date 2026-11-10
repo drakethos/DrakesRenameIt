@@ -18,7 +18,13 @@ internal static class BookDefaultsPatch
             if (item == null || !BookItem.IsBook(item))
                 continue;
             if (item.m_customData != null && item.m_customData.ContainsKey(BookData.KeyColor))
+            {
+                // Books stamped by the first round carry an icon tint; the drawn icon replaces it.
+                if (DrakeModsLibs.API.CustomizeLibsAPI.GetIconTint(item) != null)
+                    DrakeModsLibs.API.CustomizeLibsAPI.SetIconTint(item, null);
                 continue;
+            }
+
             BookData.SetColor(item, BookData.CoverColors[0]);
         }
     }

@@ -14,7 +14,7 @@ namespace DrakeRenameit;
 public static class RenameitConfig
 {
     /// <summary>Gameplay sections 01–10: every entry uses <see cref="BindSynced"/> and is covered by <see cref="LockSyncedConfig"/>. Section 11 is client-only.</summary>
-    private const int ExpectedSyncedEntryCount = 80;
+    private const int ExpectedSyncedEntryCount = 81;
 
     internal static ManualLogSource? Log { get; set; }
     // Config file sections use numeric prefixes so Configuration Manager's alphabetical sort matches tab order.
@@ -140,6 +140,7 @@ public static class RenameitConfig
     private static ConfigEntry<string> _bookCraftingStation = default!;
     private static ConfigEntry<bool> _shelfAllowNonBooks = default!;
     private static ConfigEntry<bool> _bookReskin = default!;
+    private static ConfigEntry<bool> _bookTakeWardAccess = default!;
     private static ConfigEntry<string> _animalLabelStyle = default!;
     private static ConfigEntry<float> _animalLabelScale = default!;
     private static ConfigEntry<string> _pieceCrafterLine = default!;
@@ -443,6 +444,8 @@ public static class RenameitConfig
     public static bool ShelfAllowNonBooks => _shelfAllowNonBooks.Value;
     /// <summary>Whether ReskinIt may restyle books (icon, model, tint). Off by default: a book's look is its cover. Applied at start-up.</summary>
     public static bool BookReskin => _bookReskin.Value;
+    /// <summary>Hold Use on a placed book takes it for the placer, and also for anyone the ward there lets in (on by default).</summary>
+    public static bool BookTakeWardAccess => _bookTakeWardAccess.Value;
 
     // --- 12 Pieces (rename placed pieces, 1.4) ---
 
@@ -1324,6 +1327,12 @@ public static class RenameitConfig
             "BookReskin",
             false,
             "Whether ReskinIt's Reskin tab works on books (icon, model and tint). Off by default: a book's look comes from its cover colour and pattern in the Book tab. Admins and VIPs keep their usual override. Applied at start-up.");
+
+        _bookTakeWardAccess = _drakeConfigSync.BindSynced(config,
+            SectionBooks, DisplayBooks,
+            "BookTakeWardAccess",
+            true,
+            "Hold Use on a placed book picks it up, like a page. The person who placed it always can, and so can anyone its owner allows (Allow take). On: also anyone with access to the ward the book stands in. Off: only those two.");
 
         MigrateLegacyConfigSections(config);
 

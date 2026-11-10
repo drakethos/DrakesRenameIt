@@ -298,6 +298,7 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
         var usable = SecretBookcase.Width - 2f * BookMesh.CaseTh - 0.02f;
         var pitch = BookMesh.Pitch(SecretBookcase.Rows, SecretBookcase.Height);
         var layer = LayerMask.NameToLayer("piece");
+        var live = _nview != null && _nview.IsValid();
         var rows = Books();
         for (var row = 0; row < rows.Count; row++)
         {
@@ -317,11 +318,20 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
                 holder.SetParent(_books, false);
                 holder.localPosition = new Vector3(cursor + t / 2f, floor, -BookMesh.CaseD / 2f + 0.02f + d / 2f);
                 BookAssets.Build(holder, d, b.Height, t, b.Data, b.Title);
-                var box = holder.gameObject.AddComponent<BoxCollider>();
-                box.center = new Vector3(0f, b.Height / 2f, 0f);
-                box.size = new Vector3(t, b.Height, d);
-                if (layer >= 0)
-                    holder.gameObject.layer = layer;
+                // Only a built door gets clickable books: on the build ghost they caught the placement ray and the ghost jumped
+                // about every frame.
+                if (live)
+                {
+                    var box = holder.gameObject.AddComponent<BoxCollider>();
+                    box.center = new Vector3(0f, b.Height / 2f, 0f);
+                    box.size = new Vector3(t, b.Height, d);
+                    if (layer >= 0)
+                        holder.gameObject.layer = layer;
+                }
+                else
+                {
+                    SetLayer(holder, frame.gameObject.layer);
+                }
                 var tag = holder.gameObject.AddComponent<SecretBookTag>();
                 tag.Slot = b.Slot;
                 tag.Title = b.Title;
@@ -332,6 +342,13 @@ internal sealed class SecretBookcaseBehaviour : MonoBehaviour
 
     /// <summary>Tests: pretend the crosshair is on this slot (-1 = on the case, not a book; null = use the real crosshair).</summary>
     internal static int? TestAim;
+
+    static void SetLayer(Transform t, int layer)
+    {
+        t.gameObject.layer = layer;
+        foreach (Transform child in t)
+            SetLayer(child, layer);
+    }
 
     /// <summary>The made-up book under the crosshair on this door, if any.</summary>
     internal SecretBookTag? Aimed()

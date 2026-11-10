@@ -411,6 +411,9 @@ internal sealed class BookShelfBehaviour : MonoBehaviour
         holder.localPosition = new Vector3(centreX, floor + lift, -shelfDepth / 2f + 0.02f + d * scale / 2f);
         BookAssets.Build(holder, d, h, t, item.m_customData, BookData.DisplayTitle(item));
 
+        // Clickable only on a built shelf, never on the build ghost (its placement ray would hit them).
+        if (Zdo == null)
+            return;
         var box = holder.gameObject.AddComponent<BoxCollider>();
         box.center = new Vector3(0f, h / 2f, 0f);
         box.size = new Vector3(t, h, d);

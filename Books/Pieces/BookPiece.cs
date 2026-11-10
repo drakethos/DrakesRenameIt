@@ -196,8 +196,10 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         attach.SetParent(root, false);
         // Lying on its back, front cover up (the mesh stands, spine -Z, up +Y).
         attach.localRotation = Quaternion.Euler(0f, 0f, 90f);
-        attach.localPosition = new Vector3(d.y / 2f, Lift + d.z / 2f, 0f);
-        BookAssets.Build(attach, size, data);
+        // The book itself lies flush on the surface; only the collider floats (see Lift), so the build ghost isn't "blocked".
+        attach.localPosition = new Vector3(d.y / 2f, d.z / 2f, 0f);
+        var title = data.TryGetValue(DrakeModsLibs.Data.DrakeCustomDataKeys.Rename, out var t) && t.Length > 0 ? t : null;
+        BookAssets.Build(attach, size, data, title, frontTitle: true);
         FitCollider(root.gameObject, size);
     }
 
@@ -236,16 +238,74 @@ internal sealed class BookPieceBehaviour : MonoBehaviour
         var player = Player.m_localPlayer;
         var canRead = IsOwner(player) || Flag(BookData.KeyReadable, true);
         var text = Title() + (canRead ? "\n[<color=yellow><b>$KEY_Use</b></color>] Read" : "");
+        if (MayTake(player))
+            text += "\n[<color=yellow><b>$ui_hold $KEY_Use</b></color>] $piece_itemstand_take";
         if (IsOwner(player))
             text += "\n[<color=yellow><b>Shift</b></color>+<color=yellow><b>$KEY_Use</b></color>] Edit";
         return text;
     }
 
+    /// <summary>
+    /// Who may pick the book up: whoever placed it, anyone when its owner allows take, and (server option BookTakeWardAccess)
+    /// anyone the ward around it lets in. Outside any ward that last rule doesn't apply.
+    /// </summary>
+    bool MayTake(Player? player)
+    {
+        if (player == null)
+            return false;
+        if (IsOwner(player) || Flag(BookData.KeyTake, false))
+            return true;
+        return RenameitConfig.BookTakeWardAccess && Compat.CompatibilityManager.IsInsideEnabledWard(transform.position)
+               && Compat.CompatibilityManager.CheckAccess(transform.position, flash: false);
+    }
+
+    /// <summary>Use was pressed: read when it is let go quickly, take when it is held (see <see cref="Update"/>).</summary>
+    float _readPendingSince = -1f;
+
+    void Update()
+    {
+        if (_readPendingSince < 0f)
+            return;
+        // Still held: the hold (Interact with hold=true) decides. Let go before it came: it was a tap, so read.
+        if (ZInput.GetButton("Use") || ZInput.GetButton("JoyUse"))
+        {
+            if (Time.time - _readPendingSince > 1.5f)
+                _readPendingSince = -1f;
+            return;
+        }
+
+        _readPendingSince = -1f;
+        if (Player.m_localPlayer is { } player)
+            Read(player, alt: false);
+    }
+
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
-        if (hold || user != Player.m_localPlayer || _nview == null || !_nview.IsValid())
+        if (user != Player.m_localPlayer || _nview == null || !_nview.IsValid())
             return false;
         var player = (Player)user;
+        if (hold)
+        {
+            // Hold Use: take it, like a page off a wall.
+            if (alt || !MayTake(player))
+                return false;
+            _readPendingSince = -1f;
+            Take(player);
+            return true;
+        }
+
+        if (!alt && MayTake(player))
+        {
+            // Wait for the key to come up: a tap reads, a hold takes.
+            _readPendingSince = Time.time;
+            return true;
+        }
+
+        return Read(player, alt);
+    }
+
+    bool Read(Player player, bool alt)
+    {
         var owner = IsOwner(player);
         if (!owner && !Flag(BookData.KeyReadable, true))
         {

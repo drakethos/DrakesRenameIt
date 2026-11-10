@@ -55,14 +55,15 @@ internal static class BookAssets
     /// A standing book under <paramref name="parent"/> (spine facing -Z, foot of the spine at the parent's origin) in one of the
     /// three stock sizes, with its look and picture from <paramref name="data"/> (the item's custom data or a placed book's).
     /// </summary>
-    internal static GameObject? Build(Transform parent, BookSize size, IDictionary<string, string>? data, string? spineTitle = null)
+    internal static GameObject? Build(Transform parent, BookSize size, IDictionary<string, string>? data, string? spineTitle = null, bool frontTitle = false)
     {
         var d = BookMesh.Dimensions(size);
-        return Build(parent, d.x, d.y, d.z, data, spineTitle);
+        return Build(parent, d.x, d.y, d.z, data, spineTitle, frontTitle);
     }
 
     /// <summary>Same, at any depth / height / thickness (shelves size their books to the row).</summary>
-    internal static GameObject? Build(Transform parent, float depth, float height, float thickness, IDictionary<string, string>? data, string? spineTitle)
+    internal static GameObject? Build(Transform parent, float depth, float height, float thickness, IDictionary<string, string>? data, string? spineTitle,
+        bool frontTitle = false)
     {
         var color = BookLook.ColorOf(data, BookData.KeyColor, BookData.CoverColors[0]);
         var pattern = BookLook.PatternOf(data);
@@ -87,7 +88,13 @@ internal static class BookAssets
         }
 
         if (!string.IsNullOrEmpty(spineTitle))
-            SpineText(go.transform, depth, height, thickness, spineTitle!, BookLook.ColorOf(data, BookLook.KeyInk, BookLook.Inks[0]));
+        {
+            var ink = BookLook.ColorOf(data, BookLook.KeyInk, BookLook.Inks[0]);
+            SpineText(go.transform, depth, height, thickness, spineTitle!, ink);
+            if (frontTitle && picture == null)
+                FrontText(go.transform, depth, height, thickness, spineTitle!, ink);
+        }
+
         return go;
     }
 
@@ -122,7 +129,8 @@ internal static class BookAssets
             return;
         var go = new GameObject("spine_title");
         go.transform.SetParent(book, false);
-        go.transform.localPosition = new Vector3(0f, height / 2f, -depth / 2f - 0.0015f);
+        // A few millimetres off the board: closer and the text flickers into the leather at low camera angles.
+        go.transform.localPosition = new Vector3(0f, height / 2f, -depth / 2f - 0.004f);
         go.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
         var text = go.AddComponent<TextMeshPro>();
         text.font = font;
@@ -136,6 +144,31 @@ internal static class BookAssets
         text.fontSizeMax = Mathf.Clamp(thickness * 6f, 0.15f, 0.5f);
         text.fontStyle = FontStyles.Bold;
         text.rectTransform.sizeDelta = new Vector2(height * 0.66f, thickness * 0.72f);
+    }
+
+    /// <summary>The title on the front cover (books lying on a table or the floor show it), in the upper half, wrapping.</summary>
+    static void FrontText(Transform book, float depth, float height, float thickness, string title, Color ink)
+    {
+        var font = Font();
+        if (font == null)
+            return;
+        var go = new GameObject("front_title");
+        go.transform.SetParent(book, false);
+        // The front cover is the +X face; TextMeshPro reads from its -Z side, so turn it to face +X.
+        go.transform.localPosition = new Vector3(thickness / 2f + 0.004f, height * 0.66f, 0.004f);
+        go.transform.localRotation = Quaternion.Euler(0f, -90f, 0f);
+        var text = go.AddComponent<TextMeshPro>();
+        text.font = font;
+        text.text = title;
+        text.color = ink;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Ellipsis;
+        text.enableAutoSizing = true;
+        text.fontSizeMin = 0.08f;
+        text.fontSizeMax = 0.5f;
+        text.fontStyle = FontStyles.Bold;
+        text.rectTransform.sizeDelta = new Vector2(depth * 0.78f, height * 0.36f);
     }
 
     static Material? PictureMaterial(string? name)

@@ -143,6 +143,16 @@ internal sealed class BookReaderPanel
         _instance._full.CloseSilent();
     }
 
+    /// <summary>Test hook: in the read view's Edit, puts <paramref name="raw"/> on the left page and selects [anchor, cursor).</summary>
+    internal static bool TestCaret(string raw, int cursor, int anchor)
+    {
+        var panel = _instance;
+        if (panel == null || !panel._editing)
+            return false;
+        panel._readEditors.TestSet(raw, cursor, anchor);
+        return true;
+    }
+
     /// <summary>Test hooks: the Book tab (full editor), or Edit in the read view.</summary>
     internal static void TestSelect(bool bookTab, bool editing)
     {
@@ -802,6 +812,196 @@ internal sealed class BookReaderPanel
     }
 
     /// <summary>
+    /// Caret, selection and clicks for a page whose shown text has several sizes. The text layout of the shown label (Unity's
+    /// TextHandle, reached by reflection: it is internal) gives where each visible character sits; the field's caret index (counted in
+    /// visible characters, like the layout) says where to draw. A click is turned into the character under the pointer.
+    /// </summary>
+    sealed class PageCaret
+    {
+        static readonly System.Reflection.PropertyInfo? HandleProp =
+            typeof(TextElement).GetProperty("uitkTextHandle", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+        static System.Reflection.MethodInfo? _positionOf;
+        static System.Reflection.MethodInfo? _indexAt;
+
+        readonly UkField _field;
+        readonly Label _ink;
+        readonly int _fontSize;
+        readonly VisualElement _caret;
+        readonly VisualElement _selection;
+        bool _focused;
+        int _downIndex = -1;
+        float _blinkFrom;
+        int _lastCursor = -1;
+
+        internal PageCaret(UkField field, Label ink, int fontSize)
+        {
+            _field = field;
+            _ink = ink;
+            _fontSize = fontSize;
+            var layer = ink.parent ?? ink;
+            _selection = new VisualElement { pickingMode = PickingMode.Ignore };
+            _selection.style.position = Position.Absolute;
+            _selection.style.left = _selection.style.top = _selection.style.right = _selection.style.bottom = 0;
+            layer.Insert(0, _selection);
+            _caret = new VisualElement { pickingMode = PickingMode.Ignore }.Size(width: 2).Fill(BookSpread.Ink);
+            _caret.style.position = Position.Absolute;
+            _caret.Show(false);
+            layer.Add(_caret);
+
+            var input = field.Input;
+            input.RegisterCallback<FocusInEvent>(_ =>
+            {
+                _focused = true;
+                _blinkFrom = Time.realtimeSinceStartup;
+            });
+            input.RegisterCallback<FocusOutEvent>(_ =>
+            {
+                _focused = false;
+                _caret.Show(false);
+                _selection.Clear();
+            });
+            input.RegisterCallback<PointerDownEvent>(e => _downIndex = IndexAt(e.position), TrickleDown.TrickleDown);
+            input.RegisterCallback<PointerUpEvent>(e =>
+            {
+                var up = IndexAt(e.position);
+                if (up < 0)
+                    return;
+                var from = _downIndex >= 0 ? _downIndex : up;
+                _downIndex = -1;
+                // After the box's own handling, which placed the caret by its one-size layout.
+                input.schedule.Execute(() => input.SelectRange(from, up)).StartingIn(0);
+            });
+            input.schedule.Execute(Draw).Every(40);
+        }
+
+        object? Handle() => HandleProp?.GetValue(_ink);
+
+        /// <summary>Where visible character <paramref name="index"/> starts, on its line's baseline, in the layer's coordinates.</summary>
+        Vector2? PositionOf(int index)
+        {
+            var handle = Handle();
+            if (handle == null)
+                return null;
+            _positionOf ??= handle.GetType().GetMethod("GetCursorPositionFromStringIndexUsingLineHeight", new[] { typeof(int), typeof(bool), typeof(bool) });
+            if (_positionOf == null)
+                return null;
+            try
+            {
+                var p = (Vector2)_positionOf.Invoke(handle, new object[] { index, false, true });
+                return p + _ink.contentRect.min + new Vector2(_ink.layout.x, _ink.layout.y);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        int IndexAt(Vector2 world)
+        {
+            var handle = Handle();
+            if (handle == null)
+                return -1;
+            _indexAt ??= handle.GetType().GetMethod("GetCursorIndexFromPosition", new[] { typeof(Vector2), typeof(bool) });
+            if (_indexAt == null)
+                return -1;
+            try
+            {
+                var local = _ink.WorldToLocal(world) - _ink.contentRect.min;
+                var count = (_field.Input.value ?? "").Length;
+                return Mathf.Clamp((int)_indexAt.Invoke(handle, new object[] { local, true }), 0, count);
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>Line height at the character before <paramref name="index"/>: the page font scaled by its size tag.</summary>
+        float LineHeight(int index)
+        {
+            var model = RichModel.FromRaw(_field.Value);
+            var scale = 1f;
+            if (model.Length > 0)
+            {
+                var at = Mathf.Clamp(index - 1, 0, model.Length - 1);
+                var size = model.Styles[at].Size;
+                if (!string.IsNullOrEmpty(size) && size!.EndsWith("%")
+                    && float.TryParse(size.TrimEnd('%'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var pct))
+                    scale = pct / 100f;
+            }
+
+            return _fontSize * scale * 1.18f;
+        }
+
+        void Draw()
+        {
+            if (!_focused)
+                return;
+            var input = _field.Input;
+            var cursor = input.cursorIndex;
+            var anchor = input.selectIndex;
+            _selection.Clear();
+            if (anchor != cursor)
+            {
+                int a = Math.Min(anchor, cursor), b = Math.Max(anchor, cursor);
+                // One highlight per line: walk the characters and start a new box whenever the baseline moves.
+                float? startX = null;
+                var lastX = 0f;
+                var lineY = 0f;
+                var height = 0f;
+                for (var i = a; i <= b; i++)
+                {
+                    if (PositionOf(i) is not { } p)
+                        break;
+                    if (startX == null || Mathf.Abs(p.y - lineY) > 2f)
+                    {
+                        if (startX is { } x0)
+                            Box(x0, lineY, lastX, height);
+                        startX = p.x;
+                        lineY = p.y;
+                        height = 0f;
+                    }
+
+                    lastX = p.x;
+                    height = Mathf.Max(height, LineHeight(i + 1));
+                }
+
+                if (startX is { } x1)
+                    Box(x1, lineY, lastX, height);
+            }
+
+            if (PositionOf(cursor) is { } c)
+            {
+                if (cursor != _lastCursor)
+                {
+                    _lastCursor = cursor;
+                    _blinkFrom = Time.realtimeSinceStartup;
+                }
+
+                var h = LineHeight(cursor);
+                _caret.style.left = c.x;
+                _caret.style.top = c.y - h;
+                _caret.style.height = h;
+                // Blinks like a text box, steady right after it moves.
+                _caret.Show((Time.realtimeSinceStartup - _blinkFrom) % 1.0f < 0.6f);
+            }
+        }
+
+        void Box(float x0, float baseline, float x1, float height)
+        {
+            if (x1 <= x0)
+                return;
+            var box = new VisualElement { pickingMode = PickingMode.Ignore }.Fill(new Color(0.55f, 0.40f, 0.18f, 0.35f));
+            box.style.position = Position.Absolute;
+            box.style.left = x0;
+            box.style.top = baseline - height;
+            box.style.width = x1 - x0;
+            box.style.height = height;
+            _selection.Add(box);
+        }
+    }
+
+    /// <summary>
     /// The two writable pages of a spread: rich fields drawn straight on the paper (no box), with the suite's formatting bar.
     /// Typing goes to <see cref="OnPageTyped"/>. A right page past the end shows an empty sheet that becomes a new page when typed in.
     /// </summary>
@@ -919,9 +1119,13 @@ internal sealed class BookReaderPanel
                 inked.style.marginLeft = inked.style.marginRight = inked.style.marginTop = 0;
             }
 
-            field.Input.textSelection.cursorColor = BookSpread.Ink;
-            field.Input.textSelection.selectionColor = new Color(0.55f, 0.40f, 0.18f, 0.35f);
+            // The box underneath lays its (invisible) text out at one size; the page shows sizes. So the page draws its own caret and
+            // selection from the shown text's layout (PageCaret), and the box's own are hidden.
+            field.Input.textSelection.cursorColor = Color.clear;
+            field.Input.textSelection.selectionColor = Color.clear;
             var ink = field.Line.Q<Label>();
+            if (ink != null)
+                new PageCaret(field, ink, fontSize);
             field.Changed = _ =>
             {
                 ShowStyles(field, ink);
@@ -963,6 +1167,16 @@ internal sealed class BookReaderPanel
             content.Clear();
             content.Add(field.Root);
             content.Add(BookSpread.PageNumber(number, leftPage));
+        }
+
+        internal void TestSet(string raw, int cursor, int anchor)
+        {
+            _left.SetValue(raw);
+            ShowStyles(_left, _left.Line.Q<Label>());
+            _owner.OnPageTyped(_leftIndex, _left.Value);
+            var input = _left.Input;
+            input.Focus();
+            input.schedule.Execute(() => input.SelectRange(anchor, cursor)).StartingIn(60);
         }
 
         public void FocusPage(int index)

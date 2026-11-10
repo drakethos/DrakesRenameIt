@@ -1,0 +1,2913 @@
+{
+  "name": "VS-20 every kind of piece: Player 2 renames my shared piece",
+  "description": "Real second client against the server: she may, is offered it, renames it, and both clients read her name.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p0",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p0"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_wood: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p0",
+        "text": "P2 piece_chest_wood"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "P2 piece_chest_wood",
+      "label": "piece_chest_wood: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "P2 piece_chest_wood",
+      "label": "piece_chest_wood: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p1",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p1"
+      },
+      "expect": true,
+      "label": "piece_chest: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "Rename",
+      "label": "piece_chest: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p1",
+        "text": "P2 piece_chest"
+      },
+      "expect": true,
+      "label": "piece_chest: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "P2 piece_chest",
+      "label": "piece_chest: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "P2 piece_chest",
+      "label": "piece_chest: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p2",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_private: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p2"
+      },
+      "expect": true,
+      "label": "piece_chest_private: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_private: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p2",
+        "text": "P2 piece_chest_private"
+      },
+      "expect": true,
+      "label": "piece_chest_private: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "P2 piece_chest_private",
+      "label": "piece_chest_private: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "P2 piece_chest_private",
+      "label": "piece_chest_private: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p3",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p3"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_blackmetal: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p3",
+        "text": "P2 piece_chest_blackmetal"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "P2 piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "P2 piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p4",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p4"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_barrel: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p4",
+        "text": "P2 piece_chest_barrel"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "P2 piece_chest_barrel",
+      "label": "piece_chest_barrel: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "P2 piece_chest_barrel",
+      "label": "piece_chest_barrel: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p5",
+        "on": true
+      },
+      "expect": true,
+      "label": "Cart: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p5"
+      },
+      "expect": true,
+      "label": "Cart: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "Rename",
+      "label": "Cart: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p5",
+        "text": "P2 Cart"
+      },
+      "expect": true,
+      "label": "Cart: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "P2 Cart",
+      "label": "Cart: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "P2 Cart",
+      "label": "Cart: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p6",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_workbench: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p6"
+      },
+      "expect": true,
+      "label": "piece_workbench: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "Rename",
+      "label": "piece_workbench: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p6",
+        "text": "P2 piece_workbench"
+      },
+      "expect": true,
+      "label": "piece_workbench: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "P2 piece_workbench",
+      "label": "piece_workbench: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "P2 piece_workbench",
+      "label": "piece_workbench: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p7",
+        "on": true
+      },
+      "expect": true,
+      "label": "forge: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p7"
+      },
+      "expect": true,
+      "label": "forge: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "Rename",
+      "label": "forge: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p7",
+        "text": "P2 forge"
+      },
+      "expect": true,
+      "label": "forge: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "P2 forge",
+      "label": "forge: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "P2 forge",
+      "label": "forge: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p8",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cauldron: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p8"
+      },
+      "expect": true,
+      "label": "piece_cauldron: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "Rename",
+      "label": "piece_cauldron: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p8",
+        "text": "P2 piece_cauldron"
+      },
+      "expect": true,
+      "label": "piece_cauldron: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "P2 piece_cauldron",
+      "label": "piece_cauldron: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "P2 piece_cauldron",
+      "label": "piece_cauldron: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p9",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p9"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "Rename",
+      "label": "piece_stonecutter: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p9",
+        "text": "P2 piece_stonecutter"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "P2 piece_stonecutter",
+      "label": "piece_stonecutter: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "P2 piece_stonecutter",
+      "label": "piece_stonecutter: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p10",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p10"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "Rename",
+      "label": "piece_artisanstation: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p10",
+        "text": "P2 piece_artisanstation"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "P2 piece_artisanstation",
+      "label": "piece_artisanstation: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "P2 piece_artisanstation",
+      "label": "piece_artisanstation: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p11",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_magetable: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p11"
+      },
+      "expect": true,
+      "label": "piece_magetable: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "Rename",
+      "label": "piece_magetable: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p11",
+        "text": "P2 piece_magetable"
+      },
+      "expect": true,
+      "label": "piece_magetable: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "P2 piece_magetable",
+      "label": "piece_magetable: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "P2 piece_magetable",
+      "label": "piece_magetable: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p12",
+        "on": true
+      },
+      "expect": true,
+      "label": "blastfurnace: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p12"
+      },
+      "expect": true,
+      "label": "blastfurnace: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "Rename",
+      "label": "blastfurnace: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p12",
+        "text": "P2 blastfurnace"
+      },
+      "expect": true,
+      "label": "blastfurnace: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "P2 blastfurnace",
+      "label": "blastfurnace: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "P2 blastfurnace",
+      "label": "blastfurnace: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p13",
+        "on": true
+      },
+      "expect": true,
+      "label": "smelter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p13"
+      },
+      "expect": true,
+      "label": "smelter: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "Rename",
+      "label": "smelter: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p13",
+        "text": "P2 smelter"
+      },
+      "expect": true,
+      "label": "smelter: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "P2 smelter",
+      "label": "smelter: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "P2 smelter",
+      "label": "smelter: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p14",
+        "on": true
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p14"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "Rename",
+      "label": "charcoal_kiln: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p14",
+        "text": "P2 charcoal_kiln"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "P2 charcoal_kiln",
+      "label": "charcoal_kiln: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "P2 charcoal_kiln",
+      "label": "charcoal_kiln: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p15",
+        "on": true
+      },
+      "expect": true,
+      "label": "windmill: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p15"
+      },
+      "expect": true,
+      "label": "windmill: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "Rename",
+      "label": "windmill: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p15",
+        "text": "P2 windmill"
+      },
+      "expect": true,
+      "label": "windmill: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "P2 windmill",
+      "label": "windmill: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "P2 windmill",
+      "label": "windmill: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p16",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p16"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "Rename",
+      "label": "piece_spinningwheel: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p16",
+        "text": "P2 piece_spinningwheel"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "P2 piece_spinningwheel",
+      "label": "piece_spinningwheel: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "P2 piece_spinningwheel",
+      "label": "piece_spinningwheel: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p17",
+        "on": true
+      },
+      "expect": true,
+      "label": "eitrrefinery: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p17"
+      },
+      "expect": true,
+      "label": "eitrrefinery: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "Rename",
+      "label": "eitrrefinery: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p17",
+        "text": "P2 eitrrefinery"
+      },
+      "expect": true,
+      "label": "eitrrefinery: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "P2 eitrrefinery",
+      "label": "eitrrefinery: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "P2 eitrrefinery",
+      "label": "eitrrefinery: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p18",
+        "on": true
+      },
+      "expect": true,
+      "label": "fermenter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p18"
+      },
+      "expect": true,
+      "label": "fermenter: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "Rename",
+      "label": "fermenter: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p18",
+        "text": "P2 fermenter"
+      },
+      "expect": true,
+      "label": "fermenter: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "P2 fermenter",
+      "label": "fermenter: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "P2 fermenter",
+      "label": "fermenter: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p19",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p19"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "Rename",
+      "label": "piece_cookingstation: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p19",
+        "text": "P2 piece_cookingstation"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "P2 piece_cookingstation",
+      "label": "piece_cookingstation: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "P2 piece_cookingstation",
+      "label": "piece_cookingstation: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p20",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_oven: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p20"
+      },
+      "expect": true,
+      "label": "piece_oven: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "Rename",
+      "label": "piece_oven: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p20",
+        "text": "P2 piece_oven"
+      },
+      "expect": true,
+      "label": "piece_oven: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "P2 piece_oven",
+      "label": "piece_oven: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "P2 piece_oven",
+      "label": "piece_oven: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p21",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p21"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "Rename",
+      "label": "piece_MeadCauldron: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p21",
+        "text": "P2 piece_MeadCauldron"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "P2 piece_MeadCauldron",
+      "label": "piece_MeadCauldron: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "P2 piece_MeadCauldron",
+      "label": "piece_MeadCauldron: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p22",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p22"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "Rename",
+      "label": "piece_cartographytable: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p22",
+        "text": "P2 piece_cartographytable"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "P2 piece_cartographytable",
+      "label": "piece_cartographytable: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "P2 piece_cartographytable",
+      "label": "piece_cartographytable: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p23",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bed02: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p23"
+      },
+      "expect": true,
+      "label": "piece_bed02: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "Rename",
+      "label": "piece_bed02: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p23",
+        "text": "P2 piece_bed02"
+      },
+      "expect": true,
+      "label": "piece_bed02: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "P2 piece_bed02",
+      "label": "piece_bed02: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "P2 piece_bed02",
+      "label": "piece_bed02: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p24",
+        "on": true
+      },
+      "expect": true,
+      "label": "bed: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p24"
+      },
+      "expect": true,
+      "label": "bed: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "Rename",
+      "label": "bed: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p24",
+        "text": "P2 bed"
+      },
+      "expect": true,
+      "label": "bed: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "P2 bed",
+      "label": "bed: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "P2 bed",
+      "label": "bed: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p25",
+        "on": true
+      },
+      "expect": true,
+      "label": "portal_wood: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p25"
+      },
+      "expect": true,
+      "label": "portal_wood: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "Rename",
+      "label": "portal_wood: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p25",
+        "text": "P2 portal_wood"
+      },
+      "expect": true,
+      "label": "portal_wood: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "P2 portal_wood",
+      "label": "portal_wood: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "P2 portal_wood",
+      "label": "portal_wood: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p26",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_door: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p26"
+      },
+      "expect": true,
+      "label": "wood_door: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "Rename",
+      "label": "wood_door: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p26",
+        "text": "P2 wood_door"
+      },
+      "expect": true,
+      "label": "wood_door: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "P2 wood_door",
+      "label": "wood_door: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "P2 wood_door",
+      "label": "wood_door: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p27",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_gate: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p27"
+      },
+      "expect": true,
+      "label": "wood_gate: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "Rename",
+      "label": "wood_gate: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p27",
+        "text": "P2 wood_gate"
+      },
+      "expect": true,
+      "label": "wood_gate: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "P2 wood_gate",
+      "label": "wood_gate: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "P2 wood_gate",
+      "label": "wood_gate: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p28",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chair: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p28"
+      },
+      "expect": true,
+      "label": "piece_chair: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "Rename",
+      "label": "piece_chair: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p28",
+        "text": "P2 piece_chair"
+      },
+      "expect": true,
+      "label": "piece_chair: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "P2 piece_chair",
+      "label": "piece_chair: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "P2 piece_chair",
+      "label": "piece_chair: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p29",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bench01: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p29"
+      },
+      "expect": true,
+      "label": "piece_bench01: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "Rename",
+      "label": "piece_bench01: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p29",
+        "text": "P2 piece_bench01"
+      },
+      "expect": true,
+      "label": "piece_bench01: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "P2 piece_bench01",
+      "label": "piece_bench01: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "P2 piece_bench01",
+      "label": "piece_bench01: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p30",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_throne01: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p30"
+      },
+      "expect": true,
+      "label": "piece_throne01: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "Rename",
+      "label": "piece_throne01: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p30",
+        "text": "P2 piece_throne01"
+      },
+      "expect": true,
+      "label": "piece_throne01: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "P2 piece_throne01",
+      "label": "piece_throne01: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "P2 piece_throne01",
+      "label": "piece_throne01: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p31",
+        "on": true
+      },
+      "expect": true,
+      "label": "Raft: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p31"
+      },
+      "expect": true,
+      "label": "Raft: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "Rename",
+      "label": "Raft: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p31",
+        "text": "P2 Raft"
+      },
+      "expect": true,
+      "label": "Raft: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "P2 Raft",
+      "label": "Raft: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "P2 Raft",
+      "label": "Raft: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p32",
+        "on": true
+      },
+      "expect": true,
+      "label": "Karve: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p32"
+      },
+      "expect": true,
+      "label": "Karve: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "Rename",
+      "label": "Karve: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p32",
+        "text": "P2 Karve"
+      },
+      "expect": true,
+      "label": "Karve: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "P2 Karve",
+      "label": "Karve: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "P2 Karve",
+      "label": "Karve: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p33",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p33"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "Rename",
+      "label": "piece_TrainingDummy: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p33",
+        "text": "P2 piece_TrainingDummy"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "P2 piece_TrainingDummy",
+      "label": "piece_TrainingDummy: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "P2 piece_TrainingDummy",
+      "label": "piece_TrainingDummy: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p34",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_barber: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p34"
+      },
+      "expect": true,
+      "label": "piece_barber: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "Rename",
+      "label": "piece_barber: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p34",
+        "text": "P2 piece_barber"
+      },
+      "expect": true,
+      "label": "piece_barber: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "P2 piece_barber",
+      "label": "piece_barber: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "P2 piece_barber",
+      "label": "piece_barber: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p35",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_beehive: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p35"
+      },
+      "expect": true,
+      "label": "piece_beehive: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "Rename",
+      "label": "piece_beehive: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p35",
+        "text": "P2 piece_beehive"
+      },
+      "expect": true,
+      "label": "piece_beehive: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "P2 piece_beehive",
+      "label": "piece_beehive: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "P2 piece_beehive",
+      "label": "piece_beehive: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p36",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p36"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "Rename",
+      "label": "piece_sapcollector: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p36",
+        "text": "P2 piece_sapcollector"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "P2 piece_sapcollector",
+      "label": "piece_sapcollector: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "P2 piece_sapcollector",
+      "label": "piece_sapcollector: and so does she"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p37",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_gift1: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p37"
+      },
+      "expect": true,
+      "label": "piece_gift1: Player 2 may rename the shared piece"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "Rename",
+      "label": "piece_gift1: and the Rename hint shows for her"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p37",
+        "text": "P2 piece_gift1"
+      },
+      "expect": true,
+      "label": "piece_gift1: she renames it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "P2 piece_gift1",
+      "label": "piece_gift1: Player 1 sees her name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "P2 piece_gift1",
+      "label": "piece_gift1: and so does she"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 900
+}

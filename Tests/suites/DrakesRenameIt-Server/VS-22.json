@@ -1,0 +1,2533 @@
+{
+  "name": "VS-22 every kind of piece: Shared on and off gates Player 2",
+  "description": "Not shared: no. Shared: yes. Shared off again: no.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p0"
+      },
+      "expect": false,
+      "label": "piece_chest_wood: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p0",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p0"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p0",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p0"
+      },
+      "expect": false,
+      "label": "piece_chest_wood: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p1"
+      },
+      "expect": false,
+      "label": "piece_chest: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p1",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p1"
+      },
+      "expect": true,
+      "label": "piece_chest: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p1",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chest: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p1"
+      },
+      "expect": false,
+      "label": "piece_chest: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p2"
+      },
+      "expect": false,
+      "label": "piece_chest_private: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p2",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_private: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p2"
+      },
+      "expect": true,
+      "label": "piece_chest_private: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p2",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chest_private: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p2"
+      },
+      "expect": false,
+      "label": "piece_chest_private: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p3"
+      },
+      "expect": false,
+      "label": "piece_chest_blackmetal: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p3",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p3"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p3",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p3"
+      },
+      "expect": false,
+      "label": "piece_chest_blackmetal: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p4"
+      },
+      "expect": false,
+      "label": "piece_chest_barrel: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p4",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p4"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p4",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p4"
+      },
+      "expect": false,
+      "label": "piece_chest_barrel: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p5"
+      },
+      "expect": false,
+      "label": "Cart: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p5",
+        "on": true
+      },
+      "expect": true,
+      "label": "Cart: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p5"
+      },
+      "expect": true,
+      "label": "Cart: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p5",
+        "on": false
+      },
+      "expect": true,
+      "label": "Cart: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p5"
+      },
+      "expect": false,
+      "label": "Cart: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p6"
+      },
+      "expect": false,
+      "label": "piece_workbench: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p6",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_workbench: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p6"
+      },
+      "expect": true,
+      "label": "piece_workbench: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p6",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_workbench: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p6"
+      },
+      "expect": false,
+      "label": "piece_workbench: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p7"
+      },
+      "expect": false,
+      "label": "forge: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p7",
+        "on": true
+      },
+      "expect": true,
+      "label": "forge: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p7"
+      },
+      "expect": true,
+      "label": "forge: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p7",
+        "on": false
+      },
+      "expect": true,
+      "label": "forge: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p7"
+      },
+      "expect": false,
+      "label": "forge: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p8"
+      },
+      "expect": false,
+      "label": "piece_cauldron: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p8",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cauldron: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p8"
+      },
+      "expect": true,
+      "label": "piece_cauldron: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p8",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_cauldron: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p8"
+      },
+      "expect": false,
+      "label": "piece_cauldron: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p9"
+      },
+      "expect": false,
+      "label": "piece_stonecutter: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p9",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p9"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p9",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p9"
+      },
+      "expect": false,
+      "label": "piece_stonecutter: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p10"
+      },
+      "expect": false,
+      "label": "piece_artisanstation: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p10",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p10"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p10",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p10"
+      },
+      "expect": false,
+      "label": "piece_artisanstation: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p11"
+      },
+      "expect": false,
+      "label": "piece_magetable: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p11",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_magetable: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p11"
+      },
+      "expect": true,
+      "label": "piece_magetable: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p11",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_magetable: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p11"
+      },
+      "expect": false,
+      "label": "piece_magetable: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p12"
+      },
+      "expect": false,
+      "label": "blastfurnace: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p12",
+        "on": true
+      },
+      "expect": true,
+      "label": "blastfurnace: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p12"
+      },
+      "expect": true,
+      "label": "blastfurnace: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p12",
+        "on": false
+      },
+      "expect": true,
+      "label": "blastfurnace: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p12"
+      },
+      "expect": false,
+      "label": "blastfurnace: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p13"
+      },
+      "expect": false,
+      "label": "smelter: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p13",
+        "on": true
+      },
+      "expect": true,
+      "label": "smelter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p13"
+      },
+      "expect": true,
+      "label": "smelter: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p13",
+        "on": false
+      },
+      "expect": true,
+      "label": "smelter: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p13"
+      },
+      "expect": false,
+      "label": "smelter: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p14"
+      },
+      "expect": false,
+      "label": "charcoal_kiln: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p14",
+        "on": true
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p14"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p14",
+        "on": false
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p14"
+      },
+      "expect": false,
+      "label": "charcoal_kiln: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p15"
+      },
+      "expect": false,
+      "label": "windmill: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p15",
+        "on": true
+      },
+      "expect": true,
+      "label": "windmill: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p15"
+      },
+      "expect": true,
+      "label": "windmill: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p15",
+        "on": false
+      },
+      "expect": true,
+      "label": "windmill: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p15"
+      },
+      "expect": false,
+      "label": "windmill: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p16"
+      },
+      "expect": false,
+      "label": "piece_spinningwheel: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p16",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p16"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p16",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p16"
+      },
+      "expect": false,
+      "label": "piece_spinningwheel: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p17"
+      },
+      "expect": false,
+      "label": "eitrrefinery: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p17",
+        "on": true
+      },
+      "expect": true,
+      "label": "eitrrefinery: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p17"
+      },
+      "expect": true,
+      "label": "eitrrefinery: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p17",
+        "on": false
+      },
+      "expect": true,
+      "label": "eitrrefinery: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p17"
+      },
+      "expect": false,
+      "label": "eitrrefinery: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p18"
+      },
+      "expect": false,
+      "label": "fermenter: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p18",
+        "on": true
+      },
+      "expect": true,
+      "label": "fermenter: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p18"
+      },
+      "expect": true,
+      "label": "fermenter: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p18",
+        "on": false
+      },
+      "expect": true,
+      "label": "fermenter: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p18"
+      },
+      "expect": false,
+      "label": "fermenter: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p19"
+      },
+      "expect": false,
+      "label": "piece_cookingstation: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p19",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p19"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p19",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p19"
+      },
+      "expect": false,
+      "label": "piece_cookingstation: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p20"
+      },
+      "expect": false,
+      "label": "piece_oven: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p20",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_oven: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p20"
+      },
+      "expect": true,
+      "label": "piece_oven: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p20",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_oven: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p20"
+      },
+      "expect": false,
+      "label": "piece_oven: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p21"
+      },
+      "expect": false,
+      "label": "piece_MeadCauldron: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p21",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p21"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p21",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p21"
+      },
+      "expect": false,
+      "label": "piece_MeadCauldron: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p22"
+      },
+      "expect": false,
+      "label": "piece_cartographytable: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p22",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p22"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p22",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p22"
+      },
+      "expect": false,
+      "label": "piece_cartographytable: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p23"
+      },
+      "expect": false,
+      "label": "piece_bed02: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p23",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bed02: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p23"
+      },
+      "expect": true,
+      "label": "piece_bed02: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p23",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_bed02: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p23"
+      },
+      "expect": false,
+      "label": "piece_bed02: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p24"
+      },
+      "expect": false,
+      "label": "bed: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p24",
+        "on": true
+      },
+      "expect": true,
+      "label": "bed: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p24"
+      },
+      "expect": true,
+      "label": "bed: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p24",
+        "on": false
+      },
+      "expect": true,
+      "label": "bed: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p24"
+      },
+      "expect": false,
+      "label": "bed: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p25"
+      },
+      "expect": false,
+      "label": "portal_wood: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p25",
+        "on": true
+      },
+      "expect": true,
+      "label": "portal_wood: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p25"
+      },
+      "expect": true,
+      "label": "portal_wood: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p25",
+        "on": false
+      },
+      "expect": true,
+      "label": "portal_wood: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p25"
+      },
+      "expect": false,
+      "label": "portal_wood: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p26"
+      },
+      "expect": false,
+      "label": "wood_door: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p26",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_door: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p26"
+      },
+      "expect": true,
+      "label": "wood_door: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p26",
+        "on": false
+      },
+      "expect": true,
+      "label": "wood_door: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p26"
+      },
+      "expect": false,
+      "label": "wood_door: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p27"
+      },
+      "expect": false,
+      "label": "wood_gate: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p27",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_gate: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p27"
+      },
+      "expect": true,
+      "label": "wood_gate: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p27",
+        "on": false
+      },
+      "expect": true,
+      "label": "wood_gate: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p27"
+      },
+      "expect": false,
+      "label": "wood_gate: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p28"
+      },
+      "expect": false,
+      "label": "piece_chair: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p28",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chair: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p28"
+      },
+      "expect": true,
+      "label": "piece_chair: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p28",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_chair: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p28"
+      },
+      "expect": false,
+      "label": "piece_chair: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p29"
+      },
+      "expect": false,
+      "label": "piece_bench01: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p29",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bench01: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p29"
+      },
+      "expect": true,
+      "label": "piece_bench01: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p29",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_bench01: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p29"
+      },
+      "expect": false,
+      "label": "piece_bench01: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p30"
+      },
+      "expect": false,
+      "label": "piece_throne01: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p30",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_throne01: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p30"
+      },
+      "expect": true,
+      "label": "piece_throne01: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p30",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_throne01: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p30"
+      },
+      "expect": false,
+      "label": "piece_throne01: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p31"
+      },
+      "expect": false,
+      "label": "Raft: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p31",
+        "on": true
+      },
+      "expect": true,
+      "label": "Raft: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p31"
+      },
+      "expect": true,
+      "label": "Raft: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p31",
+        "on": false
+      },
+      "expect": true,
+      "label": "Raft: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p31"
+      },
+      "expect": false,
+      "label": "Raft: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p32"
+      },
+      "expect": false,
+      "label": "Karve: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p32",
+        "on": true
+      },
+      "expect": true,
+      "label": "Karve: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p32"
+      },
+      "expect": true,
+      "label": "Karve: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p32",
+        "on": false
+      },
+      "expect": true,
+      "label": "Karve: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p32"
+      },
+      "expect": false,
+      "label": "Karve: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p33"
+      },
+      "expect": false,
+      "label": "piece_TrainingDummy: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p33",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p33"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p33",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p33"
+      },
+      "expect": false,
+      "label": "piece_TrainingDummy: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p34"
+      },
+      "expect": false,
+      "label": "piece_barber: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p34",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_barber: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p34"
+      },
+      "expect": true,
+      "label": "piece_barber: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p34",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_barber: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p34"
+      },
+      "expect": false,
+      "label": "piece_barber: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p35"
+      },
+      "expect": false,
+      "label": "piece_beehive: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p35",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_beehive: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p35"
+      },
+      "expect": true,
+      "label": "piece_beehive: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p35",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_beehive: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p35"
+      },
+      "expect": false,
+      "label": "piece_beehive: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p36"
+      },
+      "expect": false,
+      "label": "piece_sapcollector: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p36",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p36"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p36",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p36"
+      },
+      "expect": false,
+      "label": "piece_sapcollector: off again, she may not"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p37"
+      },
+      "expect": false,
+      "label": "piece_gift1: not shared, Player 2 may not"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p37",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_gift1: I share it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p37"
+      },
+      "expect": true,
+      "label": "piece_gift1: shared, she may"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p37",
+        "on": false
+      },
+      "expect": true,
+      "label": "piece_gift1: I turn Shared off"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.0
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p37"
+      },
+      "expect": false,
+      "label": "piece_gift1: off again, she may not"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 900
+}

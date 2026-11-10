@@ -611,8 +611,11 @@ internal static class RenameItTestHooks
         return Pieces.PieceRename.FirstNameableHover(piece) is Component h && Pieces.PieceRename.NameablePiece(h.gameObject) == piece;
     }
 
+    static readonly System.Reflection.FieldInfo? ShieldGhostField = HarmonyLib.AccessTools.Field(typeof(ShieldGenerator), "m_isPlacementGhost");
+
     /// <summary>
     /// Sweeps buildable prefabs (comma separated): spawns each briefly with me as the builder and reports which can be named.
+    /// (A shield generator's placement-ghost flag is set before it goes; see the finally block.)
     /// Returns "ok=N;missing=[..];notNameable=[..];denied=[..];badName=[..]". notNameable = no hover RenameIt handles (fires, stands, signs),
     /// denied = the rules refuse the builder, badName = the new name did not become the display name.
     /// </summary>
@@ -665,6 +668,10 @@ internal static class RenameItTestHooks
             }
             finally
             {
+                // A shield generator removed in the frame it was made never ran Start, and its OnDestroy then throws on the dome
+                // effect it never set up. The game skips that cleanup for placement ghosts, which is all this brief copy is.
+                foreach (var shield in go.GetComponentsInChildren<ShieldGenerator>(true))
+                    ShieldGhostField?.SetValue(shield, true);
                 ZNetScene.instance.Destroy(go);
             }
         }

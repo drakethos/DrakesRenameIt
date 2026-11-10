@@ -970,7 +970,25 @@ internal sealed class BookReaderPanel
                     Box(x1, lineY, lastX, height);
             }
 
-            if (PositionOf(cursor) is { } c)
+            var plain = input.value ?? "";
+            if (cursor > 0 && cursor <= plain.Length && plain[cursor - 1] == '\n' && (cursor == plain.Length || plain[cursor] == '\n')
+                && PositionOf(cursor - 1) is { } before)
+            {
+                // Right after Enter on an empty line the layout has no character there yet: the caret goes to the start of the next
+                // line, one line below the line break.
+                var lineH = LineHeight(cursor);
+                if (cursor != _lastCursor)
+                {
+                    _lastCursor = cursor;
+                    _blinkFrom = Time.realtimeSinceStartup;
+                }
+
+                _caret.style.left = _ink.layout.x + _ink.contentRect.xMin;
+                _caret.style.top = before.y;
+                _caret.style.height = lineH;
+                _caret.Show((Time.realtimeSinceStartup - _blinkFrom) % 1.0f < 0.6f);
+            }
+            else if (PositionOf(cursor) is { } c)
             {
                 if (cursor != _lastCursor)
                 {

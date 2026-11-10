@@ -9,11 +9,8 @@
       "as": "door"
     },
     {
-      "do": "hook",
-      "name": "renameit.clearAround",
-      "args": {
-        "radius": 20
-      }
+      "do": "clearArea",
+      "radius": 20
     },
     {
       "do": "wait",
@@ -126,11 +123,8 @@
       }
     },
     {
-      "do": "hook",
-      "name": "renameit.clearAround",
-      "args": {
-        "radius": 20
-      }
+      "do": "clearArea",
+      "radius": 20
     },
     {
       "do": "hook",

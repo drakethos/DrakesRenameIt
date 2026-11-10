@@ -3,11 +3,8 @@
   "description": "A placed book lies flush with titles on spine and cover; the placer holds Use to take it back; the inventory icon is drawn from the cover. In Edit, the caret and selection follow text of different sizes.",
   "steps": [
     {
-      "do": "hook",
-      "name": "renameit.clearAround",
-      "args": {
-        "radius": 20
-      }
+      "do": "clearArea",
+      "radius": 20
     },
     {
       "do": "place",
@@ -192,6 +189,23 @@
     {
       "do": "screenshot",
       "label": "edit: caret after book"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.bookCaret",
+      "args": {
+        "text": "This is a <size=175%>cool</size> book\n\nNow change it\n",
+        "cursor": 35
+      },
+      "expect": true
+    },
+    {
+      "do": "wait",
+      "seconds": 0.8
+    },
+    {
+      "do": "screenshot",
+      "label": "edit: caret on the empty line after Enter"
     },
     {
       "do": "hook",

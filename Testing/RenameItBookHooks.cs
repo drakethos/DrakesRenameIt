@@ -345,6 +345,64 @@ internal static class RenameItBookHooks
         return doomed.Count;
     }
 
+    /// <summary>
+    /// Probe for the tree-clearing work: every rendered object within "radius" metres that is not a piece, creature, or player,
+    /// grouped by prefab-like root name, with what it carries (networked, Destructible, TreeBase, Pickable, Plant, StaticPhysics...).
+    /// </summary>
+    [TestHook("renameit.whatsNear")]
+    static string WhatsNear(Dictionary<string, object?> args)
+    {
+        var radius = float.Parse(S(args, "radius", "25"), CultureInfo.InvariantCulture);
+        var centre = P.transform.position;
+        var seen = new Dictionary<string, (int Count, string Parts)>();
+        foreach (var r in UnityEngine.Object.FindObjectsOfType<Renderer>())
+        {
+            if (r == null || !r.enabled)
+                continue;
+            var root = r.transform.root;
+            var d = root.position - centre;
+            d.y = 0f;
+            if (d.magnitude > radius || root.GetComponentInChildren<Piece>() != null || root.GetComponentInChildren<Character>() != null)
+                continue;
+            if (root.GetComponent<Camera>() != null || root.name.StartsWith("_") || root.name.Contains("Terrain") || root.name.Contains("Water"))
+                continue;
+            var key = Utils.GetPrefabName(root.gameObject) + "@" + ((int)(d.magnitude / 10f) * 10) + "m";
+            if (seen.ContainsKey(key))
+            {
+                seen[key] = (seen[key].Count + 1, seen[key].Parts);
+                continue;
+            }
+
+            var parts = new List<string>();
+            if (root.GetComponent<ZNetView>() != null) parts.Add("net");
+            foreach (var c in root.GetComponents<Component>())
+            {
+                var n = c.GetType().Name;
+                if (n is "Destructible" or "TreeBase" or "TreeLog" or "Pickable" or "Plant" or "MineRock" or "MineRock5" or "StaticPhysics"
+                    or "WearNTear" or "LODGroup" or "HoverText" or "ItemDrop" or "Beehive")
+                    parts.Add(n);
+            }
+
+            seen[key] = (1, string.Join("+", parts));
+        }
+
+        var lines = new List<string>();
+        foreach (var kv in seen)
+            lines.Add($"{kv.Key} x{kv.Value.Count} [{kv.Value.Parts}]");
+        lines.Sort(StringComparer.Ordinal);
+        var report = string.Join("; ", lines);
+        RenameitConfig.Log?.LogInfo("[whatsNear] " + report);
+        // Clutter (grass, small bushes, saplings) is drawn in bulk with no object per plant: list its kinds too.
+        if (ClutterSystem.instance != null)
+        {
+            var kinds = new List<string>();
+            foreach (var c in ClutterSystem.instance.m_clutter)
+                kinds.Add($"{c.m_name}|{(c.m_prefab != null ? c.m_prefab.name : "-")}|{c.m_biome}|on={c.m_enabled}|inst={c.m_instanced}");
+            RenameitConfig.Log?.LogInfo("[clutter] " + string.Join("; ", kinds));
+        }
+        return report;
+    }
+
     static SecretBookcaseBehaviour? Secret(GameObject? target) => target != null ? target.GetComponent<SecretBookcaseBehaviour>() : null;
 
     /// <summary>Aim slot for the secret-door hooks: "handle", a slot number, or "case" (the bookcase, no book).</summary>

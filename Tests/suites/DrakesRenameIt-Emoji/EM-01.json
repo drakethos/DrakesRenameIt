@@ -1,0 +1,45 @@
+{
+  "name": "EM-01 a sign draws the sample emoji (control)",
+  "description": "Puts the sample text on a sign's widget and lists, per character, which font supplied the glyph (NONE = missing-glyph box).",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "sign",
+      "dz": 3,
+      "owner": "me",
+      "as": "sign"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.glyphProbe",
+      "args": {
+        "source": "sign",
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "target": "sign"
+      },
+      "contains": "glyphs=",
+      "label": "sign glyphs (report)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.glyphProbe",
+      "args": {
+        "source": "sign",
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "target": "sign"
+      },
+      "notContains": "NONE",
+      "label": "the sign draws every glyph"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

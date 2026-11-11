@@ -1,0 +1,39 @@
+{
+  "name": "EM-04 the editors (UI Toolkit font) can draw the sample emoji",
+  "description": "The paper editor, rename windows and tooltips fields use the Averia UI Toolkit font; checks it (with its fallbacks) has every sample glyph, and lists the sign font fallbacks a UI fallback could be built from.",
+  "steps": [
+    {
+      "do": "spawn",
+      "prefab": "sign",
+      "dz": 3,
+      "owner": "me",
+      "as": "sign"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiGlyphs",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "target": "sign"
+      },
+      "contains": "uiFont=",
+      "label": "UI font report"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.uiGlyphs",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "target": "sign"
+      },
+      "notContains": ":NO",
+      "label": "the editor font draws every glyph"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

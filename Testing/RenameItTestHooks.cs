@@ -1268,6 +1268,95 @@ internal static class RenameItTestHooks
         return removed;
     }
 
+    static readonly FieldInfo? SignWidgetField = AccessTools.Field(typeof(Sign), "m_textWidget");
+
+    /// <summary>
+    /// Which glyphs a text widget really draws. source "page" = the pinned page's widget (its own text); source "sign" = the Sign
+    /// the target points at, with the given text put on its widget the way Sign.UpdateText does. One entry per drawn character:
+    /// U+codepoint@font that supplied it (a fallback font counts), or NONE when TMP drew the missing-glyph box / nothing.
+    /// </summary>
+    [TestHook("renameit.glyphProbe")]
+    static string GlyphProbe(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        TMPro.TMP_Text widget;
+        if (S(args, "source") == "sign")
+        {
+            var sign = target != null ? target.GetComponentInChildren<Sign>(true) : UnityEngine.Object.FindObjectOfType<Sign>();
+            widget = (SignWidgetField?.GetValue(sign) as TMPro.TMP_Text) ?? throw new InvalidOperationException("no sign text widget");
+            widget.text = S(args, "text");
+        }
+        else
+        {
+            widget = PaperNotePageText.FindPageWidget(Page().gameObject) ?? throw new InvalidOperationException("the page shows no text");
+        }
+
+        widget.ForceMeshUpdate(ignoreActiveState: true);
+        var info = widget.textInfo;
+        var parts = new List<string>();
+        for (var i = 0; i < info.characterCount; i++)
+        {
+            var c = info.characterInfo[i];
+            if (c.character == (char)10 || c.character == ' ')
+                continue;
+            var el = c.textElement;
+            var cp = el != null ? (int)el.unicode : c.character;
+            var font = el != null && el.textAsset != null ? el.textAsset.name : "NONE";
+            var ok = el != null && c.isVisible && el.unicode != 0x25A1 && el.unicode != 0;
+            parts.Add($"U+{cp:X}@{(ok ? font : "NONE")}");
+        }
+
+        var main = widget.font;
+        return $"font={(main != null ? main.name : "NULL")};fallbacks={(main != null && main.fallbackFontAssetTable != null ? main.fallbackFontAssetTable.Count : -1)}"
+               + $";globalFallbacks={(TMPro.TMP_Settings.fallbackFontAssets != null ? TMPro.TMP_Settings.fallbackFontAssets.Count : -1)}"
+               + $";rich={widget.richText};n={info.characterCount};glyphs=[{string.Join(",", parts)}]";
+    }
+
+    /// <summary>
+    /// Can the UI Toolkit editors (Averia body font, made from the legacy font) draw these code points, with and without fallbacks?
+    /// Also lists the sign font's TMP fallbacks and their source fonts (what a UI Toolkit fallback could be built from).
+    /// </summary>
+    [TestHook("renameit.uiGlyphs")]
+    static string UiGlyphs(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var text = S(args, "text");
+        var asset = DrakeModsLibs.UI.Toolkit.UkFonts.Body?.fontAsset;
+        var parts = new List<string>();
+        for (var i = 0; i < text.Length; i++)
+        {
+            int cp = char.ConvertToUtf32(text, i);
+            if (char.IsHighSurrogate(text[i]))
+                i++;
+            if (cp == ' ' || cp == 0xFE0F)
+                continue;
+            parts.Add($"U+{cp:X}:{(asset != null && asset.HasCharacter((uint)cp, true, true) ? "yes" : "NO")}");
+        }
+
+        var sign = target != null ? target.GetComponentInChildren<Sign>(true) : UnityEngine.Object.FindObjectOfType<Sign>();
+        var tmp = (SignWidgetField?.GetValue(sign) as TMPro.TMP_Text)?.font;
+        var fb = tmp != null && tmp.fallbackFontAssetTable != null
+            ? string.Join(",", tmp.fallbackFontAssetTable.Select(f => f.name + "<" + (f.sourceFontFile != null ? f.sourceFontFile.name : "no-source") + ">"))
+            : "none";
+        return $"uiFont={(asset != null ? asset.name : "NULL")};uiFallbacks={(asset != null && asset.fallbackFontAssetTable != null ? asset.fallbackFontAssetTable.Count : -1)};glyphs=[{string.Join(",", parts)}];tmpFallbacks=[{fb}]";
+    }
+
+    /// <summary>Visible length and a Truncate of the text, as code points (does a cut split an emoji's surrogate pair?).</summary>
+    [TestHook("renameit.richLength")]
+    static string RichLength(Dictionary<string, object?> args)
+    {
+        var text = S(args, "text");
+        var max = I(args, "max", 3);
+        var cut = DrakeModsLibs.UI.Toolkit.RichText.Truncate(text, max, 512);
+        var cps = string.Join(" ", cut.Select(ch => ((int)ch).ToString("X4")));
+        var lone = false;
+        for (var i = 0; i < cut.Length; i++)
+        {
+            if (char.IsHighSurrogate(cut[i]) && (i + 1 >= cut.Length || !char.IsLowSurrogate(cut[i + 1]))) lone = true;
+            if (char.IsLowSurrogate(cut[i]) && (i == 0 || !char.IsHighSurrogate(cut[i - 1]))) lone = true;
+        }
+
+        return $"visible={DrakeModsLibs.UI.Toolkit.RichText.VisibleLength(text)};utf16={text.Length};cut={cps};brokenPair={lone}";
+    }
+
     [TestHook("renameit.pageHover")]
     static string PageHover() => Loc(Page().GetHoverText() ?? "");
 

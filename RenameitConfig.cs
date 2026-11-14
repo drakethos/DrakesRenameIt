@@ -61,16 +61,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _useToolkitUi = default!;
     private static ConfigEntry<bool> _paperFeatureEnabled = default!;
     private static ConfigEntry<bool> _showPreviewCard = default!;
-    private static ConfigEntry<string> _quickSettingsKey = default!;
     private static ConfigEntry<string> _recentColors = default!;
-    private static ConfigEntry<string> _hoverStyle = default!;
-    private static ConfigEntry<bool> _hoverKeyHint = default!;
-    private static ConfigEntry<bool> _hoverCrafter = default!;
-    private static ConfigEntry<bool> _hoverDescription = default!;
-    private static ConfigEntry<bool> _hoverBackdrop = default!;
-    private static ConfigEntry<string> _hoverSize = default!;
-    private static ConfigEntry<string> _hoverStrength = default!;
-    private static ConfigEntry<string> _hoverPosition = default!;
     private static ConfigEntry<string> _excludedNames = default!;
     private static ConfigEntry<string> _excludedCategory = default!;
     private static ConfigEntry<string> _renameAllowlist = default!;
@@ -166,61 +157,6 @@ public static class RenameitConfig
     /// whether Paper is the cause of a reported mod incompatibility — flip off, restart, and compare. Per-client; needs a restart.
     /// </summary>
     public static bool PaperFeatureEnabled => _paperFeatureEnabled.Value;
-
-    // ---- World hover text (what you see looking at an item on the ground or on a stand). All per-client.
-
-    /// <summary>"Vanilla" (untouched), "Minimal" (name + quiet key hint) or "Detailed" (adds description and crafter).</summary>
-    public static string HoverStyle
-    {
-        get => PickHover(_hoverStyle.Value, "Vanilla", "Minimal", "Detailed");
-        set => _hoverStyle.Value = value;
-    }
-
-    public static bool HoverKeyHint { get => _hoverKeyHint.Value; set => _hoverKeyHint.Value = value; }
-    public static bool HoverCrafter { get => _hoverCrafter.Value; set => _hoverCrafter.Value = value; }
-    public static bool HoverDescription { get => _hoverDescription.Value; set => _hoverDescription.Value = value; }
-    /// <summary>A light see-through dark box behind the hover text.</summary>
-    public static bool HoverBackdrop { get => _hoverBackdrop.Value; set => _hoverBackdrop.Value = value; }
-
-    /// <summary>"S", "M" or "L".</summary>
-    public static string HoverSize
-    {
-        get => PickHover(_hoverSize.Value, "M", "S", "L");
-        set => _hoverSize.Value = value;
-    }
-
-    /// <summary>"Light", "Normal" or "Bold": how strong (opaque) the text is.</summary>
-    public static string HoverStrength
-    {
-        get => PickHover(_hoverStrength.Value, "Normal", "Light", "Bold");
-        set => _hoverStrength.Value = value;
-    }
-
-    /// <summary>"Under" the crosshair or "Beside" it.</summary>
-    public static string HoverPosition
-    {
-        get => PickHover(_hoverPosition.Value, "Under", "Beside");
-        set => _hoverPosition.Value = value;
-    }
-
-    /// <summary>Case-insensitive match against the allowed values; the first allowed value when it doesn't match (a mistyped config).</summary>
-    static string PickHover(string? value, params string[] allowed)
-    {
-        foreach (var option in allowed)
-            if (string.Equals(option, value?.Trim(), StringComparison.OrdinalIgnoreCase))
-                return option;
-        return allowed[0];
-    }
-
-    /// <summary>
-    /// Shortcut that opens Quick Settings when you are not looking at an item: modifiers held, then the last key pressed
-    /// (<c>Shift+F1</c>). Empty turns it off. Per-client; the Quick Settings menu has a Change button.
-    /// </summary>
-    public static string QuickSettingsKey
-    {
-        get => _quickSettingsKey.Value ?? "";
-        set => _quickSettingsKey.Value = value;
-    }
 
     /// <summary>Colours picked with the colour picker, newest first, comma separated (<c>#rrggbb</c>). Per-client.</summary>
     public static string RecentColors
@@ -745,64 +681,7 @@ public static class RenameitConfig
             SectionUI, DisplayUI,
             "ShowPreviewCard",
             true,
-            "Show a floating preview of your item beside the Workshop window while you edit. Per-client; also in the window's cog menu.");
-
-        _hoverStyle = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverStyle",
-            "Minimal",
-            "World hover text style (what you see looking at an item on the ground or on a stand): Vanilla = untouched, Minimal = name and a quiet key hint, Detailed = adds description and crafter. Per-client.");
-
-        _hoverKeyHint = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverKeyHint",
-            true,
-            "Show the key hint (Pick up [E]) in Minimal and Detailed hover text. Per-client.");
-
-        _hoverCrafter = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverCrafter",
-            true,
-            "Show who crafted the item in Detailed hover text. Per-client.");
-
-        _hoverDescription = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverDescription",
-            true,
-            "Show the item description in Detailed hover text. Per-client.");
-
-        _hoverBackdrop = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverBackdrop",
-            false,
-            "Put a light see-through dark box behind the hover text. Per-client.");
-
-        _hoverSize = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverSize",
-            "M",
-            "Hover text size: S, M or L. Per-client.");
-
-        _hoverStrength = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverStrength",
-            "Normal",
-            "Hover text strength: Light, Normal or Bold (how opaque the text is). Per-client.");
-
-        _hoverPosition = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "HoverPosition",
-            "Under",
-            "Where the hover text sits: Under the crosshair, or Beside it. Per-client.");
-
-        _quickSettingsKey = _drakeConfigSync.BindClientOnly(config,
-            SectionUI, DisplayUI,
-            "QuickSettingsKey",
-            "Shift+F1",
-            "Shortcut that opens Quick Settings (preview card, hover text). Modifiers held, then the last key pressed, e.g. Shift+F1 or Ctrl+Shift+F8. Ignored while a menu or text field has focus, and while you are looking at an item or stand (and, for W/A/S/D shortcuts, while you are moving). Leave empty to turn it off. Per-client; also changeable from the Quick Settings menu.");
-        // Older defaults fought typing (Shift+S → "Sheep") or were awkward (Alt+F7).
-        if (_quickSettingsKey.Value == "Alt+F7" || _quickSettingsKey.Value == "Shift+S")
-            _quickSettingsKey.Value = "Shift+F1";
+            "Show a floating preview of your item beside the Workshop window while you edit. Per-client.");
 
         _recentColors = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,

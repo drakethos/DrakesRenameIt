@@ -32,9 +32,6 @@ internal sealed class WorkshopPanel
     readonly VisualElement _scrim;
     readonly VisualElement _stage;
     readonly WorkshopPreview _preview;
-    readonly Button _cogButton;
-    readonly UkPopover _cogMenu;
-    readonly QuickSettingsContent _settings;
     readonly VisualElement _iconSlot;
     readonly Label _title;
     readonly Label _subtitle;
@@ -92,11 +89,6 @@ internal sealed class WorkshopPanel
             return true;
         }
 
-        if (panel._cogMenu.IsOpen)
-        {
-            panel._cogMenu.Close();
-            return true;
-        }
 
         if (panel._labelPicker.IsOpen)
         {
@@ -153,21 +145,9 @@ internal sealed class WorkshopPanel
         titles.Add(_title);
         titles.Add(_subtitle);
         header.Add(titles);
-        _cogButton = UkControls.MakeIconButton("", () => _cogMenu!.Toggle(_cogButton!), "Quick settings", UkButtonKind.Secondary);
-        _cogButton.style.alignItems = Align.Center;
-        _cogButton.style.justifyContent = Justify.Center;
-        _cogButton.style.marginRight = 8;
-        _cogButton.Add(UkIcons.Gear(22f, UkTheme.TextMuted));
-        header.Add(_cogButton);
         header.Add(UkControls.MakeIconButton("✕", () => Close(notifyHost: true), "Close (Esc)", UkButtonKind.Secondary));
         card.Add(header);
         MakeDraggable(header);
-
-        // Quick settings: this device only. The same controls as the standalone window (QuickSettingsContent).
-        _cogMenu = new UkPopover(card, 430f);
-        _settings = new QuickSettingsContent(withHeader: true);
-        _settings.PreviewChanged = ApplyPreviewVisibility;
-        _cogMenu.Content.Add(_settings.Root);
 
         // Tabs (only when more than one mod offers something for this item).
         _tabs = new VisualElement().Row().Pad(10, 22).BorderBottom(UkTheme.LineSoft);
@@ -241,8 +221,6 @@ internal sealed class WorkshopPanel
             var target = e.target as VisualElement;
             if (_labelPicker.IsOpen && !_labelPicker.Contains(target))
                 _labelPicker.Close();
-            if (_cogMenu.IsOpen && !_cogMenu.Contains(target) && !_cogButton.Contains(target))
-                _cogMenu.Close();
             _richBar.CloseIfOutside(target);
         }, TrickleDown.TrickleDown);
         _crafted.SubmitPressed = Save;
@@ -289,8 +267,6 @@ internal sealed class WorkshopPanel
         _toast.Hide();
         _resetAll.Cancel();
         _screen.RaiseAboveCanvases();
-        _cogMenu.Close();
-        _settings.Sync();
         ApplyPreviewVisibility();
         _scrim.Show(true);
         _open = true;
@@ -307,7 +283,6 @@ internal sealed class WorkshopPanel
         _scrim.Show(false);
         _toast.Hide();
         _resetAll.Cancel();
-        _cogMenu.Close();
         _item = null;
         _undo = null;
         DrakeRenameit.CurrentItem = null;

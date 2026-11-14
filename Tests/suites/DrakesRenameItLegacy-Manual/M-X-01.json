@@ -1,0 +1,20 @@
+{
+  "name": "M-X-01 PaperFeatureEnabled off skips Paper entirely",
+  "description": "Legacy-only diagnostic switch. PaperFeatureEnabled is read once at Awake, so flipping it needs a restart to take effect — not an automated-suite setConfig check.",
+  "manualOnly": true,
+  "steps": [
+    {
+      "do": "checkpoint",
+      "message": "Set 11 UI-NotSynced/PaperFeatureEnabled to false in the config file, then restart the game. Confirm: no Piece of Paper in the crafting list, no Paper tab on any item, no paper-related error in the log on load. Then set it back to true and restart again to confirm Paper returns. Mark Fail if either half didn't hold."
+    },
+    {
+      "do": "closeUi"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameitLegacy"
+    }
+  ]
+}

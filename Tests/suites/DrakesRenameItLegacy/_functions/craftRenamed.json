@@ -1,0 +1,43 @@
+{
+  "description": "Craft an item through the game (real owner) and rename it; optionally give it a description too.",
+  "params": [
+    "text",
+    {
+      "desc": null
+    },
+    {
+      "prefab": "AxeStone"
+    },
+    {
+      "by": null
+    }
+  ],
+  "actions": [
+    {
+      "do": "craft",
+      "prefab": "{{prefab}}",
+      "by": "{{by}}"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "{{prefab}}",
+        "op": "name",
+        "text": "{{text}}"
+      },
+      "expect": true
+    },
+    {
+      "if": "{{desc}}",
+      "do": "hook",
+      "name": "renameit.edit",
+      "args": {
+        "prefab": "{{prefab}}",
+        "op": "desc",
+        "text": "{{desc}}"
+      },
+      "expect": true
+    }
+  ]
+}

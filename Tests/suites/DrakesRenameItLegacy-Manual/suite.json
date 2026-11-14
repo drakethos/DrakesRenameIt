@@ -1,0 +1,9 @@
+{
+  "name": "DrakesRenameItLegacy-Manual",
+  "description": "What a person has to look at or press for Legacy-specific checks: real keys and windows, relaunch. Run after the automated DrakesRenameItLegacy suite. Each test sets things up and asks you Pass / Fail.",
+  "include": [
+    "../DrakesRenameItLegacy/_shared/baseline.json",
+    "../DrakesRenameItLegacy/_functions"
+  ],
+  "resetBetweenTests": true
+}

@@ -145,7 +145,14 @@ namespace DrakeRenameit
         private void OnVendoredVanillaPrefabsAvailable()
         {
             PrefabManager.OnVanillaPrefabsAvailable -= OnVendoredVanillaPrefabsAvailable;
-            global::DrakeModsLibs.Integration.InventoryContextLocalization.Register();
+            try
+            {
+                global::DrakeModsLibs.Integration.InventoryContextLocalization.Register();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"InventoryContextLocalization.Register failed: {ex}");
+            }
         }
 
         private void Update()

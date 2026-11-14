@@ -1,0 +1,37 @@
+{
+  "name": "X-05 renamed item survives drop and pickup",
+  "description": "Sheet: SM-008 (partly: persistence through the world, not a relaunch). ",
+  "steps": [
+    "craftRenamed(\"Dropped Axe\", \"Still here\")",
+    {
+      "do": "hook",
+      "name": "renameit.dropAndPickup",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "expect": 1
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Dropped Axe"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.desc",
+      "args": {
+        "prefab": "AxeStone"
+      },
+      "contains": "Still here"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameitLegacy"
+    }
+  ]
+}

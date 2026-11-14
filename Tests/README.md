@@ -4,6 +4,7 @@ DrakesTestLab suites for RenameIt. What maps to the test sheet, and what is stil
 
 - `suites/DrakesRenameIt/`: automated (50 tests). Runs unattended.
 - `suites/DrakesRenameIt-Manual/`: needs a person (real keys, windows, language, relaunch, other mods, a second real client). Each test sets up and asks Pass / Fail.
+- `suites/DrakesRenameItLegacy/` and `suites/DrakesRenameItLegacy-Manual/`: a manually-forked copy of the two suites above for the standalone Legacy mod (`com.drakesworkshop.renameitlegacy`) — same tests minus `X-06-UI` (world-hover-text styles; Legacy has no hover UI), plus `M-X-01` for the `PaperFeatureEnabled` startup toggle (needs a restart, so it's manual, not a `setConfig` case). Not yet wired into `gen_renameit_suite.py` — the generator still only writes the two DrakesRenameIt suites, so the Legacy suites need hand-editing until that's extended.
 - `suites/DrakesRenameIt/_functions/`: steps many tests share (`writePage`, `pinPage`, `craftRenamed`, `editAll`, `checkAll`, `itemOnStand`, `splitStacks`), called like steps: `"writePage(\"Shared Page\")"` or `{ "do": "pinPage", "label": ... }`.
 - `suites/DrakesRenameIt/_shared/baseline.json`: required mod, the config baseline and start state; both suites `include` it (the manual suite also includes the functions).
 - `gen_renameit_suite.py`: writes both suite folders (`python gen_renameit_suite.py`). Edit tests and functions there, not in the JSON.

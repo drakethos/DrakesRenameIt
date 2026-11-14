@@ -69,32 +69,8 @@ jobs:
         run: |
           nuget restore DrakeRenameit.csproj -PackagesDirectory packages
 
-      # Compile reference for DrakeModsLibs: the exact version this mod depends on, from Hexium.
-      - name: Fetch DrakeModsLibs reference DLL
-        run: |
-          LIBS_DEP=$(grep -oE 'DrakeMods-DrakeModsLibs-[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?' mod.package.props | head -1)
-          LIBS_VER="${LIBS_DEP#DrakeMods-DrakeModsLibs-}"
-          if [ -z "$LIBS_VER" ]; then
-            echo "::error::Could not parse DrakeMods-DrakeModsLibs version from mod.package.props" >&2
-            exit 1
-          fi
-          echo "Resolving DrakeModsLibs $LIBS_VER on Hexium"
-          URL=$(curl -fsSL "https://valheim.hexium.gg/api/experimental/package/DrakeMods/DrakeModsLibs/${LIBS_VER}/" | jq -r '.download_url // empty')
-          if [ -z "$URL" ]; then
-            echo "::error::DrakeModsLibs ${LIBS_VER} is not on Hexium. Publish it first." >&2
-            exit 1
-          fi
-          curl -fsSL "$URL" -o /tmp/drakemodslibs.zip
-          mkdir -p ci_libs /tmp/drakemodslibs
-          unzip -qo /tmp/drakemodslibs.zip -d /tmp/drakemodslibs
-          DLL=$(find /tmp/drakemodslibs -name 'DrakeModsLibs.dll' | head -1)
-          if [ -z "$DLL" ]; then
-            echo "::error::DrakeModsLibs.dll missing from Hexium zip" >&2
-            find /tmp/drakemodslibs -type f >&2
-            exit 1
-          fi
-          cp "$DLL" ci_libs/DrakeModsLibs.dll
-          echo "WORKSHOP_LIBS_DLL=$(pwd)/ci_libs/DrakeModsLibs.dll" >> "$GITHUB_ENV"
+      # Legacy is standalone (EmbedServerSync=true skips the DrakeModsLibs reference import
+      # entirely) — no Hexium fetch / WorkshopLibsDll build prop needed, unlike DrakesRenameIt.
 
       - name: Stage game DLLs from Pfhoenix package
         run: |
@@ -140,7 +116,6 @@ jobs:
             /p:BepInExPath="$CI_ROOT/BepInEx" \
             /p:CorlibPath="$MANAGED" \
             /p:PublicizedAssembliesPath="$MANAGED/publicized_assemblies" \
-            /p:WorkshopLibsDll="${WORKSHOP_LIBS_DLL}" \
             /p:Version="${{ steps.ver.outputs.version }}" \
             /t:Build \
             /v:minimal
@@ -149,11 +124,11 @@ jobs:
         id: pkg
         run: |
           VERSION="${{ steps.ver.outputs.version }}"
-          PKG_DIR="DrakeMods-DrakesRenameit-${VERSION}"
-          ZIP_NAME="DrakeMods-DrakesRenameit-${VERSION}.zip"
+          PKG_DIR="DrakeMods-DrakesRenameItLegacy-${VERSION}"
+          ZIP_NAME="DrakeMods-DrakesRenameItLegacy-${VERSION}.zip"
 
           mkdir -p "$PKG_DIR/Assets/Localization" "$PKG_DIR/Assets/Icons" "$PKG_DIR/Assets/Items"
-          cp bin/Release/DrakesRenameit.dll "$PKG_DIR/"
+          cp bin/Release/DrakesRenameItLegacy.dll "$PKG_DIR/"
           cp Assets/Localization/*.json "$PKG_DIR/Assets/Localization/"
           if compgen -G "Assets/Icons/*.png" > /dev/null; then
             cp Assets/Icons/*.png "$PKG_DIR/Assets/Icons/"
@@ -227,17 +202,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
-          name: "DrakesRenameIt ${{ steps.ver.outputs.version }}"
+          name: "DrakesRenameItLegacy ${{ steps.ver.outputs.version }}"
           prerelease: false
           body: |
-            ## DrakesRenameIt v${{ steps.ver.outputs.version }}
+            ## DrakesRenameItLegacy v${{ steps.ver.outputs.version }}
 
-            Package zip attached. CI also publishes to [Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesRenameit).
+            Package zip attached. CI also publishes to [Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesRenameItLegacy).
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
             ```
-            BepInEx/plugins/DrakeMods-DrakesRenameit/
+            BepInEx/plugins/DrakeMods-DrakesRenameItLegacy/
             ```
 
             ---
@@ -249,17 +224,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
-          name: "DrakesRenameIt ${{ steps.ver.outputs.version }} (beta)"
+          name: "DrakesRenameItLegacy ${{ steps.ver.outputs.version }} (beta)"
           prerelease: true
           body: |
-            ## DrakesRenameIt v${{ steps.ver.outputs.version }} (beta)
+            ## DrakesRenameItLegacy v${{ steps.ver.outputs.version }} (beta)
 
             **Beta.** Hexium + GitHub prerelease. Please test and report issues before the stable cut.
 
             ### Install
             Drop the zip into **r2modman**, **Thunderstore Mod Manager**, or **Gale** via "Import local mod", or extract into:
             ```
-            BepInEx/plugins/DrakeMods-DrakesRenameit/
+            BepInEx/plugins/DrakeMods-DrakesRenameItLegacy/
             ```
 
             ---

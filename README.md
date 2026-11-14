@@ -1,16 +1,10 @@
-<img width="256" height="256" alt="DrakesRenameit icon" src="icon.png" />
+<img width="256" height="256" alt="DrakesRenameItLegacy icon" src="icon.png" />
 
-# DrakesRenameIt
+# DrakesRenameItLegacy
 
-> [!TIP]
-> ### 🎨 Try DrakesReskinIt
-> The perfect companion to DrakesRenameIt. RenameIt changes what your items are *called*; ReskinIt changes how they *look*: new inventory icon, new equipped model, custom colors and saveable presets.
-> Both share the same Shift + right-click menu (Rename, Paper, Reskin tabs), so you can name *and* style a piece of gear in one place.
-> 👉 **[DrakesReskinIt on Hexium](https://valheim.hexium.gg/mods/DrakeMods/DrakesReskinIt)**
+Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Craftable / placeable paper notes included. Good for roleplay or labeling gear.
 
-Rename items, rewrite descriptions, and update the **Crafted by** line (display only). Good for roleplay or labeling gear. **1.1.x** adds craftable / placeable paper notes and shared inventory tabs with **LockSmith** via **DrakeModsLibs**. **1.1.10** adds soft ward-stack bridges (WardIsLove / ProtectiveWards / Arcane Ward). **1.1.9** adds **Make Copy** / immutable **Printed Page** stacks, Written→blank **Recycle**, and README paper screenshots (builds on **1.1.8** ink + wall **Rename | Paper**).
-
-**Requires [DrakeModsLibs 1.0.0+](https://valheim.hexium.gg/mods/DrakeMods/DrakeModsLibs)** — shared display patches, tab host, numeric stepper, stack-force, CompatHost, and server config sync live there so this mod stays lean and Valheim updates are easier to track. **Valheim 1.0** item-stand labels (including durability wear) refresh when those Libs settings change.
+**Standalone mono mod — no DrakeModsLibs, no dependency on or shared UI with any other Drakes mod.** Everything the mod needs (its own naming/tag engine, Paper's asset loading, the Item Workshop UI) is built into this one DLL. This is the deliberately minimal, maximally-isolated line: no piece renaming, no world-hover text, no Quick Settings cogwheel, none of the newer experimental features — just Rename + Paper, hardened against the kind of cross-mod interaction that's hard to debug without access to the original bug report. If you hit a compatibility issue with the main **DrakesRenameIt**, try this build instead; if it's clean here, the cause was Libs or a cross-mod hook, not the core rename/paper logic.
 
 ### Piece of Paper (1.1)
 
@@ -18,9 +12,9 @@ Craft blank **Piece of Paper** from the inventory craft list (default recipe **1
 
 **Written Page** can be pinned in the world from the hotbar (**Use**), or built as hammer furniture (**Blank Paper** wall / flat, **Paper Stack**). Description ink shows on the parchment (portrait or **landscape**). With **PaperWallRenameEnabled** (default on), **Shift+Use** opens **Rename | Paper** on the wall — edit text and Paper options without picking the page up; **Make public**, font size, landscape, immutable stacks, and **Make Copy** live on the Paper tab. Otherwise Shift+Use still toggles take-public when that feature is on. Synced config section **10 Paper** covers enable, names, recipe, station, item type, stack size, place orientation, take-public, wall rename, page text, and hammer pieces. **ExcludedCategory** alias **`Paper`** targets blank and written paper.
 
-### LockSmith integration
+### No shared tabs with other Drakes mods
 
-With **[LockSmith](https://thunderstore.io/c/valheim/p/DrakeMods/LockSmith/)** (or any other DrakeMods tab) and **DrakeModsLibs 0.11.2+**, inventory **modifier + right-click** opens the shared **DrakeTabHost** strip (same idea as Craft|Upgrade). **Rename** registers as a tab; LockSmith can claim the default tab on keys. When both tabs are usable you see **Lock | Rename** and switch without closing. LockSmith hard-blocks / deferred keys still hide Rename for normal players; elevated **admin/VIP** (`TagBypass`) can get both tabs when Libs soft-suppress allows it. Shared open keys and tab priority live in Libs **Integration** config — RenameIt’s own **MenuOpenModifier** still applies as this mod’s binding.
+Legacy's tab host is its own private copy, not the shared **DrakeModsLibs** instance — so unlike **DrakesRenameIt**, it does not merge into a combined **Lock | Rename** strip with **LockSmith** or any other DrakeMods tab, even if both are installed. Inventory **modifier + right-click** always opens RenameIt's own Rename/Paper tabs directly.
 
 ### Works with equipment and slot mods
 
@@ -31,7 +25,7 @@ Mods that draw their own equipment slots can write an item's *vanilla* name into
 | **ExtraSlots** (shudnal) | Supported through a compat module: renamed items show their name, description and *Crafted by* in the equipment, food, ammo, quick and misc slots. |
 | **AzuExtendedPlayerInventory** (Azumatt) | Works as is: name, description and *Crafted by* show in its equipment slots and hotbar. |
 | **InventorySlots** (sighsorry) | Works as is: name, description and *Crafted by* show in its slots. |
-| **SeneaL UI** | Supported through a compat module for the name. Its description and *Crafted by* lines also need the next **DrakeModsLibs** (1.0.6), which fixes how Libs hooks `GetTooltip` on Valheim 1.0. |
+| **SeneaL UI** | Supported through a compat module for the name, description and *Crafted by* lines. |
 | **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
 
 Each mod is checked by an automated test that fills every slot type with a renamed, described item and reads what the tooltip shows.
@@ -40,7 +34,7 @@ We look after the most downloaded mods first, and any mod a running server depen
 
 ### How to use
 
-Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item. With only RenameIt usable you get the rename action menu; with LockSmith (or another tab) also usable you get the shared tab strip first. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
+Hold your configured keys (**ServerDefaultMenuOpenModifier** on the server, or your own **MenuOpenModifier** override in `UI-NotSynced` — **Shift**, **Ctrl**, **Alt**, combos like **Shift+Alt**, **F1**, or **None** for right-click only) and **right-click** an inventory item to get the rename action menu. Leave local **MenuOpenModifier** empty to follow the server default; set it only when you want a personal override. Choose an action; only available options are clickable.
 
 **Okay** confirms your change; **Reset** restores the original localized string; **Cancel** closes without saving. **Reset all** asks for confirmation before clearing every Drake customization on that stack. When **Unlock cost** is enabled, use **Unlock** once per stack (from your inventory) before edits apply — stacks you already customized are grandfathered in automatically.
 It always appears with the current name including localization. If you would like to maintain
@@ -111,11 +105,10 @@ localization with an additional name, simply leave the $string intact and add ar
 - **Durability modifiers** — optional wear labels prepended to display names (Pristine / tiers / Broken).
 - **Piece of Paper / Written Page** — craftable blanks that peel into written notes; ink on pinned pages (portrait or landscape); hotbar place + hammer décor; wall **Shift+Use** **Rename | Paper**; make copies; optional public take; config under **10 Paper**.
 - **Shared rewrite** — optional per-stack flag so non-owners may rewrite name/description (`PublicRewriteEnabled`). The menu label is **Shared**; Paper **Make public** is a separate take-from-wall setting.
-- **LockSmith / DrakeTabHost** — shared inventory tabs and open binding via **DrakeModsLibs** when both mods are installed.
 - Exclusions by item name, category, and **RenameAllowlist** bypasses; reference file generated for category tokens.
 - Unified action menu (rename, description, crafted by) with fast reset; **Cancel** and **Reset all** confirmation.
 - Item stands: custom names on hover; **ShowItemStandItemNameWhenNoAccess** shows the stand item name even in warded “no access” areas.
-- Soft ward stacks (**courtesy**): **WardIsLove**, **ProtectiveWards**, and **Arcane Ward** load optionally so paper take / stand names behave under those packs. Prefer one ward stack. With **LockSmith**, stand hover prefers LockSmith ward access when available; take-public paper stays removable under ProtectiveWards / Arcane. These bridges are **not** actively tracked against every ward update — if something breaks, please [open an issue](https://github.com/drakethos/DrakesRenameIt/issues) with logs (I may look into it when I can). You’re also welcome to contribute a fix via pull request, or SoftDependency your own bridge. When LockSmith is installed, its public ward API (`LockSmithCompatApi`) is the preferred hook.
+- Soft ward stacks (**courtesy**): **WardIsLove**, **ProtectiveWards**, and **Arcane Ward** load optionally so paper take / stand names behave under those packs. Prefer one ward stack. Take-public paper stays removable under ProtectiveWards / Arcane. These bridges are **not** actively tracked against every ward update — if something breaks, please [open an issue](https://github.com/drakethos/DrakesRenameIt/issues) with logs (I may look into it when I can). You’re also welcome to contribute a fix via pull request, or SoftDependency your own bridge. Legacy has no LockSmith integration, so its ward API is not probed here.
 - Centralized localization (`Assets/Localization/*.json`); English and Spanish included.
 - API hooks for other mods (`RenameEvents`: name, description, crafted-by display changes).
 - Tooltip rich-text safety (unclosed tags auto-closed); crafted-by display can get default orange coloring when unstyled.
@@ -128,14 +121,14 @@ localization with an additional name, simply leave the $string intact and add ar
   - (It does add craftable **Piece of Paper** / **Written Page** for rename RP and world notes.)
 ### Configurations:
 
-Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; older installs may use `com.DrakeMods.DrakesRenameit.cfg`). Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 10 Paper are server-synced and enforced** (via **DrakeModsLibs** / ServerSync embedded in Libs) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 11 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`, `LogSpam`) is per-client only. Install **DrakeModsLibs** as a dependency — no separate ServerSync mod required. Legacy section names are migrated automatically on load.
+Settings live in `BepInEx/config/com.drakesworkshop.renameitlegacy.cfg`. Sections are numbered in the file so Configuration Manager sorts in tab order. **Sections 01–09 and 10 Paper are server-synced and enforced** (via **ServerSync**, embedded directly in this mod — no separate dependency needed) when **LockSyncedConfig** is true (default): clients receive the host’s values and cannot push gameplay changes unless they are on the Valheim server **adminlist**. **Section 11 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`, `LogSpam`, `PaperFeatureEnabled`) is per-client only.
 
 #### Features (server-synced)
 
 - **RenameEnabled** — When on, players may edit display names from the action menu (subject to all other rules). Turn off to block new renames while keeping descriptions or crafted-by.
 - **RewriteDescriptionsEnabled** — When on, descriptions may be edited from the menu. Can be used without rename, or turned off if you only want custom names.
 - **CraftedByLabelEnabled** — When on, players may set a **display-only** override for the crafted-by line in tooltips (name and optional line prefix). Real crafter id/name used by the game (ownership, locks) is unchanged.
-- **PublicRewriteEnabled** — When on (default), the item menu can flag a stack so non-owners may rewrite its name and description (`Drake_PublicRewrite` in DrakeModsLibs). Crafted-by stays owner-only. Useful for shared notes and shop labels.
+- **PublicRewriteEnabled** — When on (default), the item menu can flag a stack so non-owners may rewrite its name and description (`Drake_PublicRewrite`). Crafted-by stays owner-only. Useful for shared notes and shop labels.
 
 #### Admin (server-synced)
 
@@ -163,7 +156,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 - **ShowDenialUi** — When on, access denials show a red menu hint, tooltip denial lines, and a center message on failed modifier+right-click. When off, those cues are hidden (silent). Unlock-cost, not-in-inventory, and validation errors are unchanged.
 - **ShowReason** — When on (and **ShowDenialUi** is on), denial text explains **why** (ownership, exclusion, etc.). When off, generic messages only. No effect when **ShowDenialUi** is off. Denials are still logged to BepInEx for admins.
 - **ShowItemStandItemNameWhenNoAccess** — When on, item stands in warded/private areas still show “no access” but also append the stand’s current item name on the hover label (display only; permissions unchanged).
-- **ServerDefaultMenuOpenModifier** — Default keys for opening the Drake / shared tab menu when a player’s local **MenuOpenModifier** is empty. Set on the host for modpack compatibility (e.g. `None` if another mod uses Shift). Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only. When **LockSmith** (or another Drake tab) is installed, Libs may also apply its **Integration** inventory open binding — keep them aligned in modpacks.
+- **ServerDefaultMenuOpenModifier** — Default keys for opening the Rename menu when a player’s local **MenuOpenModifier** is empty. Set on the host for modpack compatibility (e.g. `None` if another mod uses Shift). Examples: `Shift`, `Ctrl`, `Alt`, `Shift+Alt`, `F1`. Combine with `+`, `,`, or `&`. Use `None` for right-click only.
 
 #### Stacks (server-synced)
 
@@ -223,7 +216,7 @@ Settings live in `BepInEx/config/` (e.g. `com.drakesworkshop.renameit.cfg`; olde
 #### Wishlist for future
 - If there is high demand: renamable pieces that have hover names.
 - **Reskin** (custom item visuals) is something we want to look into when priorities allow — no timeline promised.
-- Other customization ideas may show up later as separate DrakeMods that share **DrakeModsLibs**; we are **not** shipping a full customization suite right now.
+- Legacy intentionally does not take on new customization scope beyond Rename + Paper; the full-featured line is **DrakesRenameIt**.
 
 #### API Docs:
 Types live in namespace `DrakeRenameit.API`.

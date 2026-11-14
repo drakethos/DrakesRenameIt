@@ -736,7 +736,7 @@ public static class RenameitConfig
             "Use the new Item Workshop panel (UI Toolkit) for the Rename tab. Turn off to get the old wood popups back. Per-client; applies the next time the menu opens.");
 
         _paperFeatureEnabled = _drakeConfigSync.BindClientOnly(config,
-            SectionPaper, DisplayPaper,
+            SectionUI, DisplayUI,
             "PaperFeatureEnabled",
             true,
             "Legacy diagnostic switch: if false, the whole Paper feature is skipped at startup (not registered at all), unlike PaperEnabled which only toggles craftability. Use this to test whether Paper is the cause of a reported mod incompatibility. Per-client; needs a restart.");

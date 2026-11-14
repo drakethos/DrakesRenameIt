@@ -1,3 +1,8 @@
+- Version 1.0.0 (DrakesRenameItLegacy)
+  - **New mod, forked from DrakesRenameIt v1.3.2.** A standalone, deliberately minimal mono mod: no DrakeModsLibs dependency (the naming/tag/display engine, Paper's Forge-loaded assets, and the Item Workshop UI are vendored into this one DLL — see `Vendor/README.md`), no shared tabs or any other integration with other Drakes mods, no world-hover text, no Quick Settings cogwheel, no piece renaming / animals / books. Rename + Paper only, for isolating whether a reported mod incompatibility was caused by Libs or a cross-mod hook rather than the core logic.
+  - **New: `PaperFeatureEnabled` config** (`UI-NotSynced`, per-client, needs a restart) — skips Paper registration entirely at startup, distinct from `PaperEnabled` which only toggles craftability. For A/B-testing the Paper feature against a suspected incompatibility.
+  - Below this point, the changelog is inherited from DrakesRenameIt's history up to v1.3.2 (the fork point); entries from v1.3.2 onward in that mod's own changelog do not apply here.
+
 - Version 1.3.2
   - Patch for 1.3.1. Requires **DrakeModsLibs 1.0.0+** (the SeneaL description and Crafted-by lines also need the next DrakeModsLibs, 1.0.6).
   - **New: SeneaL UI support.** With **SeneaL UI** installed, a renamed item shows its new name in SeneaL's tooltips and crafting views (it showed the vanilla name before). Nothing changes without SeneaL.

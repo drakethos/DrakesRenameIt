@@ -1,0 +1,30 @@
+{
+  "name": "SM-006 item stand shows the new name",
+  "description": "Sheet: SM-006. ",
+  "steps": [
+    "craftRenamed(\"Test Club\")",
+    {
+      "do": "itemOnStand",
+      "label": "put the axe on the stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Test Club",
+      "label": "stand hover shows the new name"
+    },
+    {
+      "do": "screenshot",
+      "name": "stand"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameitLegacy"
+    }
+  ]
+}

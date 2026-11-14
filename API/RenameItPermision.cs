@@ -4,7 +4,6 @@ using System.Reflection;
 using BepInEx.Configuration;
 using HarmonyLib;
 using Jotunn.Managers;
-using DrakeModsLibs.Sync;
 
 namespace DrakeRenameit.API;
 
@@ -47,21 +46,14 @@ public static class RenameitPermission
         return false;
     }
 
-    static DrakeConfigSync? _vipConfigSync;
     static bool _apiListFromHost;
 
     /// <summary>
-    /// A remote client may only trust VIP entries the host pushed. IsSourceOfTruth stays true until the host's
-    /// synced config replaces ours; while it is true (server lacks this mod, or sync not finished) the local
-    /// cfg VipList is just a file the player can edit, so ignore it.
+    /// Legacy has no ServerSync, so there is no host-pushed "source of truth" for VipList: every peer's own
+    /// cfg VipList is always trusted, same as the mod's original pre-Libs design. On a dedicated server the
+    /// host's cfg is the one that matters for gameplay; a client's local VipList only affects its own UI.
     /// </summary>
-    static bool LocalVipListsTrusted()
-    {
-        var znet = ZNet.instance;
-        if (znet == null || znet.IsServer())
-            return true;
-        return _vipConfigSync != null && !_vipConfigSync.IsSourceOfTruth;
-    }
+    static bool LocalVipListsTrusted() => true;
 
     /// <summary>
     /// The host-pushed VIP list only counts while we are connected to that host. Once we are no longer
@@ -100,12 +92,10 @@ public static class RenameitPermission
     /// <summary>Valheim server admin (adminlist / Jotunn-synced), independent of VIP-only mode.</summary>
     public static bool IsValheimAdmin(Player? player) => IsAdminSafe(player);
 
-    /// <summary>Subscribe to ServerSync config updates; call once from <see cref="RenameitConfig.Bind"/>.</summary>
-    internal static void WireVipListSync(ConfigEntry<string> vipListEntry, DrakeConfigSync configSync)
+    /// <summary>Subscribe to local VipList config changes; call once from <see cref="RenameitConfig.Bind"/>.</summary>
+    internal static void WireVipListSync(ConfigEntry<string> vipListEntry)
     {
-        _vipConfigSync = configSync;
         vipListEntry.SettingChanged += (_, _) => ReloadVipsFromSyncedConfig();
-        configSync.SourceOfTruthChanged += _ => ReloadVipsFromSyncedConfig();
         ReloadVipsFromSyncedConfig();
     }
 

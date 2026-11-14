@@ -59,6 +59,7 @@ public static class RenameitConfig
     private static ConfigEntry<bool> _configLock = default!;
     private static ConfigEntry<string> _menuHintColor = default!;
     private static ConfigEntry<bool> _useToolkitUi = default!;
+    private static ConfigEntry<bool> _paperFeatureEnabled = default!;
     private static ConfigEntry<bool> _showPreviewCard = default!;
     private static ConfigEntry<string> _quickSettingsKey = default!;
     private static ConfigEntry<string> _recentColors = default!;
@@ -158,6 +159,13 @@ public static class RenameitConfig
 
     /// <summary>Use the new UI Toolkit Item Workshop panel for the Rename tab instead of the wood popups. Per-client.</summary>
     public static bool UseToolkitUi => _useToolkitUi.Value;
+
+    /// <summary>
+    /// Legacy only: when false, the whole Paper feature (items, pieces, Harmony patches, Forge assets) is skipped at
+    /// startup, not just made uncraftable like <see cref="PaperEnabled"/>. Local diagnostic switch for isolating
+    /// whether Paper is the cause of a reported mod incompatibility — flip off, restart, and compare. Per-client; needs a restart.
+    /// </summary>
+    public static bool PaperFeatureEnabled => _paperFeatureEnabled.Value;
 
     // ---- World hover text (what you see looking at an item on the ground or on a stand). All per-client.
 
@@ -726,6 +734,12 @@ public static class RenameitConfig
             "UseToolkitUi",
             true,
             "Use the new Item Workshop panel (UI Toolkit) for the Rename tab. Turn off to get the old wood popups back. Per-client; applies the next time the menu opens.");
+
+        _paperFeatureEnabled = _drakeConfigSync.BindClientOnly(config,
+            SectionPaper, DisplayPaper,
+            "PaperFeatureEnabled",
+            true,
+            "Legacy diagnostic switch: if false, the whole Paper feature is skipped at startup (not registered at all), unlike PaperEnabled which only toggles craftability. Use this to test whether Paper is the cause of a reported mod incompatibility. Per-client; needs a restart.");
 
         _showPreviewCard = _drakeConfigSync.BindClientOnly(config,
             SectionUI, DisplayUI,

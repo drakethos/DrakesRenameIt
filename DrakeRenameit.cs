@@ -28,11 +28,9 @@ namespace DrakeRenameit
 {
     [BepInPlugin(GUID, ModName, Version)]
     [BepInDependency(Main.ModGuid)]
-    [BepInDependency(CustomizeLibsPlugin.GUID)]
     [BepInDependency(CompatibilityManager.SoftGuids.WardIsLove, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ProtectiveWards, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ArcaneWard, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(CompatibilityManager.SoftGuids.LockSmith, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.ExtraSlots, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(CompatibilityManager.SoftGuids.SeneaL, BepInDependency.DependencyFlags.SoftDependency)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
@@ -82,6 +80,16 @@ namespace DrakeRenameit
             Bind(Config);
             RenameItLocalization.Init(this, Logger);
             ExcludedCategoryReferenceWriter.EnsureGenerated();
+
+            try
+            {
+                InitVendoredDisplayEngine();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Vendored display-engine init failed: {ex}");
+            }
+
             try
             {
                 RenameItLibsBridge.Register();
@@ -91,32 +99,58 @@ namespace DrakeRenameit
                 Logger.LogError($"RenameItLibsBridge.Register failed: {ex}");
             }
 
-            try
+            if (RenameitConfig.PaperFeatureEnabled)
             {
-                PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
-                PaperPlace.Register(Logger);
-                PaperWrittenPlace.Register(Logger);
-                PaperBlankPlace.Register(Logger);
+                try
+                {
+                    PaperItem.Register(Logger, Path.GetDirectoryName(Info.Location) ?? "");
+                    PaperPlace.Register(Logger);
+                    PaperWrittenPlace.Register(Logger);
+                    PaperBlankPlace.Register(Logger);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Paper content register failed: {ex}");
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Logger.LogError($"Paper content register failed: {ex}");
+                Logger.LogInfo("Paper feature disabled (PaperFeatureEnabled=false) — skipping registration entirely.");
             }
 
-            harmony.PatchAll();
+            HarmonyPatchHub.ApplyAll(harmony, Logger);
             CompatibilityManager.Initialize(harmony);
+        }
+
+        /// <summary>
+        /// Legacy has no DrakeModsLibs plugin to load. This is the setup
+        /// <c>DrakeModsLibs.CustomizeLibsPlugin.Awake</c> used to do, folded in so the vendored
+        /// naming/tag/display engine under <c>Vendor/DrakeModsLibs</c> (see Vendor/README.md) is
+        /// ready before anything registers with it.
+        /// </summary>
+        private void InitVendoredDisplayEngine()
+        {
+            global::DrakeModsLibs.Integration.DrakeIntegrationConfig.Bind(Config);
+            global::DrakeModsLibs.Input.MenuBindingRegistry.SetLogger(Logger);
+            global::DrakeModsLibs.Input.MenuBindingRegistry.Register(
+                global::DrakeModsLibs.Integration.InventoryContextHints.BindingId,
+                global::DrakeModsLibs.Input.MenuBindingRegistry.InventoryContextScope,
+                priority: 0,
+                () => global::DrakeModsLibs.Integration.DrakeIntegrationConfig.InventoryOpenModifier,
+                ModName);
+
+            PrefabManager.OnVanillaPrefabsAvailable += OnVendoredVanillaPrefabsAvailable;
+        }
+
+        private void OnVendoredVanillaPrefabsAvailable()
+        {
+            PrefabManager.OnVanillaPrefabsAvailable -= OnVendoredVanillaPrefabsAvailable;
+            global::DrakeModsLibs.Integration.InventoryContextLocalization.Register();
         }
 
         private void Update()
         {
-            var wasCapturingKey = global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Capturing;
-            global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Poll();
-            if (wasCapturingKey)
-                return;
-
             if (!UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
-                return;
-            if (global::DrakeRenameit.UI.Toolkit.QuickSettingsPanel.TryHandleEscape())
                 return;
             if (global::DrakeRenameit.UI.Toolkit.WorkshopPanel.TryHandleEscape())
                 return;

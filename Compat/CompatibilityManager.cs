@@ -28,7 +28,6 @@ internal static class CompatibilityManager
         public const string WardIsLove = WardIsLoveModule.PluginGuid;
         public const string ProtectiveWards = ProtectiveWardsModule.PluginGuid;
         public const string ArcaneWard = ArcaneWardModule.PluginGuid;
-        public const string LockSmith = WardHoverAccess.LockSmithGuid;
         public const string ExtraSlots = ExtraSlotsTooltipModule.ExtraSlotsGuid;
         public const string SeneaL = SeneaLItemNameModule.SeneaLGuid;
     }

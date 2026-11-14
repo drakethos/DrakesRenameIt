@@ -1,0 +1,126 @@
+using System;
+using BepInEx.Configuration;
+
+namespace DrakeModsLibs.Integration;
+
+/// <summary>
+/// Umbrella integration knobs owned by DrakeModsLibs (cross-mod orchestration).
+/// Feature mods keep gameplay config; libs coordinates tabs / open chord / overrides.
+/// </summary>
+public static class DrakeIntegrationConfig
+{
+    const string Section = "Integration";
+
+    static ConfigEntry<string>? _inventoryOpenModifier;
+    static ConfigEntry<string>? _tabPriorityOverrides;
+    static ConfigEntry<string>? _forceDefaultTabId;
+    static ConfigEntry<bool>? _disableClaimDefault;
+    static ConfigEntry<bool>? _useToolkitUi;
+    static ConfigEntry<string>? _pieceTabOrder;
+
+    /// <summary>Default piece-menu tab order. Empty config uses this. Unknown ids sort after these, in registration order.</summary>
+    public const string DefaultPieceTabOrder =
+        "teams.ward;locksmith;locksmith.ward;locksmith.groups;renameit.piece;drakes.shop;drakes.buy;drakes.layout;drakes.mail";
+
+    /// <summary>Shared inventory menu chord when tab host is wired (e.g. Shift).</summary>
+    public static string InventoryOpenModifier =>
+        _inventoryOpenModifier?.Value?.Trim() ?? "Shift";
+
+    /// <summary>When set and available, forces that tab id as default open.</summary>
+    public static string? ForceDefaultTabId
+    {
+        get
+        {
+            var v = _forceDefaultTabId?.Value?.Trim();
+            return string.IsNullOrEmpty(v) ? null : v;
+        }
+    }
+
+    public static bool DisableClaimDefault => _disableClaimDefault?.Value ?? false;
+
+    /// <summary>
+    /// Draw the shared menus, confirm and prompt dialogs in the new look (UI Toolkit) instead of the classic wood panels.
+    /// One switch for every mod that uses them. Per-client; applies the next time a dialog opens.
+    /// </summary>
+    public static bool UseToolkitUi => _useToolkitUi?.Value ?? true;
+
+    /// <summary>
+    /// Piece Shift+E tab ids, first to last. One menu (LockSmith hosts it). Inventory tabs stay on
+    /// <see cref="TryGetPriorityOverride"/> — that chord is not Shift+E.
+    /// </summary>
+    public static string PieceTabOrder
+    {
+        get
+        {
+            var v = _pieceTabOrder?.Value?.Trim();
+            return string.IsNullOrEmpty(v) ? DefaultPieceTabOrder : v!;
+        }
+    }
+
+    public static void Bind(ConfigFile config)
+    {
+        if (config == null || _inventoryOpenModifier != null)
+            return;
+
+        _inventoryOpenModifier = config.Bind(
+            Section,
+            "InventoryOpenModifier",
+            "Shift",
+            "Shared inventory menu modifier chord for the libs tab host (when wired). Examples: Shift, Ctrl, Alt, None.");
+
+        _tabPriorityOverrides = config.Bind(
+            Section,
+            "TabPriorityOverrides",
+            "",
+            "Optional tab priority overrides: id=priority;id2=priority (e.g. renameit=50;locksmith.keypass=250). Empty = use Register baselines.");
+
+        _forceDefaultTabId = config.Bind(
+            Section,
+            "ForceDefaultTabId",
+            "",
+            "If set to a registered tab id that is available for the item, that tab opens first. Empty = ClaimDefault / priority.");
+
+        _disableClaimDefault = config.Bind(
+            Section,
+            "DisableClaimDefault",
+            false,
+            "When true, ignore ClaimDefault predicates and pick the highest-priority available tab.");
+
+        _pieceTabOrder = config.Bind(
+            Section,
+            "PieceTabOrder",
+            DefaultPieceTabOrder,
+            "Order of tabs on the one piece Shift+E menu (Lock, Ward, Name, Shop, Team, ...). " +
+            "Semicolon-separated tab ids, first shown first. Empty uses the default. " +
+            "Inventory item tabs (Rename, Reskin) use TabPriorityOverrides instead; that menu is not Shift+E.");
+
+        _useToolkitUi = config.Bind(
+            "UI",
+            "UseToolkitUi",
+            true,
+            "Draw shared menus, confirm and prompt dialogs (LockSmith, ReskinIt, ...) in the new look instead of the classic wood panels. Per-client; applies the next time a dialog opens.");
+    }
+
+    /// <summary>Parse TabPriorityOverrides for a tab id.</summary>
+    public static bool TryGetPriorityOverride(string tabId, out int priority)
+    {
+        priority = 0;
+        var raw = _tabPriorityOverrides?.Value;
+        if (string.IsNullOrWhiteSpace(raw) || string.IsNullOrEmpty(tabId))
+            return false;
+
+        foreach (var part in raw!.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var kv = part.Split(new[] { '=' }, 2);
+            if (kv.Length != 2)
+                continue;
+            if (!string.Equals(kv[0].Trim(), tabId, StringComparison.OrdinalIgnoreCase))
+                continue;
+            if (!int.TryParse(kv[1].Trim(), out priority))
+                return false;
+            return true;
+        }
+
+        return false;
+    }
+}

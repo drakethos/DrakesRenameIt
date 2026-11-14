@@ -127,14 +127,8 @@ internal static class RenameItLibsBridge
 
         RegisterPermissionValidators();
 
-        // Link target for other Drake mods (e.g. ReskinIt AdminSource / ExclusionSource = RenameIt).
-        // RenameIt keeps its own config and logic; this only exposes them.
-        DrakePermissionProfiles.RegisterSource(
-            "RenameIt",
-            isElevated: RenameitPermission.IsElevatedForOverrides,
-            isExcluded: item => RenameExclusionRules.IsExcludedFromConfig(item)
-                                && !RenameExclusionRules.MatchesRenameAllowlist(item));
-        DrakeItemCategory.RegisterAlias("paper", PaperItem.IsPaperItem);
+        // Legacy has no other-Drakes-mod integration: no DrakePermissionProfiles.RegisterSource,
+        // no DrakeItemCategory.RegisterAlias (both exist only so e.g. ReskinIt could defer to RenameIt).
 
         CustomizationGatekeeper.TagBypass = RenameitPermission.IsElevatedForOverrides;
 

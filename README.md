@@ -140,7 +140,7 @@ Settings live in `BepInEx/config/com.drakesworkshop.renameitlegacy.cfg`. Section
 #### Exclusions (server-synced)
 
 - **ExcludedNames** — Comma-separated items that **cannot** be renamed or have descriptions/crafted-by changed (for non-elevated players). Each entry can be a [Jotunn item list](https://valheim-modding.github.io/Jotunn/data/objects/item-list.html) **Item** (spawn name, e.g. `AxeStone`), **Token** (`$item_...`), or **English Name** column. Elevated users ignore this when **AllowAdminOverride** is on.
-- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, `Paper` (Piece of Paper vessel), or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee`, `paper` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameit/ExcludedCategoryReference.txt`** on first run or version change (GUID changed in DrakesWorkshop rebrand).
+- **ExcludedCategory** — Comma-separated category tokens, e.g. `Swords`, `Armor`, `Material`, `Bows`, `Paper` (Piece of Paper vessel), or `Skills.SkillType` / `ItemType` enum names. Alias words like `armor`, `weapons`, `melee`, `paper` also work. Reference file: **`BepInEx/config/com.drakesworkshop.renameitlegacy/ExcludedCategoryReference.txt`** on first run or version change.
 - **RenameAllowlist** — Same entry format as **ExcludedNames**. For normal players, items on this list **skip** excluded-by-name, excluded-by-category, **ExcludeStacks**, and the unowned-resource check, but still require the relevant **Features** toggles to be on and still obey **LockToOwner** if another player owns the item.
 
 #### Crafted by (server-synced)

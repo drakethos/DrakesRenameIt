@@ -733,6 +733,36 @@ public static class ItemStandPatch
         return ItemDisplayService.GetDisplayNameForUi(item, localize: true);
     }
 
+    /// <summary>
+    /// Replace a renamed/affected display name that leaked into a "no access" hover line with the plain
+    /// vanilla item name. Covers both the live-item path and the ZDO rename cache, same sources
+    /// <see cref="TryGetBestStandLabel"/> reads from.
+    /// </summary>
+    private static void StripStandLabelWhenNoAccess(ItemStand stand, ref string hoverText)
+    {
+        var item = TryGetStandItemForDisplay(stand, out _);
+        if (item?.m_shared == null || string.IsNullOrEmpty(item.m_shared.m_name))
+            return;
+
+        if (!ItemDisplayService.HasCustomName(item) && !DisplayNameModifierHub.AffectsDisplay(item))
+            return;
+
+        string vanillaName = Localization.instance != null
+            ? Localization.instance.Localize(item.m_shared.m_name)
+            : item.m_shared.m_name;
+        if (string.IsNullOrEmpty(vanillaName))
+            return;
+
+        string customDisplay = ItemDisplayService.GetDisplayNameForUi(item, localize: true);
+        if (!string.IsNullOrEmpty(customDisplay) && hoverText.IndexOf(customDisplay, System.StringComparison.Ordinal) >= 0)
+            hoverText = hoverText.Replace(customDisplay, vanillaName);
+
+        // Also cover the un-localized form (raw rename text / ZDO cache before localization applies).
+        string rawDisplay = ItemDisplayService.GetDisplayNameForUi(item, localize: false);
+        if (!string.IsNullOrEmpty(rawDisplay) && hoverText.IndexOf(rawDisplay, System.StringComparison.Ordinal) >= 0)
+            hoverText = hoverText.Replace(rawDisplay, item.m_shared.m_name);
+    }
+
     [HarmonyPatch(nameof(ItemStand.GetHoverText))]
     [HarmonyPostfix]
     [HarmonyPriority(Priority.Last)]
@@ -751,6 +781,13 @@ public static class ItemStandPatch
                 if (!string.IsNullOrEmpty(label) &&
                     __result.IndexOf(label, System.StringComparison.Ordinal) < 0)
                     __result = $"{label}\n{__result}";
+            }
+            else
+            {
+                // m_currentItemName is kept as the renamed display (ApplyLiveDisplayNameToStand has no
+                // access check of its own), so vanilla's own "no access" hover text can still carry the
+                // renamed name through verbatim. Swap it back to the plain item name when the toggle is off.
+                StripStandLabelWhenNoAccess(__instance, ref __result);
             }
             return;
         }

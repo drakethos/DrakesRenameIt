@@ -7,15 +7,26 @@ description: >-
 
 # DrakeRenameIt
 
+## Layout
+
+C# lives under `src/`. The project root is the package: csproj, README, `docs/`, `Tests/`, `Assets/`, `build/`. `Assets/Localization` is the only Assets tree copied into `plugins/` in the Thunderstore zip. `Assets/Forge` is the paper authoring pack and stays out of the zip; the sheets ship inside the DLL.
+
+- `src/Patches/Items`, `Pieces`, `Animals`, `Map` — one folder per thing the player can name. `src/Patches/Hover` is the world crosshair patch.
+- `src/Paper` — the paper item (gameplay, generated looks, stand patches). Not a rename target.
+- `src/Config`, `src/Core` — settings and shared helpers (saved names, unlock cost, durability prefix).
+- `src/UI`, `src/Compat`, `src/Permissions`, `src/API` — panels, other mods, who may rename, public events.
+
+Namespaces were not renamed with the folders.
+
 ## Mod identity
 
-- **BepInEx** plugin: `DrakeRenameit` in `DrakeRenameit.cs`, Harmony id `drakesmod.DrakeRenameit`.
+- **BepInEx** plugin: `DrakeRenameit` in `src/DrakeRenameit.cs`, Harmony id `drakesmod.DrakeRenameit`.
 - Depends on **Jotunn** and **DrakeModsLibs** (`[BepInDependency]` + project reference). Config sync via **`DrakeConfigSync`** from Libs (no direct ServerSync reference).
 - **`RenameitConfig`** uses **`DrakeConfigSync.BindSynced`** / **`BindClientOnly`** / **`AddLockingConfigEntry`** / **`FinalizeBinding`** (31 synced entries in sections 01–09).
 - **`LockSyncedConfig`** (default true) locks **all** sections 01–09 for non–Valheim-admins; only **10 UI-NotSynced** (`MenuHintColor`, `MenuOpenModifier`) are client-only. **`ServerDefaultMenuOpenModifier`** (General, synced, default `Shift`) applies when local **`MenuOpenModifier`** is empty; non-empty local always overrides.
 - **`RenameitPermission.WireVipListSync`** reloads VIP hash from **`VipList`** on **`SettingChanged`** / **`SourceOfTruthChanged`** (not one-shot at Awake). Other rules read **`RenameitConfig.*`** live at use time.
 
-## Permissions (`API/RenameItPermision.cs`)
+## Permissions (`src/API/RenameItPermision.cs`)
 
 - **`RenameitConfig.AllowAdminOverride`** must be **true** for any admin/VIP bypass paths.
 - **`IsModVip`** — VIP list only (name, `GetPlayerID()`, peer host id). Does **not** grant Valheim admin.
@@ -63,7 +74,7 @@ description: >-
 
 - **`ApplyCraftedByDisplayToTooltipText`**: runs when item has **`DrakeCraftedByDisplay`** and/or **`DrakeCraftedByLineLabel`** (and has crafter); display part defaults to **`m_crafterName`** if only line label is set.
 - **`ReplaceCraftedBySegment`**: optional **`lineLabelOverride`**; **`TryReplaceCraftedByWithCustomLineLabel`** handles token + localized + regex + line-scan paths (mirrors vanilla label matching, outputs custom prefix).
-- **`UI/TooltipRichText.cs`**: **`EnsureRichTextTagsClosedForTooltip`** auto-closes unmatched **`</color>`** and **`</size>`** (LIFO). Crafted-by display: **`WrapCraftedByDisplayWithDefaultStatColorIfNeeded`** wraps text with no `<color` / `<#hex>` markup in **`GUIManager.ValheimOrange`** (fallback **`#ff8800`**). Order: ensure → wrap. Rename/description tooltips use **`EnsureRichTextTagsClosedForTooltip`** only (`Patches.cs`).
+- **`src/UI/TooltipRichText.cs`**: **`EnsureRichTextTagsClosedForTooltip`** auto-closes unmatched **`</color>`** and **`</size>`** (LIFO). Crafted-by display: **`WrapCraftedByDisplayWithDefaultStatColorIfNeeded`** wraps text with no `<color` / `<#hex>` markup in **`GUIManager.ValheimOrange`** (fallback **`#ff8800`**). Order: ensure → wrap. Rename/description tooltips use **`EnsureRichTextTagsClosedForTooltip`** only (`Patches.cs`).
 
 ## Separate stacks (`RenameitConfig.SeparateStacks`, `SeparateStacksHardLock`)
 
@@ -74,12 +85,16 @@ description: >-
 ## Reset / API
 
 - **`CanResetAnyCustomization`** / **`ResetAllCustomizations`**: crafted-by reset covers **display** and **line label** when permitted.
-- **`API/RenameEvents.cs`**: **`OnCraftedByDisplayChanged`** fires on display changes (line label changes piggyback the same apply flow from the editor).
+- **`src/API/RenameEvents.cs`**: **`OnCraftedByDisplayChanged`** fires on display changes (line label changes piggyback the same apply flow from the editor).
 
 ## Patches
 
-- Main file: **`Patches/Patches.cs`** — `ItemDrop` hover, `InventoryGui`, `InventoryGrid` tooltip, **`ItemStand`** (UseItem, SetVisualItem, GetHoverText for container stands).
-- **`ItemTooltipPatches`**: Harmony postfix on **`ItemDrop.ItemData.GetTooltip`** (resolved in **`Apply`**).
+- **`src/Patches/Items/RenameItInventoryPatches.cs`**: inventory right-click rename and crafting grid tooltip.
+- **`src/Patches/Pieces`**: placed-piece names (`PieceRename`) and the LockSmith Name tab (`PieceNameTab`).
+- **`src/Patches/Animals/AnimalRename.cs`**: tamed-animal names.
+- **`src/Patches/Map`**: pin editor (`PinEdit`) and saved pin colours (`PinStyles`).
+- **`src/Patches/Hover/WorldHoverPatches.cs`**: world crosshair.
+- **`src/Paper/Patches/PaperItemStandPatches.cs`**: paper on item stands.
 
 ## Build / deploy
 

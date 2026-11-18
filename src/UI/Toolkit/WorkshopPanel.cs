@@ -70,6 +70,36 @@ internal sealed class WorkshopPanel
 
     public static bool IsOpen => _instance != null && _instance._open;
 
+    /// <summary>
+    /// Close when the item is no longer in the local inventory. A world-reset that keeps the player (the test suite)
+    /// clears the inventory and leaves this window up over the next character.
+    /// </summary>
+    public static void CloseIfItemGone()
+    {
+        var panel = _instance;
+        if (panel == null || !panel._open)
+            return;
+        var item = panel._item;
+        var player = Player.m_localPlayer;
+        if (item != null && player != null && Held(player, item))
+            return;
+        panel.Close(notifyHost: true);
+    }
+
+    static bool Held(Player player, ItemDrop.ItemData item)
+    {
+        var items = player.GetInventory()?.GetAllItems();
+        if (items == null)
+            return false;
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (ReferenceEquals(items[i], item))
+                return true;
+        }
+
+        return false;
+    }
+
     /// <summary>Opens (or refreshes) the panel for <paramref name="item"/>. Called by the Rename tab.</summary>
     public static void Show(ItemDrop.ItemData item)
     {

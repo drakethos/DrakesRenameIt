@@ -7,7 +7,7 @@ namespace DrakeRenameit.Paper.Items;
 
 /// <summary>
 /// Low-poly 3D paper sheet (Valheim look), built in code so no asset bundle is needed. Mirrors
-/// <c>Forge/Paper/mesh_mockup/make_paper_mesh.py</c>: an 8×10 grid with a slight edge lift and ripple,
+/// <c>Assets/Forge/Paper/mesh_mockup/make_paper_mesh.py</c>: an 8×10 grid with a slight edge lift and ripple,
 /// wobbly (deckled) edges, a thin rim, ~390 tris. Textures are 128×166, point filtered.
 /// Placement matches the old sprites: flat = face up, centred; wall = standing, facing +Z, centred.
 /// </summary>

@@ -155,6 +155,8 @@ jobs:
           # Gale (and r2modman) only keep folder structure for files under plugins/ (or patchers/, monomod/, core/,
           # config/); anything else is flattened to loose files. The DLL and every data folder therefore live under
           # plugins/; only manifest.json, icon.png, README.md and CHANGELOG.md sit at the zip root.
+          # Assets/Forge is authoring source (recipes, blends, scripts). Do not copy it.
+          # Paper images are embedded in the DLL. Only Localization is a loose data folder.
           mkdir -p "$PKG_DIR/plugins/Assets/Localization" "$PKG_DIR/plugins/Assets/Icons" "$PKG_DIR/plugins/Assets/Items"
           cp bin/Release/DrakesRenameit.dll "$PKG_DIR/plugins/"
           cp Assets/Localization/*.json "$PKG_DIR/plugins/Assets/Localization/"

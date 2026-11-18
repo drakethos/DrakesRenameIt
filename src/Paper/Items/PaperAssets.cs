@@ -6,9 +6,9 @@ using Object = UnityEngine.Object;
 namespace DrakeRenameit.Paper.Items;
 
 /// <summary>
-/// The paper's look, from the DrakesPaper Asset Forge pack (<c>Forge/Paper</c>): sheet sprites and icons generated
-/// into <c>Paper/Generated</c>, images embedded in this DLL. Edit the recipes in Asset Forge and export again
-/// (see <c>Forge/Paper/README.md</c>); sizes are US Letter scaled by <see cref="RenameitConfig.PaperScale"/>.
+/// The paper's look, from the DrakesPaper Asset Forge pack (<c>Assets/Forge/Paper</c>): sheet sprites and icons generated
+/// into <c>src/Paper/Generated</c>, images embedded in this DLL. Edit the recipes in Asset Forge and export again
+/// (see <c>Assets/Forge/Paper/README.md</c>); sizes are US Letter scaled by <see cref="RenameitConfig.PaperScale"/>.
 /// </summary>
 internal static class PaperAssets
 {

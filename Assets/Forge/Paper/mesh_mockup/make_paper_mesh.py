@@ -3,7 +3,7 @@
 Run:  blender -b -P make_paper_mesh.py
 Outputs (next to this script):
   paper_albedo.png, paper_albedo_written.png, paper_normal.png - generated 128x166 textures
-  ../../../Paper/Mesh/textures/paper_mesh_*.png                  - the same, embedded in the mod
+  src/Paper/Mesh/textures/paper_mesh_*.png                       - the same, embedded in the mod
   paper_mesh.blend                     - scene with mesh, materials, lights
   paper_mesh.glb                       - mesh only, modifiers applied, for Unity
   render_hero.png, render_top.png, render_edge.png
@@ -18,7 +18,21 @@ import numpy as np
 from mathutils import Vector
 
 OUT = os.path.dirname(os.path.abspath(__file__))
-GAME_TEX = os.path.normpath(os.path.join(OUT, "..", "..", "..", "Paper", "Mesh", "textures"))
+
+
+def repo_root(start):
+    here = start
+    while True:
+        if os.path.isfile(os.path.join(here, "DrakeRenameit.csproj")):
+            return here
+        parent = os.path.dirname(here)
+        if parent == here:
+            raise SystemExit("DrakeRenameit.csproj not found above " + start)
+        here = parent
+
+
+# Embedded copies. Walk up to the csproj so this still lands in src/Paper after the pack moves.
+GAME_TEX = os.path.join(repo_root(OUT), "src", "Paper", "Mesh", "textures")
 rng = np.random.default_rng(7)
 random.seed(7)
 

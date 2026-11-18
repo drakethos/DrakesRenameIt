@@ -140,8 +140,25 @@ namespace DrakeRenameit
             CompatibilityManager.Initialize(harmony);
         }
 
+        bool _workshopsDismissed;
+
         private void Update()
         {
+            // Toolkit windows live on the plugin, so a logout (and the suite's world reset) leaves them up over the next character.
+            if (Player.m_localPlayer == null)
+            {
+                if (!_workshopsDismissed)
+                {
+                    _workshopsDismissed = true;
+                    DismissWorkshops();
+                }
+            }
+            else
+            {
+                _workshopsDismissed = false;
+                UI.Toolkit.WorkshopPanel.CloseIfItemGone();
+            }
+
             var wasCapturingKey = global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Capturing;
             global::DrakeRenameit.UI.Toolkit.QuickSettingsShortcut.Poll();
             if (wasCapturingKey)
@@ -160,6 +177,28 @@ namespace DrakeRenameit
             if (global::DrakeRenameit.UI.Toolkit.PinEditorPanel.TryHandleEscape())
                 return;
             UIPanels.TryHandleEscape();
+        }
+
+        /// <summary>Close every RenameIt window. Safe when none are open. Used when the local player is gone.</summary>
+        static void DismissWorkshops()
+        {
+            try
+            {
+                UI.Toolkit.WorkshopPanel.HideFromHost();
+                UI.Toolkit.PieceWorkshopPanel.Hide();
+                UI.Toolkit.AnimalWorkshopPanel.Hide();
+                UI.Toolkit.PinEditorPanel.Hide();
+                UI.Toolkit.PaperWorkshopPanel.Hide();
+                UI.Toolkit.QuickSettingsPanel.Close();
+                DrakeModsLibs.UI.DrakeTabHost.Close();
+                UIPanels.CloseAllRenameEditingUi();
+                if (PaperWallSession.IsActive)
+                    PaperWallSession.End();
+            }
+            catch (Exception ex)
+            {
+                RenameitConfig.Log?.LogWarning($"Could not close RenameIt windows: {ex.Message}");
+            }
         }
 
         public static string GetPropperName(ItemDrop.ItemData? item) => CustomizeLibsAPI.GetProperName(item);

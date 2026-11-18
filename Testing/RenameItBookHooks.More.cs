@@ -248,6 +248,47 @@ internal static partial class RenameItBookHooks
 
     // ---------------------------------------------------------------- pieces
 
+    /// <summary>
+    /// Saves the rendered shelf icons as PNGs in BepInEx/config/DrakesRenameIt/icon-renders (to look at, or to refresh the fallback
+    /// PNGs in Books/Mesh/textures). Returns "n saved: names".
+    /// </summary>
+    [TestHook("renameit.saveShelfIcons")]
+    static string SaveShelfIcons(Dictionary<string, object?> args)
+    {
+        var folder = Path.Combine(BepInEx.Paths.ConfigPath, "DrakesRenameIt", "icon-renders");
+        Directory.CreateDirectory(folder);
+        var names = new List<string>();
+        foreach (var pair in BookShelfIcons.Made)
+        {
+            var sprite = pair.Value;
+            var rect = sprite.textureRect;
+            // Copied through a render texture: the sprite's own texture may not be readable.
+            var rt = RenderTexture.GetTemporary(sprite.texture.width, sprite.texture.height, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(sprite.texture, rt);
+            var previous = RenderTexture.active;
+            RenderTexture.active = rt;
+            var copy = new Texture2D((int)rect.width, (int)rect.height, TextureFormat.RGBA32, false);
+            copy.ReadPixels(new Rect(rect.x, sprite.texture.height - rect.y - rect.height, rect.width, rect.height), 0, 0);
+            copy.Apply();
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(rt);
+            File.WriteAllBytes(Path.Combine(folder, pair.Key + ".png"), copy.EncodeToPNG());
+            UnityEngine.Object.Destroy(copy);
+            names.Add(pair.Key);
+        }
+
+        return $"{names.Count} saved: {string.Join(", ", names)}";
+    }
+
+    /// <summary>The icon a piece shows in the build menu: its sprite name, or "none".</summary>
+    [TestHook("renameit.pieceIcon")]
+    static string PieceIcon(Dictionary<string, object?> args)
+    {
+        var prefab = ZNetScene.instance != null ? ZNetScene.instance.GetPrefab(S(args, "name")) : null;
+        var piece = prefab != null ? prefab.GetComponent<Piece>() : null;
+        return piece == null ? "no piece" : piece.m_icon != null ? piece.m_icon.name : "none";
+    }
+
     /// <summary>How a placed or spawned book stands: "upright=True" when it is taller than it is wide, plus its size in metres.</summary>
     [TestHook("renameit.bookPose")]
     static string BookPose(Dictionary<string, object?> args, GameObject? target = null)

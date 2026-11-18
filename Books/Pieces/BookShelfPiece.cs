@@ -252,6 +252,10 @@ internal static class BookShelfPiece
         behaviour.Height = v.Height;
         behaviour.ShelfRows = v.ShelfRows;
         behaviour.InvPerRow = v.InvPerRow;
+
+        // The hammer icon: this case with books on it (the PNG stays as the fallback).
+        if (p != null && BookShelfIcons.Render(go, v) is { } icon)
+            p.m_icon = icon;
     }
 
     /// <summary>Wood parts only: the middle stays open so the crosshair can reach the spines.</summary>

@@ -115,6 +115,9 @@ internal static class SecretBookcase
             }
 
             go.AddComponent<SecretBookcaseBehaviour>();
+            // Same icon as the Tall Bookcase it passes for, drawn from its own case.
+            if (p != null && BookShelfIcons.Render(go, BookShelfPiece.TallVariant) is { } rendered)
+                p.m_icon = rendered;
             log?.LogInfo("[Books] Registered the secret bookcase door.");
         }
         catch (Exception ex)

@@ -1,0 +1,72 @@
+{
+  "name": "BK-22 hammer icons: every shelf and bookcase icon is drawn from the real case with books on it",
+  "description": "The build menu icons are rendered when the pieces register (Jotunn RenderManager), from the case itself with sample books on every row, so they match the case: no old mock-up dividers or row counts. The test saves them as PNGs to look at.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_WallShelf"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Wall Shelf: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_WallShelfLong"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Long Wall Shelf: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_BookcaseSmall"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Small Bookcase: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_Bookcase"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Tall Bookcase: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_BookcaseWide"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Wide Bookcase: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceIcon",
+      "args": {
+        "name": "Drakes_SecretBookcase"
+      },
+      "contains": "drakes_shelf_icon_",
+      "label": "Secret Bookcase Door: the hammer icon is drawn from the case"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.saveShelfIcons",
+      "contains": "6 saved",
+      "label": "all six icons saved to config/DrakesRenameIt/icon-renders"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

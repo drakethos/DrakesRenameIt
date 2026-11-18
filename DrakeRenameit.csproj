@@ -147,6 +147,7 @@
     <Compile Include="Books\Pieces\BookPiece.cs" />
     <Compile Include="Books\Pieces\BookShelfPiece.cs" />
     <Compile Include="Books\Pieces\SecretBookcase.cs" />
+    <Compile Include="Books\Pieces\BookShelfIcons.cs" />
     <Compile Include="Books\Pieces\BookShelfBehaviour.cs" />
     <Compile Include="Books\Patches\BookShelfPatches.cs" />
     <Compile Include="Books\UI\ShelfSettingsPanel.cs" />

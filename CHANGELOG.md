@@ -43,6 +43,20 @@
   - `ExcludedCategoryReference.txt` also lists piece categories and, after joining a world, every buildable piece with a hover name.
   - **Plugin GUID is now `com.drakemods.renameit`.** On first start the old `com.drakesworkshop.renameit.cfg` is copied to the new file and renamed `*.migrated`, so settings carry over.
   - Automated tests incl. PR-01..PR-15 (pieces) and the two-client DrakesRenameIt-Net suite (PN-01..03). Not part of the release.
+- Version 1.3.2
+  - Patch for 1.3.1. Requires **DrakeModsLibs 1.0.0+** (the SeneaL description and Crafted-by lines also need the next DrakeModsLibs, 1.0.6).
+  - **New: SeneaL UI support.** With **SeneaL UI** installed, a renamed item shows its new name in SeneaL's tooltips and crafting views (it showed the vanilla name before). Nothing changes without SeneaL.
+  - **Docs:** a new "Works with equipment and slot mods" section in the README and a guide, `docs/COMPATIBILITY.md`, for adding support for another mod. AzuExtendedPlayerInventory and InventorySlots need no module.
+
+- Version 1.3.1
+  - Patch for 1.3.0. Requires **DrakeModsLibs 1.0.0+**.
+  - **Fix: renamed items in ExtraSlots slots.** With **ExtraSlots** installed, an item's new name and Crafted-by line now show on its tooltip in the equipment (Head, Back, Chest, Legs) and extra slots (food, ammo, quick, misc); they showed the vanilla name before. Nothing changes without ExtraSlots.
+
+- Version 1.3.0
+  - Stable cut of the 1.3.0 betas below. Requires **DrakeModsLibs 1.0.0+**. Published on Hexium and GitHub.
+  - New UI Toolkit Item Workshop (Rename tab) and Paper tab, with Quick Settings (Shift+F1), a preview card, rich text formatting and a styled world hover.
+  - Fixes from the automated test suite: your own menu key is respected, `ShowItemStandItemNameWhenNoAccess` and paper names apply live and when synced from the server.
+
 - Version 1.3.0-beta.3
   - Beta. Requires **DrakeModsLibs 1.0.0** (the menu-key fix uses its new `MenuBindingRegistry.LinkTab`).
   - **Fix: your menu key is respected.** With `MenuOpenModifier` set to another key (e.g. Ctrl), Shift + right-click no longer opens RenameIt's window through the shared Libs key.
@@ -62,7 +76,8 @@
   - Crafted-by lines take rich text; hover defaults to Minimal and no longer leaves tags open.
   - A wall paper keeps and shows its Reskin colour; world hover runs after the other hover patches.
   - Removed the old dev-only commands module.
-  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
+- Version 1.2.1
+  - **Final Thunderstore release** (replaces 1.2.0 as the last one). DrakeMods is moving to [Hexium](https://valheim.hexium.gg/?q=DrakeMods): future RenameIt updates are posted there, and this Thunderstore listing gets only limited support and will be deprecated.
   - **Security fix (VIP):** the 1.2.0 local VIP check was inverted. A remote client trusted its own `VipList` only before the host's config had synced, so a player could still grant themselves VIP, and real VIPs on a remote or dedicated server lost VIP once synced. A remote client now trusts `VipList` only after the host's config has taken over. Host and offline play are unchanged.
   - Requires **DrakeModsLibs 0.11.2+**, which fixes the same inverted check in the Libs VIP profile.
 - Version 1.2.0

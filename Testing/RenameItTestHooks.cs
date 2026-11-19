@@ -724,38 +724,109 @@ internal static class RenameItTestHooks
         return $"result={result};custom={c};vanilla={v};name={custom};at=[{string.Join(" | ", where)}]";
     }
 
+    static Vector2? _slotHoverPoint;
+    static float _slotHoverUntil;
+    static SlotHoverHold? _slotHoverHold;
+
+    /// <summary>Keeps the virtual mouse on the slot. The inventory tooltip follows the Input System mouse, and one write is not enough.</summary>
+    sealed class SlotHoverHold : MonoBehaviour
+    {
+        void LateUpdate()
+        {
+            if (!_slotHoverPoint.HasValue || Time.realtimeSinceStartup > _slotHoverUntil)
+            {
+                enabled = false;
+                return;
+            }
+
+            TrySetMouse(_slotHoverPoint.Value);
+        }
+    }
+
     /// <summary>
-    /// Hovers the slot that shows this item: finds the visible UI images that draw the item's icon (any mod's slot UI) and sends
-    /// them pointer-enter, like a mouse resting on it. Returns how many it hovered and where. Read the result with renameit.shownTooltip.
+    /// Hovers the slot that shows this item. Parks the virtual mouse on the icon (the same way a player resting there does)
+    /// so the game opens its tooltip. Read it with renameit.shownTooltip.
     /// </summary>
     [TestHook("renameit.hoverSlot")]
     static string HoverSlot(Dictionary<string, object?> args)
     {
         var item = Item(args);
         var icon = item.GetIcon();
-        var es = UnityEngine.EventSystems.EventSystem.current;
-        var n = 0;
-        var where = new List<string>();
+        UnityEngine.UI.Image? hit = null;
+        var path = "";
         foreach (var img in Resources.FindObjectsOfTypeAll<UnityEngine.UI.Image>())
         {
             if (img == null || img.sprite == null || img.sprite != icon || !img.gameObject.activeInHierarchy || img.canvas == null)
                 continue;
-            var ped = new UnityEngine.EventSystems.PointerEventData(es)
-            {
-                position = UnityEngine.RectTransformUtility.WorldToScreenPoint(null, img.rectTransform.position)
-            };
-            UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(img.gameObject, ped, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
-            n++;
-            if (where.Count < 4)
-            {
-                var path = img.name;
-                for (var tr = img.transform.parent; tr != null && path.Length < 80; tr = tr.parent)
-                    path = tr.name + "/" + path;
-                where.Add(path);
-            }
+            if (img.canvasRenderer != null && img.canvasRenderer.cull)
+                continue;
+            if (img.color.a <= 0.01f)
+                continue;
+            hit = img;
+            path = img.name;
+            for (var tr = img.transform.parent; tr != null && path.Length < 80; tr = tr.parent)
+                path = tr.name + "/" + path;
+            // The inventory grid is the slot these tests read. A second copy (hotbar) is only a fallback.
+            if (path.IndexOf("PlayerGrid", StringComparison.OrdinalIgnoreCase) >= 0)
+                break;
         }
 
-        return $"hovered={n};at=[{string.Join(" | ", where)}]";
+        if (hit == null)
+            return "hovered=0;at=[]";
+
+        var rt = hit.rectTransform;
+        var canvas = rt.GetComponentInParent<Canvas>();
+        var cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        var point = RectTransformUtility.WorldToScreenPoint(cam, rt.TransformPoint(rt.rect.center));
+        _slotHoverPoint = point;
+        _slotHoverUntil = Time.realtimeSinceStartup + 3f;
+        if (_slotHoverHold == null)
+        {
+            var go = new GameObject("RenameItSlotHover");
+            UnityEngine.Object.DontDestroyOnLoad(go);
+            _slotHoverHold = go.AddComponent<SlotHoverHold>();
+        }
+
+        _slotHoverHold.enabled = true;
+        var parked = TrySetMouse(point);
+        var es = UnityEngine.EventSystems.EventSystem.current;
+        var ped = new UnityEngine.EventSystems.PointerEventData(es) { position = point };
+        UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(hit.gameObject, ped, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+        return $"hovered=1;mouse={(parked ? "parked" : "pointer-only")};at=[{path}]";
+    }
+
+    /// <summary>Writes a screen position into the Input System mouse. False when that mouse is not there.</summary>
+    static bool TrySetMouse(Vector2 screenPos)
+    {
+        try
+        {
+            var mouseType = AccessTools.TypeByName("UnityEngine.InputSystem.Mouse");
+            var stateType = AccessTools.TypeByName("UnityEngine.InputSystem.LowLevel.InputState");
+            if (mouseType == null || stateType == null)
+                return false;
+            var mouse = mouseType.GetProperty("current", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if (mouse == null)
+                return false;
+            var control = AccessTools.Property(mouseType, "position")?.GetValue(mouse)
+                          ?? AccessTools.Property(mouseType.BaseType, "position")?.GetValue(mouse);
+            if (control == null)
+                return false;
+            var change = stateType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .FirstOrDefault(m => m.Name == "Change" && m.IsGenericMethodDefinition && m.GetParameters().Length == 4
+                                     && m.GetParameters()[1].ParameterType.IsGenericParameter);
+            if (change == null)
+                return false;
+            var ps = change.GetParameters();
+            change.MakeGenericMethod(typeof(Vector2)).Invoke(null, new object?[]
+            {
+                control, screenPos, Enum.ToObject(ps[2].ParameterType, 0), Activator.CreateInstance(ps[3].ParameterType)
+            });
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     /// <summary>The tooltip the game is showing right now, texts joined by " | " (rich text stripped); "" when none.</summary>
@@ -1078,12 +1149,18 @@ internal static class RenameItTestHooks
     static string PieceHover(Dictionary<string, object?> args, GameObject? target = null)
     {
         var piece = NameablePiece(target);
+        if (piece == null)
+            return "";
         var part = Pieces.PieceRename.FirstNameableHover(piece);
         var vanilla = (part as Hoverable)?.GetHoverText() ?? "";
-        // Like the HUD: RenameIt only touches the hover when piece renaming applies to it.
-        if (part == null || Pieces.PieceRename.NameablePiece(part.gameObject) != piece)
+        if (part == null)
             return Loc(vanilla);
-        return Loc(Pieces.PieceRename.ApplyToHoverText(piece, vanilla, P, part as Hoverable));
+        // Same split as Hud.UpdateCrosshair: a claimed piece (LockSmith's private chest) is not renamable,
+        // but a name already stored on it still replaces the title. No Rename hint in that case.
+        var nameable = Pieces.PieceRename.NameablePiece(part.gameObject) == piece;
+        if (!nameable && Pieces.PieceRename.GetCustomName(piece).Length == 0)
+            return Loc(vanilla);
+        return Loc(Pieces.PieceRename.ApplyToHoverText(piece, vanilla, P, part as Hoverable, offerRename: nameable));
     }
 
     // ---------- paper

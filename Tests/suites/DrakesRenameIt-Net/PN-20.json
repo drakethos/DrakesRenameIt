@@ -1,0 +1,1663 @@
+{
+  "name": "PN-20 every kind of piece: her rename of my shared piece is written",
+  "description": "The owner side for 38 kinds of piece: a Shared piece accepts Bjornita's SetName RPC.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p0",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p0",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chest_wood"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "Peer piece_chest_wood",
+      "label": "piece_chest_wood: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p1",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p1",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chest"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "Peer piece_chest",
+      "label": "piece_chest: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p2",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_private: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p2",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chest_private"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "Peer piece_chest_private",
+      "label": "piece_chest_private: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p3",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p3",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chest_blackmetal"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "Peer piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p4",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p4",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chest_barrel"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "Peer piece_chest_barrel",
+      "label": "piece_chest_barrel: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p5",
+        "on": true
+      },
+      "expect": true,
+      "label": "Cart: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p5",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer Cart"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "Peer Cart",
+      "label": "Cart: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p6",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_workbench: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p6",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_workbench"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "Peer piece_workbench",
+      "label": "piece_workbench: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p7",
+        "on": true
+      },
+      "expect": true,
+      "label": "forge: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p7",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer forge"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "Peer forge",
+      "label": "forge: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p8",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cauldron: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p8",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_cauldron"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "Peer piece_cauldron",
+      "label": "piece_cauldron: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p9",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p9",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_stonecutter"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "Peer piece_stonecutter",
+      "label": "piece_stonecutter: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p10",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p10",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_artisanstation"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "Peer piece_artisanstation",
+      "label": "piece_artisanstation: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p11",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_magetable: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p11",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_magetable"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "Peer piece_magetable",
+      "label": "piece_magetable: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p12",
+        "on": true
+      },
+      "expect": true,
+      "label": "blastfurnace: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p12",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer blastfurnace"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "Peer blastfurnace",
+      "label": "blastfurnace: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p13",
+        "on": true
+      },
+      "expect": true,
+      "label": "smelter: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p13",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer smelter"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "Peer smelter",
+      "label": "smelter: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p14",
+        "on": true
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p14",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer charcoal_kiln"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "Peer charcoal_kiln",
+      "label": "charcoal_kiln: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p15",
+        "on": true
+      },
+      "expect": true,
+      "label": "windmill: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p15",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer windmill"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "Peer windmill",
+      "label": "windmill: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p16",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p16",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_spinningwheel"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "Peer piece_spinningwheel",
+      "label": "piece_spinningwheel: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p17",
+        "on": true
+      },
+      "expect": true,
+      "label": "eitrrefinery: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p17",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer eitrrefinery"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "Peer eitrrefinery",
+      "label": "eitrrefinery: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p18",
+        "on": true
+      },
+      "expect": true,
+      "label": "fermenter: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p18",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer fermenter"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "Peer fermenter",
+      "label": "fermenter: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p19",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p19",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_cookingstation"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "Peer piece_cookingstation",
+      "label": "piece_cookingstation: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p20",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_oven: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p20",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_oven"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "Peer piece_oven",
+      "label": "piece_oven: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p21",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p21",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_MeadCauldron"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "Peer piece_MeadCauldron",
+      "label": "piece_MeadCauldron: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p22",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p22",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_cartographytable"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "Peer piece_cartographytable",
+      "label": "piece_cartographytable: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p23",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bed02: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p23",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_bed02"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "Peer piece_bed02",
+      "label": "piece_bed02: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p24",
+        "on": true
+      },
+      "expect": true,
+      "label": "bed: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p24",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer bed"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "Peer bed",
+      "label": "bed: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p25",
+        "on": true
+      },
+      "expect": true,
+      "label": "portal_wood: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p25",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer portal_wood"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "Peer portal_wood",
+      "label": "portal_wood: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p26",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_door: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p26",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer wood_door"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "Peer wood_door",
+      "label": "wood_door: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p27",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_gate: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p27",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer wood_gate"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "Peer wood_gate",
+      "label": "wood_gate: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p28",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chair: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p28",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_chair"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "Peer piece_chair",
+      "label": "piece_chair: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p29",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bench01: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p29",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_bench01"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "Peer piece_bench01",
+      "label": "piece_bench01: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p30",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_throne01: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p30",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_throne01"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "Peer piece_throne01",
+      "label": "piece_throne01: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p31",
+        "on": true
+      },
+      "expect": true,
+      "label": "Raft: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p31",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer Raft"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "Peer Raft",
+      "label": "Raft: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p32",
+        "on": true
+      },
+      "expect": true,
+      "label": "Karve: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p32",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer Karve"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "Peer Karve",
+      "label": "Karve: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p33",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p33",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_TrainingDummy"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "Peer piece_TrainingDummy",
+      "label": "piece_TrainingDummy: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p34",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_barber: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p34",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_barber"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "Peer piece_barber",
+      "label": "piece_barber: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p35",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_beehive: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p35",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_beehive"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "Peer piece_beehive",
+      "label": "piece_beehive: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p36",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p36",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_sapcollector"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "Peer piece_sapcollector",
+      "label": "piece_sapcollector: her rename was written"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p37",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_gift1: I share it"
+    },
+    {
+      "do": "peerRpc",
+      "peer": "Bjornita",
+      "target": "p37",
+      "method": "DrakePiece_RPC_SetName",
+      "args": [
+        "Peer piece_gift1"
+      ],
+      "types": [
+        "string"
+      ]
+    },
+    {
+      "do": "wait",
+      "seconds": 0.3
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "Peer piece_gift1",
+      "label": "piece_gift1: her rename was written"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 600
+}

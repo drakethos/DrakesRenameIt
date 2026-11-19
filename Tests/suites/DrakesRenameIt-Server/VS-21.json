@@ -1,0 +1,1621 @@
+{
+  "name": "VS-21 every kind of piece: my rename reaches Player 2",
+  "description": "I rename, she reads the name and hover title on her own client.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p0",
+        "text": "P1 piece_chest_wood"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "P1 piece_chest_wood",
+      "label": "piece_chest_wood: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "P1 piece_chest_wood",
+      "label": "piece_chest_wood: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p1",
+        "text": "P1 piece_chest"
+      },
+      "expect": true,
+      "label": "piece_chest: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "P1 piece_chest",
+      "label": "piece_chest: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "P1 piece_chest",
+      "label": "piece_chest: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p2",
+        "text": "P1 piece_chest_private"
+      },
+      "expect": true,
+      "label": "piece_chest_private: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "P1 piece_chest_private",
+      "label": "piece_chest_private: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "P1 piece_chest_private",
+      "label": "piece_chest_private: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p3",
+        "text": "P1 piece_chest_blackmetal"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "P1 piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "P1 piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p4",
+        "text": "P1 piece_chest_barrel"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "P1 piece_chest_barrel",
+      "label": "piece_chest_barrel: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "P1 piece_chest_barrel",
+      "label": "piece_chest_barrel: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p5",
+        "text": "P1 Cart"
+      },
+      "expect": true,
+      "label": "Cart: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "P1 Cart",
+      "label": "Cart: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "P1 Cart",
+      "label": "Cart: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p6",
+        "text": "P1 piece_workbench"
+      },
+      "expect": true,
+      "label": "piece_workbench: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "P1 piece_workbench",
+      "label": "piece_workbench: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "P1 piece_workbench",
+      "label": "piece_workbench: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p7",
+        "text": "P1 forge"
+      },
+      "expect": true,
+      "label": "forge: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "P1 forge",
+      "label": "forge: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "P1 forge",
+      "label": "forge: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p8",
+        "text": "P1 piece_cauldron"
+      },
+      "expect": true,
+      "label": "piece_cauldron: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "P1 piece_cauldron",
+      "label": "piece_cauldron: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "P1 piece_cauldron",
+      "label": "piece_cauldron: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p9",
+        "text": "P1 piece_stonecutter"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "P1 piece_stonecutter",
+      "label": "piece_stonecutter: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "P1 piece_stonecutter",
+      "label": "piece_stonecutter: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p10",
+        "text": "P1 piece_artisanstation"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "P1 piece_artisanstation",
+      "label": "piece_artisanstation: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "P1 piece_artisanstation",
+      "label": "piece_artisanstation: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p11",
+        "text": "P1 piece_magetable"
+      },
+      "expect": true,
+      "label": "piece_magetable: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "P1 piece_magetable",
+      "label": "piece_magetable: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "P1 piece_magetable",
+      "label": "piece_magetable: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p12",
+        "text": "P1 blastfurnace"
+      },
+      "expect": true,
+      "label": "blastfurnace: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "P1 blastfurnace",
+      "label": "blastfurnace: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "P1 blastfurnace",
+      "label": "blastfurnace: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p13",
+        "text": "P1 smelter"
+      },
+      "expect": true,
+      "label": "smelter: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "P1 smelter",
+      "label": "smelter: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "P1 smelter",
+      "label": "smelter: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p14",
+        "text": "P1 charcoal_kiln"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "P1 charcoal_kiln",
+      "label": "charcoal_kiln: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "P1 charcoal_kiln",
+      "label": "charcoal_kiln: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p15",
+        "text": "P1 windmill"
+      },
+      "expect": true,
+      "label": "windmill: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "P1 windmill",
+      "label": "windmill: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "P1 windmill",
+      "label": "windmill: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p16",
+        "text": "P1 piece_spinningwheel"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "P1 piece_spinningwheel",
+      "label": "piece_spinningwheel: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "P1 piece_spinningwheel",
+      "label": "piece_spinningwheel: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p17",
+        "text": "P1 eitrrefinery"
+      },
+      "expect": true,
+      "label": "eitrrefinery: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "P1 eitrrefinery",
+      "label": "eitrrefinery: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "P1 eitrrefinery",
+      "label": "eitrrefinery: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p18",
+        "text": "P1 fermenter"
+      },
+      "expect": true,
+      "label": "fermenter: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "P1 fermenter",
+      "label": "fermenter: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "P1 fermenter",
+      "label": "fermenter: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p19",
+        "text": "P1 piece_cookingstation"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "P1 piece_cookingstation",
+      "label": "piece_cookingstation: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "P1 piece_cookingstation",
+      "label": "piece_cookingstation: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p20",
+        "text": "P1 piece_oven"
+      },
+      "expect": true,
+      "label": "piece_oven: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "P1 piece_oven",
+      "label": "piece_oven: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "P1 piece_oven",
+      "label": "piece_oven: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p21",
+        "text": "P1 piece_MeadCauldron"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "P1 piece_MeadCauldron",
+      "label": "piece_MeadCauldron: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "P1 piece_MeadCauldron",
+      "label": "piece_MeadCauldron: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p22",
+        "text": "P1 piece_cartographytable"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "P1 piece_cartographytable",
+      "label": "piece_cartographytable: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "P1 piece_cartographytable",
+      "label": "piece_cartographytable: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p23",
+        "text": "P1 piece_bed02"
+      },
+      "expect": true,
+      "label": "piece_bed02: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "P1 piece_bed02",
+      "label": "piece_bed02: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "P1 piece_bed02",
+      "label": "piece_bed02: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p24",
+        "text": "P1 bed"
+      },
+      "expect": true,
+      "label": "bed: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "P1 bed",
+      "label": "bed: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "P1 bed",
+      "label": "bed: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p25",
+        "text": "P1 portal_wood"
+      },
+      "expect": true,
+      "label": "portal_wood: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "P1 portal_wood",
+      "label": "portal_wood: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "P1 portal_wood",
+      "label": "portal_wood: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p26",
+        "text": "P1 wood_door"
+      },
+      "expect": true,
+      "label": "wood_door: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "P1 wood_door",
+      "label": "wood_door: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "P1 wood_door",
+      "label": "wood_door: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p27",
+        "text": "P1 wood_gate"
+      },
+      "expect": true,
+      "label": "wood_gate: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "P1 wood_gate",
+      "label": "wood_gate: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "P1 wood_gate",
+      "label": "wood_gate: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p28",
+        "text": "P1 piece_chair"
+      },
+      "expect": true,
+      "label": "piece_chair: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "P1 piece_chair",
+      "label": "piece_chair: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "P1 piece_chair",
+      "label": "piece_chair: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p29",
+        "text": "P1 piece_bench01"
+      },
+      "expect": true,
+      "label": "piece_bench01: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "P1 piece_bench01",
+      "label": "piece_bench01: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "P1 piece_bench01",
+      "label": "piece_bench01: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p30",
+        "text": "P1 piece_throne01"
+      },
+      "expect": true,
+      "label": "piece_throne01: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "P1 piece_throne01",
+      "label": "piece_throne01: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "P1 piece_throne01",
+      "label": "piece_throne01: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p31",
+        "text": "P1 Raft"
+      },
+      "expect": true,
+      "label": "Raft: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "P1 Raft",
+      "label": "Raft: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "P1 Raft",
+      "label": "Raft: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p32",
+        "text": "P1 Karve"
+      },
+      "expect": true,
+      "label": "Karve: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "P1 Karve",
+      "label": "Karve: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "P1 Karve",
+      "label": "Karve: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p33",
+        "text": "P1 piece_TrainingDummy"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "P1 piece_TrainingDummy",
+      "label": "piece_TrainingDummy: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "P1 piece_TrainingDummy",
+      "label": "piece_TrainingDummy: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p34",
+        "text": "P1 piece_barber"
+      },
+      "expect": true,
+      "label": "piece_barber: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "P1 piece_barber",
+      "label": "piece_barber: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "P1 piece_barber",
+      "label": "piece_barber: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p35",
+        "text": "P1 piece_beehive"
+      },
+      "expect": true,
+      "label": "piece_beehive: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "P1 piece_beehive",
+      "label": "piece_beehive: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "P1 piece_beehive",
+      "label": "piece_beehive: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p36",
+        "text": "P1 piece_sapcollector"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "P1 piece_sapcollector",
+      "label": "piece_sapcollector: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "P1 piece_sapcollector",
+      "label": "piece_sapcollector: in her hover too"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p37",
+        "text": "P1 piece_gift1"
+      },
+      "expect": true,
+      "label": "piece_gift1: I rename it"
+    },
+    {
+      "do": "wait",
+      "seconds": 1.5
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "P1 piece_gift1",
+      "label": "piece_gift1: Player 2 sees my name"
+    },
+    {
+      "on": "player2",
+      "do": "hook",
+      "name": "renameit.pieceHoverTitle",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "P1 piece_gift1",
+      "label": "piece_gift1: in her hover too"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 900
+}

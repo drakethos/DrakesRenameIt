@@ -1,0 +1,9 @@
+{
+  "name": "DrakesRenameIt-Emoji",
+  "description": "Emoji on Piece of Paper compared with a Sign: glyph probe, stored text, length limits.",
+  "include": [
+    "../DrakesRenameIt/_shared/baseline.json",
+    "../DrakesRenameIt/_functions"
+  ],
+  "resetBetweenTests": true
+}

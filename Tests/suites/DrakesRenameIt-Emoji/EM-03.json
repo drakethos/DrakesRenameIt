@@ -1,0 +1,52 @@
+{
+  "name": "EM-03 length limit and cut never split an emoji",
+  "description": "RichText.VisibleLength / Truncate work in UTF-16 chars: an emoji counts twice, and a cut at the limit must not leave half a pair.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.richLength",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "max": 3
+      },
+      "contains": "visible=",
+      "label": "report: cut at 3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.richLength",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "max": 4
+      },
+      "contains": "brokenPair=False",
+      "label": "cut at 4 keeps whole pairs"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.richLength",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "max": 5
+      },
+      "contains": "brokenPair=False",
+      "label": "cut at 5 keeps whole pairs"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.richLength",
+      "args": {
+        "text": "Hi 😀 🔥 ❤️ ⚔️ ok",
+        "max": 6
+      },
+      "contains": "brokenPair=False",
+      "label": "cut at 6 keeps whole pairs"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

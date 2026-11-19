@@ -249,6 +249,28 @@ internal static class PieceRename
         return mayEdit && HasWardAccess(piece, flash, player);
     }
 
+    /// <summary>Why <see cref="CanRename"/> says no (for the LogSpam traces; mirrors its checks in order). "allowed" when it does not.</summary>
+    internal static string DenyReason(Piece piece, Player? player)
+    {
+        if (player == null) return "no player";
+        if (!RenameitConfig.PieceRenameEnabled) return "PieceRenameEnabled is off";
+        if (RenameitPermission.IsElevatedForOverrides(player)) return "allowed (admin/VIP)";
+        if (RenameitConfig.PieceRenameAdminOnly) return "PieceRenameAdminOnly is on";
+        if (IsExcluded(piece)) return "piece is excluded (PieceExcludedNames/Category)";
+        if (!IsPlayerBuilt(piece)) return "world-built piece (no builder), admins only";
+        var mayEdit = !RenameitConfig.PieceLockToBuilder || IsBuilder(piece, player)
+                      || (RenameitConfig.PieceSharedEnabled && IsShared(piece));
+        if (!mayEdit)
+            return $"not the builder (creator={piece.GetCreator()}, player={player.GetPlayerID()}) and Shared={(RenameitConfig.PieceSharedEnabled ? IsShared(piece).ToString() : "disabled by config")}";
+        return HasWardAccess(piece, false, player) ? "allowed" : "no ward access (PieceRequireWardAccess)";
+    }
+
+    static string Describe(ZNetView nview)
+    {
+        var zdo = nview.GetZDO();
+        return $"'{nview.name}' zdo={zdo?.m_uid} owner={(zdo != null ? zdo.GetOwner() : 0)}";
+    }
+
     /// <summary>Only the builder (with ward access when required) or an admin/VIP may turn Shared on or off.</summary>
     internal static bool CanChangeShared(Piece piece, Player? player)
     {
@@ -305,10 +327,12 @@ internal static class PieceRename
         var zdo = nview.GetZDO();
         if (zdo.HasOwner() && !nview.IsOwner())
         {
+            RenameitConfig.VerboseInfo($"[PieceRename] {rpc}: sending to the owner of {Describe(nview)}");
             nview.InvokeRPC(rpc, value);
             return;
         }
 
+        RenameitConfig.VerboseInfo($"[PieceRename] {rpc}: writing directly (claiming) on {Describe(nview)}");
         nview.ClaimOwnership();
         apply(zdo);
     }
@@ -317,12 +341,18 @@ internal static class PieceRename
     internal static void RegisterRpcs(ZNetView? nview)
     {
         if (nview == null || !nview.IsValid())
+        {
+            RenameitConfig.VerboseWarning($"[PieceRename] Rename RPCs NOT registered on '{(nview != null ? nview.name : "?")}': its ZNetView is not valid yet.");
             return;
+        }
         nview.Unregister(RpcSetName);
         nview.Register<string>(RpcSetName, (sender, name) =>
         {
             if (!nview.IsValid() || !nview.IsOwner())
+            {
+                RenameitConfig.VerboseWarning($"[PieceRename] SetName from peer {sender} reached a client that is not the owner of '{nview.name}'; dropped.");
                 return;
+            }
             // the sender's own client already checked; the owner never trusts that (a modified client can send this RPC)
             var piece = nview.GetComponent<Piece>();
             if (piece == null || !SenderMay(piece, sender, shareChange: false))
@@ -331,13 +361,17 @@ internal static class PieceRename
                 return;
             }
 
+            RenameitConfig.VerboseInfo($"[PieceRename] SetName from peer {sender} applied on {Describe(nview)}");
             nview.GetZDO().Set(ZdoHash, CleanName(name));
         });
         nview.Unregister(RpcSetShared);
         nview.Register<bool>(RpcSetShared, (sender, on) =>
         {
             if (!nview.IsValid() || !nview.IsOwner())
+            {
+                RenameitConfig.VerboseWarning($"[PieceRename] SetShared from peer {sender} reached a client that is not the owner of '{nview.name}'; dropped.");
                 return;
+            }
             var piece = nview.GetComponent<Piece>();
             if (piece == null || !SenderMay(piece, sender, shareChange: true))
             {
@@ -345,6 +379,7 @@ internal static class PieceRename
                 return;
             }
 
+            RenameitConfig.VerboseInfo($"[PieceRename] SetShared={on} from peer {sender} applied on {Describe(nview)}");
             nview.GetZDO().Set(ZdoSharedHash, on);
         });
     }
@@ -363,8 +398,15 @@ internal static class PieceRename
         }
 
         if (who == null)
+        {
+            RenameitConfig.Log?.LogWarning($"[PieceRename] Peer {sender} has no player object on this client (not nearby / not loaded), so '{piece.name}' cannot check them; refused.");
             return false;
-        return shareChange ? CanChangeShared(piece, who) : CanRename(piece, who, false);
+        }
+
+        var ok = shareChange ? CanChangeShared(piece, who) : CanRename(piece, who, false);
+        if (!ok)
+            RenameitConfig.Log?.LogWarning($"[PieceRename] Peer {sender} ({who.GetPlayerName()}) may not {(shareChange ? "change Shared on" : "rename")} '{piece.name}': {DenyReason(piece, who)}.");
+        return ok;
     }
 
     /// <summary>Same limits as the window (visible characters, raw length), applied where the name is written.</summary>
@@ -663,9 +705,16 @@ internal static class PieceRenamePatches
                 return true;
             var piece = PieceRename.NameablePiece(go);
             if (piece == null)
+            {
+                if (RenameitConfig.LogSpam && go != null && go.GetComponentInParent<Piece>() is Piece other)
+                    RenameitConfig.VerboseInfo($"[PieceRename] Alt+Use on '{other.name}': not renamable here (feature off, claimed by LockSmith/Teams, no hover of its own, or an excluded part).");
                 return true;
+            }
             if (!PieceRename.CanRename(piece, __instance, flash: true))
+            {
+                RenameitConfig.VerboseInfo($"[PieceRename] Alt+Use on '{piece.name}': refused: {PieceRename.DenyReason(piece, __instance)}.");
                 return true;
+            }
             PieceRename.OpenEditor(piece);
             return false;
         }

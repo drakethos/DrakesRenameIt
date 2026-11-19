@@ -1,0 +1,2575 @@
+{
+  "name": "PN-22 every kind of piece: another player may rename a shared piece",
+  "description": "Access side for 38 kinds of piece: as Alice, on a piece I built and shared, the rename is allowed, offered in the hover and written.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p0",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p0"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_wood: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p0",
+        "text": "Alice piece_chest_wood"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p0"
+      },
+      "contains": "Alice piece_chest_wood",
+      "label": "piece_chest_wood: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p1",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p1"
+      },
+      "expect": true,
+      "label": "piece_chest: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "Rename",
+      "label": "piece_chest: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p1",
+        "text": "Alice piece_chest"
+      },
+      "expect": true,
+      "label": "piece_chest: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p1"
+      },
+      "contains": "Alice piece_chest",
+      "label": "piece_chest: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p2",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_private: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p2"
+      },
+      "expect": true,
+      "label": "piece_chest_private: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_private: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p2",
+        "text": "Alice piece_chest_private"
+      },
+      "expect": true,
+      "label": "piece_chest_private: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p2"
+      },
+      "contains": "Alice piece_chest_private",
+      "label": "piece_chest_private: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p3",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p3"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_blackmetal: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p3",
+        "text": "Alice piece_chest_blackmetal"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p3"
+      },
+      "contains": "Alice piece_chest_blackmetal",
+      "label": "piece_chest_blackmetal: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p4",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p4"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "Rename",
+      "label": "piece_chest_barrel: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p4",
+        "text": "Alice piece_chest_barrel"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p4"
+      },
+      "contains": "Alice piece_chest_barrel",
+      "label": "piece_chest_barrel: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p5",
+        "on": true
+      },
+      "expect": true,
+      "label": "Cart: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p5"
+      },
+      "expect": true,
+      "label": "Cart: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "Rename",
+      "label": "Cart: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p5",
+        "text": "Alice Cart"
+      },
+      "expect": true,
+      "label": "Cart: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p5"
+      },
+      "contains": "Alice Cart",
+      "label": "Cart: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p6",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_workbench: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p6"
+      },
+      "expect": true,
+      "label": "piece_workbench: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "Rename",
+      "label": "piece_workbench: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p6",
+        "text": "Alice piece_workbench"
+      },
+      "expect": true,
+      "label": "piece_workbench: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p6"
+      },
+      "contains": "Alice piece_workbench",
+      "label": "piece_workbench: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p7",
+        "on": true
+      },
+      "expect": true,
+      "label": "forge: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p7"
+      },
+      "expect": true,
+      "label": "forge: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "Rename",
+      "label": "forge: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p7",
+        "text": "Alice forge"
+      },
+      "expect": true,
+      "label": "forge: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p7"
+      },
+      "contains": "Alice forge",
+      "label": "forge: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p8",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cauldron: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p8"
+      },
+      "expect": true,
+      "label": "piece_cauldron: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "Rename",
+      "label": "piece_cauldron: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p8",
+        "text": "Alice piece_cauldron"
+      },
+      "expect": true,
+      "label": "piece_cauldron: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p8"
+      },
+      "contains": "Alice piece_cauldron",
+      "label": "piece_cauldron: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p9",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p9"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "Rename",
+      "label": "piece_stonecutter: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p9",
+        "text": "Alice piece_stonecutter"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p9"
+      },
+      "contains": "Alice piece_stonecutter",
+      "label": "piece_stonecutter: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p10",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p10"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "Rename",
+      "label": "piece_artisanstation: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p10",
+        "text": "Alice piece_artisanstation"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p10"
+      },
+      "contains": "Alice piece_artisanstation",
+      "label": "piece_artisanstation: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p11",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_magetable: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p11"
+      },
+      "expect": true,
+      "label": "piece_magetable: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "Rename",
+      "label": "piece_magetable: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p11",
+        "text": "Alice piece_magetable"
+      },
+      "expect": true,
+      "label": "piece_magetable: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p11"
+      },
+      "contains": "Alice piece_magetable",
+      "label": "piece_magetable: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p12",
+        "on": true
+      },
+      "expect": true,
+      "label": "blastfurnace: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p12"
+      },
+      "expect": true,
+      "label": "blastfurnace: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "Rename",
+      "label": "blastfurnace: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p12",
+        "text": "Alice blastfurnace"
+      },
+      "expect": true,
+      "label": "blastfurnace: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p12"
+      },
+      "contains": "Alice blastfurnace",
+      "label": "blastfurnace: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p13",
+        "on": true
+      },
+      "expect": true,
+      "label": "smelter: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p13"
+      },
+      "expect": true,
+      "label": "smelter: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "Rename",
+      "label": "smelter: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p13",
+        "text": "Alice smelter"
+      },
+      "expect": true,
+      "label": "smelter: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p13"
+      },
+      "contains": "Alice smelter",
+      "label": "smelter: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p14",
+        "on": true
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p14"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "Rename",
+      "label": "charcoal_kiln: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p14",
+        "text": "Alice charcoal_kiln"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p14"
+      },
+      "contains": "Alice charcoal_kiln",
+      "label": "charcoal_kiln: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p15",
+        "on": true
+      },
+      "expect": true,
+      "label": "windmill: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p15"
+      },
+      "expect": true,
+      "label": "windmill: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "Rename",
+      "label": "windmill: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p15",
+        "text": "Alice windmill"
+      },
+      "expect": true,
+      "label": "windmill: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p15"
+      },
+      "contains": "Alice windmill",
+      "label": "windmill: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p16",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p16"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "Rename",
+      "label": "piece_spinningwheel: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p16",
+        "text": "Alice piece_spinningwheel"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p16"
+      },
+      "contains": "Alice piece_spinningwheel",
+      "label": "piece_spinningwheel: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p17",
+        "on": true
+      },
+      "expect": true,
+      "label": "eitrrefinery: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p17"
+      },
+      "expect": true,
+      "label": "eitrrefinery: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "Rename",
+      "label": "eitrrefinery: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p17",
+        "text": "Alice eitrrefinery"
+      },
+      "expect": true,
+      "label": "eitrrefinery: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p17"
+      },
+      "contains": "Alice eitrrefinery",
+      "label": "eitrrefinery: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p18",
+        "on": true
+      },
+      "expect": true,
+      "label": "fermenter: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p18"
+      },
+      "expect": true,
+      "label": "fermenter: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "Rename",
+      "label": "fermenter: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p18",
+        "text": "Alice fermenter"
+      },
+      "expect": true,
+      "label": "fermenter: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p18"
+      },
+      "contains": "Alice fermenter",
+      "label": "fermenter: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p19",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p19"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "Rename",
+      "label": "piece_cookingstation: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p19",
+        "text": "Alice piece_cookingstation"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p19"
+      },
+      "contains": "Alice piece_cookingstation",
+      "label": "piece_cookingstation: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p20",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_oven: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p20"
+      },
+      "expect": true,
+      "label": "piece_oven: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "Rename",
+      "label": "piece_oven: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p20",
+        "text": "Alice piece_oven"
+      },
+      "expect": true,
+      "label": "piece_oven: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p20"
+      },
+      "contains": "Alice piece_oven",
+      "label": "piece_oven: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p21",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p21"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "Rename",
+      "label": "piece_MeadCauldron: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p21",
+        "text": "Alice piece_MeadCauldron"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p21"
+      },
+      "contains": "Alice piece_MeadCauldron",
+      "label": "piece_MeadCauldron: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p22",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p22"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "Rename",
+      "label": "piece_cartographytable: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p22",
+        "text": "Alice piece_cartographytable"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p22"
+      },
+      "contains": "Alice piece_cartographytable",
+      "label": "piece_cartographytable: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p23",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bed02: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p23"
+      },
+      "expect": true,
+      "label": "piece_bed02: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "Rename",
+      "label": "piece_bed02: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p23",
+        "text": "Alice piece_bed02"
+      },
+      "expect": true,
+      "label": "piece_bed02: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p23"
+      },
+      "contains": "Alice piece_bed02",
+      "label": "piece_bed02: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p24",
+        "on": true
+      },
+      "expect": true,
+      "label": "bed: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p24"
+      },
+      "expect": true,
+      "label": "bed: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "Rename",
+      "label": "bed: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p24",
+        "text": "Alice bed"
+      },
+      "expect": true,
+      "label": "bed: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p24"
+      },
+      "contains": "Alice bed",
+      "label": "bed: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p25",
+        "on": true
+      },
+      "expect": true,
+      "label": "portal_wood: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p25"
+      },
+      "expect": true,
+      "label": "portal_wood: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "Rename",
+      "label": "portal_wood: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p25",
+        "text": "Alice portal_wood"
+      },
+      "expect": true,
+      "label": "portal_wood: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p25"
+      },
+      "contains": "Alice portal_wood",
+      "label": "portal_wood: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p26",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_door: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p26"
+      },
+      "expect": true,
+      "label": "wood_door: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "Rename",
+      "label": "wood_door: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p26",
+        "text": "Alice wood_door"
+      },
+      "expect": true,
+      "label": "wood_door: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p26"
+      },
+      "contains": "Alice wood_door",
+      "label": "wood_door: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p27",
+        "on": true
+      },
+      "expect": true,
+      "label": "wood_gate: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p27"
+      },
+      "expect": true,
+      "label": "wood_gate: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "Rename",
+      "label": "wood_gate: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p27",
+        "text": "Alice wood_gate"
+      },
+      "expect": true,
+      "label": "wood_gate: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p27"
+      },
+      "contains": "Alice wood_gate",
+      "label": "wood_gate: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p28",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_chair: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p28"
+      },
+      "expect": true,
+      "label": "piece_chair: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "Rename",
+      "label": "piece_chair: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p28",
+        "text": "Alice piece_chair"
+      },
+      "expect": true,
+      "label": "piece_chair: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p28"
+      },
+      "contains": "Alice piece_chair",
+      "label": "piece_chair: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p29",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_bench01: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p29"
+      },
+      "expect": true,
+      "label": "piece_bench01: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "Rename",
+      "label": "piece_bench01: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p29",
+        "text": "Alice piece_bench01"
+      },
+      "expect": true,
+      "label": "piece_bench01: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p29"
+      },
+      "contains": "Alice piece_bench01",
+      "label": "piece_bench01: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p30",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_throne01: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p30"
+      },
+      "expect": true,
+      "label": "piece_throne01: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "Rename",
+      "label": "piece_throne01: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p30",
+        "text": "Alice piece_throne01"
+      },
+      "expect": true,
+      "label": "piece_throne01: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p30"
+      },
+      "contains": "Alice piece_throne01",
+      "label": "piece_throne01: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p31",
+        "on": true
+      },
+      "expect": true,
+      "label": "Raft: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p31"
+      },
+      "expect": true,
+      "label": "Raft: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "Rename",
+      "label": "Raft: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p31",
+        "text": "Alice Raft"
+      },
+      "expect": true,
+      "label": "Raft: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p31"
+      },
+      "contains": "Alice Raft",
+      "label": "Raft: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p32",
+        "on": true
+      },
+      "expect": true,
+      "label": "Karve: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p32"
+      },
+      "expect": true,
+      "label": "Karve: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "Rename",
+      "label": "Karve: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p32",
+        "text": "Alice Karve"
+      },
+      "expect": true,
+      "label": "Karve: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p32"
+      },
+      "contains": "Alice Karve",
+      "label": "Karve: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p33",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p33"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "Rename",
+      "label": "piece_TrainingDummy: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p33",
+        "text": "Alice piece_TrainingDummy"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p33"
+      },
+      "contains": "Alice piece_TrainingDummy",
+      "label": "piece_TrainingDummy: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p34",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_barber: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p34"
+      },
+      "expect": true,
+      "label": "piece_barber: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "Rename",
+      "label": "piece_barber: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p34",
+        "text": "Alice piece_barber"
+      },
+      "expect": true,
+      "label": "piece_barber: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p34"
+      },
+      "contains": "Alice piece_barber",
+      "label": "piece_barber: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p35",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_beehive: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p35"
+      },
+      "expect": true,
+      "label": "piece_beehive: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "Rename",
+      "label": "piece_beehive: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p35",
+        "text": "Alice piece_beehive"
+      },
+      "expect": true,
+      "label": "piece_beehive: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p35"
+      },
+      "contains": "Alice piece_beehive",
+      "label": "piece_beehive: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p36",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p36"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "Rename",
+      "label": "piece_sapcollector: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p36",
+        "text": "Alice piece_sapcollector"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p36"
+      },
+      "contains": "Alice piece_sapcollector",
+      "label": "piece_sapcollector: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceShare",
+      "args": {
+        "target": "p37",
+        "on": true
+      },
+      "expect": true,
+      "label": "piece_gift1: I share it"
+    },
+    {
+      "do": "playAs",
+      "who": "Alice"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceCan",
+      "args": {
+        "target": "p37"
+      },
+      "expect": true,
+      "label": "piece_gift1: Alice may rename the shared piece"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceHover",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "Rename",
+      "label": "piece_gift1: and is offered it"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p37",
+        "text": "Alice piece_gift1"
+      },
+      "expect": true,
+      "label": "piece_gift1: and it is written"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.2
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceName",
+      "args": {
+        "target": "p37"
+      },
+      "contains": "Alice piece_gift1",
+      "label": "piece_gift1: for everyone"
+    },
+    {
+      "do": "playAs",
+      "who": "me"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 600
+}

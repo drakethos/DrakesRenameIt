@@ -1,0 +1,50 @@
+{
+  "name": "EM-02 a pinned written page draws the sample emoji",
+  "description": "Writes a page whose text has emoji, pins it, checks the stored text and which glyphs the page widget draws.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "10 Paper/BlankPaperPlaceOrientation": "Horizontal Only"
+      }
+    },
+    "writePage(\"Emoji Page\", \"Hi 😀 🔥 ❤️ ⚔️ ok\")",
+    {
+      "do": "pinPage"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pageDesc",
+      "contains": "Hi 😀 🔥 ❤️ ⚔️ ok",
+      "label": "the text kept its emoji"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.6
+    },
+    {
+      "do": "hook",
+      "name": "renameit.glyphProbe",
+      "args": {
+        "source": "page"
+      },
+      "contains": "glyphs=",
+      "label": "page glyphs (report)"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.glyphProbe",
+      "args": {
+        "source": "page"
+      },
+      "notContains": "NONE",
+      "label": "the page draws every glyph"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

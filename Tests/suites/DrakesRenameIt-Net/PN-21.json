@@ -1,0 +1,1663 @@
+{
+  "name": "PN-21 every kind of piece: renaming one her client owns goes to her",
+  "description": "The sender side for 38 kinds of piece: I am the builder, she owns the piece, my rename must reach her client as an RPC and leave the owner alone.",
+  "steps": [
+    {
+      "do": "setConfig",
+      "values": {
+        "12 Pieces/PieceRenameEnabled": "true",
+        "12 Pieces/PieceRenameAdminOnly": "false",
+        "12 Pieces/PieceExcludedCategory": "",
+        "12 Pieces/PieceExcludedNames": "",
+        "12 Pieces/PieceLockToBuilder": "true",
+        "12 Pieces/PieceSharedEnabled": "true",
+        "12 Pieces/PieceRequireWardAccess": "false"
+      }
+    },
+    {
+      "do": "peerJoin",
+      "name": "Bjornita"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_wood",
+      "dx": -10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p0"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p0"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p0",
+        "text": "Mine piece_chest_wood"
+      },
+      "expect": true,
+      "label": "piece_chest_wood: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p0",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chest_wood"
+      ],
+      "label": "piece_chest_wood: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p0",
+      "expect": "Bjornita",
+      "label": "piece_chest_wood: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest",
+      "dx": -6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p1"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p1"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p1",
+        "text": "Mine piece_chest"
+      },
+      "expect": true,
+      "label": "piece_chest: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p1",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chest"
+      ],
+      "label": "piece_chest: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p1",
+      "expect": "Bjornita",
+      "label": "piece_chest: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_private",
+      "dx": -2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p2"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p2"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p2",
+        "text": "Mine piece_chest_private"
+      },
+      "expect": true,
+      "label": "piece_chest_private: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p2",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chest_private"
+      ],
+      "label": "piece_chest_private: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p2",
+      "expect": "Bjornita",
+      "label": "piece_chest_private: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_blackmetal",
+      "dx": 2,
+      "dz": 5,
+      "owner": "me",
+      "as": "p3"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p3"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p3",
+        "text": "Mine piece_chest_blackmetal"
+      },
+      "expect": true,
+      "label": "piece_chest_blackmetal: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p3",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chest_blackmetal"
+      ],
+      "label": "piece_chest_blackmetal: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p3",
+      "expect": "Bjornita",
+      "label": "piece_chest_blackmetal: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chest_barrel",
+      "dx": 6,
+      "dz": 5,
+      "owner": "me",
+      "as": "p4"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p4"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p4",
+        "text": "Mine piece_chest_barrel"
+      },
+      "expect": true,
+      "label": "piece_chest_barrel: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p4",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chest_barrel"
+      ],
+      "label": "piece_chest_barrel: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p4",
+      "expect": "Bjornita",
+      "label": "piece_chest_barrel: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Cart",
+      "dx": 10,
+      "dz": 5,
+      "owner": "me",
+      "as": "p5"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p5"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p5",
+        "text": "Mine Cart"
+      },
+      "expect": true,
+      "label": "Cart: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p5",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine Cart"
+      ],
+      "label": "Cart: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p5",
+      "expect": "Bjornita",
+      "label": "Cart: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_workbench",
+      "dx": -10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p6"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p6"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p6",
+        "text": "Mine piece_workbench"
+      },
+      "expect": true,
+      "label": "piece_workbench: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p6",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_workbench"
+      ],
+      "label": "piece_workbench: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p6",
+      "expect": "Bjornita",
+      "label": "piece_workbench: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "forge",
+      "dx": -6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p7"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p7"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p7",
+        "text": "Mine forge"
+      },
+      "expect": true,
+      "label": "forge: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p7",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine forge"
+      ],
+      "label": "forge: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p7",
+      "expect": "Bjornita",
+      "label": "forge: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cauldron",
+      "dx": -2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p8"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p8"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p8",
+        "text": "Mine piece_cauldron"
+      },
+      "expect": true,
+      "label": "piece_cauldron: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p8",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_cauldron"
+      ],
+      "label": "piece_cauldron: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p8",
+      "expect": "Bjornita",
+      "label": "piece_cauldron: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_stonecutter",
+      "dx": 2,
+      "dz": 9,
+      "owner": "me",
+      "as": "p9"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p9"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p9",
+        "text": "Mine piece_stonecutter"
+      },
+      "expect": true,
+      "label": "piece_stonecutter: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p9",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_stonecutter"
+      ],
+      "label": "piece_stonecutter: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p9",
+      "expect": "Bjornita",
+      "label": "piece_stonecutter: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_artisanstation",
+      "dx": 6,
+      "dz": 9,
+      "owner": "me",
+      "as": "p10"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p10"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p10",
+        "text": "Mine piece_artisanstation"
+      },
+      "expect": true,
+      "label": "piece_artisanstation: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p10",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_artisanstation"
+      ],
+      "label": "piece_artisanstation: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p10",
+      "expect": "Bjornita",
+      "label": "piece_artisanstation: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_magetable",
+      "dx": 10,
+      "dz": 9,
+      "owner": "me",
+      "as": "p11"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p11"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p11",
+        "text": "Mine piece_magetable"
+      },
+      "expect": true,
+      "label": "piece_magetable: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p11",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_magetable"
+      ],
+      "label": "piece_magetable: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p11",
+      "expect": "Bjornita",
+      "label": "piece_magetable: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "blastfurnace",
+      "dx": -10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p12"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p12"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p12",
+        "text": "Mine blastfurnace"
+      },
+      "expect": true,
+      "label": "blastfurnace: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p12",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine blastfurnace"
+      ],
+      "label": "blastfurnace: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p12",
+      "expect": "Bjornita",
+      "label": "blastfurnace: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "smelter",
+      "dx": -6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p13"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p13"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p13",
+        "text": "Mine smelter"
+      },
+      "expect": true,
+      "label": "smelter: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p13",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine smelter"
+      ],
+      "label": "smelter: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p13",
+      "expect": "Bjornita",
+      "label": "smelter: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "charcoal_kiln",
+      "dx": -2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p14"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p14"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p14",
+        "text": "Mine charcoal_kiln"
+      },
+      "expect": true,
+      "label": "charcoal_kiln: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p14",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine charcoal_kiln"
+      ],
+      "label": "charcoal_kiln: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p14",
+      "expect": "Bjornita",
+      "label": "charcoal_kiln: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "windmill",
+      "dx": 2,
+      "dz": 13,
+      "owner": "me",
+      "as": "p15"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p15"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p15",
+        "text": "Mine windmill"
+      },
+      "expect": true,
+      "label": "windmill: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p15",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine windmill"
+      ],
+      "label": "windmill: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p15",
+      "expect": "Bjornita",
+      "label": "windmill: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_spinningwheel",
+      "dx": 6,
+      "dz": 13,
+      "owner": "me",
+      "as": "p16"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p16"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p16",
+        "text": "Mine piece_spinningwheel"
+      },
+      "expect": true,
+      "label": "piece_spinningwheel: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p16",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_spinningwheel"
+      ],
+      "label": "piece_spinningwheel: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p16",
+      "expect": "Bjornita",
+      "label": "piece_spinningwheel: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "eitrrefinery",
+      "dx": 10,
+      "dz": 13,
+      "owner": "me",
+      "as": "p17"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p17"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p17",
+        "text": "Mine eitrrefinery"
+      },
+      "expect": true,
+      "label": "eitrrefinery: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p17",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine eitrrefinery"
+      ],
+      "label": "eitrrefinery: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p17",
+      "expect": "Bjornita",
+      "label": "eitrrefinery: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "fermenter",
+      "dx": -10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p18"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p18"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p18",
+        "text": "Mine fermenter"
+      },
+      "expect": true,
+      "label": "fermenter: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p18",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine fermenter"
+      ],
+      "label": "fermenter: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p18",
+      "expect": "Bjornita",
+      "label": "fermenter: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cookingstation",
+      "dx": -6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p19"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p19"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p19",
+        "text": "Mine piece_cookingstation"
+      },
+      "expect": true,
+      "label": "piece_cookingstation: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p19",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_cookingstation"
+      ],
+      "label": "piece_cookingstation: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p19",
+      "expect": "Bjornita",
+      "label": "piece_cookingstation: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_oven",
+      "dx": -2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p20"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p20"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p20",
+        "text": "Mine piece_oven"
+      },
+      "expect": true,
+      "label": "piece_oven: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p20",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_oven"
+      ],
+      "label": "piece_oven: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p20",
+      "expect": "Bjornita",
+      "label": "piece_oven: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_MeadCauldron",
+      "dx": 2,
+      "dz": 17,
+      "owner": "me",
+      "as": "p21"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p21"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p21",
+        "text": "Mine piece_MeadCauldron"
+      },
+      "expect": true,
+      "label": "piece_MeadCauldron: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p21",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_MeadCauldron"
+      ],
+      "label": "piece_MeadCauldron: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p21",
+      "expect": "Bjornita",
+      "label": "piece_MeadCauldron: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_cartographytable",
+      "dx": 6,
+      "dz": 17,
+      "owner": "me",
+      "as": "p22"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p22"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p22",
+        "text": "Mine piece_cartographytable"
+      },
+      "expect": true,
+      "label": "piece_cartographytable: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p22",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_cartographytable"
+      ],
+      "label": "piece_cartographytable: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p22",
+      "expect": "Bjornita",
+      "label": "piece_cartographytable: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bed02",
+      "dx": 10,
+      "dz": 17,
+      "owner": "me",
+      "as": "p23"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p23"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p23",
+        "text": "Mine piece_bed02"
+      },
+      "expect": true,
+      "label": "piece_bed02: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p23",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_bed02"
+      ],
+      "label": "piece_bed02: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p23",
+      "expect": "Bjornita",
+      "label": "piece_bed02: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "bed",
+      "dx": -10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p24"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p24"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p24",
+        "text": "Mine bed"
+      },
+      "expect": true,
+      "label": "bed: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p24",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine bed"
+      ],
+      "label": "bed: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p24",
+      "expect": "Bjornita",
+      "label": "bed: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "portal_wood",
+      "dx": -6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p25"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p25"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p25",
+        "text": "Mine portal_wood"
+      },
+      "expect": true,
+      "label": "portal_wood: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p25",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine portal_wood"
+      ],
+      "label": "portal_wood: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p25",
+      "expect": "Bjornita",
+      "label": "portal_wood: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_door",
+      "dx": -2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p26"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p26"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p26",
+        "text": "Mine wood_door"
+      },
+      "expect": true,
+      "label": "wood_door: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p26",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine wood_door"
+      ],
+      "label": "wood_door: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p26",
+      "expect": "Bjornita",
+      "label": "wood_door: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "wood_gate",
+      "dx": 2,
+      "dz": 21,
+      "owner": "me",
+      "as": "p27"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p27"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p27",
+        "text": "Mine wood_gate"
+      },
+      "expect": true,
+      "label": "wood_gate: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p27",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine wood_gate"
+      ],
+      "label": "wood_gate: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p27",
+      "expect": "Bjornita",
+      "label": "wood_gate: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_chair",
+      "dx": 6,
+      "dz": 21,
+      "owner": "me",
+      "as": "p28"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p28"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p28",
+        "text": "Mine piece_chair"
+      },
+      "expect": true,
+      "label": "piece_chair: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p28",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_chair"
+      ],
+      "label": "piece_chair: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p28",
+      "expect": "Bjornita",
+      "label": "piece_chair: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_bench01",
+      "dx": 10,
+      "dz": 21,
+      "owner": "me",
+      "as": "p29"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p29"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p29",
+        "text": "Mine piece_bench01"
+      },
+      "expect": true,
+      "label": "piece_bench01: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p29",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_bench01"
+      ],
+      "label": "piece_bench01: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p29",
+      "expect": "Bjornita",
+      "label": "piece_bench01: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_throne01",
+      "dx": -10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p30"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p30"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p30",
+        "text": "Mine piece_throne01"
+      },
+      "expect": true,
+      "label": "piece_throne01: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p30",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_throne01"
+      ],
+      "label": "piece_throne01: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p30",
+      "expect": "Bjornita",
+      "label": "piece_throne01: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Raft",
+      "dx": -6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p31"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p31"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p31",
+        "text": "Mine Raft"
+      },
+      "expect": true,
+      "label": "Raft: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p31",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine Raft"
+      ],
+      "label": "Raft: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p31",
+      "expect": "Bjornita",
+      "label": "Raft: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "Karve",
+      "dx": -2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p32"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p32"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p32",
+        "text": "Mine Karve"
+      },
+      "expect": true,
+      "label": "Karve: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p32",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine Karve"
+      ],
+      "label": "Karve: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p32",
+      "expect": "Bjornita",
+      "label": "Karve: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_TrainingDummy",
+      "dx": 2,
+      "dz": 25,
+      "owner": "me",
+      "as": "p33"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p33"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p33",
+        "text": "Mine piece_TrainingDummy"
+      },
+      "expect": true,
+      "label": "piece_TrainingDummy: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p33",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_TrainingDummy"
+      ],
+      "label": "piece_TrainingDummy: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p33",
+      "expect": "Bjornita",
+      "label": "piece_TrainingDummy: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_barber",
+      "dx": 6,
+      "dz": 25,
+      "owner": "me",
+      "as": "p34"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p34"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p34",
+        "text": "Mine piece_barber"
+      },
+      "expect": true,
+      "label": "piece_barber: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p34",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_barber"
+      ],
+      "label": "piece_barber: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p34",
+      "expect": "Bjornita",
+      "label": "piece_barber: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_beehive",
+      "dx": 10,
+      "dz": 25,
+      "owner": "me",
+      "as": "p35"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p35"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p35",
+        "text": "Mine piece_beehive"
+      },
+      "expect": true,
+      "label": "piece_beehive: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p35",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_beehive"
+      ],
+      "label": "piece_beehive: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p35",
+      "expect": "Bjornita",
+      "label": "piece_beehive: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_sapcollector",
+      "dx": -10,
+      "dz": 29,
+      "owner": "me",
+      "as": "p36"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p36"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p36",
+        "text": "Mine piece_sapcollector"
+      },
+      "expect": true,
+      "label": "piece_sapcollector: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p36",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_sapcollector"
+      ],
+      "label": "piece_sapcollector: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p36",
+      "expect": "Bjornita",
+      "label": "piece_sapcollector: and she still owns it"
+    },
+    {
+      "do": "spawn",
+      "prefab": "piece_gift1",
+      "dx": -6,
+      "dz": 29,
+      "owner": "me",
+      "as": "p37"
+    },
+    {
+      "do": "peerOwn",
+      "peer": "Bjornita",
+      "target": "p37"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.pieceRename",
+      "args": {
+        "target": "p37",
+        "text": "Mine piece_gift1"
+      },
+      "expect": true,
+      "label": "piece_gift1: I may rename it"
+    },
+    {
+      "do": "check",
+      "check": "peerReceived",
+      "target": "p37",
+      "method": "DrakePiece_RPC_SetName",
+      "types": [
+        "string"
+      ],
+      "args": [
+        "Mine piece_gift1"
+      ],
+      "label": "piece_gift1: the name went to her client"
+    },
+    {
+      "do": "check",
+      "check": "zdoOwner",
+      "target": "p37",
+      "expect": "Bjornita",
+      "label": "piece_gift1: and she still owns it"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ],
+  "timeout": 600
+}

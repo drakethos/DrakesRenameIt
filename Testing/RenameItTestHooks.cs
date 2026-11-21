@@ -559,6 +559,54 @@ internal static class RenameItTestHooks
     [TestHook("renameit.standHover")]
     static string StandHover(Dictionary<string, object?> args, GameObject? target = null) => Loc(Stand(args, target).GetHoverText() ?? "");
 
+    /// <summary>
+    /// Like standHover, but an exception thrown inside GetHoverText (by any mod's patch) is caught and returned as
+    /// "threw: Type: message". The exception still passes through every finalizer on the method first, so ModGuard's
+    /// attribution runs exactly as in game; this only stops it failing the test step.
+    /// </summary>
+    [TestHook("renameit.standHoverCatch")]
+    static string StandHoverCatch(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        try
+        {
+            return Loc(Stand(args, target).GetHoverText() ?? "");
+        }
+        catch (Exception ex)
+        {
+            return $"threw: {ex.GetType().Name}: {ex.Message}";
+        }
+    }
+
+    // ---------- foreign gate (another mod's skipping prefix, e.g. VRPCore's PreventInteractions)
+
+    static Harmony? _foreignGate;
+
+    /// <summary>
+    /// on=true installs a first-priority prefix that returns false on ItemStand.UseItem and Sign.Interact — the same
+    /// shape as a progression/ward gate from another mod. on=false removes it. Returns whether the gate is now on.
+    /// </summary>
+    [TestHook("renameit.foreignGate")]
+    static bool ForeignGate(Dictionary<string, object?> args)
+    {
+        var on = !args.TryGetValue("on", out var v) || v is not bool b || b;
+        if (on && _foreignGate == null)
+        {
+            _foreignGate = new Harmony("renameit.tests.foreigngate");
+            var block = new HarmonyMethod(AccessTools.Method(typeof(RenameItTestHooks), nameof(ForeignGateBlock))) { priority = Priority.First };
+            _foreignGate.Patch(AccessTools.Method(typeof(ItemStand), nameof(ItemStand.UseItem)), prefix: block);
+            _foreignGate.Patch(AccessTools.Method(typeof(Sign), nameof(Sign.Interact)), prefix: block);
+        }
+        else if (!on && _foreignGate != null)
+        {
+            _foreignGate.UnpatchSelf();
+            _foreignGate = null;
+        }
+
+        return _foreignGate != null;
+    }
+
+    static bool ForeignGateBlock() => false;
+
     // ---------- paper
 
     [TestHook("renameit.isWritten")]

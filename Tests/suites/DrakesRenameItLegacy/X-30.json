@@ -1,0 +1,85 @@
+{
+  "name": "X-30 foreign gate blocks stand UseItem: no ghost name on an empty stand",
+  "description": "Compat (VRPCore PreventInteractions and similar ward/progression gates): another mod's prefix skips ItemStand.UseItem. RenameIt's postfix must not write a name for an item that was never attached.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": false }
+    },
+    "craftRenamed(\"Gated Axe\")",
+    {
+      "do": "place",
+      "prefab": "itemstandh",
+      "dz": 2.5,
+      "as": "stand"
+    },
+    {
+      "do": "face",
+      "target": "stand"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": true },
+      "expect": true,
+      "label": "another mod's gate is on"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": { "prefab": "AxeStone", "target": "stand" },
+      "expect": false,
+      "label": "the gated put does nothing"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "notContains": "Gated Axe",
+      "label": "the empty stand shows no ghost name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.name",
+      "args": { "prefab": "AxeStone" },
+      "contains": "Gated Axe",
+      "label": "the axe is still in the inventory, still renamed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": false },
+      "expect": false,
+      "label": "gate removed"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": { "prefab": "AxeStone", "target": "stand" },
+      "expect": true,
+      "label": "without the gate the put works"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "contains": "Gated Axe",
+      "label": "and the stand shows the name"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameitLegacy"
+    }
+  ]
+}

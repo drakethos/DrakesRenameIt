@@ -153,6 +153,7 @@
     <Compile Include="Compat\AreaCoverageKind.cs" />
     <Compile Include="Compat\IAreaCompatModule.cs" />
     <Compile Include="Compat\CompatibilityManager.cs" />
+    <Compile Include="Compat\CompatTypes.cs" />
     <Compile Include="Compat\Vanilla\VanillaPrivateAreaModule.cs" />
     <Compile Include="Compat\WardIsLove\WardIsLoveModule.cs" />
     <Compile Include="Compat\ProtectiveWards\ProtectiveWardsModule.cs" />

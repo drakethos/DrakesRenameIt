@@ -60,7 +60,7 @@ internal sealed class ExtraSlotsTooltipModule : ICompatModule
 
     private static MethodInfo? ResolveTarget()
     {
-        var panel = AccessTools.TypeByName(PanelTypeName);
+        var panel = global::DrakeRenameit.Compat.CompatTypes.Find(PanelTypeName);
         return panel == null ? null : AccessTools.Method(panel, PanelMethodName);
     }
 

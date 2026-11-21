@@ -368,7 +368,8 @@ public sealed class ModGuard
                               : "  Not contained: it runs before/inside the game method, so it is passed on unchanged.\n") +
                           (others.Count > 0 ? $"  Also patching this method: {string.Join(", ", others)}.\n" : string.Empty) +
                           $"  Stack: {FirstFrames(ex, 6)}";
-                own._log.LogError(msg);
+                // Contained postfix errors left the game method intact: Warning, not Error.
+                if (contain) own._log.LogWarning(msg); else own._log.LogError(msg);
                 AppendReport("OWN-ERROR " + msg);
             }
             else if (count == 10 || count == 100 || count == 1000)
@@ -390,7 +391,9 @@ public sealed class ModGuard
                       $"  Conflict check: {verdict}\n" + (conflict ? attached.ReportLine : string.Empty) +
                       (others.Count > 0 ? $"  Mods patching this method: {string.Join(", ", others)}.\n" : string.Empty) +
                       "  Passed on unchanged.";
-            attached._log.LogWarning(msg);
+            // The original error is already logged by the game/BepInEx; our note is context. Only a real overlap
+            // with us is worth a Warning.
+            if (conflict) attached._log.LogWarning(msg); else attached._log.LogInfo(msg);
             AppendReport("FOREIGN-ERROR " + msg);
         }
 
@@ -765,7 +768,10 @@ public sealed class ModGuard
                     continue;
 
                 shared++;
-                var isRisky = others.Any(o => o.Note.Length > 0);
+                // Every mod that embeds ServerSync patches the BepInEx config serializers the same way; that overlap
+                // is expected and harmless, so it is listed but never counted as a risk.
+                var isServerSyncHook = m.DeclaringType?.FullName == "BepInEx.Configuration.ConfigEntryBase";
+                var isRisky = !isServerSyncHook && others.Any(o => o.Note.Length > 0);
                 if (isRisky)
                     risky++;
 
@@ -783,14 +789,15 @@ public sealed class ModGuard
                 sb.Append(lines);
             sb.AppendLine();
 
+            // Overlaps alone are normal in a modpack: one Info line, details in the report. The "please report" text is
+            // only printed when something actually fails (skipped patch class here, or a runtime error later).
             g._log.LogInfo(
-                $"[{g.Name}] Compat check: {g._armed.Count} patched methods, {shared} shared with other mods, {risky} risky " +
-                $"(other transpilers / skipping prefixes). {g._failedClasses.Count} patch class(es) skipped. " +
+                $"[{g.Name}] Compat check: {g._armed.Count} patched methods, {shared} shared with other mods, {risky} to watch. " +
                 $"Details: BepInEx/{ReportFileName}");
-            if (risky > 0)
+            if (g._failedClasses.Count > 0)
                 g._log.LogWarning(
-                    $"[{g.Name}] {risky} method(s) are also rewritten or short-circuited by other mods — if you see errors, " +
-                    $"send BepInEx/LogOutput.log and BepInEx/{ReportFileName} to {g.ReportTo}; it names who touches what.");
+                    $"[{g.Name}] {g._failedClasses.Count} patch class(es) could not be applied, so those features are off. " +
+                    $"Please send BepInEx/LogOutput.log and BepInEx/{ReportFileName} to {g.ReportTo}.");
         }
 
         WriteSection(guards[0].Assembly.GetName().Name ?? "mod", sb.ToString());

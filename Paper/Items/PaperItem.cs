@@ -509,7 +509,7 @@ internal static class PaperItem
             SanitizePaperWearNTear(root);
             PaperAssets.EnsurePersistentZNetView(root);
             EnsureVisualDepthBias(root, wall);
-            _log?.LogInfo($"[Paper] Decor sheet on '{root.name}' wall={wall} written={written}.");
+            _log?.LogDebug($"[Paper] Decor sheet on '{root.name}' wall={wall} written={written}.");
         }
         catch (Exception ex)
         {
@@ -596,7 +596,7 @@ internal static class PaperItem
             EnsurePieceLayer(root);
             SanitizePaperWearNTear(root);
             PaperAssets.EnsurePersistentZNetView(root);
-            _log?.LogInfo($"[Paper] Paper stack visual on '{root.name}' sheets={sheets}.");
+            _log?.LogDebug($"[Paper] Paper stack visual on '{root.name}' sheets={sheets}.");
         }
         catch (Exception ex)
         {
@@ -918,7 +918,7 @@ internal static class PaperItem
             else
                 wnt.m_hitEffect = new EffectList();
 
-            _log?.LogInfo($"[Paper] Break/hit SFX copied from '{name}'.");
+            _log?.LogDebug($"[Paper] Break/hit SFX copied from '{name}'.");
             return;
         }
 
@@ -1068,7 +1068,7 @@ internal static class PaperItem
 
         PaperAssets.AttachItemSheet(attach, written);
         DisableNonArtRenderers(prefab, attach);
-        _log?.LogInfo($"[Paper] Item sheet on '{prefab.name}' written={written} ({PaperSize.x:0.##}x{PaperSize.y:0.##}m).");
+        _log?.LogDebug($"[Paper] Item sheet on '{prefab.name}' written={written} ({PaperSize.x:0.##}x{PaperSize.y:0.##}m).");
     }
 
     /// <summary>

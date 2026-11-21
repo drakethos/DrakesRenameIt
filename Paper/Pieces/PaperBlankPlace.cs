@@ -113,7 +113,7 @@ internal static class PaperBlankPlace
             RegisterSheet(PlaceVertical, wall: true, icon);
             RegisterSheet(PlaceFlat, wall: false, icon);
 
-            _log?.LogInfo("[Paper] Blank Use opens rename; hotbar place table kept for world refund only.");
+            _log?.LogDebug("[Paper] Blank Use opens rename; hotbar place table kept for world refund only.");
         }
         catch (Exception ex)
         {

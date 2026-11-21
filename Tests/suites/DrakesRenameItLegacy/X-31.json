@@ -1,0 +1,71 @@
+{
+  "name": "X-31 foreign gate blocks stand UseItem: mounted item keeps its name",
+  "description": "Compat (VRPCore PreventInteractions and similar): with a renamed item already on the stand, a gated UseItem must not clear the stand's cached name.",
+  "steps": [
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": false }
+    },
+    "craftRenamed(\"Mounted Axe\")",
+    "itemOnStand()",
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "contains": "Mounted Axe",
+      "label": "the stand shows the mounted axe's name",
+      "stop": true
+    },
+    {
+      "do": "craftRenamed",
+      "text": "Spare Axe",
+      "prefab": "AxeFlint"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": true },
+      "expect": true,
+      "label": "another mod's gate is on"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standPut",
+      "args": { "prefab": "AxeFlint", "target": "stand" },
+      "expect": false,
+      "label": "the gated put does nothing"
+    },
+    {
+      "do": "wait",
+      "seconds": 0.5
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "contains": "Mounted Axe",
+      "label": "the stand still shows the mounted axe's name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "notContains": "Spare Axe",
+      "label": "and not the blocked item's name"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.foreignGate",
+      "args": { "on": false },
+      "expect": false,
+      "label": "gate removed"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameitLegacy"
+    }
+  ]
+}

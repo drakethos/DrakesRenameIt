@@ -234,7 +234,7 @@ internal static class PaperWrittenPlace
             RegisterNote(NoteFlat, wall: false, icon);
             AttachTableToWrittenItem();
 
-            _log?.LogInfo("[Paper] Written place table ready (forge art on sign donors).");
+            _log?.LogDebug("[Paper] Written place table ready (forge art on sign donors).");
         }
         catch (Exception ex)
         {
@@ -1357,8 +1357,13 @@ internal static class PaperWrittenPlace
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Sign), nameof(Sign.Interact))]
-        private static bool Sign_Interact_Prefix(Sign __instance, Humanoid character, bool hold, bool alt)
+        [HarmonyPriority(Priority.Last)]
+        private static bool Sign_Interact_Prefix(Sign __instance, Humanoid character, bool hold, bool alt, bool __runOriginal)
         {
+            // Run after other prefixes and respect a block from any of them (ward / progression gates such as
+            // VRPCore's PreventInteractions): a gated player must not be able to reclaim a note through us.
+            if (!__runOriginal)
+                return false;
             try
             {
                 // Legacy: notes no longer use Sign; keep guard if a donor Sign remains.

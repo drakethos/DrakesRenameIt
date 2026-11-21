@@ -9,7 +9,7 @@ using UnityEngine;
 namespace DrakeRenameit.Paper.Pieces;
 
 /// <summary>
-/// Hammer d├⌐cor only: blank sheet upright/flat (1 paper) + paper stack (50 paper).
+/// Hammer decor only: blank sheet upright/flat (1 paper) + paper stack (50 paper).
 /// Pure build pieces ΓÇö no Sign interaction.
 /// </summary>
 internal static class PaperPlace
@@ -58,8 +58,8 @@ internal static class PaperPlace
             RenameitConfig.HammerPaperPlaceableChanged += ApplyHammerPlaceableFlags;
             ApplyHammerPlaceableFlags();
 
-            _log?.LogInfo(
-                "[Paper] Hammer d├⌐cor: " +
+            _log?.LogDebug(
+                "[Paper] Hammer decor: " +
                 $"upright={(RenameitConfig.VerticalPaperPlaceable ? "on" : "off")}, " +
                 $"flat={(RenameitConfig.HorizontalPaperPlaceable ? "on" : "off")}, " +
                 $"stack={(RenameitConfig.StackPaperPlaceable ? "on" : "off")}.");

@@ -21,6 +21,6 @@ internal static class HarmonyPatchHub
         guard.PatchAll(typeof(HarmonyPatchHub).Assembly);
         guard.Try("HUD show-message patch", () => DropHudMessagePatches.ApplyMessageHudShowMessage(harmony, log));
         guard.Arm();
-        log.LogInfo("[DrakeModsLibs] Display Harmony patches applied.");
+        log.LogDebug("[DrakeModsLibs] Display Harmony patches applied.");
     }
 }

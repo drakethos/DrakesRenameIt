@@ -1,0 +1,6 @@
+{
+  "name": "DrakesRenameItLegacy-ConflictProbe",
+  "description": "Needs the test-only DrakeConflictProbe mod (Tests/ConflictProbe) installed. Checks that DrakesRenameItLegacy's ModGuard lists the probe's overlapping patches and blames the probe, not RenameIt, for the probe's deliberate exception.",
+  "include": "_shared/baseline.json",
+  "resetBetweenTests": true
+}

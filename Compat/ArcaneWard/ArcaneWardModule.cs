@@ -352,7 +352,7 @@ internal sealed class ArcaneWardModule : IAreaCompatModule
 
     private static MethodInfo? FindNestedPrefix(string nestedTypeName)
     {
-        var outer = AccessTools.TypeByName(PatchesTypeName);
+        var outer = global::DrakeRenameit.Compat.CompatTypes.Find(PatchesTypeName);
         if (outer == null)
         {
             RenameitConfig.Log?.LogWarning($"Compat ArcaneWard: {PatchesTypeName} not found.");
@@ -435,8 +435,8 @@ internal sealed class ArcaneWardModule : IAreaCompatModule
 
         try
         {
-            var componentType = AccessTools.TypeByName(ComponentTypeName);
-            var protectionType = AccessTools.TypeByName(ProtectionTypeName);
+            var componentType = global::DrakeRenameit.Compat.CompatTypes.Find(ComponentTypeName);
+            var protectionType = global::DrakeRenameit.Compat.CompatTypes.Find(ProtectionTypeName);
             if (componentType == null || protectionType == null)
                 return;
 

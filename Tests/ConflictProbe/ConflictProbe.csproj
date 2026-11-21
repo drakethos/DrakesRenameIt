@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Test-only mod: deliberately collides with DrakesRenameItLegacy so its ModGuard conflict readout can be checked.
+    Never ship it. Not part of DrakeRenameit.csproj (that project lists its sources explicitly).
+    Build: dotnet build -c Release -p:FrameworkPathOverride=/home/derrick/Modding/Vahleim/Tools/net48-refs
+  -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>DrakeConflictProbe</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ValheimManaged>/home/derrick/.steam/debian-installation/steamapps/common/Valheim/valheim_Data/Managed</ValheimManaged>
+    <BepInExCore>/home/derrick/Modding/Vahleim/Tools/BepInExRefs/BepInEx/core</BepInExCore>
+    <Publicized>/home/derrick/Modding/Vahleim/Tools/Publicized</Publicized>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx"><HintPath>$(BepInExCore)/BepInEx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(BepInExCore)/0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="assembly_valheim"><HintPath>$(Publicized)/assembly_valheim_publicized.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(ValheimManaged)/UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(ValheimManaged)/UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="netstandard"><HintPath>$(ValheimManaged)/netstandard.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

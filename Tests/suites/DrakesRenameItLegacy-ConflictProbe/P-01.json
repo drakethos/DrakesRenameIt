@@ -1,0 +1,20 @@
+{
+  "name": "P-01 a foreign mod's exception is attributed to that mod",
+  "description": "DrakeConflictProbe throws from a postfix on ItemStand.GetHoverText (a method RenameIt also patches) while a stand holds an item. ModGuard must log it under the probe's name, and RenameIt itself must log no error.",
+  "steps": [
+    "craftRenamed(\"Probe Axe\")",
+    "itemOnStand()",
+    {
+      "do": "hook",
+      "name": "renameit.standHoverCatch",
+      "args": { "target": "stand" },
+      "contains": "InvalidOperationException",
+      "label": "the probe's postfix threw inside GetHoverText"
+    }
+  ],
+  "asserts": [
+    { "check": "logContains", "source": "DrakesRenameItLegacy", "text": "ConflictProbe: deliberate failure", "label": "RenameIt's guard logged the probe's exception" },
+    { "check": "logContains", "source": "DrakesRenameItLegacy", "text": "DrakeConflictProbe", "label": "and named the probe as the origin" },
+    { "check": "noErrors", "source": "DrakesRenameitLegacy", "label": "RenameIt logged no error of its own" }
+  ]
+}

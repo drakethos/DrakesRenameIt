@@ -864,10 +864,14 @@ public static class ItemStandPatch
         [HarmonyPatch(nameof(ItemStand.UseItem))]
         [HarmonyPostfix]
         [HarmonyPriority(Priority.Last)]
-        static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item, bool __state)
+        static void GrabItem(ItemStand __instance, Humanoid user, ItemDrop.ItemData? item, bool __state, bool __runOriginal)
         {
                 try
                 {
+            // Another mod's prefix (e.g. a progression/ward gate) skipped UseItem: nothing was attached or removed,
+            // so leave the stand's cached hover name exactly as it was.
+            if (!__runOriginal)
+                return;
             if (item?.m_shared == null)
                 return;
 
@@ -966,7 +970,7 @@ internal static class DropHudMessagePatches
             }
 
             harmony.Patch(m, prefix: new HarmonyMethod(typeof(DropHudMessagePatches), nameof(HumanoidDropItemTypedPrefix)));
-            log.LogInfo("[DrakeModsLibs] Drop HUD: patched typed " + m.DeclaringType?.Name + "." + m.Name);
+            log.LogDebug("[DrakeModsLibs] Drop HUD: patched typed " + m.DeclaringType?.Name + "." + m.Name);
         }
         catch (Exception ex)
         {
@@ -1151,7 +1155,7 @@ internal static class DropHudMessagePatches
                     : new HarmonyMethod(typeof(DropHudMessagePatches), nameof(MessageHudShowMessageStringArg1));
 
                 harmony.Patch(best, prefix: prefix);
-                log.LogInfo("[DrakeModsLibs] Drop HUD: patched MessageHud." + best.Name + " stringArg=" + stringArgIndex + " :: " + best);
+                log.LogDebug("[DrakeModsLibs] Drop HUD: patched MessageHud." + best.Name + " stringArg=" + stringArgIndex + " :: " + best);
             }
             catch (Exception ex)
             {

@@ -6,6 +6,18 @@ Rename items, rewrite descriptions, and update the **Crafted by** line (display 
 
 **Standalone mono mod — no DrakeModsLibs, no dependency on or shared UI with any other Drakes mod.** Everything the mod needs (its own naming/tag engine, Paper's asset loading, the Item Workshop UI) is built into this one DLL. This is the deliberately minimal, maximally-isolated line: no piece renaming, no world-hover text, no Quick Settings cogwheel, none of the newer experimental features — just Rename + Paper, hardened against the kind of cross-mod interaction that's hard to debug without access to the original bug report. If you hit a compatibility issue with the main **DrakesRenameIt**, try this build instead; if it's clean here, the cause was Libs or a cross-mod hook, not the core rename/paper logic.
 
+### Plays safely with other mods (1.0.1)
+
+RenameIt Legacy assumes it is not alone in your mod list:
+
+- **One broken hook doesn't take the mod down.** Each group of patches loads on its own. If a game update or another mod breaks one, only that feature switches off, and the log says which one and which other mods touch the same code.
+- **Errors name the mod that caused them.** If something goes wrong in code RenameIt hooks, the log says whether the error came from RenameIt Legacy or from another mod (by name, GUID and version). RenameIt's own failures fall back to the normal game behaviour instead of breaking it.
+- **Respects other mods' blocks.** When a ward, roleplay or progression mod (for example VRPCore) stops a player using an item stand or a sign, RenameIt goes along with it: no phantom names on stands, and no picking up notes through RenameIt.
+- **A compatibility report for bug reports.** Each launch writes `BepInEx/DrakeMods-compat-report.txt`: your plugin list, every game method RenameIt shares with another mod, and which of those other mods could change or skip. Any errors are added as they happen.
+- **A quiet log.** A normal launch prints a few Info lines. Warnings mean something actually failed.
+
+**Reporting a problem:** send `BepInEx/LogOutput.log` and `BepInEx/DrakeMods-compat-report.txt` to the Hexium page's Threads tab or a GitHub issue. Together they show which mods touch what.
+
 ### Piece of Paper (1.1)
 
 Craft blank **Piece of Paper** from the inventory craft list (default recipe **1 Wood + 1 Coal**; override with **PaperCost**). Blanks stack (default **50**). Open the Drake menu and set a **name** and/or **description** — that **uses one sheet** and creates a **Written Page** (always stack size 1) with your text.
@@ -211,7 +223,7 @@ Settings live in `BepInEx/config/com.drakesworkshop.renameitlegacy.cfg`. Section
 ### Known Issues:
 - **Equipment and slot mods.** A mod that draws its own equipment-slot or inventory UI may show an item's old name until a small compatibility module exists for it. ExtraSlots is covered (see *Works with equipment and slot mods*). If you find one that does not work, please drop us a line with the mod's name and version: a thread on the Hexium page or a GitHub issue is perfect. Thank you!
 - **How we choose which mods to support.** There are a lot of mods out there and we cannot keep up with all of them, so we start with the most downloaded ones and with any mod a running server relies on and needs support for. If a mod is below that, it is nothing personal, we simply cannot promise it. You are very welcome to write your own module and send a pull request: [Making RenameIt work with another mod](docs/COMPATIBILITY.md) shows how.
-- Otherwise none known, but please report anything you find!
+- Otherwise none known, but please report anything you find! Include `BepInEx/LogOutput.log` and `BepInEx/DrakeMods-compat-report.txt` (see *Plays safely with other mods*).
 
 #### Wishlist for future
 - If there is high demand: renamable pieces that have hover names.

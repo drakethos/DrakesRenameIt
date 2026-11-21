@@ -121,6 +121,7 @@ namespace DrakeRenameit
             // Defensive host: patch classes are applied one by one, runtime errors are attributed to the mod that
             // threw them, and BepInEx/DrakeMods-compat-report.txt lists which other mods touch the same methods.
             var guard = global::DrakeModsLibs.Defense.ModGuard.Create(ModName, GUID, Version, typeof(DrakeRenameit).Assembly, harmony, Logger);
+            guard.ReportTo = "the mod's Hexium page (https://valheim.hexium.gg/mods/DrakeMods/DrakesRenameItLegacy, Threads tab) or drakethos@gmail.com";
             HarmonyPatchHub.ApplyAll(harmony, Logger, guard);
             guard.Try("soft-dependency compat modules", () => CompatibilityManager.Initialize(harmony));
             guard.Arm();

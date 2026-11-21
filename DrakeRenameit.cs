@@ -118,8 +118,12 @@ namespace DrakeRenameit
                 Logger.LogInfo("Paper feature disabled (PaperFeatureEnabled=false) — skipping registration entirely.");
             }
 
-            HarmonyPatchHub.ApplyAll(harmony, Logger);
-            CompatibilityManager.Initialize(harmony);
+            // Defensive host: patch classes are applied one by one, runtime errors are attributed to the mod that
+            // threw them, and BepInEx/DrakeMods-compat-report.txt lists which other mods touch the same methods.
+            var guard = global::DrakeModsLibs.Defense.ModGuard.Create(ModName, GUID, Version, typeof(DrakeRenameit).Assembly, harmony, Logger);
+            HarmonyPatchHub.ApplyAll(harmony, Logger, guard);
+            guard.Try("soft-dependency compat modules", () => CompatibilityManager.Initialize(harmony));
+            guard.Arm();
         }
 
         /// <summary>

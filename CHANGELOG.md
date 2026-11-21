@@ -1,3 +1,10 @@
+- Version 1.0.1
+  - **Defensive against other mods.** The mod no longer assumes it is alone in the game:
+    - Each Harmony patch class is applied on its own. If one cannot be applied (a game update, or another mod's transpiler broke the method) it is skipped and named in the log with the other mods patching that type; the rest of the mod still loads. Before, the first failure stopped the whole patch run.
+    - A finalizer on every method this mod patches attributes errors. A log line now says whether the error came from **RenameIt Legacy** or from another mod (named, with its GUID and version), once per distinct error with a count. An error in a RenameIt Legacy postfix is contained so it cannot break the game method; the game method is never skipped on our account.
+    - After all plugins load, `BepInEx/DrakeMods-compat-report.txt` lists the loaded plugins and every method this mod shares with other mods, flagging the risky ones (another mod's transpiler, or a prefix that can skip the original). **Send that file with `LogOutput.log` when reporting a conflict.**
+    - Set the environment variable `DRAKEMODS_NO_GUARD=1` to turn the error finalizers off (isolated patching stays).
+
 - Version 1.0.0 (DrakesRenameItLegacy)
   - **New mod, forked from DrakesRenameIt v1.3.2.** A standalone, deliberately minimal mono mod: no DrakeModsLibs dependency (the naming/tag/display engine, Paper's Forge-loaded assets, and the Item Workshop UI are vendored into this one DLL — see `Vendor/README.md`), no shared tabs or any other integration with other Drakes mods, no world-hover text, no Quick Settings cogwheel, no piece renaming / animals / books. Rename + Paper only, for isolating whether a reported mod incompatibility was caused by Libs or a cross-mod hook rather than the core logic.
   - **New: `PaperFeatureEnabled` config** (`UI-NotSynced`, per-client, needs a restart) — skips Paper registration entirely at startup, distinct from `PaperEnabled` which only toggles craftability. For A/B-testing the Paper feature against a suspected incompatibility.

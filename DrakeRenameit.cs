@@ -103,8 +103,13 @@ namespace DrakeRenameit
                 Logger.LogError($"Paper content register failed: {ex}");
             }
 
-            harmony.PatchAll();
-            CompatibilityManager.Initialize(harmony);
+            // DrakeModsLibs' ModGuard: patch classes are applied one by one (a failure is skipped and named), runtime
+            // errors are labelled with the mod they originate from, and BepInEx/DrakeMods-compat-report.txt lists
+            // which other mods touch the same methods.
+            var guard = global::DrakeModsLibs.Defense.ModGuard.Create(ModName, GUID, Version, typeof(DrakeRenameit).Assembly, harmony, Logger);
+            guard.PatchAll();
+            guard.Try("soft-dependency compat modules", () => CompatibilityManager.Initialize(harmony));
+            guard.Arm();
         }
 
         private void Update()

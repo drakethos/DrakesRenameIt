@@ -1,3 +1,7 @@
+- Version 1.3.3
+  - Patch for 1.3.2. Requires **DrakeModsLibs 1.0.7**.
+  - **Defensive against other mods.** Each Harmony patch class is applied on its own: one that cannot be applied (game update, another mod's transpiler) is skipped and named in the log, with the other mods patching that type, instead of stopping the whole patch run. Errors on methods RenameIt patches are logged as `[Error origin: <mod>]`, naming the mod (GUID, version) whose code threw, once per distinct error with a count. An error in a RenameIt postfix is contained; the game method is never skipped. `BepInEx/DrakeMods-compat-report.txt` lists loaded plugins and the methods shared with other mods, flagging other mods' transpilers and skipping prefixes. Send it with `LogOutput.log` when reporting a conflict.
+
 - Version 1.3.2
   - Patch for 1.3.1. Requires **DrakeModsLibs 1.0.0+** (the SeneaL description and Crafted-by lines also need the next DrakeModsLibs, 1.0.6).
   - **New: SeneaL UI support.** With **SeneaL UI** installed, a renamed item shows its new name in SeneaL's tooltips and crafting views (it showed the vanilla name before). Nothing changes without SeneaL.

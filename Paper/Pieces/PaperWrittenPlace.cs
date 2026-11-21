@@ -871,38 +871,46 @@ internal static class PaperWrittenPlace
             ItemDrop.ItemData item,
             bool fromInventoryGui)
         {
-            if (__instance != Player.m_localPlayer || item == null)
-                return true;
-
-            PaperItem.EnsurePaperIdentity(item);
-
-            // Written / Printed before blank — blank-token shared + null dropPrefab must not
-            // steal Use and strip the place table after a relog with the page in hand.
-            if (RenameitConfig.PaperPlaceEnabled && PaperItem.IsWrittenLike(item))
+            try
             {
-                _ = fromInventoryGui;
-                var player = Player.m_localPlayer;
-                if (player != null && InOurPlaceMode(player))
+                if (__instance != Player.m_localPlayer || item == null)
+                    return true;
+
+                PaperItem.EnsurePaperIdentity(item);
+
+                // Written / Printed before blank — blank-token shared + null dropPrefab must not
+                // steal Use and strip the place table after a relog with the page in hand.
+                if (RenameitConfig.PaperPlaceEnabled && PaperItem.IsWrittenLike(item))
                 {
-                    // Use again switches only when orientation is Both. Vertical/Horizontal Only stays put.
-                    CycleOrientation(player);
+                    _ = fromInventoryGui;
+                    var player = Player.m_localPlayer;
+                    if (player != null && InOurPlaceMode(player))
+                    {
+                        // Use again switches only when orientation is Both. Vertical/Horizontal Only stays put.
+                        CycleOrientation(player);
+                        return false;
+                    }
+
+                    BeginPlace(item);
                     return false;
                 }
 
-                BeginPlace(item);
-                return false;
-            }
+                // Blank paper is hammer décor only — Use must not open the written place table.
+                if (PaperItem.IsBlankPaper(item))
+                {
+                    StripBlankPlaceTool(item);
+                    if (__instance is Player blankPlayer && InOurPlaceMode(blankPlayer))
+                        EndPlaceMode(blankPlayer);
+                    return true;
+                }
 
-            // Blank paper is hammer décor only — Use must not open the written place table.
-            if (PaperItem.IsBlankPaper(item))
-            {
-                StripBlankPlaceTool(item);
-                if (__instance is Player blankPlayer && InOurPlaceMode(blankPlayer))
-                    EndPlaceMode(blankPlayer);
                 return true;
             }
-
-            return true;
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.UseItem_Prefix", __guardEx);
+                return true;
+            }
         }
 
         /// <summary>
@@ -912,40 +920,48 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.StartAttack))]
         private static bool StartAttack_Prefix(Humanoid __instance, bool secondaryAttack, ref bool __result)
         {
-            if (__instance != Player.m_localPlayer)
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return true;
+
+                if (Time.time < _suppressAttackUntil || _deferConsumeArmed)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                if (__instance is Player placing && InOurPlaceMode(placing))
+                {
+                    __result = false;
+                    return false;
+                }
+
+                var right = InvGetRightItem(__instance);
+                PaperItem.EnsurePaperIdentity(right);
+
+                if (PaperItem.IsWrittenLike(right))
+                {
+                    __result = false;
+                    if (!secondaryAttack && __instance is Player player)
+                        BeginPlace(right!);
+                    return false;
+                }
+
+                if (PaperItem.IsBlankPaper(right))
+                {
+                    StripBlankPlaceTool(right);
+                    __result = false;
+                    return false;
+                }
+
                 return true;
-
-            if (Time.time < _suppressAttackUntil || _deferConsumeArmed)
-            {
-                __result = false;
-                return false;
             }
-
-            if (__instance is Player placing && InOurPlaceMode(placing))
+            catch (System.Exception __guardEx)
             {
-                __result = false;
-                return false;
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.StartAttack_Prefix", __guardEx);
+                return true;
             }
-
-            var right = InvGetRightItem(__instance);
-            PaperItem.EnsurePaperIdentity(right);
-
-            if (PaperItem.IsWrittenLike(right))
-            {
-                __result = false;
-                if (!secondaryAttack && __instance is Player player)
-                    BeginPlace(right!);
-                return false;
-            }
-
-            if (PaperItem.IsBlankPaper(right))
-            {
-                StripBlankPlaceTool(right);
-                __result = false;
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -956,26 +972,33 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.SetupEquipment))]
         private static void SetupEquipment_Postfix(Humanoid __instance)
         {
-            if (__instance != Player.m_localPlayer)
-                return;
-            var right = InvGetRightItem(__instance);
-            PaperItem.EnsurePaperIdentity(right);
-            if (PaperItem.IsWrittenLike(right))
+            try
             {
-                // Re-attach Tool + place table so UpdatePlacement works immediately after relog.
-                // Printed keeps its own shared (stack size); never BindWrittenShared on prints.
-                BindPlaceShared(right!);
-                if (right!.m_shared != null)
-                    InstallPlaceToolAttack(right.m_shared);
-                return;
+                if (__instance != Player.m_localPlayer)
+                    return;
+                var right = InvGetRightItem(__instance);
+                PaperItem.EnsurePaperIdentity(right);
+                if (PaperItem.IsWrittenLike(right))
+                {
+                    // Re-attach Tool + place table so UpdatePlacement works immediately after relog.
+                    // Printed keeps its own shared (stack size); never BindWrittenShared on prints.
+                    BindPlaceShared(right!);
+                    if (right!.m_shared != null)
+                        InstallPlaceToolAttack(right.m_shared);
+                    return;
+                }
+
+                if (!PaperItem.IsBlankPaper(right))
+                    return;
+
+                StripBlankPlaceTool(right);
+                if (__instance is Player player && InOurPlaceMode(player))
+                    EndPlaceMode(player);
             }
-
-            if (!PaperItem.IsBlankPaper(right))
-                return;
-
-            StripBlankPlaceTool(right);
-            if (__instance is Player player && InOurPlaceMode(player))
-                EndPlaceMode(player);
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.SetupEquipment_Postfix", __guardEx);
+            }
         }
 
         static readonly HashSet<ZDOID> ClaimedWrittenDrops = new();
@@ -988,47 +1011,62 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup), new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
         private static bool Pickup_Prefix(GameObject go, ref bool __result)
         {
-            var drop = go != null ? go.GetComponent<ItemDrop>() : null;
-            if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
-                return true;
-
-            // m_nview is publicized at compile time but private at runtime.
-            var nv = go.GetComponent<ZNetView>();
-            var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
-            if (zdo == null)
+            try
             {
-                UnityEngine.Object.Destroy(go);
-                __result = false;
-                return false;
-            }
+                var drop = go != null ? go.GetComponent<ItemDrop>() : null;
+                if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
+                    return true;
 
-            if (ClaimedWrittenDrops.Contains(zdo.m_uid))
-            {
-                if (ZNetScene.instance != null)
-                    ZNetScene.instance.Destroy(go);
-                else
+                // m_nview is publicized at compile time but private at runtime.
+                var nv = go.GetComponent<ZNetView>();
+                var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
+                if (zdo == null)
+                {
                     UnityEngine.Object.Destroy(go);
-                __result = false;
-                return false;
-            }
+                    __result = false;
+                    return false;
+                }
 
-            return true;
+                if (ClaimedWrittenDrops.Contains(zdo.m_uid))
+                {
+                    if (ZNetScene.instance != null)
+                        ZNetScene.instance.Destroy(go);
+                    else
+                        UnityEngine.Object.Destroy(go);
+                    __result = false;
+                    return false;
+                }
+
+                return true;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.Pickup_Prefix", __guardEx);
+                return true;
+            }
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup), new[] { typeof(GameObject), typeof(bool), typeof(bool) })]
         private static void Pickup_Postfix(GameObject go, bool __result)
         {
-            if (!__result || go == null)
-                return;
-            var drop = go.GetComponent<ItemDrop>();
-            if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
-                return;
-            // m_nview is publicized at compile time but private at runtime.
-            var nv = go.GetComponent<ZNetView>();
-            var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
-            if (zdo != null)
-                ClaimedWrittenDrops.Add(zdo.m_uid);
+            try
+            {
+                if (!__result || go == null)
+                    return;
+                var drop = go.GetComponent<ItemDrop>();
+                if (drop == null || !PaperItem.IsWrittenLike(drop.m_itemData))
+                    return;
+                // m_nview is publicized at compile time but private at runtime.
+                var nv = go.GetComponent<ZNetView>();
+                var zdo = nv != null && nv.IsValid() ? nv.GetZDO() : null;
+                if (zdo != null)
+                    ClaimedWrittenDrops.Add(zdo.m_uid);
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.Pickup_Postfix", __guardEx);
+            }
         }
 
         /// <summary>
@@ -1038,26 +1076,34 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Player), "UpdatePlacement", new[] { typeof(bool), typeof(float) })]
         private static bool UpdatePlacement_Prefix(Player __instance, bool takeInput)
         {
-            if (__instance != Player.m_localPlayer)
-                return true;
-            if (PaperBlankPlace.IsInPlaceMode(__instance))
-                return true;
-            if (!__instance.InPlaceMode())
-                return true;
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return true;
+                if (PaperBlankPlace.IsInPlaceMode(__instance))
+                    return true;
+                if (!__instance.InPlaceMode())
+                    return true;
 
-            var right = InvGetRightItem(__instance);
-            if (right?.m_shared?.m_buildPieces != null)
-                return true;
+                var right = InvGetRightItem(__instance);
+                if (right?.m_shared?.m_buildPieces != null)
+                    return true;
 
-            if (_triggerPaper != null &&
-                DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper) &&
-                EnsurePaperIsBuildTool(__instance, _triggerPaper) &&
-                InvGetRightItem(__instance)?.m_shared?.m_buildPieces != null)
-                return true;
+                if (_triggerPaper != null &&
+                    DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper) &&
+                    EnsurePaperIsBuildTool(__instance, _triggerPaper) &&
+                    InvGetRightItem(__instance)?.m_shared?.m_buildPieces != null)
+                    return true;
 
-            EndPlaceMode(__instance);
-            _triggerPaper = null;
-            return false;
+                EndPlaceMode(__instance);
+                _triggerPaper = null;
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("Patches.UpdatePlacement_Prefix", __guardEx);
+                return true;
+            }
         }
 
         /// <summary>
@@ -1069,22 +1115,29 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Player), "UpdatePlacement", new[] { typeof(bool), typeof(float) })]
         private static void UpdatePlacement_Postfix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer)
-                return;
-            if (!_endPlaceAfterPlacement && _consumeAfterPlacement == null)
-                return;
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return;
+                if (!_endPlaceAfterPlacement && _consumeAfterPlacement == null)
+                    return;
 
-            var toConsume = _consumeAfterPlacement;
-            _consumeAfterPlacement = null;
-            _endPlaceAfterPlacement = false;
+                var toConsume = _consumeAfterPlacement;
+                _consumeAfterPlacement = null;
+                _endPlaceAfterPlacement = false;
 
-            ClearPendingAttacksAfterPaperPlace(__instance);
-            EndPlaceMode(__instance);
-            ArmDeferredConsume(__instance, toConsume);
-            _triggerPaper = null;
-            if (_vesselAppliedSnapshot)
-                _pendingSnapshot = null;
-            _vesselAppliedSnapshot = false;
+                ClearPendingAttacksAfterPaperPlace(__instance);
+                EndPlaceMode(__instance);
+                ArmDeferredConsume(__instance, toConsume);
+                _triggerPaper = null;
+                if (_vesselAppliedSnapshot)
+                    _pendingSnapshot = null;
+                _vesselAppliedSnapshot = false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.UpdatePlacement_Postfix", __guardEx);
+            }
         }
 
         /// <summary>Finish deferred paper consume once the place-click Attack is released.</summary>
@@ -1092,9 +1145,16 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Player), "Update", new Type[] { })]
         private static void PlayerUpdate_DeferredConsume(Player __instance)
         {
-            if (__instance != Player.m_localPlayer || !_deferConsumeArmed)
-                return;
-            TryFinishDeferredConsume(__instance);
+            try
+            {
+                if (__instance != Player.m_localPlayer || !_deferConsumeArmed)
+                    return;
+                TryFinishDeferredConsume(__instance);
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.PlayerUpdate_DeferredConsume", __guardEx);
+            }
         }
 
         /// <summary>
@@ -1104,9 +1164,16 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacementGhost))]
         private static void UpdatePlacementGhost_Postfix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer)
-                return;
-            SeatGhost(__instance);
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return;
+                SeatGhost(__instance);
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.UpdatePlacementGhost_Postfix", __guardEx);
+            }
         }
 
         [HarmonyPrefix]
@@ -1269,26 +1336,42 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Player), nameof(Player.GetBuildStamina))]
         private static bool GetBuildStamina_Prefix(Player __instance, ref float __result)
         {
-            if (__instance != Player.m_localPlayer)
-                return true;
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return true;
 
-            var right = InvGetRightItem(__instance);
-            if (right?.m_shared?.m_attack != null)
-                return true;
+                var right = InvGetRightItem(__instance);
+                if (right?.m_shared?.m_attack != null)
+                    return true;
 
-            __result = 0f;
-            return false;
+                __result = 0f;
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.GetBuildStamina_Prefix", __guardEx);
+                return true;
+            }
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Sign), nameof(Sign.Interact))]
         private static bool Sign_Interact_Prefix(Sign __instance, Humanoid character, bool hold, bool alt)
         {
-            // Legacy: notes no longer use Sign; keep guard if a donor Sign remains.
-            if (!IsNotePiece(__instance))
+            try
+            {
+                // Legacy: notes no longer use Sign; keep guard if a donor Sign remains.
+                if (!IsNotePiece(__instance))
+                    return true;
+                __instance.GetComponent<PaperWrittenVessel>()?.TryReclaim(character);
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.Sign_Interact_Prefix", __guardEx);
                 return true;
-            __instance.GetComponent<PaperWrittenVessel>()?.TryReclaim(character);
-            return false;
+            }
         }
 
         /// <summary>
@@ -1299,13 +1382,21 @@ internal static class PaperWrittenPlace
         [HarmonyPatch(typeof(Sign), nameof(Sign.GetHoverText))]
         private static bool Sign_Hover_Prefix(Sign __instance, ref string __result)
         {
-            if (__instance == null || !IsNotePiece(__instance))
+            try
+            {
+                if (__instance == null || !IsNotePiece(__instance))
+                    return true;
+                var vessel = __instance.GetComponent<PaperWrittenVessel>();
+                if (vessel == null)
+                    return true;
+                __result = vessel.GetHoverText();
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeModsLibs.Defense.ModGuard.PatchFailed("of.Sign_Hover_Prefix", __guardEx);
                 return true;
-            var vessel = __instance.GetComponent<PaperWrittenVessel>();
-            if (vessel == null)
-                return true;
-            __result = vessel.GetHoverText();
-            return false;
+            }
         }
 
         [HarmonyPrefix]

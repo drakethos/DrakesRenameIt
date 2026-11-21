@@ -103,8 +103,14 @@ namespace DrakeRenameit
                 Logger.LogError($"Paper content register failed: {ex}");
             }
 
-            harmony.PatchAll();
-            CompatibilityManager.Initialize(harmony);
+            // ModGuard (vendored copy of DrakeModsLibs' one): patch classes are applied one by one (a failure is skipped and named), runtime
+            // errors are labelled with the mod they originate from, and BepInEx/DrakeMods-compat-report.txt lists
+            // which other mods touch the same methods.
+            var guard = global::DrakeRenameit.Defense.ModGuard.Create(ModName, GUID, Version, typeof(DrakeRenameit).Assembly, harmony, Logger);
+            guard.ReportTo = "the mod's Hexium page (https://valheim.hexium.gg/mods/DrakeMods/DrakesRenameit, Threads tab) or drakethos@gmail.com";
+            guard.PatchAll();
+            guard.Try("soft-dependency compat modules", () => CompatibilityManager.Initialize(harmony));
+            guard.Arm();
         }
 
         private void Update()

@@ -21,29 +21,43 @@ internal static class PaperItemStandPatches
     [HarmonyPatch(nameof(ItemStand.CanAttach))]
     private static void CanAttach_Postfix(ItemDrop.ItemData item, ref bool __result)
     {
-        if (PaperItem.IsPaperItem(item))
-            __result = true;
-    }
+            try
+            {
+            if (PaperItem.IsPaperItem(item))
+                __result = true;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("PaperItemStandPatches.CanAttach_Postfix", __guardEx);
+            }
+        }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(ItemStand.GetAttachPrefab))]
     private static void GetAttachPrefab_Postfix(GameObject item, ref GameObject __result)
     {
-        if (__result != null || item == null)
-            return;
+            try
+            {
+            if (__result != null || item == null)
+                return;
 
-        var isPaper = item.name.Equals(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.StartsWith(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.Equals(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.StartsWith(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.Equals(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase) ||
-                      item.name.StartsWith(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase);
-        if (!isPaper)
-            return;
+            var isPaper = item.name.Equals(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
+                          item.name.StartsWith(PaperItem.PrefabName, StringComparison.OrdinalIgnoreCase) ||
+                          item.name.Equals(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
+                          item.name.StartsWith(PaperItem.WrittenPrefabName, StringComparison.OrdinalIgnoreCase) ||
+                          item.name.Equals(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase) ||
+                          item.name.StartsWith(PaperItem.PrintedPrefabName, StringComparison.OrdinalIgnoreCase);
+            if (!isPaper)
+                return;
 
-        var attach = item.transform.Find("attach");
-        __result = attach != null ? attach.gameObject : item;
-    }
+            var attach = item.transform.Find("attach");
+            __result = attach != null ? attach.gameObject : item;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("PaperItemStandPatches.GetAttachPrefab_Postfix", __guardEx);
+            }
+        }
 
     /// <summary>
     /// Runs after DrakeModsLibs so a warded stand keeps the page text, not only the item name.
@@ -54,43 +68,50 @@ internal static class PaperItemStandPatches
     [HarmonyPriority(Priority.Last)]
     private static void GetHoverText_Postfix(ItemStand __instance, ref string __result)
     {
-        if (__instance == null)
-            return;
+            try
+            {
+            if (__instance == null)
+                return;
 
-        var item = TryLoadAttached(__instance);
-        if (!PaperItem.IsPaperItem(item))
-            return;
+            var item = TryLoadAttached(__instance);
+            if (!PaperItem.IsPaperItem(item))
+                return;
 
-        string readable = BuildReadable(item!);
-        if (string.IsNullOrEmpty(readable))
-            return;
+            string readable = BuildReadable(item!);
+            if (string.IsNullOrEmpty(readable))
+                return;
 
-        bool blocked = WardHoverAccess.IsLocalDenied(__instance.transform.position);
-        if (blocked || HoverTextContainsNoAccess(__result))
-        {
-            var denied = "$piece_noaccess";
-            denied = Localization.instance != null ? Localization.instance.Localize(denied) : denied;
-            __result = readable + "\n" + denied;
-            return;
+            bool blocked = WardHoverAccess.IsLocalDenied(__instance.transform.position);
+            if (blocked || HoverTextContainsNoAccess(__result))
+            {
+                var denied = "$piece_noaccess";
+                denied = Localization.instance != null ? Localization.instance.Localize(denied) : denied;
+                __result = readable + "\n" + denied;
+                return;
+            }
+
+            // Access allowed: still show the writing under the stand name so the page is readable in place.
+            string desc = CustomDescription(item!);
+            if (string.IsNullOrEmpty(desc) ||
+                (!string.IsNullOrEmpty(__result) && __result.IndexOf(desc, StringComparison.Ordinal) >= 0))
+                return;
+
+            if (string.IsNullOrEmpty(__result))
+            {
+                __result = readable;
+                return;
+            }
+
+            int nl = __result.IndexOf('\n');
+            __result = nl >= 0
+                ? __result.Insert(nl, "\n" + desc)
+                : __result + "\n" + desc;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("PaperItemStandPatches.GetHoverText_Postfix", __guardEx);
+            }
         }
-
-        // Access allowed: still show the writing under the stand name so the page is readable in place.
-        string desc = CustomDescription(item!);
-        if (string.IsNullOrEmpty(desc) ||
-            (!string.IsNullOrEmpty(__result) && __result.IndexOf(desc, StringComparison.Ordinal) >= 0))
-            return;
-
-        if (string.IsNullOrEmpty(__result))
-        {
-            __result = readable;
-            return;
-        }
-
-        int nl = __result.IndexOf('\n');
-        __result = nl >= 0
-            ? __result.Insert(nl, "\n" + desc)
-            : __result + "\n" + desc;
-    }
 
     private static string BuildReadable(ItemDrop.ItemData item)
     {

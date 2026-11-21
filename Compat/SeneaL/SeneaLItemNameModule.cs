@@ -57,7 +57,7 @@ internal sealed class SeneaLItemNameModule : ICompatModule
 
     private static MethodBase? ResolveTarget()
     {
-        var type = AccessTools.TypeByName(TypeName);
+        var type = global::DrakeRenameit.Compat.CompatTypes.Find(TypeName);
         return type == null ? null : AccessTools.Method(type, MethodName, new[] { typeof(ItemDrop.ItemData) });
     }
 

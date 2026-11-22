@@ -307,7 +307,7 @@ internal sealed class ProtectiveWardsModule : IAreaCompatModule
 
     private static MethodInfo? FindFullProtectionNestedPrefix(string nestedTypeName)
     {
-        var outer = AccessTools.TypeByName(FullProtectionTypeName);
+        var outer = global::DrakeRenameit.Compat.CompatTypes.Find(FullProtectionTypeName);
         if (outer == null)
         {
             RenameitConfig.Log?.LogWarning($"Compat ProtectiveWards: {FullProtectionTypeName} not found.");
@@ -390,7 +390,7 @@ internal sealed class ProtectiveWardsModule : IAreaCompatModule
 
         try
         {
-            var pwType = AccessTools.TypeByName(PwTypeName);
+            var pwType = global::DrakeRenameit.Compat.CompatTypes.Find(PwTypeName);
             if (pwType == null)
                 return;
 

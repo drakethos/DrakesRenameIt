@@ -32,6 +32,7 @@ internal static class PaperNotePageText
     static readonly FieldInfo? SignTextWidgetField = AccessTools.Field(typeof(Sign), "m_textWidget");
 
     static bool _loggedDonor;
+    static readonly BepInEx.Logging.ManualLogSource PageLog = BepInEx.Logging.Logger.CreateLogSource("DrakesRenameItLegacy.Paper");
     static int _syncLogsLeft = 6;
 
     /// <summary>
@@ -50,7 +51,7 @@ internal static class PaperNotePageText
             var widget = FindSignWidget(root);
             if (widget == null)
             {
-                Debug.LogWarning("[DrakesRenameit] Paper page: donor sign has no TMP text widget.");
+                Debug.LogWarning("[Paper] Paper page: donor sign has no TMP text widget.");
                 return;
             }
 
@@ -66,8 +67,8 @@ internal static class PaperNotePageText
             {
                 _loggedDonor = true;
                 var canvas = widget.GetComponentInParent<Canvas>();
-                Debug.Log(
-                    $"[DrakesRenameit] Paper page donor widget={widget.GetType().Name} " +
+                PageLog.LogDebug(
+                    $"[Paper] Paper page donor widget={widget.GetType().Name} " +
                     $"keep='{keep.name}' keepScale={keep.localScale.x:F4} " +
                     $"canvas={(canvas != null ? canvas.renderMode.ToString() : "none")} " +
                     $"font={(widget.font != null ? widget.font.name : "NULL")} fontSize={widget.fontSize:F2} " +
@@ -89,7 +90,7 @@ internal static class PaperNotePageText
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[DrakesRenameit] Paper page preserve failed: {ex.GetType().Name}: {ex.Message}");
+            Debug.LogWarning($"[Paper] Paper page preserve failed: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
@@ -120,7 +121,7 @@ internal static class PaperNotePageText
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[DrakesRenameit] Paper page attach failed: {ex.GetType().Name}: {ex.Message}");
+            Debug.LogWarning($"[Paper] Paper page attach failed: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
@@ -270,7 +271,7 @@ internal static class PaperNotePageText
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[DrakesRenameit] Paper page text failed: {ex.GetType().Name}: {ex.Message}");
+            Debug.LogWarning($"[Paper] Paper page text failed: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
@@ -444,8 +445,8 @@ internal static class PaperNotePageText
         var active = body != null && body.gameObject.activeInHierarchy;
         var renderers = body != null ? body.GetComponentsInChildren<CanvasRenderer>(true).Length : 0;
         var wall = IsWallPiece(root);
-        Debug.Log(
-            $"[DrakesRenameit] Paper page wall={wall} widget={(body != null ? body.GetType().Name : "NULL")} " +
+        PageLog.LogDebug(
+            $"[Paper] Paper page wall={wall} widget={(body != null ? body.GetType().Name : "NULL")} " +
             $"activeInHierarchy={active} canvasRenderers={renderers} " +
             $"font={(body != null && body.font != null ? body.font.name : "NULL")} " +
             $"fontSize={(body != null ? body.fontSize : 0f):F2} rect={(body != null ? body.rectTransform.sizeDelta : Vector2.zero)} " +

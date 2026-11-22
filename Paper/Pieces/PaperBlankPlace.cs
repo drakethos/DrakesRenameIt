@@ -113,7 +113,7 @@ internal static class PaperBlankPlace
             RegisterSheet(PlaceVertical, wall: true, icon);
             RegisterSheet(PlaceFlat, wall: false, icon);
 
-            _log?.LogInfo("[Paper] Blank Use opens rename; hotbar place table kept for world refund only.");
+            _log?.LogDebug("[Paper] Blank Use opens rename; hotbar place table kept for world refund only.");
         }
         catch (Exception ex)
         {
@@ -488,14 +488,22 @@ internal static class PaperBlankPlace
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UseItem))]
         private static bool UseItem_Prefix(Humanoid __instance, ItemDrop.ItemData item)
         {
-            if (__instance != Player.m_localPlayer || item == null)
-                return true;
-            if (!PaperItem.IsBlankPaper(item))
-                return true;
+            try
+            {
+                if (__instance != Player.m_localPlayer || item == null)
+                    return true;
+                if (!PaperItem.IsBlankPaper(item))
+                    return true;
 
-            // Blank paper is for renaming/writing — never hotbar-place.
-            OpenBlankRename(item);
-            return false;
+                // Blank paper is for renaming/writing — never hotbar-place.
+                OpenBlankRename(item);
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("Patches.UseItem_Prefix", __guardEx);
+                return true;
+            }
         }
 
         [HarmonyPrefix]
@@ -503,40 +511,55 @@ internal static class PaperBlankPlace
         [HarmonyPatch(typeof(Player), "UpdatePlacement", new[] { typeof(bool), typeof(float) })]
         private static bool UpdatePlacement_Prefix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer || !IsInPlaceMode(__instance))
-                return true;
+            try
+            {
+                if (__instance != Player.m_localPlayer || !IsInPlaceMode(__instance))
+                    return true;
 
-            var right = InvGetRightItem(__instance);
-            if (right?.m_shared?.m_buildPieces != null)
-                return true;
+                var right = InvGetRightItem(__instance);
+                if (right?.m_shared?.m_buildPieces != null)
+                    return true;
 
-            if (_triggerPaper != null &&
-                DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper) &&
-                EnsurePaperIsBuildTool(__instance, _triggerPaper) &&
-                InvGetRightItem(__instance)?.m_shared?.m_buildPieces != null)
-                return true;
+                if (_triggerPaper != null &&
+                    DrakeRenameit.IsItemInLocalPlayerInventory(_triggerPaper) &&
+                    EnsurePaperIsBuildTool(__instance, _triggerPaper) &&
+                    InvGetRightItem(__instance)?.m_shared?.m_buildPieces != null)
+                    return true;
 
-            EndPlaceMode(__instance);
-            _triggerPaper = null;
-            return false;
+                EndPlaceMode(__instance);
+                _triggerPaper = null;
+                return false;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("Patches.UpdatePlacement_Prefix", __guardEx);
+                return true;
+            }
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Player), "UpdatePlacement", new[] { typeof(bool), typeof(float) })]
         private static void UpdatePlacement_Postfix(Player __instance)
         {
-            if (__instance != Player.m_localPlayer)
-                return;
-            if (!_endPlaceAfterPlacement && _consumeAfterPlacement == null)
-                return;
+            try
+            {
+                if (__instance != Player.m_localPlayer)
+                    return;
+                if (!_endPlaceAfterPlacement && _consumeAfterPlacement == null)
+                    return;
 
-            var toConsume = _consumeAfterPlacement;
-            _consumeAfterPlacement = null;
-            _endPlaceAfterPlacement = false;
+                var toConsume = _consumeAfterPlacement;
+                _consumeAfterPlacement = null;
+                _endPlaceAfterPlacement = false;
 
-            EndPlaceMode(__instance);
-            ConsumeTrigger(__instance, toConsume);
-            _triggerPaper = null;
+                EndPlaceMode(__instance);
+                ConsumeTrigger(__instance, toConsume);
+                _triggerPaper = null;
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("Patches.UpdatePlacement_Postfix", __guardEx);
+            }
         }
 
         private static int _blanksBefore;

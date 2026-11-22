@@ -747,6 +747,45 @@ T('X-05', 'renamed item survives drop and pickup', [
     H('desc', contains='Still here', prefab='AxeStone'),
 ], sheet='SM-008 (partly: persistence through the world, not a relaunch)')
 
+# Another mod's skipping prefix on ItemStand.UseItem (VRPCore's progression gate, ward mods): renameit.foreignGate
+# installs one. The stand's cached name must not change for an item that was never attached.
+T('X-30', 'foreign gate blocks stand UseItem: no ghost name on an empty stand', [
+    H('foreignGate', on=False),
+    U('craftRenamed', text='Gated Axe'),
+    {'do': 'place', 'prefab': 'itemstandh', 'dz': 2.5, 'as': 'stand'},
+    {'do': 'face', 'target': 'stand'},
+    H('foreignGate', True, "another mod's gate is on", on=True),
+    H('standPut', False, 'the gated put does nothing', prefab='AxeStone', target='stand'),
+    wait(0.5),
+    H('standHover', label='the empty stand shows no ghost name', notContains='Gated Axe', target='stand'),
+    H('name', label='the axe is still in the inventory, still renamed', contains='Gated Axe', prefab='AxeStone'),
+    H('foreignGate', False, 'gate removed', on=False),
+    H('standPut', True, 'without the gate the put works', prefab='AxeStone', target='stand'),
+    wait(0.5),
+    H('standHover', label='and the stand shows the name', contains='Gated Axe', target='stand'),
+], desc='Compat: another mod skips ItemStand.UseItem; RenameIt must not write a name for an item that was never attached.')
+
+T('X-31', 'foreign gate blocks stand UseItem: mounted item keeps its name', [
+    H('foreignGate', on=False),
+    U('craftRenamed', text='Mounted Axe'),
+    U('itemOnStand'),
+    H('standHover', label="the stand shows the mounted axe's name", contains='Mounted Axe', stop=True, target='stand'),
+    U('craftRenamed', text='Spare Axe', prefab='AxeFlint'),
+    H('foreignGate', True, "another mod's gate is on", on=True),
+    H('standPut', False, 'the gated put does nothing', prefab='AxeFlint', target='stand'),
+    wait(0.5),
+    H('standHover', label="the stand still shows the mounted axe's name", contains='Mounted Axe', target='stand'),
+    H('standHover', label="and not the blocked item's name", notContains='Spare Axe', target='stand'),
+    H('foreignGate', False, 'gate removed', on=False),
+], desc="Compat: with a renamed item on the stand, a gated UseItem must not clear the stand's cached name.")
+
+T('X-32', 'a rename that contains the base name is shown once on a stand', [
+    U('craftRenamed', text='Stone Axe of Bob'),
+    U('itemOnStand'),
+    H('standHover', label='the stand shows the rename', contains='Stone Axe of Bob', target='stand'),
+    H('standHover', label='and only once', notContains='of Bob of Bob', target='stand'),
+], desc='Guard for the container-stand hover fix (DrakeModsLibs 1.0.7): a vanilla stand already shows the rename, so it must not be rewritten again.')
+
 T('SM-008', 'changes survive logging out and back in', [
     PIN_FLAT,
     U('craftRenamed', text='Saved Axe', desc='Saved desc'),

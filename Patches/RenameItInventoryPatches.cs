@@ -27,67 +27,81 @@ public static class RenameItInventoryPatches
         [HarmonyPostfix]
         static void RenameGrab(InventoryGui __instance)
         {
-            var original = __instance.m_playerGrid.m_onRightClick;
-            __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
+            try
             {
-                // Libs tag rules with suppressRenameInventoryUi (e.g. NoRename, QuestItem, or mod-registered).
-                if (item != null && CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+                var original = __instance.m_playerGrid.m_onRightClick;
+                __instance.m_playerGrid.m_onRightClick = (grid, item, pos) =>
                 {
+                    // Libs tag rules with suppressRenameInventoryUi (e.g. NoRename, QuestItem, or mod-registered).
+                    if (item != null && CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+                    {
+                        original?.Invoke(grid, item, pos);
+                        return;
+                    }
+
+                    if (item != null && MenuBindingRegistry.IsHeld(MenuBindingRegistry.InventoryContextScope, RenameItLibsBridge.InventoryMenuBindingId))
+                    {
+                        if (DrakeTabHost.OpenForItem(item))
+                            return;
+
+                        // Fallback if tab host has no registration (should not happen after bridge Register).
+                        if (DrakeRenameit.ShowUnlockButton(item))
+                        {
+                            UIPanels.OpenUnlockMenuFromInventory(item);
+                            return;
+                        }
+
+                        if (DrakeRenameit.AnyInventoryActionAvailable(item))
+                        {
+                            UIPanels.OpenActionMenu(item);
+                            return;
+                        }
+
+                        if (RenameitConfig.ShowDenialUi)
+                        {
+                            string reason = DrakeRenameit.GetMenuBlockedReason(item);
+                            if (!string.IsNullOrEmpty(reason))
+                                ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, reason);
+                        }
+                        return;
+                    }
+
                     original?.Invoke(grid, item, pos);
-                    return;
-                }
-
-                if (item != null && MenuBindingRegistry.IsHeld(MenuBindingRegistry.InventoryContextScope, RenameItLibsBridge.InventoryMenuBindingId))
-                {
-                    if (DrakeTabHost.OpenForItem(item))
-                        return;
-
-                    // Fallback if tab host has no registration (should not happen after bridge Register).
-                    if (DrakeRenameit.ShowUnlockButton(item))
-                    {
-                        UIPanels.OpenUnlockMenuFromInventory(item);
-                        return;
-                    }
-
-                    if (DrakeRenameit.AnyInventoryActionAvailable(item))
-                    {
-                        UIPanels.OpenActionMenu(item);
-                        return;
-                    }
-
-                    if (RenameitConfig.ShowDenialUi)
-                    {
-                        string reason = DrakeRenameit.GetMenuBlockedReason(item);
-                        if (!string.IsNullOrEmpty(reason))
-                            ValheimHudMessage.Show(Player.m_localPlayer, MessageHud.MessageType.Center, reason);
-                    }
-                    return;
-                }
-
-                original?.Invoke(grid, item, pos);
-            };
+                };
+            }
+            catch (System.Exception __guardEx)
+            {
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("PatchInventoryGuiAwake.RenameGrab", __guardEx);
+            }
         }
 
         [HarmonyPatch(nameof(InventoryGui.DoCrafting))]
         [HarmonyPostfix]
         static void FixCrafting(InventoryGui __instance, Player player)
         {
-            var craftRecipe = AccessTools.Field(typeof(InventoryGui), "m_craftRecipe")?.GetValue(__instance) as Recipe;
-            var oldItem = (ItemDrop.ItemData)AccessTools.Field(typeof(InventoryGui), "m_craftUpgradeItem").GetValue(__instance);
-            if (craftRecipe == null || oldItem == null) return;
-
-            var inv = player.GetInventory();
-            var newItem = inv.GetItemAt(oldItem.m_gridPos.x, oldItem.m_gridPos.y);
-            if (newItem == null)
+            try
             {
-                newItem = inv.GetAllItems().LastOrDefault(i =>
-                    i.m_shared.m_name == oldItem.m_shared.m_name && i.m_quality > oldItem.m_quality);
+                var craftRecipe = AccessTools.Field(typeof(InventoryGui), "m_craftRecipe")?.GetValue(__instance) as Recipe;
+                var oldItem = (ItemDrop.ItemData)AccessTools.Field(typeof(InventoryGui), "m_craftUpgradeItem").GetValue(__instance);
+                if (craftRecipe == null || oldItem == null) return;
+
+                var inv = player.GetInventory();
+                var newItem = inv.GetItemAt(oldItem.m_gridPos.x, oldItem.m_gridPos.y);
+                if (newItem == null)
+                {
+                    newItem = inv.GetAllItems().LastOrDefault(i =>
+                        i.m_shared.m_name == oldItem.m_shared.m_name && i.m_quality > oldItem.m_quality);
+                }
+
+                if (newItem != null)
+                {
+                    foreach (var kv in oldItem.m_customData)
+                        newItem.m_customData[kv.Key] = kv.Value;
+                }
             }
-
-            if (newItem != null)
+            catch (System.Exception __guardEx)
             {
-                foreach (var kv in oldItem.m_customData)
-                    newItem.m_customData[kv.Key] = kv.Value;
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("PatchInventoryGuiAwake.FixCrafting", __guardEx);
             }
         }
     }
@@ -99,55 +113,62 @@ public static class RenameItInventoryPatches
         [HarmonyPostfix]
         static void AppendMenuHints(InventoryGrid __instance, ItemDrop.ItemData? item, UITooltip tooltip)
         {
-            if (item?.m_shared == null || tooltip == null)
-                return;
-
-            // Libs handoff: no yellow/red RenameIt lines when inventory UI is suppressed.
-            if (CustomizeLibsAPI.IsRenameInventorySuppressed(item))
-                return;
-
-            var topicField = AccessTools.Field(typeof(UITooltip), "m_topic");
-            var textField = AccessTools.Field(typeof(UITooltip), "m_text");
-            if (topicField == null || textField == null)
-                return;
-
-            string topic = topicField.GetValue(tooltip) as string ?? "";
-            string currentText = textField.GetValue(tooltip) as string ?? "";
-
-            // Legacy prints may still have [Copy] baked into description — scrub tooltip body.
-            if (PaperCopyMark.IsCopy(item))
+            try
             {
-                PaperCopyMark.StripCopyFromDescription(item);
-                currentText = PaperCopyMark.StripCopyLine(currentText);
-                if (topic.IndexOf(PaperCopyMark.TooltipLabel, System.StringComparison.OrdinalIgnoreCase) < 0)
-                    topic = string.IsNullOrEmpty(topic)
-                        ? PaperCopyMark.TooltipLabel
-                        : topic.TrimEnd() + " " + PaperCopyMark.TooltipLabel;
+                if (item?.m_shared == null || tooltip == null)
+                    return;
+
+                // Libs handoff: no yellow/red RenameIt lines when inventory UI is suppressed.
+                if (CustomizeLibsAPI.IsRenameInventorySuppressed(item))
+                    return;
+
+                var topicField = AccessTools.Field(typeof(UITooltip), "m_topic");
+                var textField = AccessTools.Field(typeof(UITooltip), "m_text");
+                if (topicField == null || textField == null)
+                    return;
+
+                string topic = topicField.GetValue(tooltip) as string ?? "";
+                string currentText = textField.GetValue(tooltip) as string ?? "";
+
+                // Legacy prints may still have [Copy] baked into description — scrub tooltip body.
+                if (PaperCopyMark.IsCopy(item))
+                {
+                    PaperCopyMark.StripCopyFromDescription(item);
+                    currentText = PaperCopyMark.StripCopyLine(currentText);
+                    if (topic.IndexOf(PaperCopyMark.TooltipLabel, System.StringComparison.OrdinalIgnoreCase) < 0)
+                        topic = string.IsNullOrEmpty(topic)
+                            ? PaperCopyMark.TooltipLabel
+                            : topic.TrimEnd() + " " + PaperCopyMark.TooltipLabel;
+                }
+
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("\n");
+                AppendPaperHint(sb, item);
+                string menuColor = RenameitConfig.MenuHintColor;
+                string menuHint = RenameItLocalization.GetMenuTooltipHint(RenameitConfig.MenuOpenModifier);
+                string lockSuffix = DrakeRenameit.GetMenuTooltipLockSuffix(item);
+                bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
+                bool elevated = Player.m_localPlayer != null &&
+                                  RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
+
+                if (anyAction)
+                    sb.AppendLine($"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color>");
+                else if (elevated)
+                    sb.AppendLine($"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color><color=blue>{T(LKeys.TooltipElevatedOverride)}</color>");
+                else if (RenameitConfig.ShowDenialUi)
+                {
+                    string detail = BuildNoDrakeMenuHint(item);
+                    sb.AppendLine($"<color=red><s>{menuHint}{lockSuffix}</s></color>");
+                    if (!string.IsNullOrEmpty(detail))
+                        sb.AppendLine($"<color=red>{detail}</color>");
+                }
+
+                tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
             }
-
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("\n");
-            AppendPaperHint(sb, item);
-            string menuColor = RenameitConfig.MenuHintColor;
-            string menuHint = RenameItLocalization.GetMenuTooltipHint(RenameitConfig.MenuOpenModifier);
-            string lockSuffix = DrakeRenameit.GetMenuTooltipLockSuffix(item);
-            bool anyAction = DrakeRenameit.AnyInventoryActionAvailable(item);
-            bool elevated = Player.m_localPlayer != null &&
-                              RenameitPermission.IsElevatedForOverrides(Player.m_localPlayer);
-
-            if (anyAction)
-                sb.AppendLine($"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color>");
-            else if (elevated)
-                sb.AppendLine($"<color={menuColor}><b>{menuHint}{lockSuffix}</b></color><color=blue>{T(LKeys.TooltipElevatedOverride)}</color>");
-            else if (RenameitConfig.ShowDenialUi)
+            catch (System.Exception __guardEx)
             {
-                string detail = BuildNoDrakeMenuHint(item);
-                sb.AppendLine($"<color=red><s>{menuHint}{lockSuffix}</s></color>");
-                if (!string.IsNullOrEmpty(detail))
-                    sb.AppendLine($"<color=red>{detail}</color>");
+                global::DrakeRenameit.Defense.ModGuard.PatchFailed("InventoryGridMenuTooltipPatch.AppendMenuHints", __guardEx);
             }
-
-            tooltip.Set(topic, currentText + sb, __instance.m_tooltipAnchor);
         }
 
         /// <summary>Place / write instructions, above the yellow Shift + Right Click line.</summary>

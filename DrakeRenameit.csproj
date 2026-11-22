@@ -103,6 +103,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defense\ModGuard.cs" />
     <Compile Include="API\RenameEvents.cs" />
     <Compile Include="Testing\RenameItTestHooks.cs" Condition="'$(Configuration)' == 'Debug'" />
     <Compile Include="API\RenameItPermision.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="Compat\AreaCoverageKind.cs" />
     <Compile Include="Compat\IAreaCompatModule.cs" />
     <Compile Include="Compat\CompatibilityManager.cs" />
+    <Compile Include="Compat\CompatTypes.cs" />
     <Compile Include="Compat\Vanilla\VanillaPrivateAreaModule.cs" />
     <Compile Include="Compat\WardIsLove\WardIsLoveModule.cs" />
     <Compile Include="Compat\ProtectiveWards\ProtectiveWardsModule.cs" />

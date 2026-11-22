@@ -93,9 +93,9 @@ internal sealed class WardIsLoveModule : IAreaCompatModule
 
         try
         {
-            var apiType = AccessTools.TypeByName("WardIsLove.API.API")
-                           ?? AccessTools.TypeByName("WardIsLove.API");
-            var wardType = AccessTools.TypeByName("WardIsLove.Util.WardMonoscript");
+            var apiType = global::DrakeRenameit.Compat.CompatTypes.Find("WardIsLove.API.API")
+                           ?? global::DrakeRenameit.Compat.CompatTypes.Find("WardIsLove.API");
+            var wardType = global::DrakeRenameit.Compat.CompatTypes.Find("WardIsLove.Util.WardMonoscript");
             if (apiType == null || wardType == null)
                 return;
 

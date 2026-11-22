@@ -1,0 +1,32 @@
+{
+  "name": "X-32 a rename that contains the base name is shown once on a stand",
+  "description": "Guard for the container-stand hover fix (DrakeModsLibs 1.0.7): a vanilla stand already shows the rename, so it must not be rewritten again.",
+  "steps": [
+    "craftRenamed(\"Stone Axe of Bob\")",
+    "itemOnStand()",
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "contains": "Stone Axe of Bob",
+      "label": "the stand shows the rename"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": {
+        "target": "stand"
+      },
+      "notContains": "of Bob of Bob",
+      "label": "and only once"
+    }
+  ],
+  "asserts": [
+    {
+      "check": "noErrors",
+      "source": "DrakesRenameit"
+    }
+  ]
+}

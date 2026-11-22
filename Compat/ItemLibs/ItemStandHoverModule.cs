@@ -203,8 +203,8 @@ internal sealed class ItemStandHoverModule : ICompatModule
     {
         try
         {
-            var apiType = AccessTools.TypeByName("WardIsLove.API.API")
-                           ?? AccessTools.TypeByName("WardIsLove.API");
+            var apiType = global::DrakeRenameit.Compat.CompatTypes.Find("WardIsLove.API.API")
+                           ?? global::DrakeRenameit.Compat.CompatTypes.Find("WardIsLove.API");
             var isLoaded = apiType == null ? null : AccessTools.Method(apiType, "IsLoaded", Type.EmptyTypes);
             return isLoaded?.Invoke(null, null) is true;
         }

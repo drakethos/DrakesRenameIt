@@ -1,6 +1,9 @@
-- Unreleased
+- Version 1.3.3
+  - Patch for 1.3.2. Requires **DrakeModsLibs 1.0.7+**.
   - **Defensive against other mods (ModGuard, same as RenameIt Legacy 1.0.1).** Each Harmony patch class is applied on its own: one that cannot be applied (game update, another mod's transpiler) is skipped and named in the log with the other mods patching that type, and the rest of the mod still loads. Errors on methods RenameIt patches are logged as `[Error origin: <mod>]`, naming the mod whose code threw, once per distinct error with a count; an error in a RenameIt postfix is contained and the game method is never skipped on our account. Every patch method catches its own failures (a prefix falls back to the game method, a postfix is skipped). `BepInEx/DrakeMods-compat-report.txt` lists loaded plugins and the methods shared with other mods; send it with `LogOutput.log` when reporting a conflict. `DRAKEMODS_NO_GUARD=1` turns the error finalizers off. The guard is vendored into this DLL, so no newer DrakeModsLibs is needed.
   - **Respects other mods' interaction gates** (VRPCore's progression gate, ward mods): a blocked player can no longer pick up a Paper note through RenameIt's Sign hook. Optional-mod checks no longer print HarmonyX "Could not find type" warnings, and startup setup detail is at Debug level.
+  - **Item stands with other mods** (needs **DrakeModsLibs 1.0.7**): when a ward or roleplay/progression mod blocks putting an item on a stand, the stand's name is left alone; with **ZenItemStands**, a renamed item placed through its container shows its name on the stand.
+  - **Quieter log:** checking for optional mods no longer prints "Could not find type named ..." warnings, and startup detail is at Debug.
 
 - Version 1.3.2
   - Patch for 1.3.1. Requires **DrakeModsLibs 1.0.0+** (the SeneaL description and Crafted-by lines also need the next DrakeModsLibs, 1.0.6).

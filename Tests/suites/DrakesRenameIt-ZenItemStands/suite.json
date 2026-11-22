@@ -1,0 +1,6 @@
+{
+  "name": "DrakesRenameIt-ZenItemStands",
+  "description": "Needs ZenDragon-ZenItemStands (and Zen_ModLib) installed. With it, item stands are containers and the vanilla put-on-stand call refuses by design; these tests place items through its container instead and check that RenameIt's names still show.",
+  "include": "_shared/baseline.json",
+  "resetBetweenTests": true
+}

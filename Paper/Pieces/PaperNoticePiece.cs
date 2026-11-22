@@ -7,6 +7,6 @@ internal static class PaperNoticePiece
 {
     internal static void Register(ManualLogSource log)
     {
-        log.LogInfo("[Paper] Hammer PaperNotice spike retired; use hotbar PaperPlace.");
+        log.LogDebug("[Paper] Hammer PaperNotice spike retired; use hotbar PaperPlace.");
     }
 }

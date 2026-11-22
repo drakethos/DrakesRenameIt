@@ -38,6 +38,7 @@ Mods that draw their own equipment slots can write an item's *vanilla* name into
 | **AzuExtendedPlayerInventory** (Azumatt) | Works as is: name, description and *Crafted by* show in its equipment slots and hotbar. |
 | **InventorySlots** (sighsorry) | Works as is: name, description and *Crafted by* show in its slots. |
 | **SeneaL UI** | Supported through a compat module for the name, description and *Crafted by* lines. |
+| **ZenItemStands** (ZenDragon) | Works: a renamed item placed on a stand through its container keeps its name on the stand (1.0.2). |
 | **Backpacks** (Smoothbrain) | Works as is. It does not draw item names of its own. |
 
 Each mod is checked by an automated test that fills every slot type with a renamed, described item and reads what the tooltip shows.

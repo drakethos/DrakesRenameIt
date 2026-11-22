@@ -577,6 +577,33 @@ internal static class RenameItTestHooks
         }
     }
 
+    /// <summary>
+    /// Put the stack on the stand through a container-style stand mod (ZenItemStands: the stand carries a
+    /// StandInventory, and moving an item into it attaches the item). Reflection only, so RenameIt has no reference
+    /// to that mod. Returns false when no such component is on the stand.
+    /// </summary>
+    [TestHook("renameit.standPutContainer")]
+    static bool StandPutContainer(Dictionary<string, object?> args, GameObject? target = null)
+    {
+        var stand = Stand(args, target);
+        Component? standInv = null;
+        foreach (var c in stand.GetComponents<Component>())
+        {
+            for (var t = c?.GetType(); t != null; t = t.BaseType)
+                if (t.FullName == "ZenItemStands.StandInventory") { standInv = c; break; }
+            if (standInv != null) break;
+        }
+
+        if (standInv == null)
+            return false;
+        var inv = AccessTools.Property(standInv.GetType(), "Inventory")?.GetValue(standInv) as Inventory;
+        if (inv == null)
+            return false;
+        var item = Item(args);
+        inv.MoveItemToThis(P.GetInventory(), item);
+        return inv.NrOfItems() > 0 && stand.HaveAttachment();
+    }
+
     // ---------- foreign gate (another mod's skipping prefix, e.g. VRPCore's PreventInteractions)
 
     static Harmony? _foreignGate;

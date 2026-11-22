@@ -1,3 +1,7 @@
+- Unreleased
+  - **ZenItemStands:** a renamed item placed on a stand through ZenItemStands' container now shows its RenameIt name. ZenItemStands rebuilds the stand's hover text from the base item name; RenameIt now reads the item saved on the stand and swaps in the rename (never twice, so a name like "Stone Axe of Bob" stays as is).
+  - Tests: `DrakesRenameItLegacy-ZenItemStands/Z-01` (needs ZenItemStands) and `X-32`.
+
 - Version 1.0.1
   - **Defensive against other mods.** The mod no longer assumes it is alone in the game:
     - Each Harmony patch class is applied on its own. If one cannot be applied (a game update, or another mod's transpiler broke the method) it is skipped and named in the log with the other mods patching that type; the rest of the mod still loads. Before, the first failure stopped the whole patch run.

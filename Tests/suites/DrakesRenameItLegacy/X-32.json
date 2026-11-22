@@ -1,0 +1,25 @@
+{
+  "name": "X-32 a rename that contains the base name is shown once on a stand",
+  "description": "Guard for the container-stand hover fix: on a vanilla stand the hover already carries the rename, so a name like \"Stone Axe of Bob\" must not have its \"Stone Axe\" part rewritten again.",
+  "steps": [
+    "craftRenamed(\"Stone Axe of Bob\")",
+    "itemOnStand()",
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "contains": "Stone Axe of Bob",
+      "label": "the stand shows the rename"
+    },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "notContains": "of Bob of Bob",
+      "label": "and only once"
+    }
+  ],
+  "asserts": [
+    { "check": "noErrors", "source": "DrakesRenameitLegacy" }
+  ]
+}

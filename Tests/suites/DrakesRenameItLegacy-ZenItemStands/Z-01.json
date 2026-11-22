@@ -1,0 +1,29 @@
+{
+  "name": "Z-01 renamed item placed through ZenItemStands keeps its name",
+  "description": "ZenItemStands turns stands into containers and replaces the stand's hover text. A renamed item moved into the stand's container must still show its RenameIt name.",
+  "steps": [
+    "craftRenamed(\"Zen Stand Axe\")",
+    { "do": "place", "prefab": "itemstandh", "dz": 2.5, "as": "stand" },
+    { "do": "face", "target": "stand" },
+    {
+      "do": "hook",
+      "name": "renameit.standPutContainer",
+      "args": { "prefab": "AxeStone", "target": "stand" },
+      "expect": true,
+      "label": "the axe goes on the stand through ZenItemStands' container",
+      "stop": true
+    },
+    { "do": "wait", "seconds": 1 },
+    {
+      "do": "hook",
+      "name": "renameit.standHover",
+      "args": { "target": "stand" },
+      "contains": "Zen Stand Axe",
+      "label": "the stand's hover shows the renamed item"
+    },
+    { "do": "screenshot", "name": "zen-stand-hover" }
+  ],
+  "asserts": [
+    { "check": "noErrors", "source": "DrakesRenameitLegacy", "label": "RenameIt logged no error" }
+  ]
+}

@@ -1525,11 +1525,12 @@ T('X-EQ-03', 'renamed worn cape: slot tooltips show the new name', [
     H('openInventory', True, 'open the inventory'),
     wait(1.5),
     H('slotTooltips', label='eager tooltip topics: the new name or none yet, never the vanilla one', notContains='result=vanilla-present', prefab='CapeDeerHide'),
-    H('hoverSlot', label='hover the slot that shows the cape', contains='hovered=', prefab='CapeDeerHide'),
-    wait(1.0),
-    H('shownTooltip', label='the tooltip the game shows names the cape Slot Test Cape', contains='Slot Test Cape'),
+    # a real (Input System) mouse rest: the game only keeps a tooltip open while the pointer is inside the slot
+    {'do': 'uiHover', 'icon': 'CapeDeerHide', 'until': 'Slot Test Cape', 'wait': 2.0, 'require': False},
+    {'do': 'check', 'check': 'screenText', 'contains': 'Slot Test Cape', 'label': 'the tooltip the game shows names the cape Slot Test Cape'},
     shot('equipment-slots'),
-], sheet='X-EQ', desc='Equipment-mod compatibility probe: reads every active UITooltip topic after opening the inventory, and takes a screenshot. result=none means the UI draws names some other way (check the picture).')
+    {'do': 'uiRelease'},
+], sheet='X-EQ', desc='Equipment-mod compatibility probe: reads every active UITooltip topic after opening the inventory, rests the mouse on the cape (DrakesTestLab uiHover) and reads the tooltip on screen, and takes a screenshot. result=none means the UI draws names some other way (check the picture).')
 
 # every slot type, so a slot UI that fixes one slot but not another is caught
 FULL_SET = [
@@ -1570,7 +1571,7 @@ T('X-EQ-06', 'unattended: hover every filled slot and read the tooltip (name, de
     wait(1.5),
     shot('all-slots'),
     *[step for prefab, slot, _ in FULL_SET for step in (
-        {'do': 'uiHover', 'icon': prefab, 'until': f'Test {slot}', 'wait': 1.0, 'require': False},
+        {'do': 'uiHover', 'icon': prefab, 'until': f'Test {slot}', 'wait': 2.0, 'require': False},
         {'do': 'check', 'check': 'screenText', 'contains': f'Test {slot}', 'label': f'{slot}: the new name is shown'},
         {'do': 'check', 'check': 'screenText', 'contains': f'Desc {slot}', 'label': f'{slot}: the new description is shown'},
         {'do': 'check', 'check': 'screenText', 'contains': f'By {slot}', 'label': f'{slot}: the Crafted-by name is shown'},

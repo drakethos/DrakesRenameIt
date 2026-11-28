@@ -718,51 +718,6 @@ internal static class RenameItTestHooks
     }
 
     /// <summary>
-    /// Hovers the slot that shows this item: finds the visible UI images that draw the item's icon (any mod's slot UI) and sends
-    /// them pointer-enter, like a mouse resting on it. Returns how many it hovered and where. Read the result with renameit.shownTooltip.
-    /// </summary>
-    [TestHook("renameit.hoverSlot")]
-    static string HoverSlot(Dictionary<string, object?> args)
-    {
-        var item = Item(args);
-        var icon = item.GetIcon();
-        var es = UnityEngine.EventSystems.EventSystem.current;
-        var n = 0;
-        var where = new List<string>();
-        foreach (var img in Resources.FindObjectsOfTypeAll<UnityEngine.UI.Image>())
-        {
-            if (img == null || img.sprite == null || img.sprite != icon || !img.gameObject.activeInHierarchy || img.canvas == null)
-                continue;
-            var ped = new UnityEngine.EventSystems.PointerEventData(es)
-            {
-                position = UnityEngine.RectTransformUtility.WorldToScreenPoint(null, img.rectTransform.position)
-            };
-            UnityEngine.EventSystems.ExecuteEvents.ExecuteHierarchy(img.gameObject, ped, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
-            n++;
-            if (where.Count < 4)
-            {
-                var path = img.name;
-                for (var tr = img.transform.parent; tr != null && path.Length < 80; tr = tr.parent)
-                    path = tr.name + "/" + path;
-                where.Add(path);
-            }
-        }
-
-        return $"hovered={n};at=[{string.Join(" | ", where)}]";
-    }
-
-    /// <summary>The tooltip the game is showing right now, texts joined by " | " (rich text stripped); "" when none.</summary>
-    [TestHook("renameit.shownTooltip")]
-    static string ShownTooltip(Dictionary<string, object?> args)
-    {
-        var go = AccessTools.Field(typeof(UITooltip), "m_tooltip")?.GetValue(null) as GameObject;
-        if (go == null || !go.activeInHierarchy)
-            return "";
-        var texts = go.GetComponentsInChildren<TMPro.TMP_Text>(false).Select(t => t.text).Where(t => !string.IsNullOrWhiteSpace(t)).Take(3);
-        return System.Text.RegularExpressions.Regex.Replace(string.Join(" | ", texts), "<[^>]+>", "").Replace('\n', ' ').Trim();
-    }
-
-    /// <summary>
     /// Description and Crafted-by in the tooltips the open inventory has already filled in: how many show the custom description
     /// (descCustom), still show the vanilla one (descVanilla), and show the custom Crafted-by text (craftedCustom).
     /// descVanilla must be 0 once the item has a custom description.

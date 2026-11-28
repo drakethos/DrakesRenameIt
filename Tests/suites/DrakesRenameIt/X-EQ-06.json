@@ -369,7 +369,7 @@
       "do": "uiHover",
       "icon": "HelmetTrollLeather",
       "until": "Test Helmet",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -398,7 +398,7 @@
       "do": "uiHover",
       "icon": "ArmorTrollLeatherChest",
       "until": "Test Chest",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -427,7 +427,7 @@
       "do": "uiHover",
       "icon": "ArmorTrollLeatherLegs",
       "until": "Test Legs",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -456,7 +456,7 @@
       "do": "uiHover",
       "icon": "CapeDeerHide",
       "until": "Test Cape",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -485,7 +485,7 @@
       "do": "uiHover",
       "icon": "Wishbone",
       "until": "Test Utility",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -514,7 +514,7 @@
       "do": "uiHover",
       "icon": "ShieldWood",
       "until": "Test Shield",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -543,7 +543,7 @@
       "do": "uiHover",
       "icon": "AxeStone",
       "until": "Test Weapon",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -572,7 +572,7 @@
       "do": "uiHover",
       "icon": "CookedMeat",
       "until": "Test Food",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
@@ -601,7 +601,7 @@
       "do": "uiHover",
       "icon": "ArrowWood",
       "until": "Test Ammo",
-      "wait": 1.0,
+      "wait": 2.0,
       "require": false
     },
     {
